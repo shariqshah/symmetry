@@ -33,5 +33,6 @@ bool input_map_state_get(const char* map_name, int state);
 void input_map_create(const char* name, int* keys, size_t num_keys);
 bool input_map_remvove(const char* name);
 bool input_map_keys_set(const char* name, int* keys, int num_keys);
+bool input_map_name_set(const char* name, const char* new_name);
 
 #endif

@@ -168,8 +168,23 @@ bool input_map_keys_set(const char* name, int* keys, int num_keys)
 		}
 		success = true;
 	}
-	if(!success) log_error("input:map_set_keys", "Map %s not found", name);
+	if(!success) log_error("input:map_keys_set", "Map %s not found", name);
 	
+	return success;
+}
+
+bool input_map_name_set(const char* name, const char* new_name)
+{
+	assert(name && new_name);
+	bool success = false;
+	int index = map_find(name);
+	if(index > -1)
+	{
+		Input_Map* map = array_get(input_map_list, (unsigned int)index);
+		map->name = new_name;
+		success = true;
+	}
+	if(!success) log_error("input:map_name_set", "Map %s not found", name);
 	return success;
 }
 

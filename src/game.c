@@ -43,20 +43,19 @@ void update(void)
 		log_message("MoveUp pressed!");
 
 	if(input_map_state_get("MoveDown", GLFW_RELEASE))
-	{
-		input_map_remvove("Test");
 		log_message("MoveDown pressed!");
-	}
 
 	if(input_map_state_get("Test", GLFW_RELEASE))
 		log_message("Test released");
 
 	if(input_map_state_get("Test2", GLFW_RELEASE))
 	{
-		int keys[] = {GLFW_KEY_R};
-		input_map_keys_set("Test2", keys, 1);
+		input_map_name_set("Test2", "NewTest");
 		log_message("Test2 released!");
 	}
+
+	if(input_map_state_get("NewTest", GLFW_RELEASE))
+		log_message("NewTest released");
 
 	input_update();
 }

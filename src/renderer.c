@@ -23,3 +23,8 @@ void on_framebuffer_size_change(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 }
+
+void renderer_set_clearcolor(float red, float green, float blue, float alpha)
+{
+	glClearColor(red, green, blue, alpha);
+}

@@ -22,8 +22,10 @@ bool window_init(const char* title, int width, int height)
 	}
 	else
 	{
-		const char* version = glfwGetVersionString();
-		log_message("Initialized with %s", version);
+		log_message("Initialized with GLFW version %d.%d.%d",
+					GLFW_VERSION_MAJOR,
+					GLFW_VERSION_MINOR,
+					GLFW_VERSION_REVISION);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 		active_window = glfwCreateWindow(width, height, title, NULL, NULL);

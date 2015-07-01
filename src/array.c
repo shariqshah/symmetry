@@ -98,15 +98,15 @@ bool array_remove_at(Array* array, unsigned int index)
 	bool success = false;
 	if(array->length > 0)
 	{
-		unsigned int next_index = index++;
+		unsigned int next_index = index + 1;
 		if(next_index < array->length)
 		{
-			array->length--;
 			char* current_location   = array->data + (array->object_size * index);
 			char* location_after_obj = current_location + array->object_size;
 			memmove(current_location,
 					location_after_obj,
-					array->object_size * ((array->length - 1) - next_index));
+					array->object_size * (array->length - next_index));
+			array->length--;
 			success = array_reallocate(array);
 		}
 		else

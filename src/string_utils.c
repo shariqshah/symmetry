@@ -98,10 +98,3 @@ char* str_replace(char* string, const char* pattern, const char* replacement)
 		return NULL;
 	}
 }
-
-
-
-
-
-
-

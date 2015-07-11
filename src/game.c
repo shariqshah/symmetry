@@ -1,10 +1,13 @@
-#include "game.h"
+#include <stdlib.h>
 #include "GLFW/glfw3.h"
+#include "game.h"
 
 #include "window_system.h"
 #include "input.h"
 #include "renderer.h"
 #include "log.h"
+#include "file_io.h"
+#include "shader.h"
 
 void run(void);
 void update(void);
@@ -13,16 +16,22 @@ void render(void);
 void game_init(void)
 {
 	GLFWwindow* window = window_get_active();
+	/* Init systems */
 	input_init(window);
 	renderer_init(window);
-	int keys[2] = {GLFW_KEY_W, GLFW_KEY_UP};
-	int keys2[2] = {GLFW_KEY_S, GLFW_KEY_DOWN};
-	int keys3[1] = {GLFW_KEY_J};
-	int keys4[1] = {GLFW_KEY_K};
+	io_file_initialize("/mnt/Dev/Projects/Symmetry/assets/");/* TODO: Implement proper way of getting binary directory */
+	shader_initialize();
+	
+	int keys[2] = {'W', GLFW_KEY_UP};
+	int keys2[2] = {'S', GLFW_KEY_DOWN};
+	int keys3[1] = {'J'};
+	int keys4[1] = {'K'};
 	input_map_create("MoveUp", keys, 2);
 	input_map_create("MoveDown", keys2, 2);
 	input_map_create("Test", keys3, 1);
 	input_map_create("Test2", keys4, 1);
+
+	int shader = shader_create("phong.vert", "phong.frag");	
 	run();
 }
 
@@ -39,24 +48,6 @@ void run(void)
 
 void update(void)
 {
-	if(input_map_state_get("MoveUp", GLFW_RELEASE))
-		log_message("MoveUp pressed!");
-
-	if(input_map_state_get("MoveDown", GLFW_RELEASE))
-		log_message("MoveDown pressed!");
-
-	if(input_map_state_get("Test", GLFW_RELEASE))
-		log_message("Test released");
-
-	if(input_map_state_get("Test2", GLFW_RELEASE))
-	{
-		input_map_name_set("Test2", "NewTest");
-		log_message("Test2 released!");
-	}
-
-	if(input_map_state_get("NewTest", GLFW_RELEASE))
-		log_message("NewTest released");
-
 	input_update();
 }
 
@@ -69,4 +60,6 @@ void game_cleanup(void)
 {
 	input_cleanup();
 	renderer_cleanup();
+	io_file_cleanup();
+	shader_cleanup();
 }

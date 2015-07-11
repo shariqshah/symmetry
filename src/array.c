@@ -7,13 +7,13 @@
 
 static bool array_reallocate(Array* array);
 
-Array* array_new_(size_t object_size)
+Array* array_new_(size_t object_size, int capacity)
 {
 	Array* newArray = malloc(sizeof(Array));
 
 	newArray->object_size = object_size;
 	newArray->length = 0;
-	newArray->capacity = ARRAY_MIN_CAPACITY;
+	newArray->capacity = capacity == 0 ? ARRAY_MIN_CAPACITY : capacity;
 	newArray->data = malloc(newArray->object_size * newArray->capacity);
 
 	return newArray;
@@ -60,7 +60,7 @@ void* array_add(Array* array)
 
 void array_reset(Array* array, unsigned int length)
 {
-	free(array->data);
+	if(array->data) free(array->data);
 	array->length = length;
 	array->capacity = length < ARRAY_MIN_CAPACITY ? ARRAY_MIN_CAPACITY : length;
 	array->data = malloc(array->object_size * array->capacity);

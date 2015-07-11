@@ -22,7 +22,6 @@ void input_init(GLFWwindow* window)
 	glfwSetMouseButtonCallback(window, input_on_mousebutton);
 	glfwSetKeyCallback(window, input_on_key);
 	glfwSetCursorPosCallback(window, input_on_cursor_move);
-	glfwSetInputMode(window, GLFW_STICKY_KEYS, 1);
 
 	input_map_list = array_new(Input_Map);
 }
@@ -42,7 +41,7 @@ static void input_on_cursor_move(GLFWwindow* window, double xpos, double ypos)
 	
 }
 
-void input_get_cursor_pos(double* xpos, double* ypos)
+void input_cursor_pos_get(double* xpos, double* ypos)
 {
 	assert(xpos && ypos);
 	GLFWwindow* window = window_get_active();
@@ -68,7 +67,9 @@ static void input_on_key(GLFWwindow* window, int key, int scancode, int action, 
 
 static void input_on_mousebutton(GLFWwindow* window, int button, int action, int mods)
 {
-	
+	/* Probably add 'mouse maps', same as input maps for keyvboard but with buttons
+	   Do we even need that?
+	*/
 }
 
 void input_cursor_mode_set(Cursor_Mode mode)
@@ -98,7 +99,7 @@ bool input_map_state_get(const char* map_name, int state)
 	return state == current_state ? true : false;
 }
 
-bool inputkey_state_get(int key, int state_type)
+bool input_key_state_get(int key, int state_type)
 {
 	GLFWwindow* window = window_get_active();
 	int current_state  = glfwGetKey(window, key);
@@ -137,7 +138,7 @@ void input_update(void)
 	}
 }
 
-bool input_map_remvove(const char* name)
+bool input_map_remove(const char* name)
 {
 	assert(name);
 	bool success = false;

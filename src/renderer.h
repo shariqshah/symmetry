@@ -7,5 +7,6 @@ void renderer_init(GLFWwindow* window);
 void renderer_draw(void);
 void renderer_cleanup(void);
 void renderer_set_clearcolor(float r, float g, float b, float a);
+void renderer_check_glerror(const char* context);
 
 #endif

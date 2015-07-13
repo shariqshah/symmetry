@@ -8,6 +8,7 @@
 #include "log.h"
 #include "file_io.h"
 #include "shader.h"
+#include "entity.h"
 
 void run(void);
 void update(void);
@@ -21,6 +22,8 @@ void game_init(void)
 	renderer_init(window);
 	io_file_initialize("/mnt/Dev/Projects/Symmetry/assets/");/* TODO: Implement proper way of getting binary directory */
 	shader_initialize();
+	entity_initialize();
+	
 	
 	int keys[2] = {'W', GLFW_KEY_UP};
 	int keys2[2] = {'S', GLFW_KEY_DOWN};
@@ -58,6 +61,7 @@ void render(void)
 
 void game_cleanup(void)
 {
+	entity_cleanup();
 	input_cleanup();
 	renderer_cleanup();
 	io_file_cleanup();

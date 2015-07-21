@@ -7,13 +7,13 @@
 #include <string.h>
 #include <assert.h>
 
-static Array* entity_list;
-static Array* empty_indices;
+static struct Array* entity_list;
+static struct Array* empty_indices;
 
 
 void entity_initialize(void)
 {
-	entity_list = array_new(Entity);
+	entity_list = array_new(struct Entity);
 	empty_indices = array_new(int);
 }
 
@@ -28,11 +28,11 @@ void entity_cleanup(void)
 
 void entity_remove(int index)
 {
-	Entity* entity = array_get(entity_list, index);
+	struct Entity* entity = array_get(entity_list, index);
 
 	for(int i = 0; i < MAX_COMPONENTS; i++)
 	{
-		Component component = entity->components[i];
+		enum Component component = entity->components[i];
 		switch(component)
 		{
 		case C_TRANSFORM:
@@ -50,9 +50,9 @@ void entity_remove(int index)
 	}
 }
 
-Entity* entity_create(const char* name, const char* tag)
+struct Entity* entity_create(const char* name, const char* tag)
 {
-	Entity* new_entity = NULL;
+	struct Entity* new_entity = NULL;
 	int index = -1;
 	if(empty_indices->length > 0)
 	{
@@ -79,9 +79,9 @@ Entity* entity_create(const char* name, const char* tag)
 	   
 }
 
-Entity* entity_get(int index)
+struct Entity* entity_get(int index)
 {
-	Entity* entity = NULL;
+	struct Entity* entity = NULL;
 	if(index >= 0 && index < (int)entity_list->length)
 		entity = array_get(entity_list, index);
 	else
@@ -89,13 +89,13 @@ Entity* entity_get(int index)
 	return entity;
 }
 
-Entity* entity_find(const char* name)
+struct Entity* entity_find(const char* name)
 {
 	/* Bruteforce search all entities and return the first match */
-	Entity* entity = NULL;
+	struct Entity* entity = NULL;
 	for(int i = 0; i < (int)entity_list->length; i++)
 	{
-		Entity* curr_ent = array_get(entity_list, i);
+		struct Entity* curr_ent = array_get(entity_list, i);
 		if(strcmp(curr_ent->name, name) == 0)
 		{
 			entity = curr_ent;
@@ -105,7 +105,7 @@ Entity* entity_find(const char* name)
 	
 	return entity; 
 }
-bool entity_component_remove(Entity* entity, Component component)
+bool entity_component_remove(struct Entity* entity, enum Component component)
 {
 	bool success = true;
 	assert(entity);
@@ -127,7 +127,7 @@ bool entity_component_remove(Entity* entity, Component component)
 	
 	return success;
 }
-void* entity_component_get(Entity* entity, Component component)
+void* entity_component_get(struct Entity* entity, enum Component component)
 {
 	void* comp_obj = NULL;
 	assert(entity);
@@ -148,7 +148,7 @@ void* entity_component_get(Entity* entity, Component component)
 	return comp_obj;
 }
 
-void* entity_component_add(Entity* entity, Component component)
+void* entity_component_add(struct Entity* entity, enum Component component)
 {
 	void* new_comp = NULL;
 	assert(entity);

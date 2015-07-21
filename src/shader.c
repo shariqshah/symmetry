@@ -14,14 +14,13 @@
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
 
-typedef struct
+struct Shader_Object
 {
 	unsigned int vertex_shader;
 	unsigned int fragment_shader;
-	unsigned int program;
-	
-} Shader_Object;
-
+	unsigned int program;	
+};
+typedef struct Shader_Object Shader_Object;
 
 // Constants for locations of attributes inside all shaders
 const int POSITION_LOC = 0;
@@ -29,8 +28,8 @@ const int NORMAL_LOC   = 1;
 const int UV_LOC       = 2;
 const int COLOR_LOC    = 3;
 
-static Array* shader_list;
-static Array* empty_indices;
+static struct Array* shader_list;
+static struct Array* empty_indices;
 
 void debug_print_shader(const char* shaderText)
 {

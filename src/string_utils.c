@@ -28,7 +28,7 @@ char* str_concat(char* string, const char* str_to_concat)
 
 char* str_replace(char* string, const char* pattern, const char* replacement)
 {
-	Array* indices = array_new(unsigned int);
+	struct Array* indices = array_new(unsigned int);
 	size_t string_len = strlen(string);
 
 	/* Calculate size of new string and allocate new memory */

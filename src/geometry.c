@@ -15,37 +15,38 @@
 #include <string.h>
 #include <assert.h>
 
-typedef struct 
+struct Geometry 
 {
-	char*  filename;
-	bool   draw_indexed;
-	Array* vertices;
-	Array* vertex_colors;
-	Array* normals;
-	Array* uvs;
-	Array* indices;
-	uint   vao;
-	uint   vertex_vbo;
-	uint   uv_vbo;
-	uint   normal_vbo;
-	uint   color_vbo;
-	uint   index_vbo;
-	uint   ref_count;
+	char*         filename;
+	bool          draw_indexed;
+	uint          vao;
+	uint          vertex_vbo;
+	uint          uv_vbo;
+	uint          normal_vbo;
+	uint          color_vbo;
+	uint          index_vbo;
+	uint          ref_count;
+	struct Array* vertices;
+	struct Array* vertex_colors;
+	struct Array* normals;
+	struct Array* uvs;
+	struct Array* indices;
 	/* BoundingBox               boundingBox; */
 	/* BoundingSphere            boundingSphere; */
-} Geometry;
+};
+
 
 /* Data */
-static Array* geometry_list;
-static Array* empty_indices;
+static struct Array* geometry_list;
+static struct Array* empty_indices;
 
 /* Function definitions */
-bool load_from_file(Geometry* geometry, const char* filename);
-void create_vao(Geometry* geometry);
+bool load_from_file(struct Geometry* geometry, const char* filename);
+void create_vao(struct Geometry* geometry);
 
 void geom_initialize(void)
 {
-	geometry_list = array_new(Geometry);
+	geometry_list = array_new(struct Geometry);
 	empty_indices = array_new(int);
 }
 
@@ -54,7 +55,7 @@ int geom_find(const char* filename)
 	int index = -1;
 	for(int i = 0; i < (int)geometry_list->length; i++)
 	{
-		Geometry* geometry = array_get(geometry_list, i);
+		struct Geometry* geometry = array_get(geometry_list, i);
 		if(strcmp(geometry->filename, filename) == 0)
 		{
 			index = i;
@@ -71,7 +72,7 @@ int geom_create(const char* name)
 	if(index == -1)
 	{
 		/* add new geometry object or overwrite existing one */
-		Geometry* new_geo = NULL;
+		struct Geometry* new_geo = NULL;
 		int index = -1;
 		if(empty_indices->length != 0)
 		{
@@ -101,7 +102,7 @@ int geom_create(const char* name)
 	}
 	else
 	{
-		Geometry* raw_geom_array = array_get_raw(geometry_list, Geometry);
+		struct Geometry* raw_geom_array = array_get_raw(geometry_list, struct Geometry);
 		raw_geom_array[index].ref_count++;
 	}
 	return index;
@@ -111,7 +112,7 @@ void geom_remove(int index)
 {
 	if(index >= 0 && index < (int)geometry_list->length)
 	{
-		Geometry* geometry = array_get(geometry_list, index);
+		struct Geometry* geometry = array_get(geometry_list, index);
 		array_free(geometry->indices);
 		array_free(geometry->vertices);
 		array_free(geometry->uvs);
@@ -131,7 +132,7 @@ void geom_cleanup(void)
 	array_free(empty_indices);
 }
 
-bool load_from_file(Geometry* geometry, const char* filename)
+bool load_from_file(struct Geometry* geometry, const char* filename)
 {
 	assert(filename);
 	bool success = true;
@@ -184,7 +185,7 @@ bool load_from_file(Geometry* geometry, const char* filename)
 	return success;
 }
 
-void create_vao(Geometry* geometry)
+void create_vao(struct Geometry* geometry)
 {
 	// TODO : Add support for different model formats and interleaving VBO
 	assert(geometry);

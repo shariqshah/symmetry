@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "input.h"
+#include "array.h"
 #include "GLFW/glfw3.h"
 
 #include "window_system.h"
@@ -15,7 +16,7 @@ static void input_on_mousebutton(GLFWwindow* window, int button, int action, int
 static void input_on_cursor_move(GLFWwindow* window, double xpos, double ypos);
 static int  map_find(const char* name);
 
-static Array* input_map_list;
+static struct Array* input_map_list;
 
 void input_init(GLFWwindow* window)
 {
@@ -23,14 +24,14 @@ void input_init(GLFWwindow* window)
 	glfwSetKeyCallback(window, input_on_key);
 	glfwSetCursorPosCallback(window, input_on_cursor_move);
 
-	input_map_list = array_new(Input_Map);
+	input_map_list = array_new(struct Input_Map);
 }
 
 void input_cleanup(void)
 {
 	for(unsigned int i = 0; i < input_map_list->length; i++)
 	{
-		Input_Map* map = array_get(input_map_list, i);
+		struct Input_Map* map = array_get(input_map_list, i);
 		array_free(map->keys);
 	}
 	array_free(input_map_list);
@@ -52,7 +53,7 @@ static void input_on_key(GLFWwindow* window, int key, int scancode, int action, 
 {
 	for(unsigned int i = 0; i < input_map_list->length; i++)
 	{
-		Input_Map* map = array_get(input_map_list, i);
+		struct Input_Map* map = array_get(input_map_list, i);
 		for(unsigned int j = 0; j < map->keys->length; j++)
 		{
 			int map_key = array_get_val(map->keys, int, j);
@@ -72,7 +73,7 @@ static void input_on_mousebutton(GLFWwindow* window, int button, int action, int
 	*/
 }
 
-void input_cursor_mode_set(Cursor_Mode mode)
+void input_cursor_mode_set(enum Cursor_Mode mode)
 {
 	GLFWwindow* window = window_get_active();
 	int cursor_mode = GLFW_CURSOR_NORMAL;
@@ -89,7 +90,7 @@ bool input_map_state_get(const char* map_name, int state)
 	int current_state = KS_INACTIVE;
 	for(unsigned int i = 0; i < input_map_list->length; i++)
 	{
-		Input_Map* map = array_get(input_map_list, i);
+		struct Input_Map* map = array_get(input_map_list, i);
 		if(strcmp(map->name, map_name) == 0)
 		{
 			current_state = map->state;
@@ -117,7 +118,7 @@ void input_map_create(const char* name, int* keys, size_t num_keys)
 {
 	assert(name && keys && num_keys > 0);
 
-	Input_Map* new_map = array_add(input_map_list);
+	struct Input_Map* new_map = array_add(input_map_list);
 	new_map->name  = name;
 	new_map->keys  = array_new(int);
 	new_map->state = KS_INACTIVE;
@@ -132,7 +133,7 @@ void input_update(void)
 {
 	for(unsigned int i = 0; i < input_map_list->length; i++)
 	{
-		Input_Map* map = array_get(input_map_list, i);
+		struct Input_Map* map = array_get(input_map_list, i);
 		if(map->state == GLFW_RELEASE)
 			map->state = KS_INACTIVE;
 	}
@@ -160,7 +161,7 @@ bool input_map_keys_set(const char* name, int* keys, int num_keys)
 	int index = map_find(name);
 	if(index > -1)
 	{
-		Input_Map* map = array_get(input_map_list, (unsigned int)index);
+		struct Input_Map* map = array_get(input_map_list, (unsigned int)index);
 		array_reset(map->keys, num_keys);
 		for(int i = 0; i < num_keys; i++)
 		{
@@ -181,7 +182,7 @@ bool input_map_name_set(const char* name, const char* new_name)
 	int index = map_find(name);
 	if(index > -1)
 	{
-		Input_Map* map = array_get(input_map_list, (unsigned int)index);
+		struct Input_Map* map = array_get(input_map_list, (unsigned int)index);
 		map->name = new_name;
 		success = true;
 	}
@@ -194,7 +195,7 @@ static int map_find(const char* name)
 	int index = -1;
 	for(unsigned int i = 0; i < input_map_list->length; i++)
 	{
-		Input_Map* map = array_get(input_map_list, i);
+		struct Input_Map* map = array_get(input_map_list, i);
 		if(strcmp(name, map->name) == 0)
 		{
 			index = i;

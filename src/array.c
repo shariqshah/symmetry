@@ -5,11 +5,11 @@
 
 #define ARRAY_MIN_CAPACITY 2
 
-static bool array_reallocate(Array* array);
+static bool array_reallocate(struct Array* array);
 
-Array* array_new_(size_t object_size, int capacity)
+struct Array* array_new_(size_t object_size, int capacity)
 {
-	Array* newArray = malloc(sizeof(Array));
+	struct Array* newArray = malloc(sizeof(struct Array));
 
 	newArray->object_size = object_size;
 	newArray->length = 0;
@@ -19,23 +19,23 @@ Array* array_new_(size_t object_size, int capacity)
 	return newArray;
 }
 
-void array_free(Array* array)
+void array_free(struct Array* array)
 {
 	free(array->data);
 	free(array);
 }
 
-void* array_get(Array* array, unsigned int index)
+void* array_get(struct Array* array, unsigned int index)
 {
 	return array->data + (array->object_size * index);
 }
 
-void* array_top(Array* array)
+void* array_top(struct Array* array)
 {
 	return array->data + (array->object_size * (array->length - 1));
 }
 
-void* array_add(Array* array)
+void* array_add(struct Array* array)
 {
 	/* if capacity is full, double size */
 	if(++array->length > array->capacity)
@@ -58,7 +58,7 @@ void* array_add(Array* array)
 	return array->data + (array->object_size * (array->length - 1));
 }
 
-void array_reset(Array* array, unsigned int length)
+void array_reset(struct Array* array, unsigned int length)
 {
 	if(array->data) free(array->data);
 	array->length = length;
@@ -66,7 +66,7 @@ void array_reset(Array* array, unsigned int length)
 	array->data = malloc(array->object_size * array->capacity);
 }
 
-bool array_pop(Array* array)
+bool array_pop(struct Array* array)
 {
 	bool success = false;
 	if(array->length > 0)
@@ -77,7 +77,7 @@ bool array_pop(Array* array)
 	return success;
 }
 
-bool array_reallocate(Array* array)
+bool array_reallocate(struct Array* array)
 {
 	bool success = true;
 	/* If capacity is too big i.e. 4 times larger than length, halve it */
@@ -93,7 +93,7 @@ bool array_reallocate(Array* array)
 	return success;
 }
 
-bool array_remove_at(Array* array, unsigned int index)
+bool array_remove_at(struct Array* array, unsigned int index)
 {
 	bool success = false;
 	if(array->length > 0)
@@ -117,17 +117,17 @@ bool array_remove_at(Array* array, unsigned int index)
 	return success;
 }
 
-void* array_begin(Array* array)
+void* array_begin(struct Array* array)
 {
 	return array->data;
 }
 
-void* array_end(Array* array)
+void* array_end(struct Array* array)
 {
 	return array->data + (array->object_size * array->length);
 }
 
-void array_sort(Array* array, int (*compar)(const void*, const void*))
+void array_sort(struct Array* array, int (*compar)(const void*, const void*))
 {
 	qsort(array->data, array->length, array->object_size, compar);
 }

@@ -28,42 +28,42 @@ char* str_concat(char* string, const char* str_to_concat)
 
 char* str_replace(char* string, const char* pattern, const char* replacement)
 {
-	struct Array* indices = array_new(unsigned int);
+	int* indices = array_new(int);
 	size_t string_len = strlen(string);
 
 	/* Calculate size of new string and allocate new memory */
 	size_t pattern_len = strlen(pattern);
 	size_t replacement_len = strlen(replacement);
 
-	bool done = false;
+	int done = 0;
 	char* remaining_string = string;
 	while(!done)
 	{
 		char* location = strstr(remaining_string, pattern);
 		if(location)
 		{
-			unsigned int index = location - string;
-			unsigned int* new_index = array_add(indices);
-			*new_index = index;
+			int index = location - string;
+			array_push(indices, index, int);
 			remaining_string = location + pattern_len; /* Find the next occurance in the remaining string */
 		}
 		else
 		{
-			done = true;
+			done = 1;
 		}
 	}
-	
-	if(indices->length > 0)
+
+	int num_indices = array_len(indices);
+	if(num_indices > 0)
 	{
-		size_t string_len_without_pattern = string_len - (pattern_len * indices->length);
-		size_t new_string_len = string_len_without_pattern + (replacement_len * indices->length);
+		size_t string_len_without_pattern = string_len - (pattern_len * num_indices);
+		size_t new_string_len = string_len_without_pattern + (replacement_len * num_indices);
 		char* new_string = malloc(new_string_len);
 
 		if(new_string)
 		{
-			done = false;
-			unsigned int count = 0;
-			unsigned int index = array_get_val(indices, unsigned int, count);
+			done = 0;
+			int count = 0;
+			int index = indices[count];
 			unsigned int prev_index = 0;
 			while(!done)
 			{
@@ -76,15 +76,15 @@ char* str_replace(char* string, const char* pattern, const char* replacement)
 				 count++;
 				 prev_index = index + pattern_len;
 			
-				 if(count == indices->length)
+				 if(count == array_len(indices))
 				 {
-					  done = true;
+					  done = 1;
 					  source_beg = string + prev_index;
 					  strcat(new_string, source_beg);
 				 }
 				 else
 				 {
-					  index = array_get_val(indices, unsigned int, count);
+					 index = indices[count];
 				 }
 			}
 			free(string);

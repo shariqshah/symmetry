@@ -28,8 +28,8 @@ const int NORMAL_LOC   = 1;
 const int UV_LOC       = 2;
 const int COLOR_LOC    = 3;
 
-static struct Array* shader_list;
-static struct Array* empty_indices;
+static struct Shader_Object* shader_list;
+static int* empty_indices;
 
 void debug_print_shader(const char* shaderText)
 {
@@ -201,16 +201,17 @@ int shader_create(const char* vert_shader_name, const char* frag_shader_name)
 	/* add new object or overwrite existing one */
 	Shader_Object* new_object = NULL;
 	int index = -1;
-	if(empty_indices->length != 0)
+	int empty_len = array_len(empty_indices);
+	if(empty_len != 0)
 	{
-		index = array_get_last_val(empty_indices, int);
+		index = empty_indices[empty_len - 1];
 		array_pop(empty_indices);
-		new_object = array_get(shader_list, index);
+		new_object = &shader_list[index];
 	}
 	else
 	{
-		new_object = array_add(shader_list);
-		index = shader_list->length - 1;
+		new_object = array_grow(shader_list, struct Shader_Object);
+		index = array_len(shader_list) - 1;
 	}
 	assert(new_object);
 	new_object->vertex_shader   = vert_shader;
@@ -226,8 +227,7 @@ int shader_create(const char* vert_shader_name, const char* frag_shader_name)
 
 void shader_bind(const int shader_index)
 {
-	Shader_Object* shader_object = array_get(shader_list, shader_index);
-	glUseProgram(shader_object->program);
+	glUseProgram(shader_list[shader_index].program);
 }
 
 void shader_unbind(void)
@@ -237,9 +237,7 @@ void shader_unbind(void)
 
 int get_uniform_location(const int shader_index, const char* name)
 {
-	Shader_Object shader_object = array_get_val(shader_list, Shader_Object, shader_index);
-	GLint handle = glGetUniformLocation(shader_object.program, name);
-
+	GLint handle = glGetUniformLocation(shader_list[shader_index].program, name);
 	if(handle == -1)
 		log_error("shader:get_uniform_location", "Invalid uniform %s", name);
 
@@ -290,7 +288,7 @@ void setUniformMat4(const int shader_index,  const char* name, const mat4 value)
 
 void shader_remove(const int shader_index)
 {
-	Shader_Object* shader_object = array_get(shader_list, shader_index);
+	Shader_Object* shader_object = &shader_list[shader_index];
 	glDeleteProgram(shader_object->program);
 	glDeleteShader(shader_object->vertex_shader);
 	glDeleteShader(shader_object->fragment_shader);
@@ -300,7 +298,7 @@ void shader_remove(const int shader_index)
 	
 void shader_cleanup(void)
 {
-	for(int i = 0; i < (int)shader_list->length; i++)
+	for(int i = 0; i < array_len(shader_list); i++)
 		shader_remove(i);
 
 	array_free(shader_list);

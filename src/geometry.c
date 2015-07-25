@@ -17,28 +17,28 @@
 
 struct Geometry 
 {
-	char*         filename;
-	bool          draw_indexed;
-	uint          vao;
-	uint          vertex_vbo;
-	uint          uv_vbo;
-	uint          normal_vbo;
-	uint          color_vbo;
-	uint          index_vbo;
-	uint          ref_count;
-	struct Array* vertices;
-	struct Array* vertex_colors;
-	struct Array* normals;
-	struct Array* uvs;
-	struct Array* indices;
+	char* filename;
+	bool  draw_indexed;
+	uint  vao;
+	uint  vertex_vbo;
+	uint  uv_vbo;
+	uint  normal_vbo;
+	uint  color_vbo;
+	uint  index_vbo;
+	uint  ref_count;
+	vec3* vertices;
+	vec3* vertex_colors;
+	vec3* normals;
+	vec2* uvs;
+	uint* indices;
 	/* BoundingBox               boundingBox; */
 	/* BoundingSphere            boundingSphere; */
 };
 
 
 /* Data */
-static struct Array* geometry_list;
-static struct Array* empty_indices;
+static struct Geometry* geometry_list;
+static int* empty_indices;
 
 /* Function definitions */
 bool load_from_file(struct Geometry* geometry, const char* filename);
@@ -53,9 +53,9 @@ void geom_initialize(void)
 int geom_find(const char* filename)
 {
 	int index = -1;
-	for(int i = 0; i < (int)geometry_list->length; i++)
+	for(int i = 0; i < array_len(geometry_list); i++)
 	{
-		struct Geometry* geometry = array_get(geometry_list, i);
+		struct Geometry* geometry = &geometry_list[i];
 		if(strcmp(geometry->filename, filename) == 0)
 		{
 			index = i;
@@ -74,19 +74,19 @@ int geom_create(const char* name)
 		/* add new geometry object or overwrite existing one */
 		struct Geometry* new_geo = NULL;
 		int index = -1;
-		if(empty_indices->length != 0)
+		int empty_len = array_len(empty_indices);
+		if(empty_len > 0)
 		{
-			index = array_get_last_val(empty_indices, int);
+			index = empty_indices[empty_len - 1];
 			array_pop(empty_indices);
-			new_geo = array_get(geometry_list, index);
+			new_geo = &geometry_list[index];
 		}
 		else
 		{
-			new_geo = array_add(geometry_list);
-			index = geometry_list->length - 1;
+			new_geo = array_grow(geometry_list, struct Geometry);
+			index = array_len(geometry_list) - 1;
 		}
 		assert(new_geo);
-		
 		
 		if(load_from_file(new_geo, name))
 		{
@@ -102,17 +102,16 @@ int geom_create(const char* name)
 	}
 	else
 	{
-		struct Geometry* raw_geom_array = array_get_raw(geometry_list, struct Geometry);
-		raw_geom_array[index].ref_count++;
+		geometry_list[index].ref_count++;
 	}
 	return index;
 }
 
 void geom_remove(int index)
 {
-	if(index >= 0 && index < (int)geometry_list->length)
+	if(index >= 0 && index < array_len(geometry_list))
 	{
-		struct Geometry* geometry = array_get(geometry_list, index);
+		struct Geometry* geometry = &geometry_list[index];
 		array_free(geometry->indices);
 		array_free(geometry->vertices);
 		array_free(geometry->uvs);
@@ -125,7 +124,7 @@ void geom_remove(int index)
 
 void geom_cleanup(void)
 {
-	for(uint i = 0; i < geometry_list->length; i++)
+	for(int i = 0; i < array_len(geometry_list); i++)
 		geom_remove(i);
 	
 	array_free(geometry_list);
@@ -161,16 +160,16 @@ bool load_from_file(struct Geometry* geometry, const char* filename)
 			uint32 uvs_count      = header[3];
 			// Indices
 			geometry->indices = array_new_cap(uint, indices_count);
-			fread(geometry->indices->data, INDEX_SIZE, indices_count, file);
+			fread(geometry->indices, INDEX_SIZE, indices_count, file);
 			// Vertices
-			geometry->vertices = array_new_cap(uint, vertices_count);
-			fread(geometry->vertices->data, VEC3_SIZE, vertices_count, file);
+			geometry->vertices = array_new_cap(vec3, vertices_count);
+			fread(geometry->vertices, VEC3_SIZE, vertices_count, file);
 			// Normals
-			geometry->normals = array_new_cap(uint, normals_count);
-			fread(&geometry->normals->data, VEC3_SIZE, normals_count, file);
+			geometry->normals = array_new_cap(vec3, normals_count);
+			fread(geometry->normals, VEC3_SIZE, normals_count, file);
 			// Uvs
-			geometry->uvs = array_new_cap(uint, uvs_count);
-			fread(&geometry->uvs->data, VEC2_SIZE, uvs_count, file);
+			geometry->uvs = array_new_cap(vec2, uvs_count);
+			fread(geometry->uvs, VEC2_SIZE, uvs_count, file);
 		}
 		fclose(file);
 		geometry->filename = str_new(filename);
@@ -195,59 +194,59 @@ void create_vao(struct Geometry* geometry)
 	glGenBuffers(1, &geometry->vertex_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, geometry->vertex_vbo);
 	glBufferData(GL_ARRAY_BUFFER,
-				 geometry->vertices->length * sizeof(vec3),
-				 geometry->vertices->data,
+				 array_len(geometry->vertices) * sizeof(vec3),
+				 geometry->vertices,
 				 GL_STATIC_DRAW);
 	renderer_check_glerror("Geometry::create_vbo::vertex");
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-	if(geometry->normals->length > 0)
+	if(array_len(geometry->normals) > 0)
 	{
 		glGenBuffers(1, &geometry->normal_vbo);
 		glBindBuffer(GL_ARRAY_BUFFER, geometry->normal_vbo);
 		glBufferData(GL_ARRAY_BUFFER,
-					 geometry->normals->length * sizeof(vec3),
-					 geometry->normals->data,
+					 array_len(geometry->normals) * sizeof(vec3),
+					 geometry->normals,
 					 GL_STATIC_DRAW);
 		renderer_check_glerror("Geometry::create_vbo::normal");
 		glEnableVertexAttribArray(1);
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, 0, 0);
 	}
 
-	if(geometry->uvs->length > 0)
+	if(array_len(geometry->uvs) > 0)
 	{
 		glGenBuffers(1, &geometry->uv_vbo);
 		glBindBuffer(GL_ARRAY_BUFFER, geometry->uv_vbo);
 		glBufferData(GL_ARRAY_BUFFER,
-					 geometry->uvs->length * sizeof(vec2),
-					 geometry->uvs->data,
+					 array_len(geometry->uvs) * sizeof(vec2),
+					 geometry->uvs,
 					 GL_STATIC_DRAW);
 		renderer_check_glerror("Geometry::create_vbo::uv");
 		glEnableVertexAttribArray(2);
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
 	}
 
-	if(geometry->vertex_colors->length > 0)
+	if(array_len(geometry->vertex_colors) > 0)
 	{
 		glGenBuffers(1, &geometry->color_vbo);
 		glBindBuffer(GL_ARRAY_BUFFER, geometry->color_vbo);
 		glBufferData(GL_ARRAY_BUFFER,
-					 geometry->vertex_colors->length * sizeof(vec3),
-					 geometry->vertex_colors->data,
+					 array_len(geometry->vertex_colors) * sizeof(vec3),
+					 geometry->vertex_colors,
 					 GL_STATIC_DRAW);
 		renderer_check_glerror("Geometry::create_vbo::color");
 		glEnableVertexAttribArray(3);
 		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	}
 
-	if(geometry->indices->length > 0)
+	if(array_len(geometry->indices) > 0)
 	{
 		glGenBuffers(1, &geometry->index_vbo);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, geometry->index_vbo);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-					 geometry->indices->length * sizeof(GLuint),
-					 geometry->indices->data,
+					 array_len(geometry->indices) * sizeof(GLuint),
+					 geometry->indices,
 					 GL_STATIC_DRAW);
 		geometry->draw_indexed = true;
 	}

@@ -11,12 +11,19 @@
 #define KS_INACTIVE -1; 			/* state for input map is set to KS_INACTIVE(KeyState_Inactive) when
 									   the key is neither pressed nor released */
 
+struct Input_Map
+{
+	const char* name;
+	int* keys;
+	int  state;
+};
+
 static void input_on_key(GLFWwindow* window, int key, int scancode, int action, int mods);
 static void input_on_mousebutton(GLFWwindow* window, int button, int action, int mods);
 static void input_on_cursor_move(GLFWwindow* window, double xpos, double ypos);
 static int  map_find(const char* name);
 
-static struct Array* input_map_list;
+static struct Input_Map* input_map_list;
 
 void input_init(GLFWwindow* window)
 {
@@ -29,9 +36,9 @@ void input_init(GLFWwindow* window)
 
 void input_cleanup(void)
 {
-	for(unsigned int i = 0; i < input_map_list->length; i++)
+	for(int i = 0; i < array_len(input_map_list); i++)
 	{
-		struct Input_Map* map = array_get(input_map_list, i);
+		struct Input_Map* map = &input_map_list[i];
 		array_free(map->keys);
 	}
 	array_free(input_map_list);
@@ -51,13 +58,12 @@ void input_cursor_pos_get(double* xpos, double* ypos)
 
 static void input_on_key(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	for(unsigned int i = 0; i < input_map_list->length; i++)
+	for(int i = 0; i < array_len(input_map_list); i++)
 	{
-		struct Input_Map* map = array_get(input_map_list, i);
-		for(unsigned int j = 0; j < map->keys->length; j++)
+		struct Input_Map* map = &input_map_list[i];
+		for(int j = 0; j < array_len(map->keys); j++)
 		{
-			int map_key = array_get_val(map->keys, int, j);
-			if(map_key == key)
+			if(map->keys[i] == key)
 			{
 				map->state = action;
 				break;
@@ -88,9 +94,9 @@ void input_cursor_mode_set(enum Cursor_Mode mode)
 bool input_map_state_get(const char* map_name, int state)
 {
 	int current_state = KS_INACTIVE;
-	for(unsigned int i = 0; i < input_map_list->length; i++)
+	for(int i = 0; i < array_len(input_map_list); i++)
 	{
-		struct Input_Map* map = array_get(input_map_list, i);
+		struct Input_Map* map = &input_map_list[i];
 		if(strcmp(map->name, map_name) == 0)
 		{
 			current_state = map->state;
@@ -118,22 +124,21 @@ void input_map_create(const char* name, int* keys, size_t num_keys)
 {
 	assert(name && keys && num_keys > 0);
 
-	struct Input_Map* new_map = array_add(input_map_list);
+	struct Input_Map* new_map = array_grow(input_map_list, struct Input_Map);
 	new_map->name  = name;
 	new_map->keys  = array_new(int);
 	new_map->state = KS_INACTIVE;
 	for(size_t i = 0; i < num_keys; i++)
 	{
-		int* key = array_add(new_map->keys);
-		*key = keys[i];
+		array_push(new_map->keys, keys[i], int);
 	}
 }
 
 void input_update(void)
 {
-	for(unsigned int i = 0; i < input_map_list->length; i++)
+	for(int i = 0; i < array_len(input_map_list); i++)
 	{
-		struct Input_Map* map = array_get(input_map_list, i);
+		struct Input_Map* map = &input_map_list[i];
 		if(map->state == GLFW_RELEASE)
 			map->state = KS_INACTIVE;
 	}
@@ -146,7 +151,7 @@ bool input_map_remove(const char* name)
     int index = map_find(name);
 	if(index > -1)
 	{
-		array_remove_at(input_map_list, (unsigned int)index);
+		array_remove_at(input_map_list, (int)index);
 		success = true;
 	}	
 	if(!success) log_error("input:map_remove", "Map %s not found", name);
@@ -161,17 +166,14 @@ bool input_map_keys_set(const char* name, int* keys, int num_keys)
 	int index = map_find(name);
 	if(index > -1)
 	{
-		struct Input_Map* map = array_get(input_map_list, (unsigned int)index);
+		struct Input_Map* map = &input_map_list[index];
 		array_reset(map->keys, num_keys);
 		for(int i = 0; i < num_keys; i++)
-		{
-			int* key = array_get(map->keys, (unsigned int)i);
-			*key = keys[i];
-		}
+			map->keys[i] = keys[i];
 		success = true;
 	}
-	if(!success) log_error("input:map_keys_set", "Map %s not found", name);
-	
+	if(!success)
+		log_error("input:map_keys_set", "Map %s not found", name);	
 	return success;
 }
 
@@ -182,7 +184,7 @@ bool input_map_name_set(const char* name, const char* new_name)
 	int index = map_find(name);
 	if(index > -1)
 	{
-		struct Input_Map* map = array_get(input_map_list, (unsigned int)index);
+		struct Input_Map* map = &input_map_list[index];
 		map->name = new_name;
 		success = true;
 	}
@@ -193,9 +195,9 @@ bool input_map_name_set(const char* name, const char* new_name)
 static int map_find(const char* name)
 {
 	int index = -1;
-	for(unsigned int i = 0; i < input_map_list->length; i++)
+	for(int i = 0; i < array_len(input_map_list); i++)
 	{
-		struct Input_Map* map = array_get(input_map_list, i);
+		struct Input_Map* map = &input_map_list[i];
 		if(strcmp(name, map->name) == 0)
 		{
 			index = i;

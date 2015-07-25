@@ -1,4 +1,6 @@
 #include <stdlib.h>
+#include <string.h>
+#include <stddef.h>
 #include "GLFW/glfw3.h"
 #include "game.h"
 
@@ -9,6 +11,7 @@
 #include "file_io.h"
 #include "shader.h"
 #include "entity.h"
+#include "array.h"
 
 void run(void);
 void update(void);
@@ -34,7 +37,7 @@ void game_init(void)
 	input_map_create("Test", keys3, 1);
 	input_map_create("Test2", keys4, 1);
 
-	int shader = shader_create("phong.vert", "phong.frag");	
+	int shader = shader_create("phong.vert", "phong.frag");
 	run();
 }
 

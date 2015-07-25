@@ -7,8 +7,8 @@
 #include <string.h>
 #include <assert.h>
 
-static struct Array* entity_list;
-static struct Array* empty_indices;
+static struct Entity* entity_list;
+static int* empty_indices;
 
 
 void entity_initialize(void)
@@ -19,7 +19,7 @@ void entity_initialize(void)
 
 void entity_cleanup(void)
 {
-	for(int i = 0; i < (int)entity_list->length; i++)
+	for(int i = 0; i < array_len(entity_list); i++)
 		entity_remove(i);
 
 	array_free(entity_list);
@@ -28,7 +28,7 @@ void entity_cleanup(void)
 
 void entity_remove(int index)
 {
-	struct Entity* entity = array_get(entity_list, index);
+	struct Entity* entity = &entity_list[index];
 
 	for(int i = 0; i < MAX_COMPONENTS; i++)
 	{
@@ -54,16 +54,17 @@ struct Entity* entity_create(const char* name, const char* tag)
 {
 	struct Entity* new_entity = NULL;
 	int index = -1;
-	if(empty_indices->length > 0)
+	int empty_len = array_len(empty_indices);
+	if(empty_len > 0)
 	{
-		index = array_get_last_val(empty_indices, int);
+		index = empty_indices[empty_len - 1];
 		array_pop(empty_indices);
-		new_entity = array_get(entity_list, index);
+		new_entity = &entity_list[index];
 	}
 	else
 	{
-		new_entity = array_add(entity_list);
-		index = entity_list->length - 1;
+		new_entity = array_grow(entity_list, struct Entity);
+		index = array_len(entity_list) - 1;
 	}
 	
 	if(new_entity->name) free(new_entity->name);
@@ -82,8 +83,8 @@ struct Entity* entity_create(const char* name, const char* tag)
 struct Entity* entity_get(int index)
 {
 	struct Entity* entity = NULL;
-	if(index >= 0 && index < (int)entity_list->length)
-		entity = array_get(entity_list, index);
+	if(index >= 0 && index < array_len(entity_list))
+		entity = &entity_list[index];
 	else
 		log_error("entity:get", "Invalid index '%d'", index);
 	return entity;
@@ -93,9 +94,9 @@ struct Entity* entity_find(const char* name)
 {
 	/* Bruteforce search all entities and return the first match */
 	struct Entity* entity = NULL;
-	for(int i = 0; i < (int)entity_list->length; i++)
+	for(int i = 0; i < array_len(entity_list); i++)
 	{
-		struct Entity* curr_ent = array_get(entity_list, i);
+		struct Entity* curr_ent = &entity_list[i];
 		if(strcmp(curr_ent->name, name) == 0)
 		{
 			entity = curr_ent;

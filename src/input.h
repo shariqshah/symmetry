@@ -5,7 +5,6 @@
 #include <stdlib.h>
 
 typedef struct GLFWwindow GLFWwindow;
-struct Array;
 
 enum Cursor_Mode
 {
@@ -13,13 +12,6 @@ enum Cursor_Mode
 	CM_LOCKED,
 	CM_HIDDEN
 	
-};
-
-struct Input_Map
-{
-	struct Array* keys;
-	const  char*  name;
-	int           state;
 };
 
 void input_init(GLFWwindow* window);

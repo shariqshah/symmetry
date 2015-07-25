@@ -4,7 +4,7 @@
 #include "linmath.h"
     
 int  shader_create(const char* vert_shader_name, const char* frag_shader_name);
-void shader_initialize(void);
+void shader_init(void);
 void shader_bind(const int shader_index);
 void shader_remove(const int shader_index);
 void shader_unbind(void);

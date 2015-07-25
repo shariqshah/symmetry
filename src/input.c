@@ -91,7 +91,7 @@ void input_cursor_mode_set(enum Cursor_Mode mode)
 	glfwSetInputMode(window, GLFW_CURSOR, cursor_mode);
 }
 
-bool input_map_state_get(const char* map_name, int state)
+int input_map_state_get(const char* map_name, int state)
 {
 	int current_state = KS_INACTIVE;
 	for(int i = 0; i < array_len(input_map_list); i++)
@@ -103,21 +103,21 @@ bool input_map_state_get(const char* map_name, int state)
 			break;
 		}
 	}
-	return state == current_state ? true : false;
+	return state == current_state ? 1 : 0;
 }
 
-bool input_key_state_get(int key, int state_type)
+int input_key_state_get(int key, int state_type)
 {
 	GLFWwindow* window = window_get_active();
 	int current_state  = glfwGetKey(window, key);
-	return current_state == state_type ? true : false;
+	return current_state == state_type ? 1 : 0;
 }
 
-bool input_mousebutton_state_get(int button, int state_type)
+int input_mousebutton_state_get(int button, int state_type)
 {
 	GLFWwindow* window = window_get_active();
 	int current_state  = glfwGetMouseButton(window, button);
-	return current_state == state_type ? true : false;
+	return current_state == state_type ? 1 : 0;
 }
 
 void input_map_create(const char* name, int* keys, size_t num_keys)
@@ -144,25 +144,25 @@ void input_update(void)
 	}
 }
 
-bool input_map_remove(const char* name)
+int input_map_remove(const char* name)
 {
 	assert(name);
-	bool success = false;
+	int success = 0;
     int index = map_find(name);
 	if(index > -1)
 	{
 		array_remove_at(input_map_list, (int)index);
-		success = true;
+		success = 1;
 	}	
 	if(!success) log_error("input:map_remove", "Map %s not found", name);
 	
 	return success;
 }
 
-bool input_map_keys_set(const char* name, int* keys, int num_keys)
+int input_map_keys_set(const char* name, int* keys, int num_keys)
 {
 	assert(name && keys && num_keys > 0);
-	bool success = false;
+	int success = 0;
 	int index = map_find(name);
 	if(index > -1)
 	{
@@ -170,23 +170,23 @@ bool input_map_keys_set(const char* name, int* keys, int num_keys)
 		array_reset(map->keys, num_keys);
 		for(int i = 0; i < num_keys; i++)
 			map->keys[i] = keys[i];
-		success = true;
+		success = 1;
 	}
 	if(!success)
 		log_error("input:map_keys_set", "Map %s not found", name);	
 	return success;
 }
 
-bool input_map_name_set(const char* name, const char* new_name)
+int input_map_name_set(const char* name, const char* new_name)
 {
 	assert(name && new_name);
-	bool success = false;
+	int success = 0;
 	int index = map_find(name);
 	if(index > -1)
 	{
 		struct Input_Map* map = &input_map_list[index];
 		map->name = new_name;
-		success = true;
+		success = 1;
 	}
 	if(!success) log_error("input:map_name_set", "Map %s not found", name);
 	return success;

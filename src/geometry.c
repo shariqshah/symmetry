@@ -18,7 +18,7 @@
 struct Geometry 
 {
 	char* filename;
-	bool  draw_indexed;
+	int   draw_indexed;
 	uint  vao;
 	uint  vertex_vbo;
 	uint  uv_vbo;
@@ -41,10 +41,10 @@ static struct Geometry* geometry_list;
 static int* empty_indices;
 
 /* Function definitions */
-bool load_from_file(struct Geometry* geometry, const char* filename);
+int load_from_file(struct Geometry* geometry, const char* filename);
 void create_vao(struct Geometry* geometry);
 
-void geom_initialize(void)
+void geom_init(void)
 {
 	geometry_list = array_new(struct Geometry);
 	empty_indices = array_new(int);
@@ -131,10 +131,10 @@ void geom_cleanup(void)
 	array_free(empty_indices);
 }
 
-bool load_from_file(struct Geometry* geometry, const char* filename)
+int load_from_file(struct Geometry* geometry, const char* filename)
 {
 	assert(filename);
-	bool success = true;
+	int success = 1;
 	char* full_path = str_new("models/");
 	full_path = str_concat(full_path, filename);
 			
@@ -150,7 +150,7 @@ bool load_from_file(struct Geometry* geometry, const char* filename)
 		if((bytes_read = fread(header, INDEX_SIZE, 4, file)) <= 0)
 		{
 			log_error("geometry:load_from_file", "Read failed");
-			success = false;
+			success = 0;
 		}
 		else
 		{
@@ -173,14 +173,13 @@ bool load_from_file(struct Geometry* geometry, const char* filename)
 		}
 		fclose(file);
 		geometry->filename = str_new(filename);
-		geometry->draw_indexed = true;
+		geometry->draw_indexed = 1;
 		geometry->ref_count++;
 	}
 	else
 	{
-		success = false;
+		success = 0;
 	}
-		
 	return success;
 }
 
@@ -248,7 +247,7 @@ void create_vao(struct Geometry* geometry)
 					 array_len(geometry->indices) * sizeof(GLuint),
 					 geometry->indices,
 					 GL_STATIC_DRAW);
-		geometry->draw_indexed = true;
+		geometry->draw_indexed = 1;
 	}
 	glBindVertexArray(0);
 }

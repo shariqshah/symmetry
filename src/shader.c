@@ -89,7 +89,7 @@ char* run_preprocessor(char* shader_text)
 	return shader_text;
 }
 
-void shader_initialize(void)
+void shader_init(void)
 {
 	shader_list = array_new(Shader_Object);
 	empty_indices = array_new(int);

@@ -11,14 +11,14 @@ void window_error_callback(int error, const char* description);
 void window_resize(GLFWwindow* window, int width, int height);
 void window_close_callback(GLFWwindow* window);
 
-bool window_init(const char* title, int width, int height)
+int window_init(const char* title, int width, int height)
 {
-	bool success = true;
+	int success = 1;
 	glfwSetErrorCallback(window_error_callback);
 	if(!glfwInit())
 	{
 		log_error("window_create", "Initializing glfw failed");
-		success = false;
+		success = 0;
 	}
 	else
 	{
@@ -32,7 +32,7 @@ bool window_init(const char* title, int width, int height)
 		if(!active_window)
 		{
 			log_error("window_create", "Failed to create window");
-			success = false;
+			success = 0;
 		}
 		else
 		{
@@ -90,7 +90,12 @@ GLFWwindow* window_get_active(void)
 	return active_window;
 }
 
-bool window_should_close(void)
+int window_should_close(void)
 {
 	return glfwWindowShouldClose(active_window);
+}
+
+void window_set_should_close(int should_close)
+{
+	glfwSetWindowShouldClose(active_window, should_close ? GL_TRUE : GL_FALSE);
 }

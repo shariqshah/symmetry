@@ -11,7 +11,7 @@ static struct Entity* entity_list;
 static int* empty_indices;
 
 
-void entity_initialize(void)
+void entity_init(void)
 {
 	entity_list = array_new(struct Entity);
 	empty_indices = array_new(int);
@@ -106,9 +106,9 @@ struct Entity* entity_find(const char* name)
 	
 	return entity; 
 }
-bool entity_component_remove(struct Entity* entity, enum Component component)
+int entity_component_remove(struct Entity* entity, enum Component component)
 {
-	bool success = true;
+	int success = 1;
 	assert(entity);
     switch(component)
 	{

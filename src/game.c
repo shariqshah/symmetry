@@ -11,6 +11,7 @@
 #include "file_io.h"
 #include "shader.h"
 #include "entity.h"
+#include "geometry.h"
 #include "array.h"
 
 void run(void);
@@ -23,9 +24,10 @@ void game_init(void)
 	/* Init systems */
 	input_init(window);
 	renderer_init(window);
-	io_file_initialize("/mnt/Dev/Projects/Symmetry/assets/");/* TODO: Implement proper way of getting binary directory */
-	shader_initialize();
-	entity_initialize();
+	io_file_init("/mnt/Dev/Projects/Symmetry/assets/");/* TODO: Implement proper way of getting binary directory */
+	shader_init();
+	entity_init();
+	geom_init();
 	
 	
 	int keys[2] = {'W', GLFW_KEY_UP};
@@ -55,6 +57,8 @@ void run(void)
 void update(void)
 {
 	input_update();
+	if(input_key_state_get(GLFW_KEY_ESCAPE, GLFW_PRESS))
+		window_set_should_close(1);
 }
 
 void render(void)
@@ -65,6 +69,7 @@ void render(void)
 void game_cleanup(void)
 {
 	entity_cleanup();
+	geom_cleanup();
 	input_cleanup();
 	renderer_cleanup();
 	io_file_cleanup();

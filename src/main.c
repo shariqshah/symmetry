@@ -28,7 +28,7 @@ int main(int argc, char** args)
 
 int init(void)
 {
-	bool success = true;
+	int success = 1;
 	if(window_init("Symmetry", WIN_WIDTH, WIN_HEIGHT))
 	{	
 		//Initialize GLEW
@@ -37,12 +37,12 @@ int init(void)
 		if(glewError != GLEW_OK)
 		{
 			log_error("Main:init", "GLEW : %s", glewGetErrorString(glewError));
-			success = false;
+			success = 0;
 		}
 	}
 	else
 	{
-		success = false;
+		success = 0;
 	}
 	return success;
 }

@@ -13,10 +13,14 @@
 #include "entity.h"
 #include "geometry.h"
 #include "array.h"
+#include "transform.h"
 
 void run(void);
 void update(void);
 void render(void);
+void debug(void);
+
+struct Entity* entity = NULL;
 
 void game_init(void)
 {
@@ -26,6 +30,7 @@ void game_init(void)
 	renderer_init(window);
 	io_file_init("/mnt/Dev/Projects/Symmetry/assets/");/* TODO: Implement proper way of getting binary directory */
 	shader_init();
+	transform_init();
 	entity_init();
 	geom_init();
 	
@@ -40,7 +45,17 @@ void game_init(void)
 	input_map_create("Test2", keys4, 1);
 
 	int shader = shader_create("phong.vert", "phong.frag");
+	entity = entity_create("Test", "None");
+	
 	run();
+}
+
+void debug(void)
+{
+	struct Transform* transform = entity_component_get(entity, C_TRANSFORM);
+	vec3 offset = {0, 5, 0};
+	transform_translate(transform, offset, TS_WORLD);
+	log_message("Position : %.3f, %.3f, %.3f", transform->position[0], transform->position[1], transform->position[2]);
 }
 
 void run(void)
@@ -59,6 +74,9 @@ void update(void)
 	input_update();
 	if(input_key_state_get(GLFW_KEY_ESCAPE, GLFW_PRESS))
 		window_set_should_close(1);
+
+	if(input_map_state_get("MoveUp", GLFW_PRESS))
+		debug();
 }
 
 void render(void)
@@ -70,6 +88,7 @@ void game_cleanup(void)
 {
 	entity_cleanup();
 	geom_cleanup();
+	transform_cleanup();
 	input_cleanup();
 	renderer_cleanup();
 	io_file_cleanup();

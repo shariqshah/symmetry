@@ -2,6 +2,7 @@
 #include "array.h"
 #include "log.h"
 #include "string_utils.h"
+#include "transform.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -32,11 +33,9 @@ void entity_remove(int index)
 
 	for(int i = 0; i < MAX_COMPONENTS; i++)
 	{
-		enum Component component = entity->components[i];
-		switch(component)
+		switch((enum Component)i)
 		{
-		case C_TRANSFORM:
-			break;
+		case C_TRANSFORM: transform_remove(entity->components[i]); break;
 		case C_MODEL:
 			break;
 		case C_RIGIDBODY:
@@ -47,37 +46,42 @@ void entity_remove(int index)
 			/* Only called for MAX_COMPONENTS, do nothing */
 			break;
 		}
+		entity->components[i] = -1;
 	}
+	entity->node = -1;
+	free(entity->name);
+	free(entity->tag);
+	entity->name = entity->tag = NULL;
+	array_push(empty_indices, index, int);
 }
 
 struct Entity* entity_create(const char* name, const char* tag)
 {
 	struct Entity* new_entity = NULL;
 	int index = -1;
-	int empty_len = array_len(empty_indices);
-	if(empty_len > 0)
+	
+	if(array_len(empty_indices) > 0)
 	{
-		index = empty_indices[empty_len - 1];
+		index = *array_get_last(empty_indices, int);
 		array_pop(empty_indices);
 		new_entity = &entity_list[index];
 	}
 	else
 	{
 		new_entity = array_grow(entity_list, struct Entity);
+		new_entity->name = new_entity->tag = NULL;
 		index = array_len(entity_list) - 1;
 	}
 	
 	if(new_entity->name) free(new_entity->name);
-	if(new_entity->name) free(new_entity->tag);
+	if(new_entity->tag)  free(new_entity->tag);
 
 	new_entity->name = name ? str_new(name) : str_new("DEFAULT_NAME");
 	new_entity->tag = tag ? str_new(tag) : str_new("DEFAULT_TAG");
 	new_entity->node = index;
-
-	/* TODO: Add transform here by default maybe? */
+	new_entity->components[C_TRANSFORM] = transform_create(new_entity->node);
 	
-	return new_entity;
-	   
+	return new_entity;	   
 }
 
 struct Entity* entity_get(int index)
@@ -97,13 +101,14 @@ struct Entity* entity_find(const char* name)
 	for(int i = 0; i < array_len(entity_list); i++)
 	{
 		struct Entity* curr_ent = &entity_list[i];
+		if(!entity->name)
+			continue;
 		if(strcmp(curr_ent->name, name) == 0)
 		{
 			entity = curr_ent;
 			break;
 		}
 	}
-	
 	return entity; 
 }
 int entity_component_remove(struct Entity* entity, enum Component component)
@@ -113,6 +118,8 @@ int entity_component_remove(struct Entity* entity, enum Component component)
     switch(component)
 	{
 	case C_TRANSFORM:
+		log_error("entity:remove", "Cannot remove Tranform component");
+		success = 0;
 		break;
 	case C_MODEL:
 		break;
@@ -134,8 +141,7 @@ void* entity_component_get(struct Entity* entity, enum Component component)
 	assert(entity);
 	switch(component)
 	{
-	case C_TRANSFORM:
-		break;
+	case C_TRANSFORM: comp_obj = transform_get(entity->components[C_TRANSFORM]); break;
 	case C_MODEL:
 		break;
 	case C_RIGIDBODY:
@@ -156,7 +162,7 @@ void* entity_component_add(struct Entity* entity, enum Component component)
 	switch(component)
 	{
 	case C_TRANSFORM:
-		break;
+		log_error("entity:add_component", "Entity already has Transform component");
 	case C_MODEL:
 		break;
 	case C_RIGIDBODY:

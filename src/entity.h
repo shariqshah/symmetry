@@ -4,11 +4,9 @@
 #include "components.h"
 #include "num_types.h"
 
-typedef int32 Node;
-
 struct Entity
 {
-	Node  node;
+	int   node;
 	char* name;
 	char* tag;
 	int   components[MAX_COMPONENTS];

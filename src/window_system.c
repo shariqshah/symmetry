@@ -28,6 +28,9 @@ int window_init(const char* title, int width, int height)
 					GLFW_VERSION_REVISION);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+		glfwWindowHint(GLFW_FOCUSED, GL_TRUE);
+		//glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+		
 		active_window = glfwCreateWindow(width, height, title, NULL, NULL);
 		if(!active_window)
 		{

@@ -16,9 +16,9 @@
 #include "transform.h"
 
 void run(void);
-void update(void);
+void update(float dt);
 void render(void);
-void debug(void);
+void debug(float dt);
 
 struct Entity* entity = NULL;
 
@@ -50,33 +50,39 @@ void game_init(void)
 	run();
 }
 
-void debug(void)
+void debug(float dt)
 {
 	struct Transform* transform = entity_component_get(entity, C_TRANSFORM);
 	vec3 offset = {0, 5, 0};
+	vec3_scale(offset, offset, dt);
 	transform_translate(transform, offset, TS_WORLD);
 	log_message("Position : %.3f, %.3f, %.3f", transform->position[0], transform->position[1], transform->position[2]);
 }
 
 void run(void)
 {
+	double last_time = glfwGetTime();
 	while(!window_should_close())
 	{
-		update();
+		double curr_time = glfwGetTime();
+		float delta_time = (float)(curr_time - last_time);
+		last_time = curr_time;
+		
+		update(delta_time);
 		render();
 		window_swap_buffers();
 		window_poll_events();
 	}
 }
 
-void update(void)
+void update(float dt)
 {
 	input_update();
 	if(input_key_state_get(GLFW_KEY_ESCAPE, GLFW_PRESS))
 		window_set_should_close(1);
 
 	if(input_map_state_get("MoveUp", GLFW_PRESS))
-		debug();
+		debug(dt);
 }
 
 void render(void)

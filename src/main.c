@@ -1,6 +1,7 @@
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "log.h"
 #include "window_system.h"
@@ -21,28 +22,34 @@ int main(int argc, char** args)
     else
 		game_init();
 	
-    cleanup();
-	log_message("Program exiting!");
-    return 0;
+    exit(EXIT_SUCCESS);
 }
 
 int init(void)
 {
 	int success = 1;
-	if(window_init("Symmetry", WIN_WIDTH, WIN_HEIGHT))
-	{	
-		//Initialize GLEW
-		glewExperimental = GL_TRUE;
-		GLenum glewError = glewInit();
-		if(glewError != GLEW_OK)
-		{
-			log_error("Main:init", "GLEW : %s", glewGetErrorString(glewError));
-			success = 0;
-		}
+	if(atexit(cleanup) != 0)
+	{
+		success = 0;
+		log_error("Main:init", "Could not register cleanup func with atexit");
 	}
 	else
 	{
-		success = 0;
+		if(window_init("Symmetry", WIN_WIDTH, WIN_HEIGHT))
+		{	
+			//Initialize GLEW
+			glewExperimental = GL_TRUE;
+			GLenum glewError = glewInit();
+			if(glewError != GLEW_OK)
+			{
+				log_error("Main:init", "GLEW : %s", glewGetErrorString(glewError));
+				success = 0;
+			}
+		}
+		else
+		{
+			success = 0;
+		}
 	}
 	return success;
 }
@@ -51,4 +58,5 @@ void cleanup()
 {
 	game_cleanup();
 	window_cleanup();
+	log_message("Program exiting!");
 }

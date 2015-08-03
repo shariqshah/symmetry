@@ -14,6 +14,7 @@
 #include "geometry.h"
 #include "array.h"
 #include "transform.h"
+#include "camera.h"
 
 void run(void);
 void update(float dt);
@@ -31,6 +32,7 @@ void game_init(void)
 	io_file_init("/mnt/Dev/Projects/Symmetry/assets/");/* TODO: Implement proper way of getting binary directory */
 	shader_init();
 	transform_init();
+	camera_init();
 	entity_init();
 	geom_init();
 	
@@ -95,6 +97,7 @@ void game_cleanup(void)
 	entity_cleanup();
 	geom_cleanup();
 	transform_cleanup();
+	camera_cleanup();
 	input_cleanup();
 	renderer_cleanup();
 	io_file_cleanup();

@@ -1,6 +1,8 @@
 #ifndef linmath_H
 #define linmath_H
 
+/* Credit : https://github.com/datenwolf/linmath.h */
+
 #include <math.h>
 
 #define LINMATH_H_DEFINE_VEC(n)											\

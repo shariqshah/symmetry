@@ -1,0 +1,50 @@
+* Project Symmetry
+
+** What?
+An attempt to convert all previous code written in Project Abstraction(written in C++) to C 
+while using as few libraries as possible.
+
+** Why?
+- To create a platform on which i will base further projects on.
+- To learn and remove as many black boxes as possible.
+- Profit!?!
+
+
+* Things TODO
+** DONE Input
+   - State "DONE"       from "TODO"       [2015-07-02 Thu 01:24]
+- Input maps (addition/removal)
+- Adding removing keys to input maps
+- Changing map na
+** DONE Shaders
+   - State "DONE"       from "TODO"       [2015-07-11 Sat 17:57]
+- set asset folder
+- load/compile shader
+** DONE Geometry
+   - State "DONE"       from "TODO"       [2015-07-11 Sat 17:57]
+** DONE change struct usage 
+   - State "DONE"       from "TODO"       [2015-07-21 Tue 15:13]
+** DONE change Array implementation
+   - State "DONE"       from "TODO"       [2015-07-25 Sat 20:27]
+** DONE resolve vec-types sizes
+   - State "DONE"       from "TODO"       [2015-07-25 Sat 20:27]
+** DONE Transform
+   - State "DONE"       from "TODO"       [2015-07-26 Sun 18:01]
+** DONE Deltatime
+   - State "DONE"       from "TODO"       [2015-07-27 Mon 11:54]
+** DONE Investigate about Exit() and at_exit() functions and whether to use them or not.
+   - State "DONE"       from "TODO"       [2015-08-02 Sun 19:09]
+** TODO Entity
+** TODO Positive and negative values for input_maps and returning corresponding values when they are true
+** TODO Camera
+** TODO Test render
+** TODO Bounding Boxes
+** TODO Materials
+** TODO Mesh/Model
+** TODO Heirarchical Transforms
+** TODO 2d drawing routines
+** TODO Gui
+** TODO Physics
+** TODO Improve the readme
+** TODO ???
+** TODO Profit!

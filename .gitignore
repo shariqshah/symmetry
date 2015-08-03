@@ -3,5 +3,5 @@ bin/*
 build/*
 libs/*
 include/*
-orgfile.org
+#orgfile.org
 assets/*

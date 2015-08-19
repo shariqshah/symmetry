@@ -70,6 +70,6 @@ FILE* io_file_open(const char* path, const char* mode)
 	char* relative_path = str_new(base_assets_path);
 	relative_path = str_concat(relative_path, path);
 	FILE* file = fopen(relative_path, mode);
-	if(!file) log_error("io:file", "Fialed to open file '%s'", relative_path);
+	if(!file) log_error("io:file", "Failed to open file '%s'", relative_path);
 	return file;
 }

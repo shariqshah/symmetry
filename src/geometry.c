@@ -25,7 +25,7 @@ struct Geometry
 	uint  normal_vbo;
 	uint  color_vbo;
 	uint  index_vbo;
-	uint  ref_count;
+	int   ref_count;
 	vec3* vertices;
 	vec3* vertex_colors;
 	vec3* normals;
@@ -73,7 +73,6 @@ int geom_create(const char* name)
 	{
 		/* add new geometry object or overwrite existing one */
 		struct Geometry* new_geo = NULL;
-		int index = -1;
 		int empty_len = array_len(empty_indices);
 		if(empty_len > 0)
 		{
@@ -112,13 +111,20 @@ void geom_remove(int index)
 	if(index >= 0 && index < array_len(geometry_list))
 	{
 		struct Geometry* geometry = &geometry_list[index];
-		array_free(geometry->indices);
-		array_free(geometry->vertices);
-		array_free(geometry->uvs);
-		array_free(geometry->normals);
-		array_free(geometry->vertex_colors);
-		free(geometry->filename);
-		array_push(empty_indices, index, int);
+		if(geometry->ref_count >= 0)
+		{
+			geometry->ref_count--;
+			if(geometry->ref_count < 0)
+			{
+				array_free(geometry->indices);
+				array_free(geometry->vertices);
+				array_free(geometry->uvs);
+				array_free(geometry->normals);
+				array_free(geometry->vertex_colors);
+				free(geometry->filename);
+				array_push(empty_indices, index, int);
+			}
+		}
 	}
 }
 
@@ -161,15 +167,21 @@ int load_from_file(struct Geometry* geometry, const char* filename)
 			// Indices
 			geometry->indices = array_new_cap(uint, indices_count);
 			fread(geometry->indices, INDEX_SIZE, indices_count, file);
+			array_match_len_cap(geometry->indices);
 			// Vertices
 			geometry->vertices = array_new_cap(vec3, vertices_count);
 			fread(geometry->vertices, VEC3_SIZE, vertices_count, file);
+			array_match_len_cap(geometry->vertices);
 			// Normals
 			geometry->normals = array_new_cap(vec3, normals_count);
 			fread(geometry->normals, VEC3_SIZE, normals_count, file);
+			array_match_len_cap(geometry->normals);
 			// Uvs
 			geometry->uvs = array_new_cap(vec2, uvs_count);
 			fread(geometry->uvs, VEC2_SIZE, uvs_count, file);
+			array_match_len_cap(geometry->uvs);
+
+			geometry->vertex_colors = array_new(vec3);
 		}
 		fclose(file);
 		geometry->filename = str_new(filename);
@@ -250,4 +262,16 @@ void create_vao(struct Geometry* geometry)
 		geometry->draw_indexed = 1;
 	}
 	glBindVertexArray(0);
+}
+
+void geom_render(int index)
+{
+	struct Geometry* geo = &geometry_list[index];
+	glBindVertexArray(geo->vao);
+	if(geo->draw_indexed)
+		glDrawElements(GL_TRIANGLES, array_len(geo->indices), GL_UNSIGNED_INT, (void*)0);
+	else
+		glDrawArrays(GL_TRIANGLES, 0, array_len(geo->vertices));
+	glBindVertexArray(0);
+			
 }

@@ -34,10 +34,14 @@ while using as few libraries as possible.
    - State "DONE"       from "TODO"       [2015-07-27 Mon 11:54]
 ** DONE Investigate about Exit() and at_exit() functions and whether to use them or not.
    - State "DONE"       from "TODO"       [2015-08-02 Sun 19:09]
+** TODO Fix readme markdown
+** TODO Framebuffer and resolution independent rendering
 ** TODO Entity
 ** TODO Positive and negative values for input_maps and returning corresponding values when they are true
-** TODO Camera
-** TODO Test render
+** DONE Camera
+- State "DONE"       from "TODO"       [2015-08-19 Wed 13:30]
+** DONE Test render
+- State "DONE"       from "TODO"       [2015-08-19 Wed 13:30]
 ** TODO Bounding Boxes
 ** TODO Materials
 ** TODO Mesh/Model

@@ -235,7 +235,7 @@ void shader_unbind(void)
 	glUseProgram(0);
 }
 
-int get_uniform_location(const int shader_index, const char* name)
+int shader_get_uniform_location(const int shader_index, const char* name)
 {
 	GLint handle = glGetUniformLocation(shader_list[shader_index].program, name);
 	if(handle == -1)
@@ -244,44 +244,44 @@ int get_uniform_location(const int shader_index, const char* name)
 	return handle;
 }
 
-void set_uniform_int(const int shader_index, const char* name, const int value)
+void shader_set_uniform_int(const int shader_index, const char* name, const int value)
 {
-	GLint location = get_uniform_location(shader_index, name);
+	GLint location = shader_get_uniform_location(shader_index, name);
 	if(location >= 0)
 		glUniform1i(location, value);
 }
 	
-void set_uniform_float(const int shader_index, const char* name, const float value)
+void shader_set_uniform_float(const int shader_index, const char* name, const float value)
 {
-	GLint location = get_uniform_location(shader_index, name);
+	GLint location = shader_get_uniform_location(shader_index, name);
 	if(location >= 0)
 		glUniform1f(location, value);
 }
 	
-void set_uniform_vec2(const int shader_index,  const char* name, const vec2 value)
+void shader_set_uniform_vec2(const int shader_index,  const char* name, const vec2 value)
 {
-	GLint location = get_uniform_location(shader_index, name);
+	GLint location = shader_get_uniform_location(shader_index, name);
 	if(location >= 0)
 		glUniform2fv(location, 1, value);
 }
 	
-void set_uniform_vec3(const int shader_index,  const char* name, const vec3 value)
+void shader_set_uniform_vec3(const int shader_index,  const char* name, const vec3 value)
 {
-	GLint location = get_uniform_location(shader_index, name);
+	GLint location = shader_get_uniform_location(shader_index, name);
 	if(location >= 0)
 		glUniform3fv(location, 1, value);
 }
 	
-void set_uniform_vec4(const int shader_index,  const char* name, const vec4 value)
+void shader_set_uniform_vec4(const int shader_index,  const char* name, const vec4 value)
 {
-	GLint location = get_uniform_location(shader_index, name);
+	GLint location = shader_get_uniform_location(shader_index, name);
 	if(location >= 0)
 		glUniform4fv(location, 1, value);
 }
 	
-void setUniformMat4(const int shader_index,  const char* name, const mat4 value)
+void shader_set_uniform_mat4(const int shader_index,  const char* name, const mat4 value)
 {
-	GLint location = get_uniform_location(shader_index, name);
+	GLint location = shader_get_uniform_location(shader_index, name);
 	if(location >= 0)
 		glUniformMatrix4fv(location, 1, GL_FALSE, *value);
 }

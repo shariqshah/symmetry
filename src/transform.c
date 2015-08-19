@@ -1,9 +1,10 @@
 #include "transform.h"
 #include "array.h"
+#include "entity.h"
 #include <assert.h>
 
-struct Transform* transform_list;
-int* empty_indices;
+static struct Transform* transform_list;
+static int* empty_indices;
 
 void transform_init(void)
 {
@@ -75,8 +76,14 @@ void transform_scale(struct Transform* transform, vec3 scale)
 
 void transform_get_forward(struct Transform* transform, vec3 res)
 {
-	res[0] = 0; res[1] = 0; res[2] = 1;
+	res[0] = 0; res[1] = 0; res[2] = -1;
 	quat_mul_vec3(res, transform->rotation, res);
+}
+
+void transform_get_lookat(struct Transform* transform, vec3 res)
+{
+	transform_get_forward(transform, res);
+	vec3_add(res, transform->position, res);
 }
 
 void transform_get_up(struct Transform* transform, vec3 res)
@@ -95,12 +102,18 @@ void transform_get_right(struct Transform* transform, vec3 res)
 void transform_update_transmat(struct Transform* transform)
 {
 	mat4 scale, rot, tran;
+	mat4_identity(scale);
+	mat4_identity(rot);
+	mat4_identity(tran);
+	mat4_identity(transform->trans_mat);
 	mat4_scale_aniso(scale, scale, transform->scale[0], transform->scale[1], transform->scale[2]);
 	mat4_from_quat(rot, transform->rotation);
 	mat4_translate(tran, transform->position[0], transform->position[1], transform->position[2]);
 	mat4_mul(transform->trans_mat, transform->trans_mat, scale);
 	mat4_mul(transform->trans_mat, transform->trans_mat, rot);
 	mat4_mul(transform->trans_mat, transform->trans_mat, tran);
+	struct Entity* entity = entity_get(transform->node);
+	entity_sync_components(entity);
 }
 
 struct Transform* transform_get(int index)

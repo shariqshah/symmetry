@@ -2,6 +2,8 @@
 #include "GLFW/glfw3.h"
 
 #include "log.h"
+#include "camera.h"
+#include "model.h"
 
 void on_framebuffer_size_change(GLFWwindow* window, int width, int height);
 
@@ -14,6 +16,9 @@ void renderer_init(GLFWwindow* window)
 void renderer_draw(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	/* Hard coded version */
+	struct Camera* camera = camera_get(0);
+	model_render_all(camera);
 }
 
 void renderer_cleanup(void)

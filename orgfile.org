@@ -45,6 +45,7 @@ while using as few libraries as possible.
 ** TODO Bounding Boxes
 ** TODO Materials
 ** TODO Mesh/Model
+** TODO Add modifiers to input maps to enable combinations for example, c-x, m-k etc
 ** TODO Heirarchical Transforms
 ** TODO 2d drawing routines
 ** TODO Gui

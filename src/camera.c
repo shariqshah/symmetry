@@ -58,6 +58,9 @@ int camera_create(int node, int width, int height)
 	new_camera->fov = TO_RADIANS(60.f);
 	new_camera->aspect_ratio = ((float)width / (float)height) <= 0.f ? (4.f / 3.f) : ((float)width / (float)height);
 	new_camera->ortho = 0;
+	mat4_identity(new_camera->view_mat);
+	mat4_identity(new_camera->proj_mat);
+	mat4_identity(new_camera->view_proj_mat);
 	camera_update_view(new_camera);
 	camera_update_proj(new_camera);
 

@@ -156,12 +156,29 @@ static inline void mat4_mul(mat4 M, mat4 a, mat4 b)
 }
 static inline void mat4_mul_vec4(vec4 r, mat4 M, vec4 v)
 {
-	int i, j;
-	for(j=0; j<4; ++j) {
-		r[j] = 0.f;
-		for(i=0; i<4; ++i)
-			r[j] += M[i][j] * v[i];
-	}
+	/* int i, j; */
+	/* for(j=0; j<4; ++j) { */
+	/* 	r[j] = 0.f; */
+	/* 	for(i=0; i<4; ++i) */
+	/* 		r[j] += M[i][j] * v[i]; */
+	/* } */
+	r[0] = (M[0][0] * v[0]) + (M[0][1] * v[1]) + (M[0][2] * v[2]) + (M[0][3] * v[3]);
+	r[1] = (M[1][0] * v[0]) + (M[1][1] * v[1]) + (M[1][2] * v[2]) + (M[1][3] * v[3]);
+	r[2] = (M[2][0] * v[0]) + (M[2][1] * v[1]) + (M[2][2] * v[2]) + (M[2][3] * v[3]);
+	r[3] = (M[3][0] * v[0]) + (M[3][1] * v[1]) + (M[3][2] * v[2]) + (M[3][3] * v[3]);
+}
+static inline void mat4_mul_vec3(vec3 r, mat4 M, vec3 v)
+{
+	/* vec4 temp; */
+	/* for(int i = 0; i < 3; i++) */
+	/* 	temp[i] = v[i]; */
+	/* temp[3] = 1.f; */
+	/* mat4_mul_vec4(temp, M, temp); */
+	/* for(int i = 0; i < 3; i++) */
+	/* 	r[i] = temp[i]; */
+	r[0] = (M[0][0] * v[0]) + (M[0][1] * v[1]) + (M[0][2] * v[2]) + (M[0][3]);
+	r[1] = (M[1][0] * v[0]) + (M[1][1] * v[1]) + (M[1][2] * v[2]) + (M[1][3]);
+	r[2] = (M[2][0] * v[0]) + (M[2][1] * v[1]) + (M[2][2] * v[2]) + (M[2][3]);
 }
 static inline void mat4_translate(mat4 T, float x, float y, float z)
 {

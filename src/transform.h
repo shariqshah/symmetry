@@ -10,7 +10,7 @@ struct Transform
 	int  node;
 	vec3 position;
 	vec3 scale;
-	quat rotation;
+	mat4 rotation;
 	mat4 trans_mat;
 };
 
@@ -25,6 +25,7 @@ void transform_rotate(struct Transform* transform,
 					  float angle,
 					  enum Transform_Space space);
 void transform_scale(struct Transform* transform, vec3 scale);
+void transform_set_position(struct Transform* transform, vec3 new_position);
 void transform_get_forward(struct Transform* transform, vec3 res);
 void transform_get_lookat(struct Transform* transform, vec3 res);
 void transform_get_up(struct Transform* transform, vec3 res);

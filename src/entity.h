@@ -2,7 +2,6 @@
 #define entity_H
 
 #include "components.h"
-#include "num_types.h"
 
 struct Entity
 {
@@ -10,6 +9,8 @@ struct Entity
 	char* name;
 	char* tag;
 	int   components[MAX_COMPONENTS];
+	int   parent;
+	int*  children;
 };
 
 void           entity_init(void);
@@ -18,6 +19,7 @@ void           entity_remove(int index);
 struct Entity* entity_create(const char* name, const char* tag);
 struct Entity* entity_get(int index);
 struct Entity* entity_find(const char* name);
+struct Entity* entity_get_all(void);
 int            entity_component_remove(struct Entity* entity, enum Component component);
 void*          entity_component_get(struct Entity* entity, enum Component component);
 void*          entity_component_add(struct Entity* entity, enum Component component, ...);

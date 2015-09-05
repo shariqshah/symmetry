@@ -56,7 +56,8 @@ int camera_create(int node, int width, int height)
 	new_camera->farz = 1000.f;
 	new_camera->nearz = 0.1f;
 	new_camera->fov = TO_RADIANS(60.f);
-	new_camera->aspect_ratio = ((float)width / (float)height) <= 0.f ? (4.f / 3.f) : ((float)width / (float)height);
+	float aspect_ratio = (float)width / (float)height;
+	new_camera->aspect_ratio = aspect_ratio <= 0.f ? (4.f / 3.f) : aspect_ratio;
 	new_camera->ortho = 0;
 	mat4_identity(new_camera->view_mat);
 	mat4_identity(new_camera->proj_mat);
@@ -76,10 +77,11 @@ void camera_update_view(struct Camera* camera)
 {
 	struct Entity* entity = entity_get(camera->node);
 	struct Transform* transform = entity_component_get(entity, C_TRANSFORM);
-	vec3 lookat = {0.f}, up = {0.f};
-	transform_get_lookat(transform, lookat);
+	vec3 lookat = {0.f}, up = {0.f}, position = {0.f};
+	transform_get_absolute_lookat(transform, lookat);
 	transform_get_up(transform, up);
-	mat4_look_at(camera->view_mat, transform->position, lookat, up);
+	transform_get_absolute_pos(transform, position);
+	mat4_look_at(camera->view_mat, position, lookat, up);
 	camera_update_view_proj(camera);
 }
 

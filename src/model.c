@@ -99,7 +99,7 @@ void model_render_all(struct Camera* camera)
 		shader_bind(model->shader);
 		mat4_mul(mvp, camera->view_proj_mat, transform->trans_mat);
 		shader_set_uniform_mat4(model->shader, "mvp", mvp);
-		vec4 color = {1, 0, 0, 1};
+		vec4 color = {0.7f, 0.7f, 0.5f, 1};
 		shader_set_uniform_vec4(model->shader, "color", color);
 		geom_render(model->geometry_index);
 		shader_unbind();

@@ -46,6 +46,8 @@ void entity_remove(int index)
 		}
 	}
 	entity->node = -1;
+	entity->parent = -1;
+	array_free(entity->children);
 	free(entity->name);
 	free(entity->tag);
 	entity->name = entity->tag = NULL;
@@ -76,6 +78,8 @@ struct Entity* entity_create(const char* name, const char* tag)
 	new_entity->name = name ? str_new(name) : str_new("DEFAULT_NAME");
 	new_entity->tag = tag ? str_new(tag) : str_new("DEFAULT_TAG");
 	new_entity->node = index;
+	new_entity->parent = -1;
+	new_entity->children = array_new(int);
 	for(int i = 0; i < MAX_COMPONENTS; i++)
 		new_entity->components[i] = -1;
 	new_entity->components[C_TRANSFORM] = transform_create(new_entity->node);
@@ -88,8 +92,8 @@ struct Entity* entity_get(int index)
 	struct Entity* entity = NULL;
 	if(index >= 0 && index < array_len(entity_list))
 		entity = &entity_list[index];
-	else
-		log_error("entity:get", "Invalid index '%d'", index);
+	/* else */
+	/* 	log_error("entity:get", "Invalid index '%d'", index); */
 	return entity;
 }
 
@@ -223,4 +227,9 @@ void entity_sync_components(struct Entity* entity)
 		struct Camera* camera = entity_component_get(entity, C_CAMERA);
 		camera_update_view(camera);
 	}
+}
+
+struct Entity* entity_get_all(void)
+{
+	return entity_list;
 }

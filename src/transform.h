@@ -3,15 +3,16 @@
 
 #include "linmath.h"
 
-enum Transform_Space { TS_LOCAL, TS_WORLD};
+enum Transform_Space { TS_LOCAL, TS_PARENT, TS_WORLD};
 
 struct Transform
 {
 	int  node;
 	vec3 position;
 	vec3 scale;
-	mat4 rotation;
+	//mat4 rotation;
 	mat4 trans_mat;
+	quat rotq;
 };
 
 struct Transform* transform_get(int index);

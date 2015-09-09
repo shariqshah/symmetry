@@ -3,6 +3,9 @@
 #include "transform.h"
 #include "array.h"
 
+#include "utils.h"
+#include "log.h"
+
 static struct Camera* camera_list;
 static int* empty_indices;
 
@@ -78,7 +81,7 @@ void camera_update_view(struct Camera* camera)
 	struct Entity* entity = entity_get(camera->node);
 	struct Transform* transform = entity_component_get(entity, C_TRANSFORM);
 	vec3 lookat = {0.f}, up = {0.f}, position = {0.f};
-	transform_get_absolute_lookat(transform, lookat);
+	transform_get_lookat(transform, lookat);
 	transform_get_up(transform, up);
 	transform_get_absolute_pos(transform, position);
 	mat4_look_at(camera->view_mat, position, lookat, up);

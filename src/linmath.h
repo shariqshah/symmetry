@@ -7,6 +7,7 @@
 
 #define M_PI		        3.14159265358979323846 
 #define TO_RADIANS(degrees) ((degrees * M_PI) / 180.0)
+#define TO_DEGREES(radians) ((radians * 180.0) / M_PI)
 
 #define LINMATH_H_DEFINE_VEC(n)											\
 	typedef float vec##n[n];											\
@@ -135,13 +136,18 @@ static inline void mat4_scale(mat4 M, mat4 a, float k)
 }
 static inline void mat4_scale_aniso(mat4 M, mat4 a, float x, float y, float z)
 {
-	int i;
-	vec4_scale(M[0], a[0], x);
-	vec4_scale(M[1], a[1], y);
-	vec4_scale(M[2], a[2], z);
-	for(i = 0; i < 4; ++i) {
-		M[3][i] = a[3][i];
-	}
+	/* int i; */
+	/* vec4_scale(M[0], a[0], x); */
+	/* vec4_scale(M[1], a[1], y); */
+	/* vec4_scale(M[2], a[2], z); */
+	/* for(i = 0; i < 4; ++i) { */
+	/* 	M[3][i] = a[3][i]; */
+	/* } */
+
+	M[0][0] = a[0][0] * x;
+	M[1][1] = a[1][1] * y;
+	M[2][2] = a[2][2] * z;
+	M[3][3] = 1.f;
 }
 static inline void mat4_mul(mat4 M, mat4 a, mat4 b)
 {
@@ -458,13 +464,18 @@ static inline void quat_sub(quat r, quat a, quat b)
 }
 static inline void quat_mul(quat r, quat p, quat q)
 {
-	vec3 w;
-	vec3_mul_cross(r, p, q);
-	vec3_scale(w, p, q[3]);
-	vec3_add(r, r, w);
-	vec3_scale(w, q, p[3]);
-	vec3_add(r, r, w);
-	r[3] = p[3]*q[3] - vec3_mul_inner(p, q);
+	/* vec3 w; */
+	/* vec3_mul_cross(r, p, q); */
+	/* vec3_scale(w, p, q[3]); */
+	/* vec3_add(r, r, w); */
+	/* vec3_scale(w, q, p[3]); */
+	/* vec3_add(r, r, w); */
+	/* r[3] = p[3]*q[3] - vec3_mul_inner(p, q); */
+
+	r[0] = p[3] * q[0] + p[0] * q[3] + p[1] * q[2] - p[2] * q[1];
+	r[1] = p[3] * q[1] + p[1] * q[3] + p[2] * q[0] - p[0] * q[2];
+	r[2] = p[3] * q[2] + p[2] * q[3] + p[0] * q[1] - p[1] * q[0];
+    r[3] = p[3] * q[3] - p[0] * q[0] - p[1] * q[1] - p[2] * q[2];
 }
 static inline void quat_scale(quat r, quat v, float s)
 {
@@ -489,11 +500,11 @@ static inline void quat_conj(quat r, quat q)
 }
 static inline void quat_rotate(quat r, float angle, vec3 axis) {
 	vec3 v;
-	vec3_scale(v, axis, sinf(angle / 2));
+	vec3_scale(v, axis, sinf(angle / 2.f));
 	int i;
 	for(i=0; i<3; ++i)
 		r[i] = v[i];
-	r[3] = cosf(angle / 2);
+	r[3] = cosf(angle / 2.f);
 }
 #define quat_norm vec4_norm
 static inline void quat_mul_vec3(vec3 r, quat q, vec3 v)
@@ -515,32 +526,78 @@ v' = v + q.w * t + cross(q.xyz, t)
 	vec3_add(r, v, t);
 	vec3_add(r, r, u);
 }
+static inline float quat_pitch(quat q)
+{
+    float result = atan2(2 * (q[1] * q[2] + q[3] * q[0]), q[3] * q[3] - q[0] * q[0] - q[1] * q[1] + q[2] * q[2]);
+    return result;
+}
+
+static inline float quat_yaw(quat q)
+{
+    float result = asin(-2 * (q[0] * q[2] - q[3] * q[1]));
+    return result;
+}
+static inline float quat_roll(quat q)
+{
+    float result = atan2(2 * (q[0] * q[1] + q[3] * q[2]), q[3] * q[3] + q[0] * q[0] - q[1] * q[1] - q[2] * q[2]);
+    return result;
+}
 static inline void mat4_from_quat(mat4 M, quat q)
 {
-	float a = q[3];
-	float b = q[0];
-	float c = q[1];
-	float d = q[2];
-	float a2 = a*a;
-	float b2 = b*b;
-	float c2 = c*c;
-	float d2 = d*d;
+	/* float a = q[3]; */
+	/* float b = q[0]; */
+	/* float c = q[1]; */
+	/* float d = q[2]; */
+	/* float a2 = a*a; */
+	/* float b2 = b*b; */
+	/* float c2 = c*c; */
+	/* float d2 = d*d; */
 	
-	M[0][0] = a2 + b2 - c2 - d2;
-	M[0][1] = 2.f*(b*c + a*d);
-	M[0][2] = 2.f*(b*d - a*c);
-	M[0][3] = 0.f;
+	/* M[0][0] = a2 + b2 - c2 - d2; */
+	/* M[0][1] = 2.f*(b*c + a*d); */
+	/* M[0][2] = 2.f*(b*d - a*c); */
+	/* M[0][3] = 0.f; */
 
-	M[1][0] = 2*(b*c - a*d);
-	M[1][1] = a2 - b2 + c2 - d2;
-	M[1][2] = 2.f*(c*d + a*b);
-	M[1][3] = 0.f;
+	/* M[1][0] = 2*(b*c - a*d); */
+	/* M[1][1] = a2 - b2 + c2 - d2; */
+	/* M[1][2] = 2.f*(c*d + a*b); */
+	/* M[1][3] = 0.f; */
 
-	M[2][0] = 2.f*(b*d + a*c);
-	M[2][1] = 2.f*(c*d - a*b);
-	M[2][2] = a2 - b2 - c2 + d2;
-	M[2][3] = 0.f;
+	/* M[2][0] = 2.f*(b*d + a*c); */
+	/* M[2][1] = 2.f*(c*d - a*b); */
+	/* M[2][2] = a2 - b2 - c2 + d2; */
+	/* M[2][3] = 0.f; */
 
+	/* M[3][0] = M[3][1] = M[3][2] = 0.f; */
+	/* M[3][3] = 1.f; */
+
+	float xx = q[0] * q[0];
+    float xy = q[0] * q[1];
+    float xz = q[0] * q[2];
+    float xw = q[0] * q[3];
+
+    float yy = q[1] * q[1];
+    float yz = q[1] * q[2];
+    float yw = q[1] * q[3];
+
+    float zz = q[2] * q[2];
+    float zw = q[2] * q[3];
+
+    M[0][0] = 1 - 2 * (yy + zz);
+    M[0][1] = 2 * (xy + zw);
+    M[0][2] = 2 * (xz - yw);
+    M[0][3] = 0;
+
+    M[1][0] = 2 * (xy - zw);
+    M[1][1] = 1 - 2 * (xx + zz);
+    M[1][2] = 2 * (yz + xw);
+    M[1][3] = 0.0;
+
+    M[2][0] = 2 * (xz + yw);
+    M[2][1] = 2 * (yz - xw);
+    M[2][2] = 1 - 2 * (xx + yy);
+    M[2][3] = 0.0;
+	
 	M[3][0] = M[3][1] = M[3][2] = 0.f;
 	M[3][3] = 1.f;
 }

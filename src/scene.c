@@ -117,3 +117,12 @@ struct Entity* scene_get_child_by_name(struct Entity* parent, const char* name)
 	}
 	return child;
 }
+
+struct Entity* scene_get_parent(struct Entity* entity)
+{
+	assert(entity);
+	struct Entity* parent = NULL;
+	if(entity->parent != -1)
+		parent = entity_get(entity->parent);
+	return parent;
+}

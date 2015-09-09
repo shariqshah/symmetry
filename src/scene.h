@@ -12,5 +12,6 @@ struct Entity* scene_add_as_child(const char* name, const char* tag, struct Enti
 struct Entity* scene_find(const char* name);
 struct Entity* scene_get_root(void);
 struct Entity* scene_get_child_by_name(struct Entity* parent, const char* name);
+struct Entity* scene_get_parent(struct Entity* entity);
 
 #endif

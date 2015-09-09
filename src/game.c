@@ -17,6 +17,7 @@
 #include "camera.h"
 #include "model.h"
 #include "scene.h"
+#include "utils.h"
 
 void run(void);
 void update(float dt);
@@ -69,9 +70,10 @@ void game_init(void)
 	vec3 viewer_pos = {0, 0, 10};
 	struct Transform* viewer_tran = entity_component_get(player, C_TRANSFORM);
 	transform_set_position(viewer_tran, viewer_pos);
-	struct Entity* player_pitch = scene_add_as_child("player_pitch", NULL, player);
-	player_pitch_node = player_pitch->node;
-	entity_component_add(player_pitch, C_CAMERA, 800, 600);
+	/* struct Entity* player_pitch = scene_add_as_child("player_pitch", NULL, player); */
+	/* player_pitch_node = player_pitch->node; */
+	/* entity_component_add(player_pitch, C_CAMERA, 800, 600); */
+	struct Camera* camera = entity_component_add(player, C_CAMERA, 800, 600);
 	
 	struct Entity* new_ent = scene_add_new("Model_Entity", NULL);
 	struct Transform* tran = entity_component_get(new_ent, C_TRANSFORM);
@@ -81,7 +83,7 @@ void game_init(void)
 	struct Transform* model_tran = entity_component_get(new_ent, C_TRANSFORM);
 	//vec3 axis = {0.f, 1.f, 0.f};
 	//transform_rotate(model_tran, axis, (45.f), TS_WORLD);
-	vec3 scale = {1, 1, 5};
+	vec3 scale = {1, 1, 2};
 	transform_scale(model_tran, scale);
 
 	struct Entity* suz = scene_add_as_child("Suzanne", NULL, new_ent);
@@ -90,10 +92,8 @@ void game_init(void)
 	vec3 s_pos = {3, 0, 0};
 	transform_translate(s_tran, s_pos, TS_WORLD);
 
-	vec4 temp = {1, 0, 0, 1};
-	mat4 mat;
-	mat4_identity(mat);
-	mat4_mul_vec4(temp, mat, temp);
+	/* Set cursor mode */
+	input_cursor_mode_set(CM_LOCKED);
 	
 	run();
 }
@@ -101,9 +101,9 @@ void game_init(void)
 void debug(float dt)
 {
 	struct Entity* entity = entity_get(player_node);
-	struct Entity* entity_pitch = entity_get(player_pitch_node);
+	//struct Entity* entity_pitch = entity_get(player_pitch_node);
 	struct Transform* transform = entity_component_get(entity, C_TRANSFORM);
-	struct Transform* pitch_transform = entity_component_get(entity_pitch, C_TRANSFORM);
+	//struct Transform* pitch_transform = entity_component_get(entity_pitch, C_TRANSFORM);
 	float move_speed = 5.f, turn_speed = 50.f;
 	vec3 offset = {0, 0, 0};
 	float turn_up_down = 0.f;
@@ -119,8 +119,22 @@ void debug(float dt)
 	if(input_map_state_get("Turn_Right", GLFW_PRESS)) turn_left_right += turn_speed;
 	if(input_map_state_get("Turn_Left", GLFW_PRESS)) turn_left_right -= turn_speed;
 
-	turn_up_down *= dt;
-	turn_left_right *= dt;
+	double cursor_lr, cursor_ud;
+	input_cursor_pos_get(&cursor_lr, &cursor_ud);
+	input_cursor_pos_set(0.0, 0.0);
+	
+	if(input_mousebutton_state_get(GLFW_MOUSE_BUTTON_RIGHT, GLFW_PRESS))
+	{
+		const double scale = 0.5;
+		turn_up_down = cursor_ud * turn_speed * dt * scale;
+		turn_left_right = cursor_lr * turn_speed * dt * scale;
+	}
+	else
+	{
+		turn_up_down *= dt;
+		turn_left_right *= dt;
+	}
+	
 	total_up_down_rot += turn_up_down;
 	if(total_up_down_rot >= max_up_down)
 	{
@@ -140,18 +154,27 @@ void debug(float dt)
 		vec3 forward = {0.f};
 		transform_get_up(transform, up);
 		transform_get_forward(transform, forward);
-		//log_message("Up : %.3f, %.3f, %.3f", up[0], up[1], up[2]);
-		log_message("Forward : %.3f, %.3f, %.3f", forward[0], forward[1], forward[2]);
+		/* log_message("Up : %.3f, %.3f, %.3f", up[0], up[1], up[2]); */
+		/* log_message("Forward : %.3f, %.3f, %.3f", forward[0], forward[1], forward[2]); */
+		/* log_message("ROT : %.3f, %.3f, %.3f", */
+		/* 			TO_DEGREES(quat_pitch(transform->rotq)), */
+		/* 			TO_DEGREES(quat_yaw(transform->rotq)), */
+		/* 			TO_DEGREES(quat_roll(transform->rotq))); */
 	}
 	if(turn_up_down != 0.f)
 	{
-		transform_rotate(pitch_transform, rot_axis_up_down, -turn_up_down, TS_LOCAL);
+		transform_rotate(transform, rot_axis_up_down, -turn_up_down, TS_LOCAL);
+		//transform_rotate(pitch_transform, rot_axis_up_down, -turn_up_down, TS_LOCAL);
+		/* log_message("ROT : %.3f, %.3f, %.3f", */
+		/* 			TO_DEGREES(quat_pitch(pitch_transform->rotq)), */
+		/* 			TO_DEGREES(quat_yaw(pitch_transform->rotq)), */
+		/* 			TO_DEGREES(quat_roll(pitch_transform->rotq))); */
 		vec3 up = {0.f};
 		vec3 forward = {0.f};
 		transform_get_up(transform, up);
 		transform_get_forward(transform, forward);
-		//log_message("Up : %.3f, %.3f, %.3f", up[0], up[1], up[2]);
-		log_message("Forward : %.3f, %.3f, %.3f", forward[0], forward[1], forward[2]);
+		log_message("Up : %s", tostr_vec3(up));
+		log_message("FR : %s", tostr_vec3(forward));
 	}
 	
 	/* Movement */
@@ -166,15 +189,15 @@ void debug(float dt)
 	if(offset[0] != 0 || offset[2] != 0 || offset[1] != 0)
 	{
 		transform_translate(transform, offset, TS_LOCAL);
- 		/* log_message("Position : %.3f, %.3f, %.3f", */
-		/* 			transform->position[0], */
-		/* 			transform->position[1], */
-		/* 			transform->position[2]); */
+ 		log_message("Position : %.3f, %.3f, %.3f",
+					transform->position[0],
+					transform->position[1],
+					transform->position[2]);
 	}
 
 	if(input_key_state_get(GLFW_KEY_SPACE, GLFW_PRESS))
 	{
-		struct Entity* model = entity_get(3);
+		struct Entity* model = entity_get(2);
 		struct Transform* mod_tran = entity_component_get(model, C_TRANSFORM);
 		vec3 x_axis = {1, 0, 0};
 		transform_rotate(mod_tran, x_axis, 25.f * dt, TS_WORLD);
@@ -186,6 +209,14 @@ void debug(float dt)
 		struct Transform* mod_tran = entity_component_get(model, C_TRANSFORM);
 		vec3 y_axis = {0, 1, 0};
 		transform_rotate(mod_tran, y_axis, 25.f * dt, TS_LOCAL);
+	}
+
+	if(input_key_state_get(GLFW_KEY_N, GLFW_PRESS))
+	{
+		struct Entity* model = entity_get(3);
+		struct Transform* mod_tran = entity_component_get(model, C_TRANSFORM);
+		vec3 amount = {0, 0, -5 * dt};
+		transform_translate(mod_tran, amount, TS_LOCAL);
 	}
 }
 

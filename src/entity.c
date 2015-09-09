@@ -32,7 +32,8 @@ void entity_cleanup(void)
 void entity_remove(int index)
 {
 	struct Entity* entity = &entity_list[index];
-
+	if(entity->node == -1) return;
+	
 	for(int i = 0; i < MAX_COMPONENTS; i++)
 	{
 		if(i == C_TRANSFORM)
@@ -232,4 +233,12 @@ void entity_sync_components(struct Entity* entity)
 struct Entity* entity_get_all(void)
 {
 	return entity_list;
+}
+
+struct Entity* entity_get_parent(int node)
+{
+	struct Entity* parent = NULL;
+	struct Entity* entity = entity_get(node);
+	if(entity) parent = entity_get(entity->node);
+	return parent;
 }

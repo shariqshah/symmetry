@@ -58,6 +58,12 @@ void input_cursor_pos_get(double* xpos, double* ypos)
 	glfwGetCursorPos(window, xpos, ypos);
 }
 
+void input_cursor_pos_set(double xpos, double ypos)
+{
+	GLFWwindow* window = window_get_active();
+	glfwSetCursorPos(window, xpos, ypos);
+}
+
 static void input_on_key(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	for(int i = 0; i < array_len(input_map_list); i++)
@@ -87,7 +93,7 @@ void input_cursor_mode_set(enum Cursor_Mode mode)
 	int cursor_mode = GLFW_CURSOR_NORMAL;
 	if(mode == CM_HIDDEN)
 		cursor_mode = GLFW_CURSOR_HIDDEN;
-	else if(mode == CM_HIDDEN)
+	else if(mode == CM_LOCKED)
 		cursor_mode = GLFW_CURSOR_DISABLED;
 	
 	glfwSetInputMode(window, GLFW_CURSOR, cursor_mode);

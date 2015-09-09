@@ -109,7 +109,7 @@ void transform_get_forward(struct Transform* transform, vec3 res)
 void transform_get_lookat(struct Transform* transform, vec3 res)
 {
 	transform_get_forward(transform, res);
-	vec3_add(res, transform->position, res);
+	vec3_mul_cross(res, transform->position, res);
 }
 
 void transform_get_absolute_forward(struct Transform* transform, vec3 res)

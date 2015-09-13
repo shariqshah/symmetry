@@ -258,32 +258,32 @@ void shader_set_uniform_float(const int shader_index, const char* name, const fl
 		glUniform1f(location, value);
 }
 	
-void shader_set_uniform_vec2(const int shader_index,  const char* name, const vec2 value)
+void shader_set_uniform_vec2(const int shader_index,  const char* name, const vec2* value)
 {
 	GLint location = shader_get_uniform_location(shader_index, name);
 	if(location >= 0)
-		glUniform2fv(location, 1, value);
+		glUniform2fv(location, 1, &value->x);
 }
 	
-void shader_set_uniform_vec3(const int shader_index,  const char* name, const vec3 value)
+void shader_set_uniform_vec3(const int shader_index,  const char* name, const vec3* value)
 {
 	GLint location = shader_get_uniform_location(shader_index, name);
 	if(location >= 0)
-		glUniform3fv(location, 1, value);
+		glUniform3fv(location, 1, &value->x);
 }
 	
-void shader_set_uniform_vec4(const int shader_index,  const char* name, const vec4 value)
+void shader_set_uniform_vec4(const int shader_index,  const char* name, const vec4* value)
 {
 	GLint location = shader_get_uniform_location(shader_index, name);
 	if(location >= 0)
-		glUniform4fv(location, 1, value);
+		glUniform4fv(location, 1, &value->x);
 }
 	
-void shader_set_uniform_mat4(const int shader_index,  const char* name, const mat4 value)
+void shader_set_uniform_mat4(const int shader_index,  const char* name, const mat4* value)
 {
 	GLint location = shader_get_uniform_location(shader_index, name);
 	if(location >= 0)
-		glUniformMatrix4fv(location, 1, GL_FALSE, *value);
+		glUniformMatrix4fv(location, 1, GL_FALSE, &value->mat[0]);
 }
 
 void shader_remove(const int shader_index)

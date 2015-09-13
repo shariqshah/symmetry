@@ -58,13 +58,13 @@ int camera_create(int node, int width, int height)
 	new_camera->node = node;
 	new_camera->farz = 1000.f;
 	new_camera->nearz = 0.1f;
-	new_camera->fov = TO_RADIANS(60.f);
+	new_camera->fov = 60.f;
 	float aspect_ratio = (float)width / (float)height;
 	new_camera->aspect_ratio = aspect_ratio <= 0.f ? (4.f / 3.f) : aspect_ratio;
 	new_camera->ortho = 0;
-	mat4_identity(new_camera->view_mat);
-	mat4_identity(new_camera->proj_mat);
-	mat4_identity(new_camera->view_proj_mat);
+	mat4_identity(&new_camera->view_mat);
+	mat4_identity(&new_camera->proj_mat);
+	mat4_identity(&new_camera->view_proj_mat);
 	camera_update_view(new_camera);
 	camera_update_proj(new_camera);
 
@@ -73,18 +73,20 @@ int camera_create(int node, int width, int height)
 
 void camera_update_view_proj(struct Camera* camera)
 {
-	mat4_mul(camera->view_proj_mat, camera->proj_mat, camera->view_mat);
+	mat4_mul(&camera->view_proj_mat, &camera->proj_mat, &camera->view_mat);
 }
 
 void camera_update_view(struct Camera* camera)
 {
 	struct Entity* entity = entity_get(camera->node);
 	struct Transform* transform = entity_component_get(entity, C_TRANSFORM);
-	vec3 lookat = {0.f}, up = {0.f}, position = {0.f};
-	transform_get_lookat(transform, lookat);
-	transform_get_up(transform, up);
-	transform_get_absolute_pos(transform, position);
-	mat4_look_at(camera->view_mat, position, lookat, up);
+	vec3 lookat = {0.f, 0.f, 0.f};
+	vec3 up = {0.f, 0.f, 0.f};
+	vec3 position = {0.f, 0.f, 0.f};
+	transform_get_absolute_lookat(transform, &lookat);
+	transform_get_absolute_up(transform, &up);
+	transform_get_absolute_pos(transform, &position);
+	mat4_lookat(&camera->view_mat, &position, &lookat, &up);
 	camera_update_view_proj(camera);
 }
 
@@ -92,7 +94,7 @@ void camera_update_proj(struct Camera* camera)
 {
 	if(!camera->ortho)
 	{
-		mat4_perspective(camera->proj_mat,
+		mat4_perspective(&camera->proj_mat,
 						 camera->fov,
 						 camera->aspect_ratio,
 						 camera->nearz,
@@ -100,7 +102,7 @@ void camera_update_proj(struct Camera* camera)
 	}
 	else
 	{
-		mat4_ortho(camera->proj_mat, -1, 1, -1, 1, camera->nearz, camera->farz);
+		mat4_ortho(&camera->proj_mat, -1, 1, -1, 1, camera->nearz, camera->farz);
 	}
 	camera_update_view_proj(camera);
 }

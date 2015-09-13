@@ -10,6 +10,7 @@ void on_framebuffer_size_change(GLFWwindow* window, int width, int height);
 void renderer_init(GLFWwindow* window)
 {
 	glClearColor(0.3f, 0.6f, 0.9f, 1.0f);
+	glEnable(GL_DEPTH_TEST);
 	glfwSetFramebufferSizeCallback(window, on_framebuffer_size_change);
 }
 

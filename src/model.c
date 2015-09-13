@@ -50,6 +50,7 @@ int model_create(int node, const char* geo_name)
 		new_model->node = node;
 		new_model->geometry_index = geo_index;
 		new_model->shader = 0;	/* Temporary, for test run only till materials are added */
+		vec4_fill(&new_model->color, 0.7f, 0.7f, 0.5f, 1.f);
 	}
 	else
 	{
@@ -94,13 +95,12 @@ void model_render_all(struct Camera* camera)
 		struct Model* model = &model_list[i];
 		struct Entity* entity = entity_get(model->node);
 		struct Transform* transform = entity_component_get(entity, C_TRANSFORM);
-		mat4_identity(mvp);
+		mat4_identity(&mvp);
 		
 		shader_bind(model->shader);
-		mat4_mul(mvp, camera->view_proj_mat, transform->trans_mat);
-		shader_set_uniform_mat4(model->shader, "mvp", mvp);
-		vec4 color = {0.7f, 0.7f, 0.5f, 1};
-		shader_set_uniform_vec4(model->shader, "color", color);
+		mat4_mul(&mvp, &camera->view_proj_mat, &transform->trans_mat);
+		shader_set_uniform_mat4(model->shader, "mvp", &mvp);
+		shader_set_uniform_vec4(model->shader, "color", &model->color);
 		geom_render(model->geometry_index);
 		shader_unbind();
 	}

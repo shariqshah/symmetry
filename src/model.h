@@ -1,6 +1,8 @@
 #ifndef model_H
 #define model_H
 
+#include "linmath.h"
+
 struct Camera;
 
 struct Model
@@ -8,6 +10,7 @@ struct Model
 	int node;
 	int geometry_index;
 	int shader;					/* Temporary, replace with material */
+	vec4 color;
 };
 
 struct Model* model_get(int index);

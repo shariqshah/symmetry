@@ -105,7 +105,7 @@ struct Entity* entity_find(const char* name)
 	for(int i = 0; i < array_len(entity_list); i++)
 	{
 		struct Entity* curr_ent = &entity_list[i];
-		if(!entity->name)
+		if(!curr_ent->name)
 			continue;
 		if(strcmp(curr_ent->name, name) == 0)
 		{

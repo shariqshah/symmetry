@@ -116,12 +116,12 @@ void geom_remove(int index)
 			geometry->ref_count--;
 			if(geometry->ref_count < 0)
 			{
-				array_free(geometry->indices);
-				array_free(geometry->vertices);
-				array_free(geometry->uvs);
-				array_free(geometry->normals);
-				array_free(geometry->vertex_colors);
-				free(geometry->filename);
+				if(geometry->indices) array_free(geometry->indices);
+				if(geometry->vertices) array_free(geometry->vertices);
+				if(geometry->uvs) array_free(geometry->uvs);
+				if(geometry->normals) array_free(geometry->normals);
+				if(geometry->vertex_colors) array_free(geometry->vertex_colors);
+				if(geometry->filename) free(geometry->filename);
 				array_push(empty_indices, index, int);
 			}
 		}

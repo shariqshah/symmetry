@@ -2,6 +2,7 @@
 #include "log.h"
 #include "array.h"
 #include "entity.h"
+#include "utils.h"
 #include <assert.h>
 
 static struct Transform* transform_list;
@@ -37,138 +38,116 @@ int transform_create(int node)
 			index = array_len(transform_list) - 1;
 		}
 		new_transform->node = node;
-		new_transform->position[0] = new_transform->position[1] = new_transform->position[2] = 0;
-		new_transform->scale[0] = new_transform->scale[1] = new_transform->scale[2] = 1;
-		//mat4_identity(new_transform->rotation);
-		quat_identity(new_transform->rotq);
+		vec3_fill(&new_transform->position, 0.f, 0.f, 0.f);
+		vec3_fill(&new_transform->scale, 1.f, 1.f, 1.f);
+		quat_identity(&new_transform->rotation);
 		transform_update_transmat(new_transform);
 	}
 	return index;
 }
 
-void transform_translate(struct Transform* transform, vec3 amount, enum Transform_Space space)
+void transform_translate(struct Transform* transform, vec3* amount, enum Transform_Space space)
 {
 	if(space == TS_LOCAL)
 	{
-		mat4 temp;
-		mat4_identity(temp);
-		mat4_from_quat(temp, transform->rotq);
-		mat4_mul_vec3(amount, temp, amount);
-		//mat4_mul_vec3(amount, transform->rotation, amount);
-		//quat_mul_vec3(amount, transform->rotq, amount);
+		quat_mul_vec3(amount, &transform->rotation, amount);
 	}
-	if(space == TS_PARENT)
+	else if(space == TS_PARENT)
 	{
 		struct Entity* parent = entity_get_parent(transform->node);
 		struct Transform* parent_tran = entity_component_get(parent, C_TRANSFORM);
-		//mat4_mul_vec3(amount, parent_tran->rotation, amount);
-		quat_mul_vec3(amount, parent_tran->rotq, amount);
+		quat_mul_vec3(amount, &parent_tran->rotation, amount);
 	}
-	vec3_add(transform->position, transform->position, amount);
+	vec3_add(&transform->position, &transform->position, amount);
 	transform_update_transmat(transform);
 }
 void transform_rotate(struct Transform* transform,
-					  vec3  axis,
+					  vec3*  axis,
 					  float angle,
 					  enum Transform_Space space)
 {
-	//mat4 new_rot;
-	quat new_rotq;
-	/* mat4_identity(new_rot); */
-	/* mat4_rotate(new_rot, new_rot, axis[0], axis[1], axis[2], TO_RADIANS(angle)); */
-	quat_identity(new_rotq);
-	quat_rotate(new_rotq, TO_RADIANS(angle), axis);
-	
+	quat new_rot;
+	quat_identity(&new_rot);
+	quat_axis_angle(&new_rot, axis, TO_RADIANS(angle));
+
 	if(space == TS_LOCAL)
-		quat_mul(transform->rotq, transform->rotq, new_rotq);
-	else if(space == TS_WORLD)
-		quat_mul(transform->rotq, new_rotq, transform->rotq);
-	quat_norm(transform->rotq, transform->rotq);
+		quat_mul(&transform->rotation, &transform->rotation, &new_rot);
+	else
+		quat_mul(&transform->rotation, &new_rot, &transform->rotation);
 	transform_update_transmat(transform);
 }
 
-void transform_scale(struct Transform* transform, vec3 scale)
+void transform_scale(struct Transform* transform, vec3* scale)
 {
-	transform->scale[0] = scale[0];
-	transform->scale[1] = scale[1];
-	transform->scale[2] = scale[2];
+	vec3_assign(&transform->scale, scale);
 	transform_update_transmat(transform);
 }
 
-void transform_get_forward(struct Transform* transform, vec3 res)
+void transform_get_forward(struct Transform* transform, vec3* res)
 {
-	res[0] = 0; res[1] = 0; res[2] = -1;
-	//mat4_mul_vec3(res, transform->rotation, res);
-	mat4 temp;
-	mat4_identity(temp);
-	mat4_from_quat(temp, transform->rotq);
-	mat4_mul_vec3(res, temp, res);
-	//quat_mul_vec3(res, transform->rotq, res);
+	vec3_fill(res, 0.f, 0.f, -1.f);
+	quat_get_forward_rh(res, &transform->rotation);
 }
 
-void transform_get_lookat(struct Transform* transform, vec3 res)
+void transform_get_lookat(struct Transform* transform, vec3* res)
 {
 	transform_get_forward(transform, res);
-	vec3_mul_cross(res, transform->position, res);
+	vec3_add(res, &transform->position, res);
 }
 
-void transform_get_absolute_forward(struct Transform* transform, vec3 res)
+void transform_get_absolute_forward(struct Transform* transform, vec3* res)
 {
-	res[0] = 0.f; res[0] = 0.f; res[0] = -1.f;
-	//mat4_mul_vec3(res, transform->trans_mat, res);
-	quat_mul_vec3(res, transform->rotq, res);
-	vec3_norm(res, res);
+	vec3_fill(res, 0.f, 0.f, -1.f);
+	vec3_transform_norm(res, res, &transform->trans_mat);
 }
 
-void transform_get_absolute_lookat(struct Transform* transform, vec3 res)
+void transform_get_absolute_lookat(struct Transform* transform, vec3* res)
 {
-	vec3 abs_position = {0.f};
-	transform_get_absolute_pos(transform, abs_position);
+	vec3 abs_position = {0.f, 0.f, 0.f};
+	transform_get_absolute_pos(transform, &abs_position);
 	transform_get_absolute_forward(transform, res);
-	vec3_add(res, abs_position, res);
+	vec3_add(res, &abs_position, res);
 }
 
-void transform_get_up(struct Transform* transform, vec3 res)
+void transform_get_up(struct Transform* transform, vec3* res)
 {
-	res[0] = 0; res[1] = 1; res[2] = 0;
-	//mat4_mul_vec3(res, transform->rotation, res);
-	mat4 temp;
-	mat4_identity(temp);
-	mat4_from_quat(temp, transform->rotq);
-	mat4_mul_vec3(res, temp, res);
-	//quat_mul_vec3(res, transform->rotq, res);
+	vec3_fill(res, 0.f, 1.f, 0.f);
+	quat_get_up(res, &transform->rotation);
 }
 
-void transform_get_right(struct Transform* transform, vec3 res)
+void transform_get_absolute_up(struct Transform* transform, vec3* res)
 {
-	res[0] = 1; res[1] = 0; res[2] = 0;
-	//mat4_mul_vec3(res, transform->rotation, res);
-	quat_mul_vec3(res, transform->rotq, res);
+	vec3_fill(res, 0.f, 1.f, 0.f);
+	vec3_transform_norm(res, res, &transform->trans_mat);
+}
+
+void transform_get_right(struct Transform* transform, vec3* res)
+{
+	vec3_fill(res, 1.f, 0.f, 0.f);
+	quat_get_right(res, &transform->rotation);
 }
 
 void transform_update_transmat(struct Transform* transform)
 {
-	static mat4 scale, translation, rot;
-	mat4_identity(scale);
-	mat4_identity(translation);
-	mat4_identity(rot);
-	mat4_identity(transform->trans_mat);
-	mat4_scale_aniso(scale, scale, transform->scale[0], transform->scale[1], transform->scale[2]);
-	mat4_translate(translation, transform->position[0], transform->position[1], transform->position[2]);
-	mat4_from_quat(rot, transform->rotq);
-	
-	mat4_mul(transform->trans_mat, transform->trans_mat, translation);
-	//mat4_mul(transform->trans_mat, transform->trans_mat, transform->rotation);
-	mat4_mul(transform->trans_mat, transform->trans_mat, rot);
-	mat4_mul(transform->trans_mat, transform->trans_mat, scale);
+	static mat4 scale, translation, rotation;
+	mat4_identity(&scale);
+	mat4_identity(&translation);
+	mat4_identity(&rotation);
+	mat4_identity(&transform->trans_mat);
+	mat4_scale(&scale, transform->scale.x, transform->scale.y, transform->scale.z);
+	mat4_translate(&translation, transform->position.x, transform->position.y, transform->position.z);
+	mat4_from_quat(&rotation, &transform->rotation);
+
+	mat4_mul(&transform->trans_mat, &transform->trans_mat, &translation);
+	mat4_mul(&transform->trans_mat, &transform->trans_mat, &rotation);
+	mat4_mul(&transform->trans_mat, &transform->trans_mat, &scale);
 	
 	struct Entity* entity = entity_get(transform->node);
 	struct Entity* parent = entity_get(entity->parent);
 	if(parent)
 	{
 		struct Transform* parent_tran = entity_component_get(parent, C_TRANSFORM);
-		mat4_mul(transform->trans_mat, transform->trans_mat, parent_tran->trans_mat);
-		//mat4_mul(transform->trans_mat, parent_tran->trans_mat, transform->trans_mat);
+		mat4_mul(&transform->trans_mat, &transform->trans_mat, &parent_tran->trans_mat);
 	}
 
 	/* Update all children */
@@ -198,14 +177,13 @@ void transform_remove(int index)
 	array_push(empty_indices, index, int);
 }
 
-void transform_set_position(struct Transform* transform, vec3 new_position)
+void transform_set_position(struct Transform* transform, vec3* new_position)
 {
-	for(int i = 0; i < 3; i++)
-		transform->position[i] = new_position[i];
+	vec3_assign(&transform->position, new_position);
 	transform_update_transmat(transform);
 }
 
-void transform_get_absolute_pos(struct Transform* transform, vec3 res)
+void transform_get_absolute_pos(struct Transform* transform, vec3* res)
 {
 	struct Entity* entity = entity_get(transform->node);
 	struct Entity* parent = entity_get(entity->parent);
@@ -214,5 +192,5 @@ void transform_get_absolute_pos(struct Transform* transform, vec3 res)
 		struct Transform* parent_tran = entity_component_get(parent, C_TRANSFORM);
 		transform_get_absolute_pos(parent_tran, res);
 	}
-	vec3_add(res, res, transform->position);
+	vec3_add(res, res, &transform->position);
 }

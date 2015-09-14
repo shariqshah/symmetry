@@ -70,9 +70,6 @@ void game_init(void)
 	vec3 viewer_pos = {0, 0, 10};
 	struct Transform* viewer_tran = entity_component_get(player, C_TRANSFORM);
 	transform_set_position(viewer_tran, &viewer_pos);
-	/* struct Entity* player_pitch = scene_add_as_child("player_pitch", NULL, player); */
-	/* player_pitch_node = player_pitch->node; */
-	/* entity_component_add(player_pitch, C_CAMERA, 800, 600); */
 	entity_component_add(player, C_CAMERA, 800, 600);
 	
 	struct Entity* new_ent = scene_add_new("Model_Entity", NULL);

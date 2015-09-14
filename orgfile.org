@@ -46,7 +46,8 @@ while using as few libraries as possible.
 ** TODO Materials
 ** TODO Mesh/Model
 ** TODO Add modifiers to input maps to enable combinations for example, c-x, m-k etc
-** TODO Heirarchical Transforms
+** DONE Heirarchical Transforms
+- State "DONE"       from "TODO"       [2015-09-14 Mon 20:55]
 ** TODO 2d drawing routines
 ** TODO Gui
 ** TODO Physics

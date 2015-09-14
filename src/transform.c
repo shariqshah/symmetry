@@ -219,4 +219,3 @@ void transform_get_absolute_rot(struct Transform* transform, quat* res)
 	}
 	quat_mul(res, res, &transform->rotation);
 }
-

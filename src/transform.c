@@ -97,8 +97,10 @@ void transform_get_lookat(struct Transform* transform, vec3* res)
 
 void transform_get_absolute_forward(struct Transform* transform, vec3* res)
 {
-	vec3_fill(res, 0.f, 0.f, -1.f);
-	vec3_transform_norm(res, res, &transform->trans_mat);
+	quat abs_rot;
+	quat_identity(&abs_rot);
+	transform_get_absolute_rot(transform, &abs_rot);
+	quat_get_forward_rh(res, &abs_rot);
 }
 
 void transform_get_absolute_lookat(struct Transform* transform, vec3* res)
@@ -117,9 +119,20 @@ void transform_get_up(struct Transform* transform, vec3* res)
 
 void transform_get_absolute_up(struct Transform* transform, vec3* res)
 {
-	vec3_fill(res, 0.f, 1.f, 0.f);
-	vec3_transform_norm(res, res, &transform->trans_mat);
+	quat abs_rot;
+	quat_identity(&abs_rot);
+	transform_get_absolute_rot(transform, &abs_rot);
+	quat_get_up(res, &abs_rot);
 }
+
+void transform_get_absolute_right(struct Transform* transform, vec3* res)
+{
+	quat abs_rot;
+	quat_identity(&abs_rot);
+	transform_get_absolute_rot(transform, &abs_rot);
+	quat_get_right(res, &abs_rot);
+}
+
 
 void transform_get_right(struct Transform* transform, vec3* res)
 {
@@ -194,3 +207,16 @@ void transform_get_absolute_pos(struct Transform* transform, vec3* res)
 	}
 	vec3_add(res, res, &transform->position);
 }
+
+void transform_get_absolute_rot(struct Transform* transform, quat* res)
+{
+	struct Entity* entity = entity_get(transform->node);
+	struct Entity* parent = entity_get(entity->parent);
+	if(parent)
+	{
+		struct Transform* parent_tran = entity_component_get(parent, C_TRANSFORM);
+		transform_get_absolute_rot(parent_tran, res);
+	}
+	quat_mul(res, res, &transform->rotation);
+}
+

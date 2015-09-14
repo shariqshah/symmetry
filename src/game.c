@@ -64,16 +64,16 @@ void game_init(void)
 	input_map_create("Turn_Up", turn_up_keys, 1);
 	input_map_create("Turn_Down", turn_down_keys, 1);
 
-	int shader = shader_create("unshaded.vert", "unshaded.frag");
+	shader_create("unshaded.vert", "unshaded.frag");
 	struct Entity* player = scene_add_new("player", "None");
 	player_node = player->node;
 	vec3 viewer_pos = {0, 0, 10};
 	struct Transform* viewer_tran = entity_component_get(player, C_TRANSFORM);
 	transform_set_position(viewer_tran, &viewer_pos);
-	struct Entity* player_pitch = scene_add_as_child("player_pitch", NULL, player);
-	player_pitch_node = player_pitch->node;
-	entity_component_add(player_pitch, C_CAMERA, 800, 600);
-	/* struct Camera* camera = entity_component_add(player, C_CAMERA, 800, 600); */
+	/* struct Entity* player_pitch = scene_add_as_child("player_pitch", NULL, player); */
+	/* player_pitch_node = player_pitch->node; */
+	/* entity_component_add(player_pitch, C_CAMERA, 800, 600); */
+	entity_component_add(player, C_CAMERA, 800, 600);
 	
 	struct Entity* new_ent = scene_add_new("Model_Entity", NULL);
 	struct Transform* tran = entity_component_get(new_ent, C_TRANSFORM);
@@ -81,8 +81,6 @@ void game_init(void)
 	transform_translate(tran, &position, TS_WORLD);
 	entity_component_add(new_ent, C_MODEL, "default.pamesh");
 	struct Transform* model_tran = entity_component_get(new_ent, C_TRANSFORM);
-	//vec3 axis = {0.f, 1.f, 0.f};
-	//transform_rotate(model_tran, axis, (45.f), TS_WORLD);
 	vec3 scale = {1, 1, 2};
 	transform_scale(model_tran, &scale);
 
@@ -101,31 +99,13 @@ void game_init(void)
 	transform_set_position(ground_tran, &pos);
 	transform_scale(ground_tran, &scale_ground);
 
-	mat4 m1, m2, r1, r2, f1, f2;
-	mat4_identity(&m1);
-	mat4_identity(&m2);
-	mat4_identity(&r1);
-	mat4_identity(&r2);
-	mat4_identity(&f1);
-	mat4_identity(&f2);
-
-	mat4_rot_x(&m1, TO_RADIANS(25.f));
-	mat4_rot_x(&m2, TO_RADIANS(25.f));
-	mat4_rot_x(&f1, TO_RADIANS(5.f));
-	mat4_rot_x(&f2, TO_RADIANS(5.f));
-
-	mat4_mul(&r1, &f1, &m1);
-	mat4_mul(&r2, &m1, &f1);
-	
 	run();
 }
 
 void debug(float dt)
 {
 	struct Entity* entity = entity_get(player_node);
-	struct Entity* entity_pitch = entity_get(player_pitch_node);
 	struct Transform* transform = entity_component_get(entity, C_TRANSFORM);
-	struct Transform* pitch_transform = entity_component_get(entity_pitch, C_TRANSFORM);
 	float move_speed = 5.f, turn_speed = 50.f;
 	vec3 offset = {0, 0, 0};
 	float turn_up_down = 0.f;
@@ -170,15 +150,9 @@ void debug(float dt)
 		total_up_down_rot = -max_up_down;
 		turn_up_down = 0.f;
 	}
-
-	struct Entity* ground = scene_find("Ground");
-	struct Transform* ground_tran = entity_component_get(ground, C_TRANSFORM);
-	//transform = ground_tran;
-	//transform_rotate(ground_tran, rot_axis_left_right, 50.f * dt, TS_WORLD);
 	
 	if(turn_left_right != 0.f)
 	{
-		//transform_rotate(transform, rot_axis_left_right, turn_left_right, TS_WORLD);
 		transform_rotate(transform, &rot_axis_left_right, -turn_left_right, TS_WORLD);
 		vec3 up = {0.f, 0.f, 0.f};
 		vec3 forward = {0.f, 0.f, 0.f};
@@ -186,21 +160,20 @@ void debug(float dt)
 		transform_get_up(transform, &up);
 		transform_get_forward(transform, &forward);
 		transform_get_lookat(transform, &lookat);
-		log_message("Up : %s", tostr_vec3(&up));
-		log_message("FR : %s", tostr_vec3(&forward));
+		/* log_message("Up : %s", tostr_vec3(&up)); */
+		/* log_message("FR : %s", tostr_vec3(&forward)); */
 	}
 	if(turn_up_down != 0.f)
 	{
-		//transform_rotate(transform, &rot_axis_up_down, turn_up_down, TS_LOCAL);
-		transform_rotate(pitch_transform, &rot_axis_up_down, turn_up_down, TS_LOCAL);
+		transform_rotate(transform, &rot_axis_up_down, turn_up_down, TS_LOCAL);
 		vec3 up = {0.f, 0.f, 0.f};
 		vec3 forward = {0.f, 0.f, 0.f};
 		vec3 lookat = {0.f, 0.f, 0.f};
 		transform_get_up(transform, &up);
 		transform_get_forward(transform, &forward);
 		transform_get_lookat(transform, &lookat);
-		log_message("Up : %s", tostr_vec3(&up));
-		log_message("FR : %s", tostr_vec3(&forward));
+		/* log_message("Up : %s", tostr_vec3(&up)); */
+		/* log_message("FR : %s", tostr_vec3(&forward)); */
 	}
 	
 	/* Movement */

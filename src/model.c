@@ -6,12 +6,16 @@
 #include "entity.h"
 #include "shader.h"
 #include "transform.h"
+#include "texture.h"
+#include "renderer.h"
+
+#include "GL/glew.h"
+#include "GLFW/glfw3.h"
 
 #include <assert.h>
 
 static struct Model* model_list;
 static int* empty_indices;
-
 struct Model* model_get(int index)
 {
 	struct Model* model = NULL;
@@ -89,6 +93,7 @@ void model_cleanup(void)
 
 void model_render_all(struct Camera* camera)
 {
+	int texture = texture_find("test.tga");
 	mat4 mvp;
 	for(int i = 0; i < array_len(model_list); i++)
 	{
@@ -98,10 +103,14 @@ void model_render_all(struct Camera* camera)
 		mat4_identity(&mvp);
 		
 		shader_bind(model->shader);
+		/* shader_set_uniform_int(model->shader, "sampler", (GL_TEXTURE0 + 4) - GL_TEXTURE0); */
+		texture_bind(texture, 4);
+		renderer_check_glerror("model:render_all");
 		mat4_mul(&mvp, &camera->view_proj_mat, &transform->trans_mat);
 		shader_set_uniform_mat4(model->shader, "mvp", &mvp);
-		shader_set_uniform_vec4(model->shader, "color", &model->color);
+		shader_set_uniform_vec4(model->shader, "diffuseColor", &model->color);
 		geom_render(model->geometry_index);
+		texture_unbind(4);
 		shader_unbind();
 	}
 }

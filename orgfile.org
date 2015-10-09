@@ -36,8 +36,10 @@ while using as few libraries as possible.
    - State "DONE"       from "TODO"       [2015-08-02 Sun 19:09]
 ** TODO Fix readme markdown
 ** TODO Framebuffer and resolution independent rendering
-** TODO Entity
+** DONE Entity
+- State "DONE"       from "TODO"       [2015-09-15 Tue 12:17]
 ** TODO Positive and negative values for input_maps and returning corresponding values when they are true
+** TODO Textures
 ** DONE Camera
 - State "DONE"       from "TODO"       [2015-08-19 Wed 13:30]
 ** DONE Test render

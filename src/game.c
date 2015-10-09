@@ -18,11 +18,13 @@
 #include "model.h"
 #include "scene.h"
 #include "utils.h"
+#include "texture.h"
 
 void run(void);
 void update(float dt);
 void render(void);
 void debug(float dt);
+void scene_setup(void);
 
 int player_node = -1;
 int player_pitch_node = -1;
@@ -35,14 +37,22 @@ void game_init(void)
 	renderer_init(window);
 	io_file_init("/mnt/Dev/Projects/Symmetry/assets/");/* TODO: Implement proper way of getting binary directory */
 	shader_init();
+	texture_init();
 	transform_init();
 	camera_init();
 	geom_init();
 	model_init();
 	entity_init();
 	scene_init();
-	
-	
+
+	/* Debug scene setup */
+	scene_setup();
+
+	run();
+}
+
+void scene_setup(void)
+{
 	int forward_keys[2] = {'W', GLFW_KEY_UP};
 	int backward_keys[2] = {'S', GLFW_KEY_DOWN};
 	int up_keys[2] = {'Q'};
@@ -63,8 +73,8 @@ void game_init(void)
 	input_map_create("Turn_Left", turn_left_keys, 1);
 	input_map_create("Turn_Up", turn_up_keys, 1);
 	input_map_create("Turn_Down", turn_down_keys, 1);
-
-	shader_create("unshaded.vert", "unshaded.frag");
+	
+	shader_create("unshaded_textured.vert", "unshaded_textured.frag");
 	struct Entity* player = scene_add_new("player", "None");
 	player_node = player->node;
 	vec3 viewer_pos = {0, 0, 10};
@@ -96,7 +106,7 @@ void game_init(void)
 	transform_set_position(ground_tran, &pos);
 	transform_scale(ground_tran, &scale_ground);
 
-	run();
+	texture_create_from_file("test.tga");
 }
 
 void debug(float dt)
@@ -258,5 +268,6 @@ void game_cleanup(void)
 	input_cleanup();
 	renderer_cleanup();
 	io_file_cleanup();
+	texture_cleanup();
 	shader_cleanup();
 }

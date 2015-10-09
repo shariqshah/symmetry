@@ -41,8 +41,9 @@ static struct Texture* texture_list;
 static int* empty_indices;
 
 int  load_img(FILE* file, GLubyte** image_data, int* width, int* height, int* fmt, int* internal_fmt);
-void texture_debug_write_tga(struct Tga_Header* header, GLubyte* image_data);
-	
+void debug_write_tga(struct Tga_Header* header, GLubyte* image_data);
+void copy_tga_pixel(GLubyte* source, GLubyte* dest, size_t bytes_per_pixel);
+
 void texture_init(void)
 {
 	texture_list = array_new(struct Texture);
@@ -157,13 +158,13 @@ void texture_cleanup(void)
 void texture_bind(int index, int texture_unit)
 {
 	assert(index > -1 && index < array_len(texture_list));
-	//glActiveTexture(GL_TEXTURE0 + texture_unit);
+	glActiveTexture(GL_TEXTURE0 + texture_unit);
 	glBindTexture(GL_TEXTURE_2D, texture_list[index].handle);
 }
 
 void texture_unbind(int texture_unit)
 {
-	//glActiveTexture(GL_TEXTURE0 + texture_unit);
+	glActiveTexture(GL_TEXTURE0 + texture_unit);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
@@ -192,7 +193,6 @@ int load_img(FILE* file, GLubyte** image_data, int* width, int* height, int* fmt
 		 if(header.datatypecode == 0)
 		 {
 			 log_error("texture:load_img", "No image data in file");
-			 success = 0;
 		 }
 		 else
 		 {
@@ -200,7 +200,6 @@ int load_img(FILE* file, GLubyte** image_data, int* width, int* height, int* fmt
 			 if(header.datatypecode != 2 && header.datatypecode != 10)
 			 {
 				 log_error("texture:load_img", "Unsupported image data type");
-				 success = 0;
 				 return success;
 			 }
 
@@ -208,14 +207,12 @@ int load_img(FILE* file, GLubyte** image_data, int* width, int* height, int* fmt
 			 {
 				 log_error("texture:load_img",
 						   "Unsupported bitsperpixel size(%d), only 24 and 32 supported", header.bitsperpixel);
-				 success = 0;
 				 return success;
 			 }
 
 			 if(header.width <= 0 || header.height <= 0)
 			 {
 				 log_error("texture:load_img", "Invalid width and height (%d:%d)", header.width, header.height);
-				 success = 0;
 				 return success;
 			 }
 
@@ -225,7 +222,6 @@ int load_img(FILE* file, GLubyte** image_data, int* width, int* height, int* fmt
 			 if(!*image_data)
 			 {
 				 log_error("texture:load_img", "Out of memory");
-				 success = 0;
 				 return success;
 			 }
 
@@ -236,35 +232,70 @@ int load_img(FILE* file, GLubyte** image_data, int* width, int* height, int* fmt
 			 fseek(file, skipover, SEEK_CUR);
 
 			 /* Start reading pixel by pixel */
-			 GLubyte pixel[bytes_per_pixel];
-			 GLubyte* curr_pixel = *image_data;
-			 for(int i = 0; i < header.width * header.height; i++)
+			 if(header.datatypecode == 2) /* uncompressed image data */
 			 {
-			 	 if(header.datatypecode == 2) /* uncompressed image data */
-			 	 {
-			 		 if(fread(&pixel, 1, bytes_per_pixel, file) != bytes_per_pixel)
-			 		 {
-			 			 success = 0;
-			 			 log_error("texture:load_img", "Unexpected end of file at pixel %d", i);
-			 			 free(image_data);
-			 			 return success;
-			 		 }
+				 GLubyte pixel[bytes_per_pixel];
+				 GLubyte* curr_pixel = *image_data;
+				 for(int i = 0; i < header.width * header.height; i++)
+				 {
+					 if(fread(&pixel, 1, bytes_per_pixel, file) != bytes_per_pixel)
+					 {
+						 log_error("texture:load_img", "Unexpected end of file at pixel %d", i);
+						 free(image_data);
+						 return success;
+					 }
 
-					 /* Swap BGR to RGB */
-					 curr_pixel[0] = pixel[2];
-					 curr_pixel[1] = pixel[1];
-					 curr_pixel[2] = pixel[0];
-					 if(bytes_per_pixel == 4) curr_pixel[3] = pixel[3];
-
-			 		 curr_pixel += bytes_per_pixel;
-			 	 }
-			 	 else if(header.datatypecode == 10) /* compressed image data */
-			 	 {
-			 		 log_message("Not implemented yet!");
-			 	 }
+					 /* Copy pixel and change BGR to RGB */
+					 copy_tga_pixel(&pixel[0], curr_pixel, bytes_per_pixel);
+					 curr_pixel += bytes_per_pixel;
+				 }
 			 }
-
-			 texture_debug_write_tga(&header, *image_data);
+			 else if(header.datatypecode == 10) /* RLE encoded image data */
+			 {
+				 GLubyte chunk[bytes_per_pixel + 1];
+				 GLubyte* curr_chunk = *image_data;
+				 for(int i = 0; i < header.width * header.height;)
+				 {
+					 /* read chunk (header+pixel) */
+					 if(fread(chunk, 1, sizeof(chunk), file) != sizeof(chunk))
+					 {
+						 log_error("texture:img_load", "Unexpected end of file at chunk %d", i);
+						 free(*image_data);
+						 return success;
+					 }
+					 i++;
+					 copy_tga_pixel(&chunk[1], curr_chunk, bytes_per_pixel);
+					 curr_chunk += bytes_per_pixel;
+					 GLubyte chunk_identifier = chunk[0];
+					 int count = chunk[0] & 0x7f;
+					 if(chunk_identifier & 0x80) /* RLE chunk */
+					 {
+						 for(int j = 0; j < count; j++)
+						 {
+							 copy_tga_pixel(&chunk[1], curr_chunk, bytes_per_pixel);
+							 curr_chunk += bytes_per_pixel;
+							 i++;
+						 }
+					 }
+					 else		/* Normal chunk */
+					 {
+						 for(int j = 0; j < count; j++)
+						 {
+							 if(fread(&chunk[1], 1, bytes_per_pixel, file) != bytes_per_pixel)
+							 {
+								 log_error("texture:img_load", "Unexpected end of file at pixel %d", i);
+								 free(*image_data);
+								 return success;
+							 }
+							 copy_tga_pixel(&chunk[1], curr_chunk, bytes_per_pixel);
+							 curr_chunk += bytes_per_pixel;
+							 i++;
+						 }
+					 }
+				 }
+			 }
+			 
+			 debug_write_tga(&header, *image_data);
 			 *height = header.height;
 			 *width = header.width;
 			 *fmt = bytes_per_pixel == 3 ? GL_RGB : GL_RGBA;
@@ -298,7 +329,7 @@ void texture_param_set(int index, int parameter, int value)
 		glBindTexture(GL_TEXTURE_2D, curr_texture);
 }
 
-void texture_debug_write_tga(struct Tga_Header* header, GLubyte* image_data)
+void debug_write_tga(struct Tga_Header* header, GLubyte* image_data)
 {
 	/* Debug only, write the loaded image to file */
 	FILE* fptr = NULL;
@@ -306,6 +337,7 @@ void texture_debug_write_tga(struct Tga_Header* header, GLubyte* image_data)
 		fprintf(stderr,"Failed to open outputfile\n");
 		exit(-1);
 	}
+	if(header->datatypecode == 10) header->datatypecode = 2; /* Only uncompressed supported currently */
 	fwrite(header, sizeof(struct Tga_Header), 1, fptr);
 	for (int i = 0; i < header->height * header->width; i++)
 	{
@@ -315,4 +347,12 @@ void texture_debug_write_tga(struct Tga_Header* header, GLubyte* image_data)
 		image_data += 3;
 	}
 	fclose(fptr);
+}
+
+void copy_tga_pixel(GLubyte* source, GLubyte* dest, size_t bytes_per_pixel)
+{
+	dest[0] = source[2];
+	dest[1] = source[1];
+	dest[2] = source[0];
+	if(bytes_per_pixel == 4) dest[3] = source[3];
 }

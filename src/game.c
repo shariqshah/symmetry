@@ -106,7 +106,7 @@ void scene_setup(void)
 	transform_set_position(ground_tran, &pos);
 	transform_scale(ground_tran, &scale_ground);
 
-	texture_create_from_file("test.tga");
+	texture_create_from_file("test_comp.tga");
 }
 
 void debug(float dt)

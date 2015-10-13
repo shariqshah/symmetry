@@ -300,3 +300,44 @@ void shader_cleanup(void)
 	array_free(shader_list);
 	array_free(empty_indices);
 }
+
+void shader_set_uniform(const int uniform_type, const int uniform_loc, void* value)
+{
+	assert(value);
+	switch(uniform_type)
+	{
+	case UT_INT:
+	{
+		glUniform1i(uniform_loc, *((int*)value));
+		break;
+	}
+	case UT_FLOAT:
+	{
+		glUniform1f(uniform_loc, *((float*)value));
+		break;
+	}
+	case UT_VEC2:
+	{
+		vec2* vector = (vec2*)value;
+		glUniform2fv(uniform_loc, 1, &vector->x);
+		break;
+	}
+	case UT_VEC3:
+	{
+		vec3* vector = (vec3*)value;
+		glUniform3fv(uniform_loc, 1, &vector->x);
+		break;
+	}
+	case UT_VEC4:
+	{
+		vec4* vector = (vec4*)value;
+		glUniform4fv(uniform_loc, 1, &vector->x);
+		break;
+	}
+	case UT_MAT4:
+	{
+		mat4* mat = (mat4*)value;
+		glUniformMatrix4fv(uniform_loc, 1, GL_FALSE, &mat->mat[0]);
+	}
+	}
+}

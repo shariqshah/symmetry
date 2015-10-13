@@ -13,6 +13,13 @@ typedef kmMat3        mat3;
 typedef kmMat4        mat4;
 typedef kmQuaternion  quat;
 
+/* vec2 */
+#define vec2_fill           kmVec2Fill
+#define vec2_add            kmVec2Add
+#define vec2_assign         kmVec2Assign
+#define vec2_norm           kmVec2Normalize
+#define vec2_mul            kmVec2Mul
+
 /* vec3 */
 #define vec3_fill           kmVec3Fill
 #define vec3_add            kmVec3Add
@@ -52,6 +59,8 @@ typedef kmQuaternion  quat;
 #define mat4_rot_x       kmMat4RotationX
 #define mat4_rot_y       kmMat4RotationY
 #define mat4_rot_z       kmMat4RotationZ
+#define mat4_assign      kmMat4Assign
+#define mat4_assign_mat3 kmMat4AssignMat3
 
 /* quat */
 #define quat_identity       kmQuaternionIdentity

@@ -19,6 +19,7 @@
 #include "scene.h"
 #include "utils.h"
 #include "texture.h"
+#include "material.h"
 
 void run(void);
 void update(float dt);
@@ -41,6 +42,7 @@ void game_init(void)
 	transform_init();
 	camera_init();
 	geom_init();
+	material_init();
 	model_init();
 	entity_init();
 	scene_init();
@@ -74,7 +76,6 @@ void scene_setup(void)
 	input_map_create("Turn_Up", turn_up_keys, 1);
 	input_map_create("Turn_Down", turn_down_keys, 1);
 	
-	shader_create("unshaded_textured.vert", "unshaded_textured.frag");
 	struct Entity* player = scene_add_new("player", "None");
 	player_node = player->node;
 	vec3 viewer_pos = {0, 0, 10};
@@ -99,7 +100,8 @@ void scene_setup(void)
 
 	struct Entity* ground = scene_add_new("Ground", NULL);
 	struct Model* ground_model = entity_component_add(ground, C_MODEL, "plane.pamesh");
-	ground_model->color.x = 1.f;
+	vec3 color = {1.f, 0.5f, 0.1 };
+	model_set_material_param(ground_model, "diffuse_color", &color);
 	struct Transform* ground_tran = entity_component_get(ground, C_TRANSFORM);
 	vec3 pos = {0, -3, -3};
 	vec3 scale_ground = {0.5f, 0.5f, 3.f};
@@ -262,6 +264,7 @@ void game_cleanup(void)
 	scene_cleanup();
 	entity_cleanup();
 	model_cleanup();
+	material_cleanup();
 	geom_cleanup();
 	transform_cleanup();
 	camera_cleanup();

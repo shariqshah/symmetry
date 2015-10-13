@@ -39,12 +39,14 @@ while using as few libraries as possible.
 ** DONE Entity
 - State "DONE"       from "TODO"       [2015-09-15 Tue 12:17]
 ** TODO Positive and negative values for input_maps and returning corresponding values when they are true
-** TODO Textures
+** DONE Textures
+- State "DONE"       from "TODO"       [2015-10-09 Fri 18:47]
 ** DONE Camera
 - State "DONE"       from "TODO"       [2015-08-19 Wed 13:30]
 ** DONE Test render
 - State "DONE"       from "TODO"       [2015-08-19 Wed 13:30]
 ** TODO Bounding Boxes
+** TODO File extension checking for asset loading
 ** TODO Materials
 ** TODO Mesh/Model
 ** TODO Add modifiers to input maps to enable combinations for example, c-x, m-k etc

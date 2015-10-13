@@ -8,11 +8,14 @@
 #include "transform.h"
 #include "texture.h"
 #include "renderer.h"
+#include "material.h"
 
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
 
 #include <assert.h>
+#include <string.h>
+#include <stdlib.h>
 
 static struct Model* model_list;
 static int* empty_indices;
@@ -53,8 +56,12 @@ int model_create(int node, const char* geo_name)
 		}
 		new_model->node = node;
 		new_model->geometry_index = geo_index;
-		new_model->shader = 0;	/* Temporary, for test run only till materials are added */
-		vec4_fill(&new_model->color, 0.7f, 0.7f, 0.5f, 1.f);
+		if(!material_register_model(new_model, index, "Unshaded"))
+		{
+			log_error("model:create", "Unable to register model with Unshaded material, component not added");
+			model_remove(index);
+			index = -1;
+		}
 	}
 	else
 	{
@@ -71,7 +78,11 @@ void model_remove(int index)
 		model->node = -1;
 		geom_remove(model->geometry_index);
 		model->geometry_index = -1;
-		model->shader = -1;
+		material_unregister_model(model, index);
+		/* deallocate all params */
+		for(int i = 0; i < array_len(model->material_params); i++)
+			free(&model->material_params[i]);
+		array_free(model->material_params);
 		array_push(empty_indices, index, int);
 	}
 	else
@@ -93,24 +104,143 @@ void model_cleanup(void)
 
 void model_render_all(struct Camera* camera)
 {
-	int texture = texture_find("test_comp.tga");
-	mat4 mvp;
-	for(int i = 0; i < array_len(model_list); i++)
+	static mat4 mvp;
+	struct Material* material_list = material_get_all_materials();
+	for(int i = 0; i < array_len(material_list); i++)
 	{
-		struct Model* model = &model_list[i];
-		struct Entity* entity = entity_get(model->node);
-		struct Transform* transform = entity_component_get(entity, C_TRANSFORM);
-		mat4_identity(&mvp);
-		
-		shader_bind(model->shader);
-		shader_set_uniform_int(model->shader, "sampler", (GL_TEXTURE0 + 4) - GL_TEXTURE0);
-		texture_bind(texture, 4);
-		renderer_check_glerror("model:render_all");
-		mat4_mul(&mvp, &camera->view_proj_mat, &transform->trans_mat);
-		shader_set_uniform_mat4(model->shader, "mvp", &mvp);
-		shader_set_uniform_vec4(model->shader, "diffuseColor", &model->color);
-		geom_render(model->geometry_index);
-		texture_unbind(4);
+		/* for each material, get all the registered models and render them */
+		struct Material* material = &material_list[i];
+		if(!material->active)
+			continue;
+
+		shader_bind(material->shader);
+		renderer_check_glerror("model:render_all:shader_bind");
+		for(int j = 0; j < array_len(material->registered_models); j++)
+		{
+			/* for each registered model, set up uniforms and render */
+			struct Model* model = &model_list[material->registered_models[j]];
+			struct Entity* entity = entity_get(model->node);
+			struct Transform* transform = entity_component_get(entity, C_TRANSFORM);
+			for(int k = 0; k < array_len(model->material_params); k++)
+			{
+				/* set material params for the model */
+				struct Material_Param* param = &model->material_params[k];
+				struct Uniform* uniform = &material->model_params[param->uniform_index];
+			    shader_set_uniform(uniform->type, uniform->location, param->value);
+				renderer_check_glerror("model:render_all:material_param");
+			}
+
+			for(int k = 0; k < array_len(material->pipeline_params); k++)
+			{
+				/* TODO: change this into something better */
+				/* Set pipeline uniforms */
+				struct Uniform* uniform = &material->pipeline_params[k];
+				if(strcmp(uniform->name, "mvp") == 0)
+				{
+					mat4_identity(&mvp);
+					mat4_mul(&mvp, &camera->view_proj_mat, &transform->trans_mat);
+					shader_set_uniform(uniform->type, uniform->location, &mvp);
+					renderer_check_glerror("model:render_all:material_pipeline");
+				}
+			}
+			/* Render the geometry */
+			geom_render(model->geometry_index);			
+		}
 		shader_unbind();
 	}
+	/* for(int i = 0; i < array_len(model_list); i++) */
+	/* { */
+	/* 	struct Model* model = &model_list[i]; */
+	/* 	struct Entity* entity = entity_get(model->node); */
+	/* 	struct Transform* transform = entity_component_get(entity, C_TRANSFORM); */
+		
+	/* 	shader_bind(model->shader); */
+	/* 	shader_set_uniform_int(model->shader, "sampler", (GL_TEXTURE0 + 4) - GL_TEXTURE0); */
+	/* 	texture_bind(texture, 4); */
+	/* 	renderer_check_glerror("model:render_all"); */
+	/* 	mat4_mul(&mvp, &camera->view_proj_mat, &transform->trans_mat); */
+	/* 	shader_set_uniform_mat4(model->shader, "mvp", &mvp); */
+	/* 	shader_set_uniform_vec4(model->shader, "diffuseColor", &model->color); */
+	/* 	geom_render(model->geometry_index); */
+	/* 	texture_unbind(4); */
+	/* 	shader_unbind(); */
+	/* } */
+}
+
+int model_set_material_param(struct Model* model, const char* name, void* value)
+{
+	assert(model && name && value);
+	int success = 0;
+	struct Material* material = material_get(model->material);
+	for(int i = 0; i < array_len(model->material_params); i++)
+	{
+		struct Material_Param* param = &model->material_params[i];
+		struct Uniform* uniform = &material->model_params[param->uniform_index];
+		if(strcmp(uniform->name, name) == 0)
+		{
+			switch(uniform->type)
+			{
+			case UT_INT:
+				*((int*)param->value) = *((int*)value);
+				break;
+			case UT_FLOAT:
+				*((float*)param->value) = *((float*)value);
+				break;
+			case UT_VEC2:
+				vec2_assign((vec2*)param->value, (vec2*)value);
+				break;
+			case UT_VEC3:
+				vec3_assign((vec3*)param->value, (vec3*)value);
+				break;
+			case UT_VEC4:
+				vec4_assign((vec4*)param->value, (vec4*)value);
+				break;
+			case UT_MAT4:
+				mat4_assign((mat4*)param->value, (mat4*)value);
+				break;
+			}
+			break; /* break for */
+			success = 1;
+		}
+	}
+	return success;
+}
+
+int model_get_material_param(struct Model* model, const char* name, void* value_out)
+{
+	assert(model && name && value_out);
+	int success = 0;
+	struct Material* material = material_get(model->material);
+	for(int i = 0; i < array_len(model->material_params); i++)
+	{
+		struct Material_Param* param = &model->material_params[i];
+		struct Uniform* uniform = &material->model_params[param->uniform_index];
+		if(strcmp(uniform->name, name) == 0)
+		{
+			switch(uniform->type)
+			{
+			case UT_INT:
+				*((int*)value_out) = *((int*)param->value);
+				break;
+			case UT_FLOAT:
+				*((float*)value_out) = *((float*)param->value);
+				break;
+			case UT_VEC2:
+				vec2_assign((vec2*)value_out, (vec2*)param->value);
+				break;
+			case UT_VEC3:
+				vec3_assign((vec3*)value_out, (vec3*)param->value);
+				break;
+			case UT_VEC4:
+				vec4_assign((vec4*)value_out, (vec4*)param->value);
+				break;
+			case UT_MAT4:
+				mat4_assign((mat4*)value_out, (mat4*)param->value);
+				break;
+			}
+			break; /* break for */
+			success = 1;
+		}
+	}
+	return success;
 }

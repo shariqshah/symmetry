@@ -82,6 +82,7 @@ void model_remove(int index)
 		/* deallocate all params */
 		for(int i = 0; i < array_len(model->material_params); i++)
 			free(&model->material_params[i]);
+
 		array_free(model->material_params);
 		array_push(empty_indices, index, int);
 	}
@@ -144,27 +145,22 @@ void model_render_all(struct Camera* camera)
 				}
 			}
 			/* Render the geometry */
-			geom_render(model->geometry_index);			
+			geom_render(model->geometry_index);
+
+			for(int k = 0; k < array_len(model->material_params); k++)
+			{
+				/* unbind textures, if any */
+				struct Material_Param* param = &model->material_params[k];
+				struct Uniform* uniform = &material->model_params[param->uniform_index];
+				if(uniform->type == UT_TEX)
+				{
+					texture_unbind(*(int*)param->value);
+					renderer_check_glerror("model:render_all:unbind_texture_uniform");
+				}
+			}
 		}
 		shader_unbind();
 	}
-	/* for(int i = 0; i < array_len(model_list); i++) */
-	/* { */
-	/* 	struct Model* model = &model_list[i]; */
-	/* 	struct Entity* entity = entity_get(model->node); */
-	/* 	struct Transform* transform = entity_component_get(entity, C_TRANSFORM); */
-		
-	/* 	shader_bind(model->shader); */
-	/* 	shader_set_uniform_int(model->shader, "sampler", (GL_TEXTURE0 + 4) - GL_TEXTURE0); */
-	/* 	texture_bind(texture, 4); */
-	/* 	renderer_check_glerror("model:render_all"); */
-	/* 	mat4_mul(&mvp, &camera->view_proj_mat, &transform->trans_mat); */
-	/* 	shader_set_uniform_mat4(model->shader, "mvp", &mvp); */
-	/* 	shader_set_uniform_vec4(model->shader, "diffuseColor", &model->color); */
-	/* 	geom_render(model->geometry_index); */
-	/* 	texture_unbind(4); */
-	/* 	shader_unbind(); */
-	/* } */
 }
 
 int model_set_material_param(struct Model* model, const char* name, void* value)
@@ -178,6 +174,7 @@ int model_set_material_param(struct Model* model, const char* name, void* value)
 		struct Uniform* uniform = &material->model_params[param->uniform_index];
 		if(strcmp(uniform->name, name) == 0)
 		{
+			success = 1;
 			switch(uniform->type)
 			{
 			case UT_INT:
@@ -198,9 +195,15 @@ int model_set_material_param(struct Model* model, const char* name, void* value)
 			case UT_MAT4:
 				mat4_assign((mat4*)param->value, (mat4*)value);
 				break;
+			case UT_TEX:
+				log_message("Not implemented yet!");
+				break;
+			default:
+				log_error("model:set_material_param", "Invalid parameter type");
+				success = 0;
+				break;
 			}
 			break; /* break for */
-			success = 1;
 		}
 	}
 	return success;

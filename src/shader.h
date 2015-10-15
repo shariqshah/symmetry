@@ -10,7 +10,8 @@ enum Uniform_Type
 	UT_VEC3,
 	UT_VEC2,
 	UT_VEC4,
-	UT_MAT4
+	UT_MAT4,
+	UT_TEX
 };
 
 int  shader_create(const char* vert_shader_name, const char* frag_shader_name);

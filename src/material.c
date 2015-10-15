@@ -4,6 +4,7 @@
 #include "string_utils.h"
 #include "log.h"
 #include "model.h"
+#include "texture.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -34,7 +35,12 @@ void material_init(void)
 	uniform = array_grow(unshaded_mat->model_params, struct Uniform);
 	uniform->name = str_new("diffuse_color");
 	uniform->type = UT_VEC4;
-	uniform->location = shader_get_uniform_location(unshaded_mat->shader, "diffuse_color");
+	uniform->location = shader_get_uniform_location(unshaded_mat->shader, uniform->name);
+
+	uniform = array_grow(unshaded_mat->model_params, struct Uniform);
+	uniform->name = str_new("diffuse_texture");
+	uniform->type = UT_TEX;
+	uniform->location = shader_get_uniform_location(unshaded_mat->shader, uniform->name);
 }
 
 struct Material* material_get_all_materials(void)
@@ -95,6 +101,10 @@ int material_register_model(struct Model* model, int model_index, const char* ma
 			param->value = malloc(sizeof(mat4));
 			mat4_identity((mat4*)param->value);
 			break;
+		case UT_TEX:
+			param->value = malloc(sizeof(int));
+			*((int*)param->value) = texture_create_from_file("default.tga", TU_DIFFUSE);
+			break;
 		}
 	}
 	array_push(material->registered_models, model_index, int);
@@ -106,6 +116,14 @@ void material_unregister_model(struct Model* model, int model_index)
 {
 	assert(model);
 	struct Material* material = &material_list[model->material];
+	/* Remove textures, if any */
+	for(int i = 0; i < array_len(model->material_params); i++)
+	{
+		struct Material_Param* param = &model->material_params[i];
+		struct Uniform* uniform = &material->model_params[param->uniform_index];
+		if(uniform->type == UT_TEX)
+			texture_remove(*(int*)param->value);
+	}
 	/* Remove model index from material registry*/
 	for(int i = 0; i < array_len(material->registered_models); i++)
 	{
@@ -169,4 +187,3 @@ void material_remove(int index)
 	free(material->name);
 	array_push(empty_indices, index, int);
 }
-

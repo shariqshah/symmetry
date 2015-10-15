@@ -5,6 +5,7 @@
 #include "string_utils.h"
 #include "log.h"
 #include "renderer.h"
+#include "texture.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -338,6 +339,15 @@ void shader_set_uniform(const int uniform_type, const int uniform_loc, void* val
 	{
 		mat4* mat = (mat4*)value;
 		glUniformMatrix4fv(uniform_loc, 1, GL_FALSE, &mat->mat[0]);
+		break;
+	}
+	case UT_TEX:
+	{
+		int texture_index = *((int*)value);
+		int texture_unit = texture_get_textureunit(texture_index);
+		glUniform1i(uniform_loc, (GL_TEXTURE0 + texture_unit) - GL_TEXTURE0);
+		texture_bind(texture_index);
+		break;
 	}
 	}
 }

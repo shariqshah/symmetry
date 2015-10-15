@@ -47,11 +47,14 @@ while using as few libraries as possible.
 - State "DONE"       from "TODO"       [2015-08-19 Wed 13:30]
 ** TODO Bounding Boxes
 ** TODO File extension checking for asset loading
-** TODO Materials
-** TODO Mesh/Model
+** DONE Materials
+- State "DONE"       from "TODO"       [2015-10-13 Tue 19:38]
+** DONE Mesh/Model
+- State "DONE"       from "TODO"       [2015-10-13 Tue 19:38]
 ** TODO Add modifiers to input maps to enable combinations for example, c-x, m-k etc
 ** DONE Heirarchical Transforms
-- State "DONE"       from "TODO"       [2015-09-14 Mon 20:55]
+** DONE Materials with textures
+- State "DONE"       from "TODO"       [2015-10-15 Thu 21:21]
 ** TODO 2d drawing routines
 ** TODO Gui
 ** TODO Physics

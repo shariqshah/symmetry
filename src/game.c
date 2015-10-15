@@ -86,29 +86,31 @@ void scene_setup(void)
 	struct Entity* new_ent = scene_add_new("Model_Entity", NULL);
 	struct Transform* tran = entity_component_get(new_ent, C_TRANSFORM);
 	vec3 position = {0, 0, -5};
+	vec4 color = {1.f, 1.f, 1.f, 1.f };
 	transform_translate(tran, &position, TS_WORLD);
-	entity_component_add(new_ent, C_MODEL, "default.pamesh");
+	struct Model* box_model = entity_component_add(new_ent, C_MODEL, "default.pamesh");
 	struct Transform* model_tran = entity_component_get(new_ent, C_TRANSFORM);
 	vec3 scale = {1, 1, 2};
 	transform_scale(model_tran, &scale);
 
 	struct Entity* suz = scene_add_as_child("Suzanne", NULL, new_ent);
-	entity_component_add(suz, C_MODEL, "suzanne.pamesh");
+	struct Model* suz_model = entity_component_add(suz, C_MODEL, "suzanne.pamesh");
 	struct Transform* s_tran = entity_component_get(suz, C_TRANSFORM);
 	vec3 s_pos = {3, 0, 0};
 	transform_translate(s_tran, &s_pos, TS_WORLD);
 
 	struct Entity* ground = scene_add_new("Ground", NULL);
 	struct Model* ground_model = entity_component_add(ground, C_MODEL, "plane.pamesh");
-	vec3 color = {1.f, 0.5f, 0.1 };
-	model_set_material_param(ground_model, "diffuse_color", &color);
 	struct Transform* ground_tran = entity_component_get(ground, C_TRANSFORM);
 	vec3 pos = {0, -3, -3};
 	vec3 scale_ground = {0.5f, 0.5f, 3.f};
 	transform_set_position(ground_tran, &pos);
 	transform_scale(ground_tran, &scale_ground);
 
-	texture_create_from_file("test_comp.tga");
+	/* Set material params */
+	model_set_material_param(ground_model, "diffuse_color", &color);
+	model_set_material_param(suz_model, "diffuse_color", &color);
+	model_set_material_param(box_model, "diffuse_color", &color);
 }
 
 void debug(float dt)

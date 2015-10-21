@@ -20,6 +20,7 @@
 #include "utils.h"
 #include "texture.h"
 #include "material.h"
+#include "framebuffer.h"
 
 void run(void);
 void update(float dt);
@@ -32,6 +33,7 @@ int player_pitch_node = -1;
 
 void game_init(void)
 {
+	/* TODO: Implement dealing with init failures */
 	GLFWwindow* window = window_get_active();
 	/* Init systems */
 	input_init(window);
@@ -39,6 +41,7 @@ void game_init(void)
 	io_file_init("/mnt/Dev/Projects/Symmetry/assets/");/* TODO: Implement proper way of getting binary directory */
 	shader_init();
 	texture_init();
+	framebuffer_init();
 	transform_init();
 	camera_init();
 	geom_init();
@@ -273,6 +276,7 @@ void game_cleanup(void)
 	input_cleanup();
 	renderer_cleanup();
 	io_file_cleanup();
+	framebuffer_cleanup();
 	texture_cleanup();
 	shader_cleanup();
 }

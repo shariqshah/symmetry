@@ -19,5 +19,16 @@ void texture_bind(int index);
 void texture_unbind(int index);
 void texture_param_set(int index, int parameter, int value);
 int  texture_get_textureunit(int index);
+int  texture_get_texture_handle(int index);
+void texture_inc_refcount(int index);
+void texture_dec_refcount(int index);
+int  texture_create(const char* name,
+					int         texture_unit,
+					int         width,
+					int         height,
+					int         format,
+					int         int_fmt,
+					int         type,
+					void*       data);
 
 #endif

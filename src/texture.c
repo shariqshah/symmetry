@@ -44,6 +44,7 @@ static int* empty_indices;
 int  load_img(FILE* file, GLubyte** image_data, int* width, int* height, int* fmt, int* internal_fmt);
 void debug_write_tga(struct Tga_Header* header, GLubyte* image_data);
 void copy_tga_pixel(GLubyte* source, GLubyte* dest, size_t bytes_per_pixel);
+int  create_gl_texture(uint* out_handle, int width, int height, int format, int int_fmt, int type, void* data);
 
 void texture_init(void)
 {
@@ -62,7 +63,6 @@ int texture_create_from_file(const char* filename, int texture_unit)
 		return index;
 	}
 	/* If texture not already loaded then try to load it */
-	uint handle = 0;
 	char* full_path = str_new("textures/");
 	full_path = str_concat(full_path, filename);
 	FILE* file = io_file_open(full_path, "rb");
@@ -71,42 +71,25 @@ int texture_create_from_file(const char* filename, int texture_unit)
 	if(file)
 	{
 		/* Load texture here */
-		int width, height, internal_fmt, fmt;
+		int width, height, int_fmt, fmt;
 		GLubyte* img_data = NULL;
-		width = height = internal_fmt = fmt = -1;
-		img_load_success = load_img(file, &img_data, &width, &height, &fmt, &internal_fmt);
+		width = height = int_fmt = fmt = -1;
+		img_load_success = load_img(file, &img_data, &width, &height, &fmt, &int_fmt);
 
 		if(img_load_success)
 		{
-			struct Texture* new_texture = NULL;
-			if(array_len(empty_indices) > 0)
+			index = texture_create(filename, texture_unit, width, height, fmt, int_fmt, GL_UNSIGNED_BYTE, img_data);
+			if(index > -1)
 			{
-				index = *array_get_last(empty_indices, int);
-				array_pop(empty_indices);
-				new_texture = &texture_list[index];
+				texture_param_set(index, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				texture_param_set(index, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				texture_param_set(index,GL_TEXTURE_WRAP_S,GL_REPEAT);
+				texture_param_set(index,GL_TEXTURE_WRAP_T,GL_REPEAT);
 			}
 			else
 			{
-				new_texture = array_grow(texture_list, struct Texture);
-				index = array_len(texture_list) - 1;
-				new_texture->name = NULL;
+				log_error("texture:create_from_file", "Error creating texture");
 			}
-			assert(new_texture);
-			glGenTextures(1, &handle);
-			if(new_texture->name)
-				free(new_texture->name);
-			new_texture->name = str_new(filename);
-			new_texture->ref_count = 1;
-			new_texture->handle = handle;
-			new_texture->texture_unit = texture_unit;
-			glBindTexture(GL_TEXTURE_2D, handle);
-			texture_param_set(index, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			texture_param_set(index, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			texture_param_set(index,GL_TEXTURE_WRAP_S,GL_REPEAT);
-			texture_param_set(index,GL_TEXTURE_WRAP_T,GL_REPEAT);
-			glTexImage2D(GL_TEXTURE_2D, 0, internal_fmt, width, height, 0, fmt, GL_UNSIGNED_BYTE, img_data);
-			renderer_check_glerror("texture:create");
-			glBindTexture(GL_TEXTURE_2D, 0);
 			free(img_data);
 		}
 		fclose(file);
@@ -357,4 +340,76 @@ int texture_get_textureunit(int index)
 {
 	assert(index > -1 && index < array_len(texture_list));
 	return texture_list[index].texture_unit;
+}
+
+int texture_get_texture_handle(int index)
+{
+	assert(index > -1 && index < array_len(texture_list));
+	return texture_list[index].handle;
+}
+
+void texture_inc_refcount(int index)
+{
+	assert(index > -1 && index < array_len(texture_list));
+	texture_list[index].ref_count++;
+}
+
+void texture_dec_refcount(int index)
+{
+	assert(index > -1 && index < array_len(texture_list));
+	texture_list[index].ref_count--;
+}
+
+int texture_create(const char* name,
+				   int   texture_unit,
+				   int   width,
+				   int   height,
+				   int   format,
+				   int   int_fmt,
+				   int   type,
+				   void* data)
+{
+	assert(name && texture_unit > -1 && texture_unit <= TU_SHADOWMAP4);
+	int index = -1;
+	uint handle = 0;
+	int success = create_gl_texture(&handle, width, height, format, int_fmt, type, data);
+	if(success)
+	{
+		struct Texture* new_tex = NULL;
+		if(array_len(empty_indices) > 0)
+		{
+			index = *array_get_last(empty_indices, int);
+			array_pop(empty_indices);
+			new_tex = &texture_list[index];
+		}
+		else
+		{
+			new_tex = array_grow(texture_list, struct Texture);
+			index = array_len(texture_list) - 1;
+		}
+		new_tex->name = str_new(name);
+		new_tex->handle = handle;
+		new_tex->ref_count = 1;
+		new_tex->texture_unit = texture_unit;
+	}
+	return index;
+}
+
+int create_gl_texture(uint* out_handle, int width, int height, int format, int int_fmt, int type, void* data)
+{
+	int success = 1;
+	glGenTextures(1, out_handle);
+	if(renderer_check_glerror("texture:create_gl_texture:glGentexture"))
+	{
+		success = 0;
+	}
+	else
+	{
+		glBindTexture(GL_TEXTURE_2D, *out_handle);
+		glTexImage2D(GL_TEXTURE_2D, 0, int_fmt, width, height, 0, format, type, data);
+		if(renderer_check_glerror("texture:create_gl_texture:glTexImage2d"))
+			success = 0;
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+	return success;
 }

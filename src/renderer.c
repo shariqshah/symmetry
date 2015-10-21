@@ -5,6 +5,8 @@
 #include "camera.h"
 #include "model.h"
 
+static int default_fbo = -1;
+
 void on_framebuffer_size_change(GLFWwindow* window, int width, int height);
 
 void renderer_init(GLFWwindow* window)
@@ -38,11 +40,12 @@ void renderer_set_clearcolor(float red, float green, float blue, float alpha)
 	glClearColor(red, green, blue, alpha);
 }
 
-void renderer_check_glerror(const char* context)
+int renderer_check_glerror(const char* context)
 {
-	GLenum error = glGetError();
+	int error = 1;
+	GLenum error_code = glGetError();
 	const char* errorString = "No Error";
-	switch(error)
+	switch(error_code)
 	{
 	case GL_INVALID_OPERATION:
 		errorString = "Invalid Operation";
@@ -70,8 +73,10 @@ void renderer_check_glerror(const char* context)
 		break;
 	}
 
-	if(error != GL_NO_ERROR)
-	{
+	if(error_code != GL_NO_ERROR)
 		log_error(context, errorString);
-	}
+	else
+		error = 0;
+
+	return error;
 }

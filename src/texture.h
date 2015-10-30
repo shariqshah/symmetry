@@ -17,7 +17,7 @@ int  texture_find(const char* name);
 void texture_cleanup(void);
 void texture_bind(int index);
 void texture_unbind(int index);
-void texture_param_set(int index, int parameter, int value);
+void texture_set_param(int index, int parameter, int value);
 int  texture_get_textureunit(int index);
 int  texture_get_texture_handle(int index);
 void texture_inc_refcount(int index);

@@ -38,7 +38,7 @@ void model_init(void)
 int model_create(int node, const char* geo_name)
 {
 	assert(geo_name);
-	int geo_index = geom_create(geo_name);
+	int geo_index = geom_create_from_file(geo_name);
 	int index = -1;
 	struct Model* new_model = NULL;
 	if(geo_index > -1)

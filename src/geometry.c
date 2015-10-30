@@ -1,7 +1,5 @@
 #include "geometry.h"
 #include "array.h"
-#include "num_types.h"
-#include "linmath.h"
 #include "string_utils.h"
 #include "file_io.h"
 #include "log.h"
@@ -40,9 +38,9 @@ struct Geometry
 static struct Geometry* geometry_list;
 static int* empty_indices;
 
-/* Function definitions */
-int load_from_file(struct Geometry* geometry, const char* filename);
-void create_vao(struct Geometry* geometry);
+static int  load_from_file(struct Geometry* geometry, const char* filename);
+static void create_vao(struct Geometry* geometry);
+static struct Geometry* generate_new_index(int* out_new_index);
 
 void geom_init(void)
 {
@@ -65,26 +63,35 @@ int geom_find(const char* filename)
 	return index;
 }
 
-int geom_create(const char* name)
+static struct Geometry* generate_new_index(int* out_new_index)
 {
+	assert(out_new_index);
+	int empty_len = array_len(empty_indices);
+	struct Geometry* new_geo = NULL;
+	if(empty_len > 0)
+	{
+		*out_new_index = empty_indices[empty_len - 1];
+		array_pop(empty_indices);
+		new_geo = &geometry_list[*out_new_index];
+	}
+	else
+	{
+		new_geo = array_grow(geometry_list, struct Geometry);
+		*out_new_index = array_len(geometry_list) - 1;
+	}
+	return new_geo;
+}
+
+int geom_create_from_file(const char* name)
+{
+	assert(name);
 	// check if exists
 	int index = geom_find(name);
 	if(index == -1)
 	{
 		/* add new geometry object or overwrite existing one */
 		struct Geometry* new_geo = NULL;
-		int empty_len = array_len(empty_indices);
-		if(empty_len > 0)
-		{
-			index = empty_indices[empty_len - 1];
-			array_pop(empty_indices);
-			new_geo = &geometry_list[index];
-		}
-		else
-		{
-			new_geo = array_grow(geometry_list, struct Geometry);
-			index = array_len(geometry_list) - 1;
-		}
+		new_geo = generate_new_index(&index);
 		assert(new_geo);
 		
 		if(load_from_file(new_geo, name))
@@ -106,6 +113,38 @@ int geom_create(const char* name)
 	return index;
 }
 
+int geom_create(const char* name, vec3* vertices, vec2* uvs, vec3* normals, uint* indices, vec3* vertex_colors)
+{
+	assert(name && vertices && uvs && normals && indices);
+	int index = -1;
+	/* add new geometry object or overwrite existing one */
+	struct Geometry* new_geo = NULL;
+	new_geo = generate_new_index(&index);
+	assert(new_geo);
+	new_geo->filename = str_new(name);
+	new_geo->vertices = array_new_cap(vec3, array_len(vertices));
+	array_copy(vertices, new_geo->vertices);
+	new_geo->normals = array_new_cap(vec3, array_len(normals));
+	array_copy(normals, new_geo->normals);
+	new_geo->uvs = array_new_cap(vec2, array_len(uvs));
+	array_copy(uvs, new_geo->uvs);
+	new_geo->indices = array_new_cap(uint, array_len(indices));
+	array_copy(indices, new_geo->indices);
+	if(vertex_colors)
+	{
+		new_geo->vertex_colors = array_new_cap(vec3, array_len(vertex_colors));
+		array_copy(vertex_colors, new_geo->vertex_colors);
+	}
+	else
+	{
+		new_geo->vertex_colors = array_new(vec3);
+	}
+	create_vao(new_geo);
+	//generateBoundingBox(index);
+	return index;
+}
+
+
 void geom_remove(int index)
 {
 	if(index >= 0 && index < array_len(geometry_list))
@@ -122,6 +161,12 @@ void geom_remove(int index)
 				if(geometry->normals) array_free(geometry->normals);
 				if(geometry->vertex_colors) array_free(geometry->vertex_colors);
 				if(geometry->filename) free(geometry->filename);
+				geometry->indices       = NULL;
+				geometry->vertices      = NULL;
+				geometry->uvs           = NULL;
+				geometry->normals       = NULL;
+				geometry->vertex_colors = NULL;
+				geometry->filename      = NULL;
 				array_push(empty_indices, index, int);
 			}
 		}
@@ -137,7 +182,7 @@ void geom_cleanup(void)
 	array_free(empty_indices);
 }
 
-int load_from_file(struct Geometry* geometry, const char* filename)
+static int load_from_file(struct Geometry* geometry, const char* filename)
 {
 	assert(filename);
 	int success = 1;
@@ -195,9 +240,9 @@ int load_from_file(struct Geometry* geometry, const char* filename)
 	return success;
 }
 
-void create_vao(struct Geometry* geometry)
+static void create_vao(struct Geometry* geometry)
 {
-	// TODO : Add support for different model formats and interleaving VBO
+	// TODO: Add support for different model formats and interleaving VBO
 	assert(geometry);
 	glGenVertexArrays(1, &geometry->vao);
 	glBindVertexArray(geometry->vao);

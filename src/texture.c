@@ -81,10 +81,10 @@ int texture_create_from_file(const char* filename, int texture_unit)
 			index = texture_create(filename, texture_unit, width, height, fmt, int_fmt, GL_UNSIGNED_BYTE, img_data);
 			if(index > -1)
 			{
-				texture_param_set(index, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				texture_param_set(index, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				texture_param_set(index,GL_TEXTURE_WRAP_S,GL_REPEAT);
-				texture_param_set(index,GL_TEXTURE_WRAP_T,GL_REPEAT);
+				texture_set_param(index, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				texture_set_param(index, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				texture_set_param(index,GL_TEXTURE_WRAP_S,GL_REPEAT);
+				texture_set_param(index,GL_TEXTURE_WRAP_T,GL_REPEAT);
 			}
 			else
 			{
@@ -291,7 +291,7 @@ int load_img(FILE* file, GLubyte** image_data, int* width, int* height, int* fmt
 	return success;
 }
 
-void texture_param_set(int index, int parameter, int value)
+void texture_set_param(int index, int parameter, int value)
 {
 	struct Texture* texture = NULL;
 	if(index > -1 && index < array_len(texture_list))
@@ -303,7 +303,7 @@ void texture_param_set(int index, int parameter, int value)
 	glGetIntegerv(GL_TEXTURE_2D, &curr_texture);
 	glBindTexture(GL_TEXTURE_2D, texture->handle);
 	glTexParameteri(GL_TEXTURE_2D, parameter, value);
-	renderer_check_glerror("texture:param_set");
+	renderer_check_glerror("texture:set_param");
 	if(curr_texture != 0)
 		glBindTexture(GL_TEXTURE_2D, curr_texture);
 }

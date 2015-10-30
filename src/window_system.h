@@ -12,6 +12,7 @@ typedef void (*on_mouse_pos) (double, double); // Callback for mouse position
 int         window_init(const char* title, int width, int height);
 void        window_cleanup(void);
 void        window_set_size(int width, int height);
+void        window_get_size(int* width, int* height);
 void        window_poll_events(void);
 void        window_swap_buffers(void);
 int         window_should_close(void);

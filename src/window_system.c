@@ -101,3 +101,8 @@ void window_set_should_close(int should_close)
 {
 	glfwSetWindowShouldClose(active_window, should_close ? GL_TRUE : GL_FALSE);
 }
+
+void window_get_size(int* width, int* height)
+{
+	glfwGetWindowSize(active_window, width, height);
+}

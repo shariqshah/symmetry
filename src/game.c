@@ -37,14 +37,14 @@ void game_init(void)
 	GLFWwindow* window = window_get_active();
 	/* Init systems */
 	input_init(window);
-	renderer_init(window);
 	io_file_init("/mnt/Dev/Projects/Symmetry/assets/");/* TODO: Implement proper way of getting binary directory */
 	shader_init();
 	texture_init();
 	framebuffer_init();
+	geom_init();
+	renderer_init(window);
 	transform_init();
 	camera_init();
-	geom_init();
 	material_init();
 	model_init();
 	entity_init();

@@ -17,7 +17,6 @@ struct Array
 static struct Array* array_get_ptr(void* array_data);
 static struct Array* array_reallocate(struct Array* array);
 static void*         array_top(struct Array* array);
-static void*         array_get(struct Array* array, unsigned int index);
 
 static struct Array* array_get_ptr(void* array_data)
 {
@@ -26,7 +25,7 @@ static struct Array* array_get_ptr(void* array_data)
 
 void* array_new_(size_t object_size, int capacity)
 {
-	capacity = capacity == 0 ? ARRAY_MIN_CAPACITY : capacity;
+	if(capacity == 0) capacity = ARRAY_MIN_CAPACITY;
 	struct Array* new_array = malloc(sizeof(*new_array) + (object_size * capacity));
 	new_array->object_size = object_size;
 	new_array->length = 0;
@@ -39,11 +38,6 @@ void array_free(void* array)
 {
 	struct Array* array_ptr = array_get_ptr(array);
 	free(array_ptr);
-}
-
-void* array_get(struct Array* array, unsigned int index)
-{
-	return array->data + (array->object_size * index);
 }
 
 void* array_top(struct Array* array)
@@ -81,6 +75,7 @@ int array_reset_(void** array, int length)
 	size_t object_size = array_ptr->object_size;
 	int new_capacity = length < ARRAY_MIN_CAPACITY ? ARRAY_MIN_CAPACITY : length;
 	int new_length = new_capacity;
+	array_free(*array);
 	array_ptr = calloc(1, sizeof(*array_ptr) + (new_capacity * object_size));
 	if(array_ptr)
 	{
@@ -187,7 +182,8 @@ void array_inc_cap_by_(void** array, int cap)
 	if(cap > 0)
 	{
 		array_ptr->capacity += cap;
-		char* new_data = realloc(array_ptr, sizeof(*array_ptr) + (array_ptr->object_size * array_ptr->capacity));
+		char* new_data = realloc(array_ptr,
+								 sizeof(*array_ptr) + (array_ptr->object_size * array_ptr->capacity));
 		if(new_data)
 		{
 			array_ptr = (struct Array*)new_data;
@@ -195,8 +191,29 @@ void array_inc_cap_by_(void** array, int cap)
 		}
 		else
 		{
-			array_ptr->capacity = array_ptr->capacity -= cap;
+			array_ptr->capacity -= cap;
 			/* TODO: Error handling here! */
 		}
 	}
+}
+
+int array_copy_(void* array_src, void** array_dest)
+{
+	int success = 0;
+	struct Array* src = array_get_ptr(array_src);
+	struct Array* dest = array_get_ptr(*array_dest);
+	
+	/* determine if copy is possible */
+	if(src->object_size != dest->object_size)
+		return success;
+
+	if((src->length > dest->length) && (dest->capacity < src->length))
+	{
+		array_free(*array_dest);
+		*array_dest = array_new_(src->object_size, src->capacity);
+		dest = *array_dest;
+	}
+	memcpy(dest->data, src->data, src->object_size * src->length);
+	dest->length = src->length;
+	return success;
 }

@@ -11,6 +11,7 @@ int   array_pop_(void** array);	// Remove object with highest index
 int   array_remove_at_(void** array, int index);
 void  array_match_len_cap_(void** array);
 void  array_inc_cap_by_(void** array, int cap);
+int   array_copy_(void* arr_src, void** arr_dest);
 
 /* Public Api */
 #define array_new(type)                  (type*) array_new_(sizeof(type), 0); // Use this for array creation
@@ -27,9 +28,11 @@ void  array_inc_cap_by_(void** array, int cap);
 #define array_reset(array, length)       array_reset_((void**)&array, length);
 #define array_match_len_cap(array)       array_match_len_cap_((void**)&array);
 #define array_inc_cap_by(array, cap)     array_inc_cap_by_((void**)&array, cap);
+#define array_copy(src, dest)            array_copy_(src, (void**)&dest);
 int  array_len(void* array);
 int  array_capacity(void* array);
 void array_free(void* array);
+
 /* TODO function to increase capacity of array by certain number similar to reserve in stl vector? */
 
 #endif

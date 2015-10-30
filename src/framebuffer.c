@@ -144,15 +144,15 @@ void framebuffer_set_texture(int index, int texture, int attachment)
 						   GL_TEXTURE_2D,
 						   texture_get_texture_handle(texture),
 						   0);
-	if(!renderer_check_glerror("framebuffer:set_texture:glFramebuffertexture"))
-	{
-		int current_fbo_tex = fbo_list[index].texture;
-		if(current_fbo_tex > -1)
-			texture_remove(current_fbo_tex);
+	/* if(!renderer_check_glerror("framebuffer:set_texture:glFramebuffertexture")) */
+	/* { */
+	/* 	int current_fbo_tex = fbo_list[index].texture; */
+	/* 	if(current_fbo_tex > -1) */
+	/* 		texture_remove(current_fbo_tex); */
 
-		fbo_list[index].texture = texture;
-		texture_inc_refcount(texture);
-	}
+	/* 	fbo_list[index].texture = texture; */
+	/* 	texture_inc_refcount(texture); */
+	/* } */
 	glBindFramebuffer(GL_FRAMEBUFFER, current_fbo);
 }
 

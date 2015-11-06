@@ -120,7 +120,6 @@ void renderer_draw(void)
 
 void renderer_cleanup(void)
 {
-	shader_remove(fbo_shader);
 	geom_remove(quad_geo);
 	framebuffer_remove(def_fbo);
 	texture_remove(def_render_tex);

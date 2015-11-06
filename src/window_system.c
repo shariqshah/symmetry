@@ -63,6 +63,7 @@ void window_close_callback(GLFWwindow* window)
 void window_cleanup(void)
 {
 	if(active_window) glfwDestroyWindow(active_window);
+	active_window = NULL;
 	glfwTerminate();
 }
 

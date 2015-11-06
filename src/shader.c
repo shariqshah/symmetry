@@ -284,6 +284,7 @@ void shader_set_uniform_mat4(const int shader_index,  const char* name, const ma
 void shader_remove(const int shader_index)
 {
 	uint shader = shader_list[shader_index];
+	if(shader == 0) return; 	/* shader is already deleted or invalid */
 	int curr_program = 0;
 	glGetIntegerv(GL_CURRENT_PROGRAM, &curr_program);
 	if((uint)curr_program == shader)

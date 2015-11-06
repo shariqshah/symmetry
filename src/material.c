@@ -8,6 +8,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 
 static struct Material* material_list;
 static int* empty_indices;

@@ -22,13 +22,11 @@ files { "src/*.h", "src/*.c"}
 configuration "Debug"
 flags {"Symbols"}
 libdirs {path.join(lib_base, "debug/**")}
-links {"kazmath"}
 targetdir "bin/debug"
 
 configuration "Release"
 defines {"NDEBUG"}
 flags {"Optimize"}
 libdirs {path.join(lib_base, "release/**")}
-links {"kazmath"}
 targetdir "bin/release"
 

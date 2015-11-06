@@ -81,7 +81,7 @@ void model_remove(int index)
 		material_unregister_model(model, index);
 		/* deallocate all params */
 		for(int i = 0; i < array_len(model->material_params); i++)
-			free(&model->material_params[i]);
+			free(model->material_params[i].value);
 
 		array_free(model->material_params);
 		array_push(empty_indices, index, int);

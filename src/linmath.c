@@ -303,7 +303,7 @@ void vec4_transform_norm(vec4* res, const vec4* val, const mat4* mat)
 void mat4_identity(mat4* res)
 {
 	memset(res->mat, 0, sizeof(float) * 16);
-	res->mat[0] = 0; res->mat[5] = 0; res->mat[10] = 0; res->mat[15] = 0;
+	res->mat[0] = res->mat[5] = res->mat[10] = res->mat[15] = 1.0f;
 }
 
 void mat4_mul(mat4* res, const mat4* mat1, const mat4* mat2)

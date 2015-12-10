@@ -1,3 +1,6 @@
+#+AUTHOR:Shariq Shah
+#+EMAIL:bluerriq@gmail.com
+#+TITLE:Project Symmetry
 * Project Symmetry
 
 ** What?
@@ -34,9 +37,11 @@ while using as few libraries as possible.
    - State "DONE"       from "TODO"       [2015-07-27 Mon 11:54]
 ** DONE Investigate about Exit() and at_exit() functions and whether to use them or not.
    - State "DONE"       from "TODO"       [2015-08-02 Sun 19:09]
-** TODO Fix readme markdown
+** DONE Fix readme markdown
+- State "DONE"       from "TODO"       [2015-12-10 Thu 16:36]
 ** TODO Framebuffer and resolution independent rendering
-** TODO Remove Kazmath dependency
+** DONE Remove Kazmath dependency
+- State "DONE"       from "TODO"       [2015-12-10 Thu 16:36]
 ** DONE Entity
 - State "DONE"       from "TODO"       [2015-09-15 Tue 12:17]
 ** TODO Positive and negative values for input_maps and returning corresponding values when they are true

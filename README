@@ -1,0 +1,228 @@
+						   __________________
+
+							PROJECT SYMMETRY
+
+							  Shariq Shah
+						   __________________
+
+
+Table of Contents
+_________________
+
+1 Project Symmetry
+.. 1.1 What?
+.. 1.2 Why?
+2 Things TODO
+.. 2.1 DONE Input
+.. 2.2 DONE Shaders
+.. 2.3 DONE Geometry
+.. 2.4 DONE change struct usage
+.. 2.5 DONE change Array implementation
+.. 2.6 DONE resolve vec-types sizes
+.. 2.7 DONE Transform
+.. 2.8 DONE Deltatime
+.. 2.9 DONE Investigate about Exit() and at_exit() functions and whether to use them or not.
+.. 2.10 DONE Fix readme markdown
+.. 2.11 TODO Framebuffer and resolution independent rendering
+.. 2.12 DONE Remove Kazmath dependency
+.. 2.13 DONE Entity
+.. 2.14 TODO Positive and negative values for input_maps and returning corresponding values when they are true
+.. 2.15 DONE Textures
+.. 2.16 DONE Camera
+.. 2.17 DONE Test render
+.. 2.18 TODO Bounding Boxes
+.. 2.19 TODO File extension checking for asset loading
+.. 2.20 DONE Materials
+.. 2.21 DONE Mesh/Model
+.. 2.22 TODO Add modifiers to input maps to enable combinations for example, c-x, m-k etc
+.. 2.23 DONE Heirarchical Transforms
+.. 2.24 DONE Materials with textures
+.. 2.25 TODO 2d drawing routines
+.. 2.26 TODO Gui
+.. 2.27 TODO Physics
+.. 2.28 TODO Improve the readme
+.. 2.29 TODO ???
+.. 2.30 TODO Profit!
+
+
+1 Project Symmetry
+==================
+
+1.1 What?
+~~~~~~~~~
+
+  An attempt to convert all previous code written in Project
+  Abstraction(written in C++) to C while using as few libraries as
+  possible.
+
+
+1.2 Why?
+~~~~~~~~
+
+  - To create a platform on which i will base further projects on.
+  - To learn and remove as many black boxes as possible.
+  - Profit!?!
+
+
+2 Things TODO
+=============
+
+2.1 DONE Input
+~~~~~~~~~~~~~~
+
+  - State "DONE" from "TODO" [2015-07-02 Thu 01:24]
+  - Input maps (addition/removal)
+  - Adding removing keys to input maps
+  - Changing map na
+
+
+2.2 DONE Shaders
+~~~~~~~~~~~~~~~~
+
+  - State "DONE" from "TODO" [2015-07-11 Sat 17:57]
+  - set asset folder
+  - load/compile shader
+
+
+2.3 DONE Geometry
+~~~~~~~~~~~~~~~~~
+
+  - State "DONE" from "TODO" [2015-07-11 Sat 17:57]
+
+
+2.4 DONE change struct usage
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  - State "DONE" from "TODO" [2015-07-21 Tue 15:13]
+
+
+2.5 DONE change Array implementation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  - State "DONE" from "TODO" [2015-07-25 Sat 20:27]
+
+
+2.6 DONE resolve vec-types sizes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  - State "DONE" from "TODO" [2015-07-25 Sat 20:27]
+
+
+2.7 DONE Transform
+~~~~~~~~~~~~~~~~~~
+
+  - State "DONE" from "TODO" [2015-07-26 Sun 18:01]
+
+
+2.8 DONE Deltatime
+~~~~~~~~~~~~~~~~~~
+
+  - State "DONE" from "TODO" [2015-07-27 Mon 11:54]
+
+
+2.9 DONE Investigate about Exit() and at_exit() functions and whether to use them or not.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  - State "DONE" from "TODO" [2015-08-02 Sun 19:09]
+
+
+2.10 DONE Fix readme markdown
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  - State "DONE" from "TODO" [2015-12-10 Thu 16:36]
+
+
+2.11 TODO Framebuffer and resolution independent rendering
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+2.12 DONE Remove Kazmath dependency
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  - State "DONE" from "TODO" [2015-12-10 Thu 16:36]
+
+
+2.13 DONE Entity
+~~~~~~~~~~~~~~~~
+
+  - State "DONE" from "TODO" [2015-09-15 Tue 12:17]
+
+
+2.14 TODO Positive and negative values for input_maps and returning corresponding values when they are true
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+2.15 DONE Textures
+~~~~~~~~~~~~~~~~~~
+
+  - State "DONE" from "TODO" [2015-10-09 Fri 18:47]
+
+
+2.16 DONE Camera
+~~~~~~~~~~~~~~~~
+
+  - State "DONE" from "TODO" [2015-08-19 Wed 13:30]
+
+
+2.17 DONE Test render
+~~~~~~~~~~~~~~~~~~~~~
+
+  - State "DONE" from "TODO" [2015-08-19 Wed 13:30]
+
+
+2.18 TODO Bounding Boxes
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+2.19 TODO File extension checking for asset loading
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+2.20 DONE Materials
+~~~~~~~~~~~~~~~~~~~
+
+  - State "DONE" from "TODO" [2015-10-13 Tue 19:38]
+
+
+2.21 DONE Mesh/Model
+~~~~~~~~~~~~~~~~~~~~
+
+  - State "DONE" from "TODO" [2015-10-13 Tue 19:38]
+
+
+2.22 TODO Add modifiers to input maps to enable combinations for example, c-x, m-k etc
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+2.23 DONE Heirarchical Transforms
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+2.24 DONE Materials with textures
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  - State "DONE" from "TODO" [2015-10-15 Thu 21:21]
+
+
+2.25 TODO 2d drawing routines
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+2.26 TODO Gui
+~~~~~~~~~~~~~
+
+
+2.27 TODO Physics
+~~~~~~~~~~~~~~~~~
+
+
+2.28 TODO Improve the readme
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+2.29 TODO ???
+~~~~~~~~~~~~~
+
+
+2.30 TODO Profit!
+~~~~~~~~~~~~~~~~~

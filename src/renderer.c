@@ -129,6 +129,10 @@ void renderer_cleanup(void)
 void on_framebuffer_size_change(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
+	struct Camera* camera = camera_get(0);
+	float aspect = (float)width / (float)height;
+	camera->aspect_ratio = aspect > 0.f ? aspect : 4.f / 3.f;
+	camera_update_proj(camera);
 }
 
 void renderer_set_clearcolor(float red, float green, float blue, float alpha)

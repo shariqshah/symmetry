@@ -12,6 +12,7 @@ _________________
 1 Project Symmetry
 .. 1.1 What?
 .. 1.2 Why?
+.. 1.3 License
 2 Things TODO
 .. 2.1 DONE Input
 .. 2.2 DONE Shaders
@@ -62,6 +63,13 @@ _________________
   - To create a platform on which i will base further projects on.
   - To learn and remove as many black boxes as possible.
   - Profit!?!
+
+
+1.3 License
+~~~~~~~~~~~
+
+  All the code in this repository is under GPLv3, see LICENSE for more
+  information
 
 
 2 Things TODO

@@ -12,6 +12,8 @@ while using as few libraries as possible.
 - To learn and remove as many black boxes as possible.
 - Profit!?!
 
+** License
+All the code in this repository is under GPLv3, see LICENSE for more information
 
 * Things TODO
 ** DONE Input

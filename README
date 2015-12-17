@@ -25,25 +25,27 @@ _________________
 .. 2.9 DONE Investigate about Exit() and at_exit() functions and whether to use them or not.
 .. 2.10 DONE Fix readme markdown
 .. 2.11 TODO Framebuffer and resolution independent rendering
-.. 2.12 DONE Remove Kazmath dependency
-.. 2.13 DONE Entity
-.. 2.14 TODO Positive and negative values for input_maps and returning corresponding values when they are true
-.. 2.15 DONE Textures
-.. 2.16 DONE Camera
-.. 2.17 DONE Test render
-.. 2.18 TODO Bounding Boxes
-.. 2.19 TODO File extension checking for asset loading
-.. 2.20 DONE Materials
-.. 2.21 DONE Mesh/Model
-.. 2.22 TODO Add modifiers to input maps to enable combinations for example, c-x, m-k etc
-.. 2.23 DONE Heirarchical Transforms
-.. 2.24 DONE Materials with textures
-.. 2.25 TODO 2d drawing routines
-.. 2.26 TODO Gui
-.. 2.27 TODO Physics
-.. 2.28 TODO Improve the readme
-.. 2.29 TODO ???
-.. 2.30 TODO Profit!
+.. 2.12 TODO A simpler build system without dependencies
+.. 2.13 TODO Remove dependencies
+.. 2.14 DONE Remove Kazmath dependency
+.. 2.15 DONE Entity
+.. 2.16 TODO Positive and negative values for input_maps and returning corresponding values when they are true
+.. 2.17 DONE Textures
+.. 2.18 DONE Camera
+.. 2.19 DONE Test render
+.. 2.20 TODO Bounding Boxes
+.. 2.21 TODO File extension checking for asset loading
+.. 2.22 DONE Materials
+.. 2.23 DONE Mesh/Model
+.. 2.24 TODO Add modifiers to input maps to enable combinations for example, c-x, m-k etc
+.. 2.25 DONE Heirarchical Transforms
+.. 2.26 DONE Materials with textures
+.. 2.27 TODO 2d drawing routines
+.. 2.28 TODO Gui
+.. 2.29 TODO Physics
+.. 2.30 TODO Improve the readme
+.. 2.31 TODO ???
+.. 2.32 TODO Profit!
 
 
 1 Project Symmetry
@@ -144,93 +146,104 @@ _________________
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.12 DONE Remove Kazmath dependency
+2.12 TODO A simpler build system without dependencies
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+2.13 TODO Remove dependencies
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  - glfw3
+  - glew
+
+
+2.14 DONE Remove Kazmath dependency
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   - State "DONE" from "TODO" [2015-12-10 Thu 16:36]
 
 
-2.13 DONE Entity
+2.15 DONE Entity
 ~~~~~~~~~~~~~~~~
 
   - State "DONE" from "TODO" [2015-09-15 Tue 12:17]
 
 
-2.14 TODO Positive and negative values for input_maps and returning corresponding values when they are true
+2.16 TODO Positive and negative values for input_maps and returning corresponding values when they are true
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.15 DONE Textures
+2.17 DONE Textures
 ~~~~~~~~~~~~~~~~~~
 
   - State "DONE" from "TODO" [2015-10-09 Fri 18:47]
 
 
-2.16 DONE Camera
+2.18 DONE Camera
 ~~~~~~~~~~~~~~~~
 
   - State "DONE" from "TODO" [2015-08-19 Wed 13:30]
 
 
-2.17 DONE Test render
+2.19 DONE Test render
 ~~~~~~~~~~~~~~~~~~~~~
 
   - State "DONE" from "TODO" [2015-08-19 Wed 13:30]
 
 
-2.18 TODO Bounding Boxes
+2.20 TODO Bounding Boxes
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.19 TODO File extension checking for asset loading
+2.21 TODO File extension checking for asset loading
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.20 DONE Materials
+2.22 DONE Materials
 ~~~~~~~~~~~~~~~~~~~
 
   - State "DONE" from "TODO" [2015-10-13 Tue 19:38]
 
 
-2.21 DONE Mesh/Model
+2.23 DONE Mesh/Model
 ~~~~~~~~~~~~~~~~~~~~
 
   - State "DONE" from "TODO" [2015-10-13 Tue 19:38]
 
 
-2.22 TODO Add modifiers to input maps to enable combinations for example, c-x, m-k etc
+2.24 TODO Add modifiers to input maps to enable combinations for example, c-x, m-k etc
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.23 DONE Heirarchical Transforms
+2.25 DONE Heirarchical Transforms
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.24 DONE Materials with textures
+2.26 DONE Materials with textures
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   - State "DONE" from "TODO" [2015-10-15 Thu 21:21]
 
 
-2.25 TODO 2d drawing routines
+2.27 TODO 2d drawing routines
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.26 TODO Gui
+2.28 TODO Gui
 ~~~~~~~~~~~~~
 
 
-2.27 TODO Physics
+2.29 TODO Physics
 ~~~~~~~~~~~~~~~~~
 
 
-2.28 TODO Improve the readme
+2.30 TODO Improve the readme
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.29 TODO ???
+2.31 TODO ???
 ~~~~~~~~~~~~~
 
 
-2.30 TODO Profit!
+2.32 TODO Profit!
 ~~~~~~~~~~~~~~~~~

@@ -42,6 +42,10 @@ All the code in this repository is under GPLv3, see LICENSE for more information
 ** DONE Fix readme markdown
 - State "DONE"       from "TODO"       [2015-12-10 Thu 16:36]
 ** TODO Framebuffer and resolution independent rendering
+** TODO A simpler build system without dependencies
+** TODO Remove dependencies
+- glfw3
+- glew
 ** DONE Remove Kazmath dependency
 - State "DONE"       from "TODO"       [2015-12-10 Thu 16:36]
 ** DONE Entity

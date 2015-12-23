@@ -84,7 +84,12 @@ void scene_setup(void)
 	vec3 viewer_pos = {0, 0, 10};
 	struct Transform* viewer_tran = entity_component_get(player, C_TRANSFORM);
 	transform_set_position(viewer_tran, &viewer_pos);
-	entity_component_add(player, C_CAMERA, 800, 600);
+	int render_width, render_height;
+	render_width = 800;
+	render_height = 600;
+	struct Camera* camera = entity_component_add(player, C_CAMERA, render_width, render_height);
+	camera_attach_fbo(camera, render_width, render_height, 1, 1);
+	camera_set_primary_viewer(camera);
 	
 	struct Entity* new_ent = scene_add_new("Model_Entity", NULL);
 	struct Transform* tran = entity_component_get(new_ent, C_TRANSFORM);

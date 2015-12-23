@@ -95,24 +95,37 @@ void renderer_init(GLFWwindow* window)
 
 void renderer_draw(void)
 {
-	framebuffer_bind(def_fbo);
+	struct Camera* camera_list = camera_get_all();
+	for(int i = 0; i < array_len(camera_list); i++)
 	{
-		glDrawBuffer(GL_COLOR_ATTACHMENT0);
-		glDepthFunc(GL_LEQUAL);
-		glEnable(GL_BLEND);
-		glBlendEquation(GL_FUNC_ADD);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		struct Camera* camera = camera_get(0);
-		model_render_all(camera);
-		glDisable(GL_BLEND);
-	}
-	framebuffer_unbind();
+		struct Camera* camera = &camera_list[i];
+		if(camera->node < 0)
+			continue;
 
+		int fbo = camera->fbo == -1 ? def_fbo : camera->fbo;
+		framebuffer_bind(fbo);
+		{
+			glViewport(0, 0, framebuffer_get_width(fbo), framebuffer_get_height(fbo));
+			glDrawBuffer(GL_COLOR_ATTACHMENT0);
+			glDepthFunc(GL_LEQUAL);
+			glEnable(GL_BLEND);
+			glBlendEquation(GL_FUNC_ADD);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			model_render_all(camera);
+			glDisable(GL_BLEND);
+		}
+		framebuffer_unbind();
+	}
+
+	int width, height;
+	window_get_size(&width, &height);
+	glViewport(0, 0, width, height);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	shader_bind(fbo_shader);
-	texture_bind(def_render_tex);
+	struct Camera* primary_camera = camera_get_primary();
+	texture_bind(primary_camera->render_tex);
 	geom_render(quad_geo);
 	texture_unbind(def_render_tex);
 	shader_unbind();

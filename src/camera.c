@@ -1,13 +1,21 @@
+#include "GLFW/glfw3.h"
 #include "camera.h"
 #include "entity.h"
 #include "transform.h"
 #include "array.h"
+#include "framebuffer.h"
+#include "texture.h"
 
 #include "utils.h"
 #include "log.h"
 
+#include <assert.h>
+#include <stdio.h>
+#include <string.h>
+
 static struct Camera* camera_list;
 static int* empty_indices;
+static int primary_camera_index;
 
 struct Camera* camera_get(int index)
 {
@@ -22,6 +30,7 @@ void camera_init(void)
 {
 	camera_list = array_new(struct Camera);
 	empty_indices = array_new(int);
+	primary_camera_index = -1;
 }
 
 void camera_remove(int index)
@@ -54,7 +63,9 @@ int camera_create(int node, int width, int height)
 		new_camera = array_grow(camera_list, struct Camera);
 		index = array_len(camera_list) - 1;
 	}
-
+	new_camera->fbo = -1;
+	new_camera->render_tex = -1;
+	new_camera->depth_tex = -1;
 	new_camera->node = node;
 	new_camera->farz = 1000.f;
 	new_camera->nearz = 0.1f;
@@ -105,4 +116,91 @@ void camera_update_proj(struct Camera* camera)
 		mat4_ortho(&camera->proj_mat, -1, 1, -1, 1, camera->nearz, camera->farz);
 	}
 	camera_update_view_proj(camera);
+}
+
+void camera_attach_fbo(struct Camera* camera, int width, int height, int has_depth, int has_color)
+{
+	assert(width > 0 && height > 0 && camera);
+	if(camera->fbo != -1)
+	{
+		log_error("camera:attach_fbo", "Camera already has fbo attached!");
+		return;
+	}
+	camera->fbo = framebuffer_create(width, height, has_depth, has_color);
+	if(camera->fbo > -1)
+	{
+		char tex_name[128];
+		snprintf(tex_name, 128, "cam_render_tex_%d", camera->node);
+		camera->render_tex = texture_create(tex_name,
+											TU_DIFFUSE,
+											width, height,
+											GL_RGBA,
+											GL_RGBA8,
+											GL_UNSIGNED_BYTE,
+											NULL);
+		texture_set_param(camera->render_tex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		texture_set_param(camera->render_tex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		texture_set_param(camera->render_tex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		texture_set_param(camera->render_tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		memset(tex_name, '\0', 128);
+		snprintf(tex_name, 128, "cam_depth_tex_%d", camera->node);
+		camera->depth_tex = texture_create(tex_name,
+										   TU_SHADOWMAP1,
+										   width, height,
+										   GL_DEPTH_COMPONENT,
+										   GL_DEPTH_COMPONENT,
+										   GL_UNSIGNED_BYTE,
+										   NULL);
+		texture_set_param(camera->depth_tex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		texture_set_param(camera->depth_tex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		texture_set_param(camera->depth_tex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		texture_set_param(camera->depth_tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		texture_set_param(camera->depth_tex, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+		texture_set_param(camera->depth_tex, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+
+		camera->fbo = framebuffer_create(width, height, 0, 1);
+		framebuffer_set_texture(camera->fbo, camera->render_tex, GL_COLOR_ATTACHMENT0);
+		framebuffer_set_texture(camera->fbo, camera->depth_tex, GL_DEPTH_ATTACHMENT);
+	}
+	else
+	{
+		log_error("camera:attach_fbo", "Framebuffer not attached to camera!");
+	}
+}
+
+struct Camera* camera_get_all(void)
+{
+	return camera_list;
+}
+
+void camera_set_primary_viewer(struct Camera* camera)
+{
+	assert(camera);
+	if(camera->node == -1)
+	{
+		log_error("camera:set_primary_viewer", "Invalid camera!");
+	}
+	else
+	{
+		/* locate the index of this camera */
+		for(int i = 0; i < array_len(camera_list); i++)
+		{
+			if(camera_list[i].node == camera->node)
+			{
+				primary_camera_index = i;
+				log_message("Camera at index %d set as primary viewer", primary_camera_index);
+				break;
+			}
+			
+		}
+	}
+}
+
+struct Camera* camera_get_primary(void)
+{
+	struct Camera* primary_camera = NULL;
+	if(primary_camera_index != -1)
+		primary_camera = &camera_list[primary_camera_index];
+	return primary_camera;
 }

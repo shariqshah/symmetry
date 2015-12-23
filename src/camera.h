@@ -14,9 +14,14 @@ struct Camera
 	float nearz;
 	float farz;
 	int   ortho;
+	int   fbo;
+	int   render_tex;
+	int   depth_tex;
 };
 
 struct Camera* camera_get(int index);
+struct Camera* camera_get_all(void);
+struct Camera* camera_get_primary(void);
 void camera_init(void);
 void camera_cleanup(void);
 void camera_remove(int index);
@@ -24,6 +29,7 @@ int  camera_create(int node, int width, int height);
 void camera_update_view_proj(struct Camera* camera);
 void camera_update_view(struct Camera* camera);
 void camera_update_proj(struct Camera* camera);
-
+void camera_attach_fbo(struct Camera* camera, int width, int height, int has_depth, int has_color);
+void camera_set_primary_viewer(struct Camera* camera);
 
 #endif

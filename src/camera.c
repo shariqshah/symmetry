@@ -37,13 +37,19 @@ void camera_remove(int index)
 {
 	if(index > -1 && index < array_len(camera_list))
 	{
-		camera_list->node = -1;
+		struct Camera* camera = &camera_list[index];
+		if(camera->fbo != -1) framebuffer_remove(camera->fbo);
+		if(camera->render_tex != -1) texture_remove(camera->render_tex);
+		if(camera->depth_tex != -1) texture_remove(camera->depth_tex);
+		camera->fbo = camera->render_tex = camera->depth_tex = camera->node = -1;
 		array_push(empty_indices, index, int);
 	}
 }
 
 void camera_cleanup(void)
 {
+	for(int i = 0; i < array_len(camera_list); i++)
+		if(camera_list[i].node != -1) camera_remove(i);
 	array_free(camera_list);
 	array_free(empty_indices);
 }
@@ -78,7 +84,7 @@ int camera_create(int node, int width, int height)
 	mat4_identity(&new_camera->view_proj_mat);
 	camera_update_view(new_camera);
 	camera_update_proj(new_camera);
-
+	vec4_fill(&new_camera->clear_color, 1.f, 1.f, 1.f, 1.f);
 	return index;
 }
 

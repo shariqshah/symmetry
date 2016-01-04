@@ -89,6 +89,7 @@ void scene_setup(void)
 	render_height = 600;
 	struct Camera* camera = entity_component_add(player, C_CAMERA, render_width, render_height);
 	camera_attach_fbo(camera, render_width, render_height, 1, 1);
+	vec4_fill(&camera->clear_color, 0.3f, 0.6f, 0.9f, 1.0f);
 	camera_set_primary_viewer(camera);
 	
 	struct Entity* new_ent = scene_add_new("Model_Entity", NULL);
@@ -97,28 +98,38 @@ void scene_setup(void)
 	vec4 color = {1.f, 1.f, 1.f, 1.f };
 	transform_translate(tran, &position, TS_WORLD);
 	struct Model* box_model = entity_component_add(new_ent, C_MODEL, "default.pamesh");
+	model_set_material_param(box_model, "diffuse_color", &color);
 	struct Transform* model_tran = entity_component_get(new_ent, C_TRANSFORM);
 	vec3 scale = {1, 1, 2};
 	transform_scale(model_tran, &scale);
 
-	struct Entity* suz = scene_add_as_child("Suzanne", NULL, new_ent);
+	struct Entity* suz = scene_add_as_child("Suzanne", NULL, new_ent->node);
 	struct Model* suz_model = entity_component_add(suz, C_MODEL, "suzanne.pamesh");
+	model_set_material_param(suz_model, "diffuse_color", &color);
 	struct Transform* s_tran = entity_component_get(suz, C_TRANSFORM);
 	vec3 s_pos = {3, 0, 0};
 	transform_translate(s_tran, &s_pos, TS_WORLD);
 
 	struct Entity* ground = scene_add_new("Ground", NULL);
 	struct Model* ground_model = entity_component_add(ground, C_MODEL, "plane.pamesh");
+	model_set_material_param(ground_model, "diffuse_color", &color);
 	struct Transform* ground_tran = entity_component_get(ground, C_TRANSFORM);
 	vec3 pos = {0, -3, -3};
 	vec3 scale_ground = {0.5f, 0.5f, 3.f};
 	transform_set_position(ground_tran, &pos);
 	transform_scale(ground_tran, &scale_ground);
 
-	/* Set material params */
-	model_set_material_param(ground_model, "diffuse_color", &color);
-	model_set_material_param(suz_model, "diffuse_color", &color);
-	model_set_material_param(box_model, "diffuse_color", &color);
+	struct Entity* screen = scene_add_new("Screen", NULL);
+	struct Model* screen_model = entity_component_add(screen, C_MODEL, NULL);
+	screen_model->geometry_index = geom_find("Quad");
+	struct Entity* screen_camera = scene_add_as_child("Screen_Camera", NULL, screen->node);
+	struct Transform* screen_camera_tran = entity_component_get(screen_camera, C_TRANSFORM);
+	vec3 screen_cam_tran = {0, -5, 5};
+	transform_translate(screen_camera_tran, &screen_camera_tran, TS_PARENT);
+	struct Camera* cam = entity_component_add(screen_camera, C_CAMERA, 1024, 1024);
+	camera_attach_fbo(cam, 1024, 1024, 1, 1);
+	model_set_material_param(screen_model, "diffuse_color", &color);
+	model_set_material_param(screen_model, "diffuse_texture", &cam->render_tex);
 }
 
 void debug(float dt)
@@ -212,7 +223,7 @@ void debug(float dt)
 
 	if(input_key_state_get(GLFW_KEY_SPACE, GLFW_PRESS))
 	{
-		struct Entity* model = entity_get(2);
+		struct Entity* model = scene_find("Screen");
 		struct Transform* mod_tran = entity_component_get(model, C_TRANSFORM);
 		vec3 x_axis = {1, 0, 0};
 		transform_rotate(mod_tran, &x_axis, 25.f * dt, TS_WORLD);
@@ -220,22 +231,22 @@ void debug(float dt)
 
 	if(input_key_state_get(GLFW_KEY_M, GLFW_PRESS))
 	{
-		struct Entity* model = entity_get(2);
+		struct Entity* model = scene_find("Screen");
 		struct Transform* mod_tran = entity_component_get(model, C_TRANSFORM);
-		vec3 y_axis = {0, 0, 1};
-		transform_rotate(mod_tran, &y_axis, 25.f * dt, TS_LOCAL);
+		//vec3 y_axis = {0, 0, 1};
+		//transform_rotate(mod_tran, &y_axis, 25.f * dt, TS_LOCAL);
+		vec3 amount = {0, 0, -5 * dt};
+		transform_translate(mod_tran, &amount, TS_LOCAL);
 	}
 
 	if(input_key_state_get(GLFW_KEY_N, GLFW_PRESS))
 	{
-		/* struct Entity* model = entity_get(3); */
-		/* struct Transform* mod_tran = entity_component_get(model, C_TRANSFORM); */
-		/* vec3 amount = {0, 0, -5 * dt}; */
-		/* transform_translate(mod_tran, amount, TS_LOCAL); */
-		struct Entity* model = entity_get(2);
+		struct Entity* model = scene_find("Screen");
 		struct Transform* mod_tran = entity_component_get(model, C_TRANSFORM);
-		vec3 y_axis = {0, 0, 1};
-		transform_rotate(mod_tran, &y_axis, 25.f * dt, TS_WORLD);
+		/* vec3 y_axis = {0, 0, 1}; */
+		/* transform_rotate(mod_tran, &y_axis, 25.f * dt, TS_WORLD); */
+		vec3 amount = {0, 0, 5 * dt};
+		transform_translate(mod_tran, &amount, TS_LOCAL);
 	}
 }
 

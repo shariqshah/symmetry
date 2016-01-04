@@ -18,14 +18,15 @@ void scene_init(void)
 
 struct Entity* scene_add_new(const char* name, const char* tag)
 {
-	return scene_add_as_child(name, tag, scene_get_root());
+	return scene_add_as_child(name, tag, root_node);
 }
 
-struct Entity* scene_add_as_child(const char* name, const char* tag, struct Entity* parent)
+struct Entity* scene_add_as_child(const char* name, const char* tag, int parent_node)
 {
-	assert(parent);
+	assert(parent_node > -1);
 	struct Entity* new_entity = NULL;
 	new_entity = entity_create(name, tag);
+	struct Entity* parent = entity_get(parent_node);
 	new_entity->parent = parent->node;
 	array_push(parent->children, new_entity->node, int);
 	struct Transform* new_ent_tran = entity_component_get(new_entity, C_TRANSFORM);

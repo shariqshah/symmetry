@@ -37,7 +37,8 @@ void model_init(void)
 
 int model_create(int node, const char* geo_name)
 {
-	assert(geo_name);
+	/* if no name is given for geometry, use default */
+	if(!geo_name) geo_name = "default.pamesh";
 	int geo_index = geom_create_from_file(geo_name);
 	int index = -1;
 	struct Model* new_model = NULL;
@@ -196,7 +197,8 @@ int model_set_material_param(struct Model* model, const char* name, void* value)
 				mat4_assign((mat4*)param->value, (mat4*)value);
 				break;
 			case UT_TEX:
-				log_message("Not implemented yet!");
+				log_message("Tex Val : %d", *((int*)value));
+				*((int*)param->value) = *((int*)value);
 				break;
 			default:
 				log_error("model:set_material_param", "Invalid parameter type");

@@ -110,6 +110,10 @@ void renderer_draw(void)
 			glDepthFunc(GL_LEQUAL);
 			glEnable(GL_BLEND);
 			glBlendEquation(GL_FUNC_ADD);
+			glClearColor(camera->clear_color.x,
+						 camera->clear_color.y,
+						 camera->clear_color.z,
+						 camera->clear_color.w);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			model_render_all(camera);
 			glDisable(GL_BLEND);

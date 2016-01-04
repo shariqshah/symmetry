@@ -17,6 +17,7 @@ struct Camera
 	int   fbo;
 	int   render_tex;
 	int   depth_tex;
+	vec4  clear_color;
 };
 
 struct Camera* camera_get(int index);

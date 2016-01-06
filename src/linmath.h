@@ -79,6 +79,7 @@ void  vec3_scale(vec3* res, const vec3* val, float s);
 void  vec3_transform_norm(vec3* res, const vec3* val, const mat4* mat);
 int   vec3_equals(vec3* v1, vec3* v2);
 float vec3_len(vec3* val);
+float vec3_dot(vec3* v1, vec3* v2);
 
 /* vec4 */
 int vec4_equals(vec4* v1, vec4* v2);

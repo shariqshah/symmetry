@@ -181,6 +181,13 @@ void vec3_transform_norm(vec3* res, const vec3* val, const mat4* mat)
 	res->z = v.z;
 }
 
+float vec3_dot(vec3* v1, vec3* v2)
+{
+	return (v1->x * v2->x +
+			v1->y * v2->y +
+			v1->z * v2->z);
+}
+
 
 void vec4_fill(vec4* res, float x, float y, float z, float w)
 {

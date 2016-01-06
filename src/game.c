@@ -83,6 +83,10 @@ void scene_setup(void)
 	player_node = player->node;
 	vec3 viewer_pos = {0, 0, 10};
 	struct Transform* viewer_tran = entity_component_get(player, C_TRANSFORM);
+	struct Model* player_model = entity_component_add(player, C_MODEL, "sphere.pamesh");
+	vec4 color = {0.f, 1.f, 1.f, 1.f };
+	model_set_material_param(player_model, "diffuse_color", &color);
+	vec4_fill(&color, 1.f, 1.f, 1.f, 1.f);
 	transform_set_position(viewer_tran, &viewer_pos);
 	int render_width, render_height;
 	render_width = 800;
@@ -95,7 +99,6 @@ void scene_setup(void)
 	struct Entity* new_ent = scene_add_new("Model_Entity", NULL);
 	struct Transform* tran = entity_component_get(new_ent, C_TRANSFORM);
 	vec3 position = {0, 0, -5};
-	vec4 color = {1.f, 1.f, 1.f, 1.f };
 	transform_translate(tran, &position, TS_WORLD);
 	struct Model* box_model = entity_component_add(new_ent, C_MODEL, "default.pamesh");
 	model_set_material_param(box_model, "diffuse_color", &color);
@@ -124,8 +127,7 @@ void scene_setup(void)
 	screen_model->geometry_index = geom_find("Quad");
 	struct Entity* screen_camera = scene_add_as_child("Screen_Camera", NULL, screen->node);
 	struct Transform* screen_camera_tran = entity_component_get(screen_camera, C_TRANSFORM);
-	vec3 screen_cam_tran = {0, -5, 5};
-	transform_translate(screen_camera_tran, &screen_camera_tran, TS_PARENT);
+	transform_rotate(screen_camera_tran, &UNIT_Y, 180.f, TS_WORLD);
 	struct Camera* cam = entity_component_add(screen_camera, C_CAMERA, 1024, 1024);
 	camera_attach_fbo(cam, 1024, 1024, 1, 1);
 	model_set_material_param(screen_model, "diffuse_color", &color);
@@ -134,7 +136,10 @@ void scene_setup(void)
 
 void debug(float dt)
 {
-	struct Entity* entity = entity_get(player_node);
+	//struct Entity* entity = entity_get(player_node);
+	struct Entity* entity = !input_key_state_get('C', GLFW_PRESS) ? entity_get(player_node) : scene_find("Screen_Camera");
+	struct Camera* cam = entity_component_get(entity, C_CAMERA);
+	camera_set_primary_viewer(cam);
 	struct Transform* transform = entity_component_get(entity, C_TRANSFORM);
 	float move_speed = 5.f, turn_speed = 50.f;
 	vec3 offset = {0, 0, 0};
@@ -248,6 +253,19 @@ void debug(float dt)
 		vec3 amount = {0, 0, 5 * dt};
 		transform_translate(mod_tran, &amount, TS_LOCAL);
 	}
+
+	/* if(input_key_state_get(GLFW_KEY_C, GLFW_PRESS)) */
+	/* { */
+	/* 	struct Entity* cam_ent = scene_find("Screen_Camera"); */
+	/* 	struct Camera* cam = entity_component_get(cam_ent, C_CAMERA); */
+	/* 	camera_set_primary_viewer(cam); */
+	/* } */
+
+	/* if(input_key_state_get(GLFW_KEY_V, GLFW_PRESS)) */
+	/* { */
+	/* 	struct Camera* cam = entity_component_get(entity, C_CAMERA); */
+	/* 	camera_set_primary_viewer(cam); */
+	/* } */
 }
 
 void run(void)

@@ -25,6 +25,8 @@ void renderer_init(GLFWwindow* window)
 	glClearColor(0.3f, 0.6f, 0.9f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 	glfwSetFramebufferSizeCallback(window, on_framebuffer_size_change);
 
 	/* Quad geometry for final render */

@@ -146,7 +146,7 @@ void model_render_all(struct Camera* camera)
 				}
 			}
 			/* Render the geometry */
-			geom_render(model->geometry_index);
+			geom_render_in_frustum(model->geometry_index, &camera->frustum, transform);
 
 			for(int k = 0; k < array_len(model->material_params); k++)
 			{

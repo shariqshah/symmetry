@@ -4,6 +4,8 @@
 #include "file_io.h"
 #include "log.h"
 #include "renderer.h"
+#include "bounding_volumes.h"
+#include "transform.h"
 
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
@@ -12,6 +14,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <math.h>
 
 struct Geometry 
 {
@@ -29,8 +32,8 @@ struct Geometry
 	vec3* normals;
 	vec2* uvs;
 	uint* indices;
-	/* BoundingBox               boundingBox; */
-	/* BoundingSphere            boundingSphere; */
+	struct Bounding_Box    bounding_box;
+	struct Bounding_Sphere bounding_sphere;
 };
 
 
@@ -41,6 +44,7 @@ static int* empty_indices;
 static int  load_from_file(struct Geometry* geometry, const char* filename);
 static void create_vao(struct Geometry* geometry);
 static struct Geometry* generate_new_index(int* out_new_index);
+static void generate_bounding_volume(int geomtry_index);
 
 void geom_init(void)
 {
@@ -61,6 +65,29 @@ int geom_find(const char* filename)
 		}
 	}
 	return index;
+}
+
+static void generate_bounding_volume(int geometry_index)
+{
+	struct Geometry*        geometry = &geometry_list[geometry_index];
+	struct Bounding_Box*    box      = &geometry->bounding_box;
+	struct Bounding_Sphere* sphere   = &geometry->bounding_sphere;
+	for(int i = 0; i < array_len(geometry->vertices); i++)
+	{
+		vec3* vertex = &geometry->vertices[i];
+		if(vertex->x > box->max.x) box->max.x = vertex->x;
+		if(vertex->y > box->max.y) box->max.y = vertex->y;
+		if(vertex->z > box->max.z) box->max.z = vertex->z;
+
+		if(vertex->x < box->min.x) box->min.x = vertex->x;
+		if(vertex->y < box->min.y) box->min.y = vertex->y;
+		if(vertex->z < box->min.z) box->min.z = vertex->z;
+	}
+	vec3_add(&sphere->center, &box->max, &box->min);
+	vec3_scale(&sphere->center, &sphere->center, (1.f / 2.f));
+	vec3 len_vec;
+	vec3_sub(&len_vec, &box->max, &sphere->center);
+	sphere->radius = fabs(vec3_len(&len_vec));
 }
 
 static struct Geometry* generate_new_index(int* out_new_index)
@@ -97,7 +124,7 @@ int geom_create_from_file(const char* name)
 		if(load_from_file(new_geo, name))
 		{
 			create_vao(new_geo);
-			//generateBoundingBox(index);
+			generate_bounding_volume(index);
 		}
 		else
 		{
@@ -319,4 +346,16 @@ void geom_render(int index)
 		glDrawArrays(GL_TRIANGLES, 0, array_len(geo->vertices));
 	glBindVertexArray(0);
 			
+}
+
+void geom_render_in_frustum(int index, vec4* frustum, struct Transform* transform)
+{
+	struct Geometry* geometry = &geometry_list[index];
+	int intersection = bv_intersect_frustum_sphere(frustum, &geometry->bounding_sphere, transform);
+	if(intersection == IT_INTERSECT || intersection == IT_INSIDE)
+	{
+		intersection = bv_intersect_frustum_box(frustum, &geometry->bounding_box, transform);
+		if(intersection == IT_INTERSECT || intersection == IT_INSIDE)
+			geom_render(index);
+	}
 }

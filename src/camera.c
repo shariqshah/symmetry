@@ -5,6 +5,7 @@
 #include "array.h"
 #include "framebuffer.h"
 #include "texture.h"
+#include "bounding_volumes.h"
 
 #include "utils.h"
 #include "log.h"
@@ -16,6 +17,7 @@
 static struct Camera* camera_list;
 static int* empty_indices;
 static int primary_camera_index;
+static void update_frustum(struct Camera* camera);
 
 struct Camera* camera_get(int index)
 {
@@ -91,6 +93,7 @@ int camera_create(int node, int width, int height)
 void camera_update_view_proj(struct Camera* camera)
 {
 	mat4_mul(&camera->view_proj_mat, &camera->proj_mat, &camera->view_mat);
+	update_frustum(camera);
 }
 
 void camera_update_view(struct Camera* camera)
@@ -195,7 +198,6 @@ void camera_set_primary_viewer(struct Camera* camera)
 			if(camera_list[i].node == camera->node)
 			{
 				primary_camera_index = i;
-				log_message("Camera at index %d set as primary viewer", primary_camera_index);
 				break;
 			}
 			
@@ -209,4 +211,47 @@ struct Camera* camera_get_primary(void)
 	if(primary_camera_index != -1)
 		primary_camera = &camera_list[primary_camera_index];
 	return primary_camera;
+}
+
+static void update_frustum(struct Camera* camera)
+{
+	assert(camera);
+	float* mvp = &camera->view_proj_mat.mat[0];
+
+	camera->frustum[FP_LEFT].x   = mvp[3]  + mvp[0];
+	camera->frustum[FP_LEFT].y   = mvp[7]  + mvp[4];
+	camera->frustum[FP_LEFT].z   = mvp[11] + mvp[2];
+	camera->frustum[FP_LEFT].w   = mvp[15] + mvp[12];
+ 
+	camera->frustum[FP_RIGHT].x  = mvp[3]  - mvp[0];
+	camera->frustum[FP_RIGHT].y  = mvp[7]  - mvp[4];
+	camera->frustum[FP_RIGHT].z  = mvp[11] - mvp[8];
+	camera->frustum[FP_RIGHT].w  = mvp[15] - mvp[12];
+       
+	camera->frustum[FP_BOTTOM].x = mvp[3]  + mvp[1];
+	camera->frustum[FP_BOTTOM].y = mvp[11] + mvp[5];
+	camera->frustum[FP_BOTTOM].z = mvp[11] + mvp[9];
+	camera->frustum[FP_BOTTOM].w = mvp[15] + mvp[13];
+ 
+	camera->frustum[FP_TOP].x    = mvp[3]  - mvp[1];
+	camera->frustum[FP_TOP].y    = mvp[7]  - mvp[5];
+	camera->frustum[FP_TOP].z    = mvp[11] - mvp[9];
+	camera->frustum[FP_TOP].w    = mvp[15] - mvp[13];
+ 
+	camera->frustum[FP_NEAR].x   = mvp[3]  + mvp[2];
+	camera->frustum[FP_NEAR].y   = mvp[7]  + mvp[6];
+	camera->frustum[FP_NEAR].z   = mvp[11] + mvp[10];
+	camera->frustum[FP_NEAR].w   = mvp[15] + mvp[14];
+       
+	camera->frustum[FP_FAR].x    = mvp[3]  - mvp[2];
+	camera->frustum[FP_FAR].y    = mvp[7]  - mvp[6];
+	camera->frustum[FP_FAR].z    = mvp[11] - mvp[10];
+	camera->frustum[FP_FAR].w    = mvp[15] - mvp[14];
+
+	for(int i = 0; i < 6; i++)
+	{
+		vec3 plane_xyz = {camera->frustum[i].x, camera->frustum[i].y, camera->frustum[i].z};
+		float length = vec3_len(&plane_xyz);
+		vec4_scale(&camera->frustum[i], &camera->frustum[i], (1.f / length));
+	}
 }

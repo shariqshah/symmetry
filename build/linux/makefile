@@ -15,7 +15,5 @@ all: $(OBJS)
 	$(CC) -c $< -o $@
 
 clean:
-	@echo $(SRCS)
-	@echo $(OBJS)
 	rm $(PROJECT_NAME)
 	rm $(OBJS)

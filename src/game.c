@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stddef.h>
-#include "GLFW/glfw3.h"
-#include "game.h"
+#include <GLFW/glfw3.h>
 
+#include "game.h"
 #include "window_system.h"
 #include "input.h"
 #include "renderer.h"
@@ -37,7 +37,7 @@ void game_init(void)
 	GLFWwindow* window = window_get_active();
 	/* Init systems */
 	input_init(window);
-	io_file_init("/mnt/Dev/Projects/Symmetry/assets/");/* TODO: Implement proper way of getting binary directory */
+	io_file_init("/mnt/Dev/Projects/symmetry/assets/");/* TODO: Implement proper way of getting binary directory */
 	shader_init();
 	texture_init();
 	framebuffer_init();

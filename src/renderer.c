@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include "GL/glew.h"
 #include "GLFW/glfw3.h"
 
 #include "log.h"
@@ -13,7 +14,10 @@
 #include "window_system.h"
 
 static int def_fbo = -1;
-static int def_render_tex = -1;
+static int def_albedo_tex = -1;
+static int def_position_tex = -1;
+static int def_normal_tex = -1;
+static int def_uv_tex = -1;
 static int def_depth_tex = -1;
 static int quad_geo = -1;
 static int fbo_shader = -1;
@@ -62,24 +66,60 @@ void renderer_init(GLFWwindow* window)
 /* Textues for default fbo */
 	int width = -1, height = -1;
 	window_get_size(&width, &height);
-	def_render_tex = texture_create("def_render_texture",
+	def_albedo_tex = texture_create("def_albedo_texture",
 									TU_DIFFUSE,
 									width, height,
-									GL_RGBA,
-									GL_RGBA8,
-									GL_UNSIGNED_BYTE,
+									GL_RGB,
+									GL_RGB16F,
+									GL_FLOAT,
 									NULL);
-	texture_set_param(def_render_tex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	texture_set_param(def_render_tex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	texture_set_param(def_render_tex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	texture_set_param(def_render_tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	texture_set_param(def_albedo_tex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	texture_set_param(def_albedo_tex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	texture_set_param(def_albedo_tex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	texture_set_param(def_albedo_tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	def_position_tex = texture_create("def_position_texture",
+									TU_DIFFUSE,
+									width, height,
+									GL_RGB,
+									GL_RGB16F,
+									GL_FLOAT,
+									NULL);
+	texture_set_param(def_position_tex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	texture_set_param(def_position_tex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	texture_set_param(def_position_tex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	texture_set_param(def_position_tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	def_normal_tex = texture_create("def_normal_texture",
+									TU_DIFFUSE,
+									width, height,
+									GL_RGB,
+									GL_RGB16F,
+									GL_FLOAT,
+									NULL);
+	texture_set_param(def_normal_tex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	texture_set_param(def_normal_tex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	texture_set_param(def_normal_tex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	texture_set_param(def_normal_tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	def_uv_tex = texture_create("def_uv_texture",
+									TU_DIFFUSE,
+									width, height,
+									GL_RGB,
+									GL_RGB16F,
+									GL_FLOAT,
+									NULL);
+	texture_set_param(def_uv_tex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	texture_set_param(def_uv_tex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	texture_set_param(def_uv_tex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	texture_set_param(def_uv_tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	def_depth_tex = texture_create("def_depth_texture",
 									TU_SHADOWMAP1,
 									width, height,
 									GL_DEPTH_COMPONENT,
-									GL_DEPTH_COMPONENT,
-									GL_UNSIGNED_BYTE,
+									GL_DEPTH_COMPONENT32F,
+									GL_FLOAT,
 									NULL);
 	texture_set_param(def_depth_tex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	texture_set_param(def_depth_tex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -88,8 +128,11 @@ void renderer_init(GLFWwindow* window)
 	texture_set_param(def_depth_tex, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
 	texture_set_param(def_depth_tex, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 
-	def_fbo = framebuffer_create(width, height, 0, 1);
-	framebuffer_set_texture(def_fbo, def_render_tex, GL_COLOR_ATTACHMENT0);
+	def_fbo = framebuffer_create(width, height, 1, 1);
+	framebuffer_set_texture(def_fbo, def_albedo_tex, GL_COLOR_ATTACHMENT0);
+	framebuffer_set_texture(def_fbo, def_position_tex, GL_COLOR_ATTACHMENT0 + 1);
+	framebuffer_set_texture(def_fbo, def_normal_tex, GL_COLOR_ATTACHMENT0 + 2);
+	framebuffer_set_texture(def_fbo, def_uv_tex, GL_COLOR_ATTACHMENT0 + 3);
 	framebuffer_set_texture(def_fbo, def_depth_tex, GL_DEPTH_ATTACHMENT);
 
 	fbo_shader = shader_create("fbo.vert", "fbo.frag");
@@ -108,7 +151,13 @@ void renderer_draw(void)
 		framebuffer_bind(fbo);
 		{
 			glViewport(0, 0, framebuffer_get_width(fbo), framebuffer_get_height(fbo));
-			glDrawBuffer(GL_COLOR_ATTACHMENT0);
+			GLenum draw_buffers[] = {GL_COLOR_ATTACHMENT0,
+									 GL_COLOR_ATTACHMENT1,
+									 GL_COLOR_ATTACHMENT2,
+									 GL_COLOR_ATTACHMENT3};
+			glDrawBuffers(4, &draw_buffers[0]);
+			//glDrawBuffer(GL_COLOR_ATTACHMENT0);
+			glEnable(GL_DEPTH_TEST);
 			glDepthFunc(GL_LEQUAL);
 			glEnable(GL_BLEND);
 			glBlendEquation(GL_FUNC_ADD);
@@ -125,15 +174,33 @@ void renderer_draw(void)
 
 	int width, height;
 	window_get_size(&width, &height);
-	glViewport(0, 0, width, height);
+	//glViewport(0, 0, width, height);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	shader_bind(fbo_shader);
 	struct Camera* primary_camera = camera_get_primary();
-	texture_bind(primary_camera->render_tex);
+	//texture_bind(primary_camera->render_tex);
+	glViewport(0, height / 2, width / 2, height / 2);
+	texture_bind(def_albedo_tex);
 	geom_render(quad_geo);
-	texture_unbind(def_render_tex);
+	texture_unbind(def_albedo_tex);
+
+	glViewport(width / 2, height / 2, width / 2, height / 2);
+	texture_bind(def_position_tex);
+	geom_render(quad_geo);
+	texture_unbind(def_position_tex);
+
+	glViewport(0, 0, width / 2, height / 2);
+	texture_bind(def_normal_tex);
+	geom_render(quad_geo);
+	texture_unbind(def_normal_tex);
+
+	glViewport(width / 2, 0, width / 2, height / 2);
+	texture_bind(def_uv_tex);
+	geom_render(quad_geo);
+	texture_unbind(def_uv_tex);
+	
 	shader_unbind();
 }
 
@@ -141,7 +208,7 @@ void renderer_cleanup(void)
 {
 	geom_remove(quad_geo);
 	framebuffer_remove(def_fbo);
-	texture_remove(def_render_tex);
+	texture_remove(def_albedo_tex);
 	texture_remove(def_depth_tex);
 }
 

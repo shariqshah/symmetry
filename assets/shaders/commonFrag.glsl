@@ -7,4 +7,4 @@ in vec3 vertex;
 //in vec4 vertLightSpace;
 
 // Fragment Shader Output
-out vec4 frag_color;
+//out vec4 frag_color;

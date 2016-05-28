@@ -3,7 +3,7 @@
 
 #include <math.h>
 
-int  bv_intersect_frustum_box(vec4* frustum, struct Bounding_Box* box, struct Transform* transform)
+int bv_intersect_frustum_box(vec4* frustum, struct Bounding_Box* box, struct Transform* transform)
 {
 	vec3 min, max, size, center, half_ext, half_size;
 	vec3_add(&min, &box->min, &transform->position);
@@ -12,9 +12,9 @@ int  bv_intersect_frustum_box(vec4* frustum, struct Bounding_Box* box, struct Tr
 	vec3_mul(&min, &min, &transform->scale);
 	vec3_sub(&size, &max, &min);
 	vec3_add(&center, &max, &min);
-	vec3_scale(&center, &center, (1.f/ 2.f));
+	vec3_scale(&center, &center, 0.5f);
 	vec3_assign(&half_ext, &size);
-	vec3_scale(&half_size, &size, (1.f / 2.f));
+	vec3_scale(&half_size, &size, 0.5f);
 	for(int i = 0; i < 6; i++)
 	{
 		vec3 normal = {frustum[i].x, frustum[i].y, frustum[i].z};

@@ -11,8 +11,8 @@ out vec3 vertCamSpace;
 out vec4 vertLightSpace;
 
 // Common uniforms
-uniform mat4 modelMat;
-uniform mat4 viewMat;
+uniform mat4 model_mat;
+uniform mat4 view_mat;
 uniform mat4 mvp;
 uniform mat4 lightVPMat;
 
@@ -25,8 +25,8 @@ void setOutputs()
 {
 	uv = vUV;
 	//Normal and vertex sent to the fragment shader should be in the same space!
-	normal = vec4(modelMat * vec4(vNormal, 0.0)).xyz;
-	vertex = vec4(modelMat * vec4(vPosition, 1.0)).xyz;
-	vertCamSpace   = vec4(viewMat * vec4(vPosition, 1.0)).xyz;
-	vertLightSpace = vec4((lightVPMat * modelMat) * vec4(vPosition, 1.0));
+	normal = vec4(model_mat * vec4(vNormal, 0.0)).xyz;
+	vertex = vec4(model_mat * vec4(vPosition, 1.0)).xyz;
+	vertCamSpace   = vec4(view_mat * vec4(vPosition, 1.0)).xyz;
+	vertLightSpace = vec4((lightVPMat * model_mat) * vec4(vPosition, 1.0));
 }

@@ -12,7 +12,7 @@ all: $(OBJS)
 	$(CC) $(CFLAGS) -o $(PROJECT_NAME) $^ $(LIBS)
 
 %.o: $(SRC_DIR)/%.c
-	$(CC) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
 	rm $(PROJECT_NAME)

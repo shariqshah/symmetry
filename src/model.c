@@ -123,19 +123,20 @@ void model_render_all(struct Camera* camera)
 			struct Model* model = &model_list[material->registered_models[j]];
 			struct Entity* entity = entity_get(model->node);
 			struct Transform* transform = entity_component_get(entity, C_TRANSFORM);
+
+			/* set material params for the model */
 			for(int k = 0; k < array_len(model->material_params); k++)
 			{
-				/* set material params for the model */
 				struct Material_Param* param = &model->material_params[k];
 				struct Uniform* uniform = &material->model_params[param->uniform_index];
 			    shader_set_uniform(uniform->type, uniform->location, param->value);
 				renderer_check_glerror("model:render_all:material_param");
 			}
 
+			/* Set pipeline uniforms */
 			for(int k = 0; k < array_len(material->pipeline_params); k++)
 			{
 				/* TODO: change this into something better */
-				/* Set pipeline uniforms */
 				struct Uniform* uniform = &material->pipeline_params[k];
 				if(strcmp(uniform->name, "mvp") == 0)
 				{
@@ -144,9 +145,19 @@ void model_render_all(struct Camera* camera)
 					shader_set_uniform(uniform->type, uniform->location, &mvp);
 					renderer_check_glerror("model:render_all:material_pipeline");
 				}
+				else if(strcmp(uniform->name, "model_mat") == 0)
+				{
+					shader_set_uniform(uniform->type, uniform->location, &transform->trans_mat);
+					renderer_check_glerror("model:render_all:material_pipeline");
+				}
+				else if(strcmp(uniform->name, "view_mat") == 0)
+				{
+					shader_set_uniform(uniform->type, uniform->location, &camera->view_mat);
+					renderer_check_glerror("model:render_all:material_pipeline");
+				}
 			}
 			/* Render the geometry */
-			geom_render_in_frustum(model->geometry_index, &camera->frustum, transform);
+			geom_render_in_frustum(model->geometry_index, &camera->frustum[0], transform);
 
 			for(int k = 0; k < array_len(model->material_params); k++)
 			{

@@ -139,7 +139,7 @@ void framebuffer_set_texture(int index, int texture, int attachment)
 	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
 	renderer_check_glerror("framebuffer:set_texture:glGet");
 	framebuffer_bind(index);
-	glFramebufferTexture2D(GL_FRAMEBUFFER,
+	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER,
 						   attachment,
 						   GL_TEXTURE_2D,
 						   texture_get_texture_handle(texture),

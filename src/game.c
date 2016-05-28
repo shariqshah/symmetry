@@ -92,7 +92,7 @@ void scene_setup(void)
 	render_width = 800;
 	render_height = 600;
 	struct Camera* camera = entity_component_add(player, C_CAMERA, render_width, render_height);
-	camera_attach_fbo(camera, render_width, render_height, 1, 1);
+	//camera_attach_fbo(camera, render_width, render_height, 1, 1);
 	vec4_fill(&camera->clear_color, 0.3f, 0.6f, 0.9f, 1.0f);
 	camera_set_primary_viewer(camera);
 	
@@ -118,7 +118,7 @@ void scene_setup(void)
 	model_set_material_param(ground_model, "diffuse_color", &color);
 	struct Transform* ground_tran = entity_component_get(ground, C_TRANSFORM);
 	vec3 pos = {0, -3, -3};
-	vec3 scale_ground = {0.5f, 0.5f, 3.f};
+	vec3 scale_ground = {20.f, 10.f, 20.f};
 	transform_set_position(ground_tran, &pos);
 	transform_scale(ground_tran, &scale_ground);
 
@@ -155,14 +155,13 @@ void debug(float dt)
 	if(input_map_state_get("Turn_Down", GLFW_PRESS)) turn_up_down -= turn_speed;
 	if(input_map_state_get("Turn_Right", GLFW_PRESS)) turn_left_right += turn_speed;
 	if(input_map_state_get("Turn_Left", GLFW_PRESS)) turn_left_right -= turn_speed;
-
-	double cursor_lr, cursor_ud;
-	input_cursor_pos_get(&cursor_lr, &cursor_ud);
 	
 	if(input_mousebutton_state_get(GLFW_MOUSE_BUTTON_RIGHT, GLFW_PRESS))
 	{
 		input_cursor_mode_set(CM_LOCKED);
 		const double scale = 0.25;
+		double cursor_lr, cursor_ud;
+		input_cursor_pos_get(&cursor_lr, &cursor_ud);
 		turn_up_down = -cursor_ud * turn_speed * dt * scale;
 		turn_left_right = cursor_lr * turn_speed * dt * scale;
 		input_cursor_pos_set(0.0, 0.0);

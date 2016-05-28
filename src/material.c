@@ -28,11 +28,23 @@ void material_init(void)
 	unshaded_mat->pipeline_params = array_new(struct Uniform);
 	unshaded_mat->active = 1;
 
+	/* Pipeline params/uniforms */
 	struct Uniform* uniform = array_grow(unshaded_mat->pipeline_params, struct Uniform);
 	uniform->name = str_new("mvp");
 	uniform->type = UT_MAT4;
 	uniform->location = shader_get_uniform_location(unshaded_mat->shader, uniform->name);
 
+	uniform = array_grow(unshaded_mat->pipeline_params, struct Uniform);
+	uniform->name = str_new("model_mat");
+	uniform->type = UT_MAT4;
+	uniform->location = shader_get_uniform_location(unshaded_mat->shader, uniform->name);
+
+	uniform = array_grow(unshaded_mat->pipeline_params, struct Uniform);
+	uniform->name = str_new("view_mat");
+	uniform->type = UT_MAT4;
+	uniform->location = shader_get_uniform_location(unshaded_mat->shader, uniform->name);
+
+	/* Materail params */
 	uniform = array_grow(unshaded_mat->model_params, struct Uniform);
 	uniform->name = str_new("diffuse_color");
 	uniform->type = UT_VEC4;

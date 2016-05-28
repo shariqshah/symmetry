@@ -41,8 +41,10 @@ All the code in this repository is under GPLv3, see LICENSE for more information
    - State "DONE"       from "TODO"       [2015-08-02 Sun 19:09]
 ** DONE Fix readme markdown
 - State "DONE"       from "TODO"       [2015-12-10 Thu 16:36]
-** TODO Framebuffer and resolution independent rendering
-** TODO A simpler build system without dependencies
+** DONE Framebuffer and resolution independent rendering
+- State "DONE"       from "TODO"       [2016-05-27 Fri 18:02]
+** DONE A simpler build system without dependencies
+- State "DONE"       from "TODO"       [2016-05-27 Fri 14:50]
 ** TODO Remove dependencies
 - glfw3
 - glew
@@ -67,9 +69,12 @@ All the code in this repository is under GPLv3, see LICENSE for more information
 ** DONE Heirarchical Transforms
 ** DONE Materials with textures
 - State "DONE"       from "TODO"       [2015-10-15 Thu 21:21]
+** TODO Fix problems with frustrum culling
 ** TODO 2d drawing routines
 ** TODO Gui
+** TODO Image based lighting?
+** TODO Deferred rendering?
 ** TODO Physics
-** TODO Improve the readme
+** TODO Improve this readme
 ** TODO ???
 ** TODO Profit!

@@ -115,7 +115,7 @@ void renderer_init(GLFWwindow* window)
 	texture_set_param(def_uv_tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	def_depth_tex = texture_create("def_depth_texture",
-									TU_SHADOWMAP1,
+									TU_DIFFUSE,
 									width, height,
 									GL_DEPTH_COMPONENT,
 									GL_DEPTH_COMPONENT32F,
@@ -134,7 +134,7 @@ void renderer_init(GLFWwindow* window)
 	framebuffer_set_texture(def_fbo, def_normal_tex, GL_COLOR_ATTACHMENT0 + 2);
 	framebuffer_set_texture(def_fbo, def_uv_tex, GL_COLOR_ATTACHMENT0 + 3);
 	framebuffer_set_texture(def_fbo, def_depth_tex, GL_DEPTH_ATTACHMENT);
-
+		
 	fbo_shader = shader_create("fbo.vert", "fbo.frag");
 }
 
@@ -197,9 +197,9 @@ void renderer_draw(void)
 	texture_unbind(def_normal_tex);
 
 	glViewport(width / 2, 0, width / 2, height / 2);
-	texture_bind(def_uv_tex);
+	texture_bind(def_depth_tex);
 	geom_render(quad_geo);
-	texture_unbind(def_uv_tex);
+	texture_unbind(def_depth_tex);
 	
 	shader_unbind();
 }

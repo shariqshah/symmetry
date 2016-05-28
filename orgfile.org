@@ -69,6 +69,8 @@ All the code in this repository is under GPLv3, see LICENSE for more information
 ** DONE Heirarchical Transforms
 ** DONE Materials with textures
 - State "DONE"       from "TODO"       [2015-10-15 Thu 21:21]
+** TODO Lights!
+** TODO Fix problems with texture units
 ** TODO Fix problems with frustrum culling
 ** TODO 2d drawing routines
 ** TODO Gui

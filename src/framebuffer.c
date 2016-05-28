@@ -47,12 +47,12 @@ int framebuffer_create(int width, int height, int has_depth, int has_color)
 	glGenRenderbuffers(1, &renderbuffer);
 	glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer);
 	glRenderbufferStorage(GL_RENDERBUFFER,
-						  GL_DEPTH24_STENCIL8,
+						  GL_DEPTH_COMPONENT,
 						  width,
 						  height);
 	renderer_check_glerror("framebuffer:create");
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER,
-							  GL_DEPTH_STENCIL_ATTACHMENT,
+							  GL_DEPTH_ATTACHMENT,
 							  GL_RENDERBUFFER,
 							  renderbuffer);
 	renderer_check_glerror("framebuffer:create");

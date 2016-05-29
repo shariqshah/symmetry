@@ -75,11 +75,11 @@ void renderer_init(GLFWwindow* window)
 									NULL);
 	texture_set_param(def_albedo_tex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	texture_set_param(def_albedo_tex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	texture_set_param(def_albedo_tex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	texture_set_param(def_albedo_tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	texture_set_param(def_albedo_tex, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	texture_set_param(def_albedo_tex, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	def_position_tex = texture_create("def_position_texture",
-									TU_DIFFUSE,
+									TU_SHADOWMAP1,
 									width, height,
 									GL_RGB,
 									GL_RGB16F,
@@ -91,7 +91,7 @@ void renderer_init(GLFWwindow* window)
 	texture_set_param(def_position_tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	def_normal_tex = texture_create("def_normal_texture",
-									TU_DIFFUSE,
+									TU_SHADOWMAP2,
 									width, height,
 									GL_RGB,
 									GL_RGB16F,
@@ -103,7 +103,7 @@ void renderer_init(GLFWwindow* window)
 	texture_set_param(def_normal_tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	def_uv_tex = texture_create("def_uv_texture",
-									TU_DIFFUSE,
+									TU_SHADOWMAP3,
 									width, height,
 									GL_RGB,
 									GL_RGB16F,
@@ -174,34 +174,54 @@ void renderer_draw(void)
 
 	int width, height;
 	window_get_size(&width, &height);
-	//glViewport(0, 0, width, height);
+	glViewport(0, 0, width, height);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	shader_bind(fbo_shader);
-	struct Camera* primary_camera = camera_get_primary();
-	//texture_bind(primary_camera->render_tex);
-	glViewport(0, height / 2, width / 2, height / 2);
+
+	shader_set_uniform_int(fbo_shader, "albedo_map", (GL_TEXTURE0 + TU_DIFFUSE) - GL_TEXTURE0);
 	texture_bind(def_albedo_tex);
-	geom_render(quad_geo);
-	texture_unbind(def_albedo_tex);
 
-	glViewport(width / 2, height / 2, width / 2, height / 2);
+	shader_set_uniform_int(fbo_shader, "position_map", (GL_TEXTURE0 + TU_SHADOWMAP1) - GL_TEXTURE0);
 	texture_bind(def_position_tex);
-	geom_render(quad_geo);
-	texture_unbind(def_position_tex);
-
-	glViewport(0, 0, width / 2, height / 2);
+	
+	shader_set_uniform_int(fbo_shader, "normal_map", (GL_TEXTURE0 + TU_SHADOWMAP2) - GL_TEXTURE0);
 	texture_bind(def_normal_tex);
-	geom_render(quad_geo);
-	texture_unbind(def_normal_tex);
 
-	glViewport(width / 2, 0, width / 2, height / 2);
-	texture_bind(def_depth_tex);
+	shader_set_uniform_int(fbo_shader, "uv_map", (GL_TEXTURE0 + TU_SHADOWMAP3) - GL_TEXTURE0);
+	texture_bind(def_uv_tex);
+
 	geom_render(quad_geo);
-	texture_unbind(def_depth_tex);
+	
+	//struct Camera* primary_camera = camera_get_primary();
+	//texture_bind(primary_camera->render_tex);
+	/* glViewport(0, height / 2, width / 2, height / 2); */
+	/* texture_bind(def_albedo_tex); */
+	/* geom_render(quad_geo); */
+	/* texture_unbind(def_albedo_tex); */
+
+	/* glViewport(width / 2, height / 2, width / 2, height / 2); */
+	/* texture_bind(def_position_tex); */
+	/* geom_render(quad_geo); */
+	/* texture_unbind(def_position_tex); */
+
+	/* glViewport(0, 0, width / 2, height / 2); */
+	/* texture_bind(def_normal_tex); */
+	/* geom_render(quad_geo); */
+	/* texture_unbind(def_normal_tex); */
+
+	/* glViewport(width / 2, 0, width / 2, height / 2); */
+	/* texture_bind(def_depth_tex); */
+	/* geom_render(quad_geo); */
+	/* texture_unbind(def_depth_tex); */
 	
 	shader_unbind();
+
+	texture_unbind(def_albedo_tex);
+	texture_unbind(def_position_tex);
+	texture_unbind(def_normal_tex);
+	texture_unbind(def_uv_tex);
 }
 
 void renderer_cleanup(void)

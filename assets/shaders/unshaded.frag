@@ -20,5 +20,4 @@ void main()
 	// gbuffer[1] = vertex.xyz;
 	// gbuffer[2] = normal.xyz;
 	// gbuffer[3] = vec3(uv, 0.0);
-	//frag_color = vec4(1, 0, 0, 1);
 }

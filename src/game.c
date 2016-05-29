@@ -21,6 +21,7 @@
 #include "texture.h"
 #include "material.h"
 #include "framebuffer.h"
+#include "light.h"
 
 void run(void);
 void update(float dt);
@@ -44,6 +45,7 @@ void game_init(void)
 	geom_init();
 	renderer_init(window);
 	transform_init();
+	light_init();
 	camera_init();
 	material_init();
 	model_init();
@@ -304,6 +306,7 @@ void game_cleanup(void)
 	model_cleanup();
 	material_cleanup();
 	geom_cleanup();
+	light_cleanup();
 	transform_cleanup();
 	camera_cleanup();
 	input_cleanup();

@@ -1,6 +1,8 @@
 #ifndef framebuffer_H
 #define framebuffer_H
 
+#include "num_types.h"
+
 void framebuffer_init(void);
 void framebuffer_cleanup(void);
 int  framebuffer_create(int width, int height, int has_depth, int has_color);
@@ -11,5 +13,6 @@ int  framebuffer_get_width(int index);
 int  framebuffer_get_height(int index);
 void framebuffer_set_texture(int index, int texture, int attachment);
 int  framebuffer_get_texture(int index);
+uint framebuffer_get_gl_handle(int index);
 
 #endif

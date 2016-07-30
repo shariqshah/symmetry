@@ -9,6 +9,7 @@
 #include "texture.h"
 #include "renderer.h"
 #include "material.h"
+#include "light.h"
 
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
@@ -16,6 +17,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 static struct Model* model_list;
 static int* empty_indices;
@@ -35,7 +37,7 @@ void model_init(void)
 	empty_indices = array_new(int);
 }
 
-int model_create(int node, const char* geo_name)
+int model_create(int node, const char* geo_name, const char* material_name)
 {
 	/* if no name is given for geometry, use default */
 	if(!geo_name) geo_name = "default.pamesh";
@@ -57,7 +59,7 @@ int model_create(int node, const char* geo_name)
 		}
 		new_model->node = node;
 		new_model->geometry_index = geo_index;
-		if(!material_register_model(new_model, index, "Unshaded"))
+		if(!material_register_model(new_model, index, material_name ? material_name : "Unshaded"))
 		{
 			log_error("model:create", "Unable to register model with Unshaded material, component not added");
 			model_remove(index);
@@ -156,8 +158,66 @@ void model_render_all(struct Camera* camera)
 					renderer_check_glerror("model:render_all:material_pipeline");
 				}
 			}
+
+			if(material->lit)	/* Set light information */
+			{
+				int valid_light_count = 0;
+				int* light_index_list = light_get_valid_indices(&valid_light_count);
+				const int max_name_len = 64;
+				char uniform_name[max_name_len];
+				memset(uniform_name, '\0', max_name_len);
+				for(int i = 0; i < valid_light_count; i++)
+				{
+					struct Light* light = light_get(light_index_list[i]); /* TODO: Cull lights according to camera frustum */
+					struct Entity* light_entity = entity_get(light->node);
+					struct Transform* transform = entity_component_get(light_entity, C_TRANSFORM);
+					vec3 light_pos = {0, 0, 0};
+					transform_get_absolute_pos(transform, &light_pos);
+					
+					snprintf(uniform_name, max_name_len, "lights[%d].position", i);
+					shader_set_uniform_vec3(material->shader,  uniform_name, &light_pos);
+					memset(uniform_name, '\0', max_name_len);
+					
+					snprintf(uniform_name, max_name_len, "lights[%d].color", i);
+					shader_set_uniform_vec4(material->shader,  uniform_name, &light->color);
+					memset(uniform_name, '\0', max_name_len);
+					
+					snprintf(uniform_name, max_name_len, "lights[%d].outer_angle", i);
+					shader_set_uniform_float(material->shader, uniform_name, light->outer_angle);
+					memset(uniform_name, '\0', max_name_len);
+					
+					snprintf(uniform_name, max_name_len, "lights[%d].inner_angle", i);
+					shader_set_uniform_float(material->shader, uniform_name, light->inner_angle);
+					memset(uniform_name, '\0', max_name_len);
+					
+					snprintf(uniform_name, max_name_len, "lights[%d].falloff", i);
+					shader_set_uniform_float(material->shader, uniform_name, light->falloff);
+					memset(uniform_name, '\0', max_name_len);
+					
+					snprintf(uniform_name, max_name_len, "lights[%d].intensity", i);
+					shader_set_uniform_float(material->shader, uniform_name, light->intensity);
+					memset(uniform_name, '\0', max_name_len);
+					
+					snprintf(uniform_name, max_name_len, "lights[%d].type", i);
+					shader_set_uniform_int(material->shader, uniform_name, light->type);
+					memset(uniform_name, '\0', max_name_len);
+					
+					snprintf(uniform_name, max_name_len, "lights[%d].radius", i);
+					shader_set_uniform_int(material->shader, uniform_name, light->radius);
+					memset(uniform_name, '\0', max_name_len);
+				}
+
+				shader_set_uniform_int(material->shader, "total_active_lights", valid_light_count);
+				struct Entity* camera_entity = entity_get(camera->node);
+				struct Transform* camera_tran = entity_component_get(camera_entity, C_TRANSFORM);
+				vec3 camera_pos = {0, 0, 0};
+				transform_get_absolute_pos(camera_tran, &camera_pos);
+				shader_set_uniform_vec3(material->shader, "camera_pos", &camera_pos);
+			}
+			
 			/* Render the geometry */
-			geom_render_in_frustum(model->geometry_index, &camera->frustum[0], transform);
+			//geom_render_in_frustum(model->geometry_index, &camera->frustum[0], transform);
+			geom_render(model->geometry_index);
 
 			for(int k = 0; k < array_len(model->material_params); k++)
 			{

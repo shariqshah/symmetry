@@ -4,6 +4,8 @@
 
 static struct Light* light_list;
 static int* empty_indices;
+static int* valid_light_indices;
+static int max_lights;
 
 struct Light* light_get(int index)
 {
@@ -20,8 +22,11 @@ struct Light* light_get_all(void)
 
 void light_init(void)
 {
-	light_list = array_new(struct Light);
-	empty_indices = array_new(int);
+	max_lights = 128;
+	light_list = array_new_cap(struct Light, max_lights);
+	for(int i = 0; i < max_lights; i++) light_list[i].valid = 0;
+	empty_indices = array_new_cap(int, max_lights);
+	valid_light_indices = array_new_cap(int, max_lights);
 }
 
 void light_cleanup(void)
@@ -30,6 +35,7 @@ void light_cleanup(void)
 		light_remove(i);
 	array_free(light_list);
 	array_free(empty_indices);
+	array_free(valid_light_indices);
 }
 
 void light_remove(int index)
@@ -63,10 +69,34 @@ int light_create(int node, int light_type)
 	new_light->depth_bias = 0.0005f;
 	new_light->type = light_type;
 	new_light->pcf_enabled = 0;
-	new_light->intensity = 1.f;
+	new_light->intensity = 0.5f;
 	new_light->falloff = 1.5f;
 	new_light->outer_angle = TO_RADIANS(30.f);
 	new_light->inner_angle = TO_RADIANS(20.f);
 	new_light->radius = 30;
 	return index;
+}
+
+int light_get_max_lights(void)
+{
+	return max_lights;
+}
+
+int* light_get_valid_indices(int* valid_light_count)
+{
+	/* First, get all the valid(active) lights, then sort them in the
+	   order directional, point, spot
+	 */
+	int light_count = 0;
+	for(int i = 0; i < array_len(light_list); i++)
+	{
+		if(light_list[i].valid)
+		{
+			valid_light_indices[light_count] = i;
+			light_count++;
+		}
+	}
+	*valid_light_count = light_count;
+	
+	return valid_light_indices;
 }

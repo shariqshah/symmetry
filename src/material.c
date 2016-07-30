@@ -5,6 +5,7 @@
 #include "log.h"
 #include "model.h"
 #include "texture.h"
+#include "light.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -27,6 +28,7 @@ void material_init(void)
 	unshaded_mat->model_params = array_new(struct Uniform);
 	unshaded_mat->pipeline_params = array_new(struct Uniform);
 	unshaded_mat->active = 1;
+	unshaded_mat->lit = 0;
 
 	/* Pipeline params/uniforms */
 	struct Uniform* uniform = array_grow(unshaded_mat->pipeline_params, struct Uniform);
@@ -44,16 +46,75 @@ void material_init(void)
 	uniform->type = UT_MAT4;
 	uniform->location = shader_get_uniform_location(unshaded_mat->shader, uniform->name);
 
-	/* Materail params */
+	/* Material params */
 	uniform = array_grow(unshaded_mat->model_params, struct Uniform);
 	uniform->name = str_new("diffuse_color");
 	uniform->type = UT_VEC4;
+	vec4_fill(&uniform->d_vec4, 1.0f, 1.0f, 1.0f, 1.0f);
 	uniform->location = shader_get_uniform_location(unshaded_mat->shader, uniform->name);
 
 	uniform = array_grow(unshaded_mat->model_params, struct Uniform);
 	uniform->name = str_new("diffuse_texture");
 	uniform->type = UT_TEX;
+	uniform->d_int = texture_find("default.tga");
 	uniform->location = shader_get_uniform_location(unshaded_mat->shader, uniform->name);
+
+	/* Simple blinn_phong material */
+	struct Material* blinn_phong_mat = array_grow(material_list, struct Material);
+	blinn_phong_mat->name = str_new("Blinn_Phong");
+	blinn_phong_mat->shader = shader_create("blinn_phong.vert", "blinn_phong.frag");
+	blinn_phong_mat->registered_models = array_new(int);
+	blinn_phong_mat->model_params = array_new(struct Uniform);
+	blinn_phong_mat->pipeline_params = array_new(struct Uniform);
+	blinn_phong_mat->active = 1;
+	blinn_phong_mat->lit = 1;
+
+	/* Pipeline params/uniforms */
+	uniform = array_grow(blinn_phong_mat->pipeline_params, struct Uniform);
+	uniform->name = str_new("mvp");
+	uniform->type = UT_MAT4;
+	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
+
+	uniform = array_grow(blinn_phong_mat->pipeline_params, struct Uniform);
+	uniform->name = str_new("model_mat");
+	uniform->type = UT_MAT4;
+	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
+
+	uniform = array_grow(blinn_phong_mat->pipeline_params, struct Uniform);
+	uniform->name = str_new("view_mat");
+	uniform->type = UT_MAT4;
+	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
+
+	/* Material params */
+	uniform = array_grow(blinn_phong_mat->model_params, struct Uniform);
+	uniform->name = str_new("diffuse_color");
+	uniform->type = UT_VEC4;
+	vec4_fill(&uniform->d_vec4, 1.0f, 1.0f, 1.0f, 1.0f);
+	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
+
+	uniform = array_grow(blinn_phong_mat->model_params, struct Uniform);
+	uniform->name = str_new("diffuse_texture");
+	uniform->type = UT_TEX;
+	uniform->d_int = texture_find("default.tga");
+	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
+
+	uniform = array_grow(blinn_phong_mat->model_params, struct Uniform);
+	uniform->name = str_new("specular");
+	uniform->type = UT_FLOAT;
+	uniform->d_float = 1.f;
+	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
+
+	uniform = array_grow(blinn_phong_mat->model_params, struct Uniform);
+	uniform->name = str_new("diffuse");
+	uniform->type = UT_FLOAT;
+	uniform->d_float = 1.f;
+	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
+
+	uniform = array_grow(blinn_phong_mat->model_params, struct Uniform);
+	uniform->name = str_new("specular_strength");
+	uniform->type = UT_FLOAT;
+	uniform->d_float = 50.f;
+	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
 }
 
 struct Material* material_get_all_materials(void)
@@ -92,23 +153,23 @@ int material_register_model(struct Model* model, int model_index, const char* ma
 		{
 		case UT_INT:
 			param->value = malloc(sizeof(int));
-			*((int*)param->value) = -1;
+			*((int*)param->value) = uniform->d_int;
 			break;
 		case UT_FLOAT:
 			param->value = malloc(sizeof(float));
-			*((float*)param->value) = -1.f;
+			*((float*)param->value) = uniform->d_float;
 			break;
 		case UT_VEC2:
 			param->value = malloc(sizeof(vec2));
-			vec2_fill((vec2*)param->value, 0.f, 0.f);
+			vec2_assign((vec2*)param->value, &uniform->d_vec2);
 			break;
 		case UT_VEC3:
 			param->value = malloc(sizeof(vec3));
-			vec3_fill((vec3*)param->value, 0.f, 0.f, 0.f);
+			vec3_assign((vec3*)param->value, &uniform->d_vec3);
 			break;
 		case UT_VEC4:
 			param->value = malloc(sizeof(vec4));
-			vec4_fill((vec4*)param->value, 0.f, 0.f, 0.f, 0.f);
+			vec4_assign((vec4*)param->value, &uniform->d_vec4);
 			break;
 		case UT_MAT4:
 			param->value = malloc(sizeof(mat4));

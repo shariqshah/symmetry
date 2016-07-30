@@ -156,25 +156,28 @@ void transform_update_transmat(struct Transform* transform)
 	mat4_mul(&transform->trans_mat, &transform->trans_mat, &scale);
 	
 	struct Entity* entity = entity_get(transform->node);
-	struct Entity* parent = entity_get(entity->parent);
-	if(parent)
+	if(entity)	 /* Only update if transform is attached to an entity */
 	{
-		struct Transform* parent_tran = entity_component_get(parent, C_TRANSFORM);
-		mat4_mul(&transform->trans_mat, &transform->trans_mat, &parent_tran->trans_mat);
-	}
-
-	/* Update all children */
-	if(array_len(entity->children) > 0)
-	{
-		for(int i = 0; i < array_len(entity->children); i++)
+		struct Entity* parent = entity_get(entity->parent);
+		if(parent)
 		{
-			struct Entity* child = entity_get(entity->children[i]);
-			struct Transform* child_tran = entity_component_get(child, C_TRANSFORM);
-			transform_update_transmat(child_tran);
+			struct Transform* parent_tran = entity_component_get(parent, C_TRANSFORM);
+			mat4_mul(&transform->trans_mat, &transform->trans_mat, &parent_tran->trans_mat);
 		}
-	}
+
+		/* Update all children */
+		if(array_len(entity->children) > 0)
+		{
+			for(int i = 0; i < array_len(entity->children); i++)
+			{
+				struct Entity* child = entity_get(entity->children[i]);
+				struct Transform* child_tran = entity_component_get(child, C_TRANSFORM);
+				transform_update_transmat(child_tran);
+			}
+		}
 	
-	entity_sync_components(entity);
+		entity_sync_components(entity);
+	}
 }
 
 struct Transform* transform_get(int index)

@@ -16,7 +16,7 @@ struct Model
 
 struct Model* model_get(int index);
 void model_init(void);
-int  model_create(int node, const char* geo_name);
+int  model_create(int node, const char* geo_name, const char* material_name);
 void model_remove(int index);
 void model_cleanup(void);
 void model_render_all(struct Camera* camera);

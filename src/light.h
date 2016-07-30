@@ -37,5 +37,7 @@ void light_cleanup(void);
 void light_remove(int index);
 int light_create(int node, int light_type);
 void light_set_radius(struct Light* light, int radius);
+int light_get_max_lights(void);
+int* light_get_valid_indices(int* valid_light_count);
 
 #endif

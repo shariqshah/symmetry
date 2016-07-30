@@ -546,6 +546,141 @@ void mat4_assign(mat4* res, const mat4* m)
 	memcpy(res->mat, m->mat, sizeof(float) * 16);
 }
 
+
+void mat4_inverse(mat4* res, mat4* mat)
+{
+	mat4 tmp;
+	float det;
+	int i;
+
+	tmp.mat[0] = mat->mat[5]  * mat->mat[10] * mat->mat[15] -
+		mat->mat[5]  * mat->mat[11] * mat->mat[14] -
+		mat->mat[9]  * mat->mat[6]  * mat->mat[15] +
+		mat->mat[9]  * mat->mat[7]  * mat->mat[14] +
+		mat->mat[13] * mat->mat[6]  * mat->mat[11] -
+		mat->mat[13] * mat->mat[7]  * mat->mat[10];
+
+	tmp.mat[4] = -mat->mat[4]  * mat->mat[10] * mat->mat[15] +
+		mat->mat[4]  * mat->mat[11] * mat->mat[14] +
+		mat->mat[8]  * mat->mat[6]  * mat->mat[15] -
+		mat->mat[8]  * mat->mat[7]  * mat->mat[14] -
+		mat->mat[12] * mat->mat[6]  * mat->mat[11] +
+		mat->mat[12] * mat->mat[7]  * mat->mat[10];
+
+	tmp.mat[8] = mat->mat[4]  * mat->mat[9] * mat->mat[15] -
+		mat->mat[4]  * mat->mat[11] * mat->mat[13] -
+		mat->mat[8]  * mat->mat[5] * mat->mat[15] +
+		mat->mat[8]  * mat->mat[7] * mat->mat[13] +
+		mat->mat[12] * mat->mat[5] * mat->mat[11] -
+		mat->mat[12] * mat->mat[7] * mat->mat[9];
+
+	tmp.mat[12] = -mat->mat[4]  * mat->mat[9] * mat->mat[14] +
+		mat->mat[4]  * mat->mat[10] * mat->mat[13] +
+		mat->mat[8]  * mat->mat[5] * mat->mat[14] -
+		mat->mat[8]  * mat->mat[6] * mat->mat[13] -
+		mat->mat[12] * mat->mat[5] * mat->mat[10] +
+		mat->mat[12] * mat->mat[6] * mat->mat[9];
+
+	tmp.mat[1] = -mat->mat[1]  * mat->mat[10] * mat->mat[15] +
+		mat->mat[1]  * mat->mat[11] * mat->mat[14] +
+		mat->mat[9]  * mat->mat[2] * mat->mat[15] -
+		mat->mat[9]  * mat->mat[3] * mat->mat[14] -
+		mat->mat[13] * mat->mat[2] * mat->mat[11] +
+		mat->mat[13] * mat->mat[3] * mat->mat[10];
+
+	tmp.mat[5] = mat->mat[0]  * mat->mat[10] * mat->mat[15] -
+		mat->mat[0]  * mat->mat[11] * mat->mat[14] -
+		mat->mat[8]  * mat->mat[2] * mat->mat[15] +
+		mat->mat[8]  * mat->mat[3] * mat->mat[14] +
+		mat->mat[12] * mat->mat[2] * mat->mat[11] -
+		mat->mat[12] * mat->mat[3] * mat->mat[10];
+
+	tmp.mat[9] = -mat->mat[0]  * mat->mat[9] * mat->mat[15] +
+		mat->mat[0]  * mat->mat[11] * mat->mat[13] +
+		mat->mat[8]  * mat->mat[1] * mat->mat[15] -
+		mat->mat[8]  * mat->mat[3] * mat->mat[13] -
+		mat->mat[12] * mat->mat[1] * mat->mat[11] +
+		mat->mat[12] * mat->mat[3] * mat->mat[9];
+
+	tmp.mat[13] = mat->mat[0]  * mat->mat[9] * mat->mat[14] -
+		mat->mat[0]  * mat->mat[10] * mat->mat[13] -
+		mat->mat[8]  * mat->mat[1] * mat->mat[14] +
+		mat->mat[8]  * mat->mat[2] * mat->mat[13] +
+		mat->mat[12] * mat->mat[1] * mat->mat[10] -
+		mat->mat[12] * mat->mat[2] * mat->mat[9];
+
+	tmp.mat[2] = mat->mat[1]  * mat->mat[6] * mat->mat[15] -
+		mat->mat[1]  * mat->mat[7] * mat->mat[14] -
+		mat->mat[5]  * mat->mat[2] * mat->mat[15] +
+		mat->mat[5]  * mat->mat[3] * mat->mat[14] +
+		mat->mat[13] * mat->mat[2] * mat->mat[7] -
+		mat->mat[13] * mat->mat[3] * mat->mat[6];
+
+	tmp.mat[6] = -mat->mat[0]  * mat->mat[6] * mat->mat[15] +
+		mat->mat[0]  * mat->mat[7] * mat->mat[14] +
+		mat->mat[4]  * mat->mat[2] * mat->mat[15] -
+		mat->mat[4]  * mat->mat[3] * mat->mat[14] -
+		mat->mat[12] * mat->mat[2] * mat->mat[7] +
+		mat->mat[12] * mat->mat[3] * mat->mat[6];
+
+	tmp.mat[10] = mat->mat[0]  * mat->mat[5] * mat->mat[15] -
+		mat->mat[0]  * mat->mat[7] * mat->mat[13] -
+		mat->mat[4]  * mat->mat[1] * mat->mat[15] +
+		mat->mat[4]  * mat->mat[3] * mat->mat[13] +
+		mat->mat[12] * mat->mat[1] * mat->mat[7] -
+		mat->mat[12] * mat->mat[3] * mat->mat[5];
+
+	tmp.mat[14] = -mat->mat[0]  * mat->mat[5] * mat->mat[14] +
+		mat->mat[0]  * mat->mat[6] * mat->mat[13] +
+		mat->mat[4]  * mat->mat[1] * mat->mat[14] -
+		mat->mat[4]  * mat->mat[2] * mat->mat[13] -
+		mat->mat[12] * mat->mat[1] * mat->mat[6] +
+		mat->mat[12] * mat->mat[2] * mat->mat[5];
+
+	tmp.mat[3] = -mat->mat[1] * mat->mat[6] * mat->mat[11] +
+		mat->mat[1] * mat->mat[7] * mat->mat[10] +
+		mat->mat[5] * mat->mat[2] * mat->mat[11] -
+		mat->mat[5] * mat->mat[3] * mat->mat[10] -
+		mat->mat[9] * mat->mat[2] * mat->mat[7] +
+		mat->mat[9] * mat->mat[3] * mat->mat[6];
+
+	tmp.mat[7] = mat->mat[0] * mat->mat[6] * mat->mat[11] -
+		mat->mat[0] * mat->mat[7] * mat->mat[10] -
+		mat->mat[4] * mat->mat[2] * mat->mat[11] +
+		mat->mat[4] * mat->mat[3] * mat->mat[10] +
+		mat->mat[8] * mat->mat[2] * mat->mat[7] -
+		mat->mat[8] * mat->mat[3] * mat->mat[6];
+
+	tmp.mat[11] = -mat->mat[0] * mat->mat[5] * mat->mat[11] +
+		mat->mat[0] * mat->mat[7] * mat->mat[9] +
+		mat->mat[4] * mat->mat[1] * mat->mat[11] -
+		mat->mat[4] * mat->mat[3] * mat->mat[9] -
+		mat->mat[8] * mat->mat[1] * mat->mat[7] +
+		mat->mat[8] * mat->mat[3] * mat->mat[5];
+
+	tmp.mat[15] = mat->mat[0] * mat->mat[5] * mat->mat[10] -
+		mat->mat[0] * mat->mat[6] * mat->mat[9] -
+		mat->mat[4] * mat->mat[1] * mat->mat[10] +
+		mat->mat[4] * mat->mat[2] * mat->mat[9] +
+		mat->mat[8] * mat->mat[1] * mat->mat[6] -
+		mat->mat[8] * mat->mat[2] * mat->mat[5];
+
+	det = mat->mat[0] * tmp.mat[0] + mat->mat[1] * tmp.mat[4] + mat->mat[2] * tmp.mat[8] + mat->mat[3] * tmp.mat[12];
+
+	if (det == 0) {
+		return;
+	}
+
+	det = 1.0 / det;
+
+	for (i = 0; i < 16; i++) {
+		res->mat[i] = tmp.mat[i] * det;
+	}
+}
+
+
+
+
 void quat_fill(quat* res, float x, float y, float z, float w)
 {
 	res->x = x;

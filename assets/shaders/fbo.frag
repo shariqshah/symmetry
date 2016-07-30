@@ -4,17 +4,13 @@ in vec2 uv;
 
 out vec4 frag_color;
 
-//uniform sampler2D sampler;
 uniform sampler2D albedo_map;
-uniform sampler2D position_map;
-uniform sampler2D normal_map;
-uniform sampler2D uv_map;
+//uniform sampler2D light_map;
 
 void main()
 {
-	//frag_color = texture2D(sampler, uv);
-	frag_color = texture(albedo_map, uv);
-	frag_color = texture(position_map, uv);
-	frag_color = texture(normal_map, uv);
-	frag_color = texture(uv_map, uv);
+	vec4 albedo_color = texture(albedo_map, uv);
+	//frag_color = albedo_color * texture(light_map, uv);
+	//frag_color += (albedo_color * vec4(0.2, 0.2, 0.2, 1.0));
+	frag_color = albedo_color;
 }

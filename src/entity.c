@@ -4,6 +4,7 @@
 #include "string_utils.h"
 #include "transform.h"
 #include "camera.h"
+#include "light.h"
 #include "model.h"
 
 #include <stdlib.h>
@@ -126,6 +127,7 @@ int entity_component_remove(struct Entity* entity, enum Component component)
 	case C_TRANSFORM: log_error("entity:remove_component", "Cannot remove TRANSFORM"); break;
 	case C_MODEL:     if(comp_index != -1) model_remove(comp_index); break;
 	case C_CAMERA:    if(comp_index != -1) camera_remove(comp_index); break;
+	case C_LIGHT:     if(comp_index != -1) light_remove(comp_index); break;
 	case C_RIGIDBODY:
 		break;
 	default:
@@ -150,6 +152,7 @@ void* entity_component_get(struct Entity* entity, enum Component component)
 		case C_TRANSFORM: comp_obj = transform_get(comp_index); break;
 		case C_MODEL:     comp_obj = model_get(comp_index); break;
 		case C_CAMERA:    comp_obj = camera_get(comp_index); break;
+		case C_LIGHT:     comp_obj = light_get(comp_index); break;
 		case C_RIGIDBODY:
 			break;
 		default: log_error("entity:component_get", "Invalid component type"); break;
@@ -178,7 +181,8 @@ void* entity_component_add(struct Entity* entity, enum Component component, ...)
 	case C_MODEL:
 	{
 		const char* filename = va_arg(args, const char*);
-		new_comp_index = model_create(entity->node, filename);
+		const char* material_name = va_arg(args, const char*);
+		new_comp_index = model_create(entity->node, filename, material_name);
 		new_comp = model_get(new_comp_index);
 	}
 	break;
@@ -188,6 +192,13 @@ void* entity_component_add(struct Entity* entity, enum Component component, ...)
 		int height = va_arg(args, int);
 		new_comp_index = camera_create(entity->node, width, height);
 		new_comp = camera_get(new_comp_index);
+	}
+	break;
+	case C_LIGHT:
+	{
+		int light_type = va_arg(args, int);
+		new_comp_index = light_create(entity->node, light_type);
+		new_comp = light_get(new_comp_index);
 	}
 	break;
 	case C_RIGIDBODY:

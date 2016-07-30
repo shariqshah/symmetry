@@ -110,6 +110,7 @@ void mat4_lookat(mat4* res, const vec3* eye, const vec3* center, const vec3* up_
 void mat4_translate(mat4* res, float x, float y, float z);
 void mat4_mul(mat4* res, const mat4* mat1, const mat4* mat2);
 void mat4_identity(mat4* res);
+void mat4_inverse(mat4* res, mat4* mat);
 
 /* quat */
 float quat_get_roll(const quat* q);

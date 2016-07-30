@@ -13,7 +13,7 @@ void main()
 
 	gbuffer[0] = diffuse_color * texture(diffuse_texture, uv);
 	gbuffer[1] = vec4(vertex.xyz, 1.0);
-	gbuffer[2] = vec4(normal.xyz, 1.0);
+	gbuffer[2] = vec4(normalize(normal.xyz), 1.0);
 	gbuffer[3] = vec4(uv, 0.0, 1.0);
 
 	// gbuffer[0] = (diffuse_color * texture(diffuse_texture, uv)).xyz;

@@ -27,6 +27,8 @@ void setOutputs()
 	//Normal and vertex sent to the fragment shader should be in the same space!
 	normal = vec4(model_mat * vec4(vNormal, 0.0)).xyz;
 	vertex = vec4(model_mat * vec4(vPosition, 1.0)).xyz;
+	// normal = vNormal;
+	// vertex = vPosition;
 	vertCamSpace   = vec4(view_mat * vec4(vPosition, 1.0)).xyz;
 	vertLightSpace = vec4((lightVPMat * model_mat) * vec4(vPosition, 1.0));
 }

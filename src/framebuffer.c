@@ -1,6 +1,5 @@
 #include "framebuffer.h"
 #include "array.h"
-#include "num_types.h"
 #include "renderer.h"
 #include "log.h"
 #include "texture.h"
@@ -160,4 +159,10 @@ int framebuffer_get_texture(int index)
 {
 	assert(index < array_len(fbo_list) && index > -1);
 	return fbo_list[index].texture;
+}
+
+uint framebuffer_get_gl_handle(int index)
+{
+	assert(index < array_len(fbo_list) && index > -1);
+	return fbo_list[index].handle;
 }

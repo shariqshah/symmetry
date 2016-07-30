@@ -70,6 +70,7 @@ void scene_setup(void)
 	int turn_left_keys[1] = {'J'};
 	int turn_up_keys[1] = {'I'};
 	int turn_down_keys[1] = {'K'};
+	int sprint_keys[2] = {GLFW_KEY_LEFT_SHIFT, GLFW_KEY_RIGHT_SHIFT};
 	input_map_create("Move_Forward", forward_keys, 2);
 	input_map_create("Move_Backward", backward_keys, 2);
 	input_map_create("Move_Up", up_keys, 1);
@@ -80,12 +81,13 @@ void scene_setup(void)
 	input_map_create("Turn_Left", turn_left_keys, 1);
 	input_map_create("Turn_Up", turn_up_keys, 1);
 	input_map_create("Turn_Down", turn_down_keys, 1);
+	input_map_create("Sprint", sprint_keys, 2);
 	
 	struct Entity* player = scene_add_new("player", "None");
 	player_node = player->node;
-	vec3 viewer_pos = {0, 0, 10};
+	vec3 viewer_pos = {5, 4, 20};
 	struct Transform* viewer_tran = entity_component_get(player, C_TRANSFORM);
-	struct Model* player_model = entity_component_add(player, C_MODEL, "sphere.pamesh");
+	struct Model* player_model = entity_component_add(player, C_MODEL, "sphere.pamesh", NULL);
 	vec4 color = {0.f, 1.f, 1.f, 1.f };
 	model_set_material_param(player_model, "diffuse_color", &color);
 	vec4_fill(&color, 1.f, 1.f, 1.f, 1.f);
@@ -102,30 +104,30 @@ void scene_setup(void)
 	struct Transform* tran = entity_component_get(new_ent, C_TRANSFORM);
 	vec3 position = {0, 0, -5};
 	transform_translate(tran, &position, TS_WORLD);
-	struct Model* box_model = entity_component_add(new_ent, C_MODEL, "default.pamesh");
+	struct Model* box_model = entity_component_add(new_ent, C_MODEL, "default.pamesh", "Blinn_Phong");
 	model_set_material_param(box_model, "diffuse_color", &color);
 	struct Transform* model_tran = entity_component_get(new_ent, C_TRANSFORM);
 	vec3 scale = {1, 1, 2};
 	transform_scale(model_tran, &scale);
 
 	struct Entity* suz = scene_add_as_child("Suzanne", NULL, new_ent->node);
-	struct Model* suz_model = entity_component_add(suz, C_MODEL, "suzanne.pamesh");
+	struct Model* suz_model = entity_component_add(suz, C_MODEL, "suzanne.pamesh", "Blinn_Phong");
 	model_set_material_param(suz_model, "diffuse_color", &color);
 	struct Transform* s_tran = entity_component_get(suz, C_TRANSFORM);
 	vec3 s_pos = {3, 0, 0};
 	transform_translate(s_tran, &s_pos, TS_WORLD);
 
 	struct Entity* ground = scene_add_new("Ground", NULL);
-	struct Model* ground_model = entity_component_add(ground, C_MODEL, "plane.pamesh");
+	struct Model* ground_model = entity_component_add(ground, C_MODEL, "default.pamesh", "Blinn_Phong");
 	model_set_material_param(ground_model, "diffuse_color", &color);
 	struct Transform* ground_tran = entity_component_get(ground, C_TRANSFORM);
 	vec3 pos = {0, -3, -3};
-	vec3 scale_ground = {20.f, 10.f, 20.f};
+	vec3 scale_ground = {200.f, 0.2f, 200.f};
 	transform_set_position(ground_tran, &pos);
 	transform_scale(ground_tran, &scale_ground);
 
 	struct Entity* screen = scene_add_new("Screen", NULL);
-	struct Model* screen_model = entity_component_add(screen, C_MODEL, NULL);
+	struct Model* screen_model = entity_component_add(screen, C_MODEL, NULL, NULL);
 	screen_model->geometry_index = geom_find("Quad");
 	struct Entity* screen_camera = scene_add_as_child("Screen_Camera", NULL, screen->node);
 	struct Transform* screen_camera_tran = entity_component_get(screen_camera, C_TRANSFORM);
@@ -134,6 +136,20 @@ void scene_setup(void)
 	camera_attach_fbo(cam, 1024, 1024, 1, 1);
 	model_set_material_param(screen_model, "diffuse_color", &color);
 	model_set_material_param(screen_model, "diffuse_texture", &cam->render_tex);
+
+	const int MAX_LIGHTS = 10;
+	for(int i = 0; i < MAX_LIGHTS; i++)
+	{
+		int x = rand() % MAX_LIGHTS;
+		int z = rand() % MAX_LIGHTS;
+		x++; z++;
+		struct Entity* light_ent = scene_add_new("Light_Ent", NULL);
+		struct Transform* light_tran = entity_component_get(light_ent, C_TRANSFORM);
+		vec3 lt_pos = {x * 2, 3, z * 2};
+		transform_set_position(light_tran, &lt_pos);
+		struct Light* light_comp = entity_component_add(light_ent, C_LIGHT, LT_POINT);
+		vec4_fill(&light_comp->color, 1.f / (float)x, 1, 1.f / (float)z, 1);
+	}
 }
 
 void debug(float dt)
@@ -143,7 +159,7 @@ void debug(float dt)
 	struct Camera* cam = entity_component_get(entity, C_CAMERA);
 	camera_set_primary_viewer(cam);
 	struct Transform* transform = entity_component_get(entity, C_TRANSFORM);
-	float move_speed = 5.f, turn_speed = 50.f;
+	float move_speed = 5.f, move_scale = 3.f, turn_speed = 50.f;
 	vec3 offset = {0, 0, 0};
 	float turn_up_down = 0.f;
 	float turn_left_right = 0.f;
@@ -213,6 +229,7 @@ void debug(float dt)
 	}
 	
 	/* Movement */
+	if(input_map_state_get("Sprint", GLFW_PRESS)) move_speed *= move_scale;
 	if(input_map_state_get("Move_Forward", GLFW_PRESS)) offset.z -= move_speed;
 	if(input_map_state_get("Move_Backward", GLFW_PRESS)) offset.z += move_speed;
 	if(input_map_state_get("Move_Left", GLFW_PRESS)) offset.x -= move_speed;

@@ -1,13 +1,23 @@
 #ifndef material_H
 #define material_H
 
+#include "linmath.h"
+
 struct Model;
 
 struct Uniform
 {
 	int   location;
-	int   type;
 	char* name;
+	int   type;
+	union /* Default values */
+	{
+		vec2  d_vec2;
+		vec3  d_vec3;
+		vec4  d_vec4;
+		int   d_int;
+		float d_float;
+	};
 };
 
 struct Material_Param
@@ -22,6 +32,7 @@ struct Material
 	int   shader;
 	int*  registered_models;
 	int   active;
+	int   lit;					  /* If material uses light information */
 	struct Uniform* model_params; /* uniforms related to models */
 	struct Uniform* pipeline_params; /* general uniforms like matrices etc */
 };

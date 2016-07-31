@@ -3,6 +3,7 @@
 struct Light
 {
 	vec3  position;
+	vec3  direction;
 	float outer_angle;
 	float inner_angle;
 	float falloff;
@@ -64,6 +65,34 @@ vec4 calc_point_light(in Light point_light)
 	}
 }
 
+vec4 calc_dir_light(in Light dir_light)
+{
+	vec4  diffuse_comp  = vec4(0.0);
+	vec4  specular_comp = vec4(0.0);
+	vec3  normalized_normal = normalize(normal);
+	float cos_ang_incidence  = dot(normalized_normal, -dir_light.direction);
+	cos_ang_incidence = clamp(cos_ang_incidence, 0, 1);
+	float shadow_factor = 1.0;
+	
+	if(cos_ang_incidence > 0)
+	{
+		diffuse_comp = dir_light.color * diffuse * cos_ang_incidence;
+
+		vec3  vertex_to_eye    = normalize(camera_pos - vertex);
+		vec3  light_reflect   = normalize(reflect(dir_light.direction, normalized_normal));
+		float specular_factor = max(0.0, dot(vertex_to_eye, light_reflect));
+		specular_factor = pow(specular_factor, specular_strength);
+		specular_comp = dir_light.color * specular * specular_factor;
+		// if(light.castShadow == 1)
+		// {
+		// 	shadow_factor = calcShadowFactor(vertLightSpace.xyz);
+		// }
+	}
+	//return (dir_light.intensity * (diffuse_comp + specular_comp)) * shadow_factor;
+	return (dir_light.intensity * (diffuse_comp + specular_comp));
+}
+
+
 void main()
 {
 	vec4 albedo_color = diffuse_color * texture(diffuse_texture, uv);
@@ -73,15 +102,12 @@ void main()
 	{
 		if(i == total_active_lights) break;
 
-		// if(lights[i].type == LT_POINT)
-		light_contribution += calc_point_light(lights[i]);
+		if(lights[i].type == LT_POINT)
+			light_contribution += calc_point_light(lights[i]);
+		else if(lights[i].type == LT_DIR)
+			light_contribution += calc_dir_light(lights[i]);
 	}
 	
 	 frag_color = (albedo_color * vec4(0.1, 0.1, 0.1, 1.0)) +
 		          (albedo_color * light_contribution);
-	//frag_color = lights[0].color;
-	//frag_color = vec4(lights[0].intensity, 0.0, 0.0, 1.0);
-	//frag_color = vec4(lights[0].position, 1.0);
-	//frag_color = vec4(camera_pos, 1.0);
-	//frag_color = vec4(total_active_lights);
 }

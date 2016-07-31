@@ -173,25 +173,42 @@ void model_render_all(struct Camera* camera)
 					struct Transform* transform = entity_component_get(light_entity, C_TRANSFORM);
 					vec3 light_pos = {0, 0, 0};
 					transform_get_absolute_pos(transform, &light_pos);
+
+					if(light->type != LT_POINT)
+					{
+						snprintf(uniform_name, max_name_len, "lights[%d].direction", i);
+						transform_get_absolute_lookat(transform, &light_pos);
+						vec3_norm(&light_pos, &light_pos);
+						shader_set_uniform_vec3(material->shader, uniform_name, &light_pos);
+						memset(uniform_name, '\0', max_name_len);
+					}
+
+
+					if(light->type != LT_DIR)
+					{
+						snprintf(uniform_name, max_name_len, "lights[%d].position", i);
+						shader_set_uniform_vec3(material->shader,  uniform_name, &light_pos);
+						memset(uniform_name, '\0', max_name_len);
+
+						snprintf(uniform_name, max_name_len, "lights[%d].outer_angle", i);
+						shader_set_uniform_float(material->shader, uniform_name, light->outer_angle);
+						memset(uniform_name, '\0', max_name_len);
 					
-					snprintf(uniform_name, max_name_len, "lights[%d].position", i);
-					shader_set_uniform_vec3(material->shader,  uniform_name, &light_pos);
-					memset(uniform_name, '\0', max_name_len);
+						snprintf(uniform_name, max_name_len, "lights[%d].inner_angle", i);
+						shader_set_uniform_float(material->shader, uniform_name, light->inner_angle);
+						memset(uniform_name, '\0', max_name_len);
+					
+						snprintf(uniform_name, max_name_len, "lights[%d].falloff", i);
+						shader_set_uniform_float(material->shader, uniform_name, light->falloff);
+						memset(uniform_name, '\0', max_name_len);
+
+						snprintf(uniform_name, max_name_len, "lights[%d].radius", i);
+						shader_set_uniform_int(material->shader, uniform_name, light->radius);
+						memset(uniform_name, '\0', max_name_len);
+					}
 					
 					snprintf(uniform_name, max_name_len, "lights[%d].color", i);
 					shader_set_uniform_vec4(material->shader,  uniform_name, &light->color);
-					memset(uniform_name, '\0', max_name_len);
-					
-					snprintf(uniform_name, max_name_len, "lights[%d].outer_angle", i);
-					shader_set_uniform_float(material->shader, uniform_name, light->outer_angle);
-					memset(uniform_name, '\0', max_name_len);
-					
-					snprintf(uniform_name, max_name_len, "lights[%d].inner_angle", i);
-					shader_set_uniform_float(material->shader, uniform_name, light->inner_angle);
-					memset(uniform_name, '\0', max_name_len);
-					
-					snprintf(uniform_name, max_name_len, "lights[%d].falloff", i);
-					shader_set_uniform_float(material->shader, uniform_name, light->falloff);
 					memset(uniform_name, '\0', max_name_len);
 					
 					snprintf(uniform_name, max_name_len, "lights[%d].intensity", i);
@@ -200,10 +217,6 @@ void model_render_all(struct Camera* camera)
 					
 					snprintf(uniform_name, max_name_len, "lights[%d].type", i);
 					shader_set_uniform_int(material->shader, uniform_name, light->type);
-					memset(uniform_name, '\0', max_name_len);
-					
-					snprintf(uniform_name, max_name_len, "lights[%d].radius", i);
-					shader_set_uniform_int(material->shader, uniform_name, light->radius);
 					memset(uniform_name, '\0', max_name_len);
 				}
 
@@ -268,7 +281,6 @@ int model_set_material_param(struct Model* model, const char* name, void* value)
 				mat4_assign((mat4*)param->value, (mat4*)value);
 				break;
 			case UT_TEX:
-				log_message("Tex Val : %d", *((int*)value));
 				*((int*)param->value) = *((int*)value);
 				break;
 			default:

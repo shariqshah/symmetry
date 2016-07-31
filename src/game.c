@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stddef.h>
+#include <time.h>
 #include <GLFW/glfw3.h>
 
 #include "game.h"
@@ -93,10 +94,10 @@ void scene_setup(void)
 	vec4_fill(&color, 1.f, 1.f, 1.f, 1.f);
 	transform_set_position(viewer_tran, &viewer_pos);
 	int render_width, render_height;
-	render_width = 800;
-	render_height = 600;
+	render_width = 1024;
+	render_height = 768;
 	struct Camera* camera = entity_component_add(player, C_CAMERA, render_width, render_height);
-	//camera_attach_fbo(camera, render_width, render_height, 1, 1);
+	camera_attach_fbo(camera, render_width, render_height, 1, 1);
 	vec4_fill(&camera->clear_color, 0.3f, 0.6f, 0.9f, 1.0f);
 	camera_set_primary_viewer(camera);
 	
@@ -107,37 +108,50 @@ void scene_setup(void)
 	struct Model* box_model = entity_component_add(new_ent, C_MODEL, "default.pamesh", "Blinn_Phong");
 	model_set_material_param(box_model, "diffuse_color", &color);
 	struct Transform* model_tran = entity_component_get(new_ent, C_TRANSFORM);
-	vec3 scale = {1, 1, 2};
+	vec3 scale = {1, 1, 1};
 	transform_scale(model_tran, &scale);
 
-	struct Entity* suz = scene_add_as_child("Suzanne", NULL, new_ent->node);
-	struct Model* suz_model = entity_component_add(suz, C_MODEL, "suzanne.pamesh", "Blinn_Phong");
-	model_set_material_param(suz_model, "diffuse_color", &color);
-	struct Transform* s_tran = entity_component_get(suz, C_TRANSFORM);
-	vec3 s_pos = {3, 0, 0};
-	transform_translate(s_tran, &s_pos, TS_WORLD);
+	int parent_node = new_ent->node;
+	int num_suz = 100;
+	srand(time(NULL));
+	for(int i = 0; i < num_suz; i++)
+	{
+		int x = rand() % num_suz;
+		int y = rand() % num_suz;
+		int z = rand() % num_suz;
+		x++; y++; z++;
+		struct Entity* suz = scene_add_as_child("Suzanne", NULL, parent_node);
+		struct Model* suz_model = entity_component_add(suz, C_MODEL, "suzanne.pamesh", "Blinn_Phong");
+		model_set_material_param(suz_model, "diffuse_color", &color);
+		struct Transform* s_tran = entity_component_get(suz, C_TRANSFORM);
+		vec3 s_pos = {x, 5, z};
+		transform_translate(s_tran, &s_pos, TS_WORLD);
+	}
+	
 
 	struct Entity* ground = scene_add_new("Ground", NULL);
-	struct Model* ground_model = entity_component_add(ground, C_MODEL, "default.pamesh", "Blinn_Phong");
+	struct Model* ground_model = entity_component_add(ground, C_MODEL, "plane.pamesh", "Blinn_Phong");
 	model_set_material_param(ground_model, "diffuse_color", &color);
+	int white_tex = texture_create_from_file("white.tga", TU_DIFFUSE);
+	model_set_material_param(ground_model, "diffuse_texture", &white_tex);
 	struct Transform* ground_tran = entity_component_get(ground, C_TRANSFORM);
-	vec3 pos = {0, -3, -3};
-	vec3 scale_ground = {200.f, 0.2f, 200.f};
+	vec3 pos = {0, -15, 0};
+	vec3 scale_ground = {200.f, 200.f, 200.f};
 	transform_set_position(ground_tran, &pos);
 	transform_scale(ground_tran, &scale_ground);
 
-	struct Entity* screen = scene_add_new("Screen", NULL);
-	struct Model* screen_model = entity_component_add(screen, C_MODEL, NULL, NULL);
-	screen_model->geometry_index = geom_find("Quad");
-	struct Entity* screen_camera = scene_add_as_child("Screen_Camera", NULL, screen->node);
-	struct Transform* screen_camera_tran = entity_component_get(screen_camera, C_TRANSFORM);
-	transform_rotate(screen_camera_tran, &UNIT_Y, 180.f, TS_WORLD);
-	struct Camera* cam = entity_component_add(screen_camera, C_CAMERA, 1024, 1024);
-	camera_attach_fbo(cam, 1024, 1024, 1, 1);
-	model_set_material_param(screen_model, "diffuse_color", &color);
-	model_set_material_param(screen_model, "diffuse_texture", &cam->render_tex);
+	/* struct Entity* screen = scene_add_new("Screen", NULL); */
+	/* struct Model* screen_model = entity_component_add(screen, C_MODEL, NULL, NULL); */
+	/* screen_model->geometry_index = geom_find("Quad"); */
+	/* struct Entity* screen_camera = scene_add_as_child("Screen_Camera", NULL, screen->node); */
+	/* struct Transform* screen_camera_tran = entity_component_get(screen_camera, C_TRANSFORM); */
+	/* transform_rotate(screen_camera_tran, &UNIT_Y, 180.f, TS_WORLD); */
+	/* struct Camera* cam = entity_component_add(screen_camera, C_CAMERA, 50, 50); */
+	/* camera_attach_fbo(cam, 50, 50, 1, 1); */
+	/* model_set_material_param(screen_model, "diffuse_color", &color); */
+	/* model_set_material_param(screen_model, "diffuse_texture", &cam->render_tex); */
 
-	const int MAX_LIGHTS = 10;
+	const int MAX_LIGHTS = 5;
 	for(int i = 0; i < MAX_LIGHTS; i++)
 	{
 		int x = rand() % MAX_LIGHTS;
@@ -145,11 +159,16 @@ void scene_setup(void)
 		x++; z++;
 		struct Entity* light_ent = scene_add_new("Light_Ent", NULL);
 		struct Transform* light_tran = entity_component_get(light_ent, C_TRANSFORM);
-		vec3 lt_pos = {x * 2, 3, z * 2};
+		vec3 lt_pos = {x * 10, 3, z * 10};
 		transform_set_position(light_tran, &lt_pos);
 		struct Light* light_comp = entity_component_add(light_ent, C_LIGHT, LT_POINT);
-		vec4_fill(&light_comp->color, 1.f / (float)x, 1, 1.f / (float)z, 1);
+		vec4_fill(&light_comp->color, 1.f / (float)x, 1.f / ((rand() % 10) + 1.f), 1.f / (float)z, 1);
+		light_comp->intensity = 0.2f;
 	}
+
+	struct Entity* sun = scene_add_new("Sun", NULL);
+	struct Light* sun_light = entity_component_add(sun, C_LIGHT, LT_DIR);
+	sun_light->intensity = 0.8f;
 }
 
 void debug(float dt)
@@ -246,7 +265,7 @@ void debug(float dt)
 
 	if(input_key_state_get(GLFW_KEY_SPACE, GLFW_PRESS))
 	{
-		struct Entity* model = scene_find("Screen");
+		struct Entity* model = scene_find("Model_Entity");
 		struct Transform* mod_tran = entity_component_get(model, C_TRANSFORM);
 		vec3 x_axis = {1, 0, 0};
 		transform_rotate(mod_tran, &x_axis, 25.f * dt, TS_WORLD);
@@ -254,7 +273,7 @@ void debug(float dt)
 
 	if(input_key_state_get(GLFW_KEY_M, GLFW_PRESS))
 	{
-		struct Entity* model = scene_find("Screen");
+		struct Entity* model = scene_find("Model_Entity");
 		struct Transform* mod_tran = entity_component_get(model, C_TRANSFORM);
 		//vec3 y_axis = {0, 0, 1};
 		//transform_rotate(mod_tran, &y_axis, 25.f * dt, TS_LOCAL);
@@ -264,7 +283,7 @@ void debug(float dt)
 
 	if(input_key_state_get(GLFW_KEY_N, GLFW_PRESS))
 	{
-		struct Entity* model = scene_find("Screen");
+		struct Entity* model = scene_find("Model_Entity");
 		struct Transform* mod_tran = entity_component_get(model, C_TRANSFORM);
 		/* vec3 y_axis = {0, 0, 1}; */
 		/* transform_rotate(mod_tran, &y_axis, 25.f * dt, TS_WORLD); */

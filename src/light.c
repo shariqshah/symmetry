@@ -69,11 +69,11 @@ int light_create(int node, int light_type)
 	new_light->depth_bias = 0.0005f;
 	new_light->type = light_type;
 	new_light->pcf_enabled = 0;
-	new_light->intensity = 0.5f;
+	new_light->intensity = 1.f;
 	new_light->falloff = 1.5f;
 	new_light->outer_angle = TO_RADIANS(30.f);
 	new_light->inner_angle = TO_RADIANS(20.f);
-	new_light->radius = 30;
+	new_light->radius = 20;
 	return index;
 }
 

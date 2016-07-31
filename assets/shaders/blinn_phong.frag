@@ -92,6 +92,24 @@ vec4 calc_dir_light(in Light dir_light)
 	return (dir_light.intensity * (diffuse_comp + specular_comp));
 }
 
+vec4 calc_spot_light(in Light spot_light)
+{
+	vec4 color = vec4(0.0);
+	vec3 light_to_surface = vertex - spot_light.position;
+	float angle = dot(spot_light.direction, normalize(light_to_surface));
+	if(acos(angle) < spot_light.outer_angle)
+	{
+		color = calc_point_light(spot_light);
+		color *= smoothstep(cos(spot_light.outer_angle), cos(spot_light.inner_angle), angle);
+		// if(light.cast_shadow != 0)
+		// {
+		// 	float shadow_factor = calc_shadow_factor(vert_light_space.xyz / vert_light_space.w);
+		// 	color *= shadow_factor;
+		// }
+	}
+	return color;// * shadowFactor;
+}
+
 
 void main()
 {
@@ -106,6 +124,8 @@ void main()
 			light_contribution += calc_point_light(lights[i]);
 		else if(lights[i].type == LT_DIR)
 			light_contribution += calc_dir_light(lights[i]);
+		else
+			light_contribution += calc_spot_light(lights[i]);
 	}
 	
 	 frag_color = (albedo_color * vec4(0.1, 0.1, 0.1, 1.0)) +

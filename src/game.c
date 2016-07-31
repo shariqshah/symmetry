@@ -151,7 +151,7 @@ void scene_setup(void)
 	/* model_set_material_param(screen_model, "diffuse_color", &color); */
 	/* model_set_material_param(screen_model, "diffuse_texture", &cam->render_tex); */
 
-	const int MAX_LIGHTS = 5;
+	const int MAX_LIGHTS = 2;
 	for(int i = 0; i < MAX_LIGHTS; i++)
 	{
 		int x = rand() % MAX_LIGHTS;
@@ -161,14 +161,14 @@ void scene_setup(void)
 		struct Transform* light_tran = entity_component_get(light_ent, C_TRANSFORM);
 		vec3 lt_pos = {x * 10, 3, z * 10};
 		transform_set_position(light_tran, &lt_pos);
-		struct Light* light_comp = entity_component_add(light_ent, C_LIGHT, LT_POINT);
+		struct Light* light_comp = entity_component_add(light_ent, C_LIGHT, LT_SPOT);
 		vec4_fill(&light_comp->color, 1.f / (float)x, 1.f / ((rand() % 10) + 1.f), 1.f / (float)z, 1);
-		light_comp->intensity = 0.2f;
+		light_comp->intensity = 1.f;
 	}
 
-	struct Entity* sun = scene_add_new("Sun", NULL);
-	struct Light* sun_light = entity_component_add(sun, C_LIGHT, LT_DIR);
-	sun_light->intensity = 0.8f;
+	/* struct Entity* sun = scene_add_new("Sun", NULL); */
+	/* struct Light* sun_light = entity_component_add(sun, C_LIGHT, LT_DIR); */
+	/* sun_light->intensity = 0.8f; */
 }
 
 void debug(float dt)

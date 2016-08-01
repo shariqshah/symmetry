@@ -159,6 +159,14 @@ void model_render_all(struct Camera* camera)
 					shader_set_uniform(uniform->type, uniform->location, &camera->view_mat);
 					renderer_check_glerror("model:render_all:material_pipeline");
 				}
+				else if(strcmp(uniform->name, "inv_model_mat") == 0)
+				{
+					mat4 inv_mat;
+					mat4_identity(&inv_mat);
+					mat4_inverse(&inv_mat, &transform->trans_mat);
+					shader_set_uniform(uniform->type, uniform->location, &inv_mat);
+					renderer_check_glerror("model:render_all:material_pipeline");
+				}
 			}
 
 			if(material->lit)	/* Set light information */

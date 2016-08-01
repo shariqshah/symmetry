@@ -129,5 +129,5 @@ void main()
 	}
 	
 	 frag_color = (albedo_color * vec4(0.1, 0.1, 0.1, 1.0)) +
-		          (albedo_color * vec4(light_contribution, 1.0));
+	 	          (albedo_color * vec4(light_contribution, 1.0));
 }

@@ -105,8 +105,10 @@ void scene_setup(void)
 	struct Transform* tran = entity_component_get(new_ent, C_TRANSFORM);
 	vec3 position = {0, 0, -5};
 	transform_translate(tran, &position, TS_WORLD);
-	struct Model* box_model = entity_component_add(new_ent, C_MODEL, "default.pamesh", "Blinn_Phong");
+	struct Model* box_model = entity_component_add(new_ent, C_MODEL, "torus.pamesh", "Blinn_Phong");
 	model_set_material_param(box_model, "diffuse_color", &color);
+	int tex = texture_create_from_file("white.tga", TU_DIFFUSE);
+	model_set_material_param(box_model, "diffuse_texture", &tex);
 	struct Transform* model_tran = entity_component_get(new_ent, C_TRANSFORM);
 	vec3 scale = {1, 1, 1};
 	transform_scale(model_tran, &scale);
@@ -170,9 +172,9 @@ void scene_setup(void)
 		light_comp->intensity = 1.f;
 	}
 
-	/* struct Entity* sun = scene_add_new("Sun", NULL); */
-	/* struct Light* sun_light = entity_component_add(sun, C_LIGHT, LT_DIR); */
-	/* sun_light->intensity = 0.8f; */
+	struct Entity* sun = scene_add_new("Sun", NULL);
+	struct Light* sun_light = entity_component_add(sun, C_LIGHT, LT_DIR);
+	sun_light->intensity = 0.8f;
 }
 
 void debug(float dt)

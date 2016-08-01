@@ -19,7 +19,7 @@ struct Light
 	float inner_angle;
 	float falloff;
 	float intensity;
-	vec4 color;
+	vec3 color;
 	int32 node;
 	uint8 cast_shadow;
 	uint8 pcf_enabled;

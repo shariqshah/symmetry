@@ -8,7 +8,7 @@ struct Light
 	float inner_angle;
 	float falloff;
 	float intensity;
-	vec4  color;
+	vec3  color;
 	uint  pcf_enabled;
 	int   type;
 	int   radius; 
@@ -30,17 +30,16 @@ uniform int total_active_lights;
 uniform float specular;
 uniform float diffuse;
 uniform float specular_strength;
-
 out vec4 frag_color;
 
-vec4 calc_point_light(in Light point_light)
+vec3 calc_point_light(in Light light)
 {
-	vec4  diffuse_comp  = vec4(0.0);
-	vec4  specular_comp = vec4(0.0);
-	vec3  light_direction = vertex - point_light.position;
+	vec3  diffuse_comp  = vec3(0.0);
+	vec3  specular_comp = vec3(0.0);
+	vec3  light_direction = vertex - light.position;
 	float dist = abs(length(light_direction));
 
-	if(dist <= point_light.radius)
+	if(dist <= light.radius)
 	{
 		light_direction = normalize(light_direction);
 		vec3 normalized_normal = normalize(normal);
@@ -49,58 +48,59 @@ vec4 calc_point_light(in Light point_light)
 
 		if(cos_ang_incidence > 0)
 		{
-			diffuse_comp = point_light.color * diffuse * cos_ang_incidence;
+			diffuse_comp = light.color * diffuse * cos_ang_incidence;
 			vec3 vertex_to_eye = normalize(camera_pos - vertex);
-			vec3 light_reflect = normalize(reflect(light_direction, normalized_normal));
-			float specular_factor = max(0.0, dot(vertex_to_eye, light_reflect));
+			vec3 halfway = normalize(light.direction + vertex_to_eye);
+			float specular_factor = max(0.0, dot(normalized_normal, halfway));
 			specular_factor = pow(specular_factor, specular_strength);
-			specular_comp = point_light.color * specular * specular_factor;
+			specular_comp = light.color * specular * specular_factor;
 		}
-		float attenuation = pow(max(0.0, (1.0 - (dist / point_light.radius))), point_light.falloff + 1.0f);
-		return (((diffuse_comp + specular_comp) * attenuation) * point_light.intensity);
+		float attenuation = pow(max(0.0, (1.0 - (dist / light.radius))), light.falloff + 1.0f);
+		return (((diffuse_comp + specular_comp) * attenuation) * light.intensity);
 	}
 	else
 	{
-		return vec4(0.0);
+		return vec3(0.0);
 	}
 }
 
-vec4 calc_dir_light(in Light dir_light)
+vec3 calc_dir_light(in Light light)
 {
-	vec4  diffuse_comp  = vec4(0.0);
-	vec4  specular_comp = vec4(0.0);
+	vec3  diffuse_comp  = vec3(0.0);
+	vec3  specular_comp = vec3(0.0);
 	vec3  normalized_normal = normalize(normal);
-	float cos_ang_incidence  = dot(normalized_normal, -dir_light.direction);
+	float cos_ang_incidence  = dot(normalized_normal, -light.direction);
 	cos_ang_incidence = clamp(cos_ang_incidence, 0, 1);
 	float shadow_factor = 1.0;
 	
 	if(cos_ang_incidence > 0)
 	{
-		diffuse_comp = dir_light.color * diffuse * cos_ang_incidence;
+		diffuse_comp = light.color * diffuse * cos_ang_incidence;
 
 		vec3  vertex_to_eye    = normalize(camera_pos - vertex);
-		vec3  light_reflect   = normalize(reflect(dir_light.direction, normalized_normal));
-		float specular_factor = max(0.0, dot(vertex_to_eye, light_reflect));
+		vec3  light_reflect   = normalize(reflect(light.direction, normalized_normal));
+		vec3 halfway = normalize(light.direction + vertex_to_eye);
+		float specular_factor = max(0.0, dot(normalized_normal, halfway));
 		specular_factor = pow(specular_factor, specular_strength);
-		specular_comp = dir_light.color * specular * specular_factor;
+		specular_comp = light.color * specular * specular_factor;
 		// if(light.castShadow == 1)
 		// {
 		// 	shadow_factor = calcShadowFactor(vertLightSpace.xyz);
 		// }
 	}
-	//return (dir_light.intensity * (diffuse_comp + specular_comp)) * shadow_factor;
-	return (dir_light.intensity * (diffuse_comp + specular_comp));
+	//return (light.intensity * (diffuse_comp + specular_comp)) * shadow_factor;
+	return (light.intensity * (diffuse_comp + specular_comp));
 }
 
-vec4 calc_spot_light(in Light spot_light)
+vec3 calc_spot_light(in Light light)
 {
-	vec4 color = vec4(0.0);
-	vec3 light_to_surface = vertex - spot_light.position;
-	float angle = dot(spot_light.direction, normalize(light_to_surface));
-	if(acos(angle) < spot_light.outer_angle)
+	vec3 color = vec3(0.0);
+	vec3 light_to_surface = vertex - light.position;
+	float angle = dot(light.direction, normalize(light_to_surface));
+	if(acos(angle) < light.outer_angle)
 	{
-		color = calc_point_light(spot_light);
-		color *= smoothstep(cos(spot_light.outer_angle), cos(spot_light.inner_angle), angle);
+		color = calc_point_light(light);
+		color *= smoothstep(cos(light.outer_angle), cos(light.inner_angle), angle);
 		// if(light.cast_shadow != 0)
 		// {
 		// 	float shadow_factor = calc_shadow_factor(vert_light_space.xyz / vert_light_space.w);
@@ -114,7 +114,7 @@ vec4 calc_spot_light(in Light spot_light)
 void main()
 {
 	vec4 albedo_color = diffuse_color * texture(diffuse_texture, uv);
-	vec4 light_contribution = vec4(0.0, 0.0, 0.0, 1.0);
+	vec3 light_contribution = vec3(0.0, 0.0, 0.0);
 	
 	for(int i = 0; i < total_active_lights; i++)
 	{
@@ -129,5 +129,5 @@ void main()
 	}
 	
 	 frag_color = (albedo_color * vec4(0.1, 0.1, 0.1, 1.0)) +
-		          (albedo_color * light_contribution);
+		          (albedo_color * vec4(light_contribution, 1.0));
 }

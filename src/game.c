@@ -123,6 +123,8 @@ void scene_setup(void)
 		struct Entity* suz = scene_add_as_child("Suzanne", NULL, parent_node);
 		struct Model* suz_model = entity_component_add(suz, C_MODEL, "suzanne.pamesh", "Blinn_Phong");
 		model_set_material_param(suz_model, "diffuse_color", &color);
+		float spec_str = 80.f;
+		model_set_material_param(suz_model, "specular_strength", &spec_str);
 		struct Transform* s_tran = entity_component_get(suz, C_TRANSFORM);
 		vec3 s_pos = {x, 5, z};
 		transform_translate(s_tran, &s_pos, TS_WORLD);
@@ -134,6 +136,8 @@ void scene_setup(void)
 	model_set_material_param(ground_model, "diffuse_color", &color);
 	int white_tex = texture_create_from_file("white.tga", TU_DIFFUSE);
 	model_set_material_param(ground_model, "diffuse_texture", &white_tex);
+	float spec_str = 80.f;
+	model_set_material_param(ground_model, "specular_strength", &spec_str);
 	struct Transform* ground_tran = entity_component_get(ground, C_TRANSFORM);
 	vec3 pos = {0, -15, 0};
 	vec3 scale_ground = {200.f, 200.f, 200.f};
@@ -159,10 +163,10 @@ void scene_setup(void)
 		x++; z++;
 		struct Entity* light_ent = scene_add_new("Light_Ent", NULL);
 		struct Transform* light_tran = entity_component_get(light_ent, C_TRANSFORM);
-		vec3 lt_pos = {x * 10, 3, z * 10};
+		vec3 lt_pos = {x * 20, 0, z * 20};
 		transform_set_position(light_tran, &lt_pos);
-		struct Light* light_comp = entity_component_add(light_ent, C_LIGHT, LT_SPOT);
-		vec4_fill(&light_comp->color, 1.f / (float)x, 1.f / ((rand() % 10) + 1.f), 1.f / (float)z, 1);
+		struct Light* light_comp = entity_component_add(light_ent, C_LIGHT, LT_POINT);
+		vec3_fill(&light_comp->color, 1.f / (float)x, 1.f / ((rand() % 10) + 1.f), 1.f / (float)z);
 		light_comp->intensity = 1.f;
 	}
 
@@ -289,7 +293,7 @@ void debug(float dt)
 		/* transform_rotate(mod_tran, &y_axis, 25.f * dt, TS_WORLD); */
 		vec3 amount = {0, 0, 5 * dt};
 		transform_translate(mod_tran, &amount, TS_LOCAL);
-	}
+	}	
 
 	/* if(input_key_state_get(GLFW_KEY_C, GLFW_PRESS)) */
 	/* { */

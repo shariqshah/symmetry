@@ -65,7 +65,7 @@ int light_create(int node, int light_type)
 	new_light->node = node;
 	new_light->valid = 1;
 	new_light->cast_shadow = 0;
-	vec4_fill(&new_light->color, 1.f, 1.f, 1.f, 1.f);
+	vec3_fill(&new_light->color, 1.f, 1.f, 1.f);
 	new_light->depth_bias = 0.0005f;
 	new_light->type = light_type;
 	new_light->pcf_enabled = 0;

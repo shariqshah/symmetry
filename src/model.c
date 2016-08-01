@@ -21,6 +21,8 @@
 
 static struct Model* model_list;
 static int* empty_indices;
+static int use_blinn = 1;
+
 struct Model* model_get(int index)
 {
 	struct Model* model = NULL;
@@ -208,7 +210,7 @@ void model_render_all(struct Camera* camera)
 					}
 					
 					snprintf(uniform_name, max_name_len, "lights[%d].color", i);
-					shader_set_uniform_vec4(material->shader,  uniform_name, &light->color);
+					shader_set_uniform_vec3(material->shader,  uniform_name, &light->color);
 					memset(uniform_name, '\0', max_name_len);
 					
 					snprintf(uniform_name, max_name_len, "lights[%d].intensity", i);

@@ -1,4 +1,4 @@
-//include common.glsl commonFrag.glsl version.glsl
+//include fog.glsl common.glsl commonFrag.glsl version.glsl
 
 struct Light
 {
@@ -20,8 +20,6 @@ const int LT_DIR     = 1;
 const int LT_POINT   = 2;
 
 const int MAX_LIGHTS = 128;
-
-uniform vec3 camera_pos;
 
 uniform sampler2D diffuse_texture;
 uniform Light lights[MAX_LIGHTS];
@@ -128,6 +126,5 @@ void main()
 			light_contribution += calc_spot_light(lights[i]);
 	}
 	
-	 frag_color = (albedo_color * vec4(0.1, 0.1, 0.1, 1.0)) +
-	 	          (albedo_color * vec4(light_contribution, 1.0));
+	frag_color = apply_fog((albedo_color * vec4(light_contribution + ambient_light, 1.0)));
 }

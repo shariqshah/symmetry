@@ -8,3 +8,6 @@ in vec3 vertex;
 
 // Fragment Shader Output
 //out vec4 frag_color;
+
+uniform vec3 ambient_light;
+uniform vec3 camera_pos;

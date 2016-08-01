@@ -1,41 +1,41 @@
 struct Fog
 {
-	int fogMode;
+	int mode;
 	float density;
-	float start;
-	float max;
-	vec4 color;
+	float start_dist;
+	float max_dist;
+	vec3 color;
 };
 
 uniform Fog fog;
 
-const int FOG_NONE             = 0;
-const int FOG_LINEAR           = 1;
-const int FOG_EXPONENTIAL      = 2;
-const int FOG_EXPONENTIAL_SQRD = 3;
+const int FM_NONE             = 0;
+const int FM_LINEAR           = 1;
+const int FM_EXPONENTIAL      = 2;
+const int FM_EXPONENTIAL_SQRD = 3;
 
-vec4 applyFog(vec4 color)
+vec4 apply_fog(vec4 color)
 {
-	vec4 finalColor = color;
-	if(fog.fogMode != FOG_NONE)
+	vec4 final_color = color;
+	if(fog.mode != FM_NONE)
 	{
-		float fogFactor;
-		float distFromEye = abs(length(vertex - eyePos));
-		if(fog.fogMode == FOG_LINEAR)
+		float fog_factor;
+		float dist_from_eye = abs(length(vertex - camera_pos));
+		if(fog.mode == FM_LINEAR)
 		{
-			fogFactor = (fog.max - distFromEye) / (fog.max - fog.start);
+			fog_factor = (fog.max_dist - dist_from_eye) / (fog.max_dist - fog.start_dist);
 		}
-		else if(fog.fogMode == FOG_EXPONENTIAL)
+		else if(fog.mode == FM_EXPONENTIAL)
 		{
-			fogFactor = exp(fog.density * -distFromEye);
+			fog_factor = exp(fog.density * -dist_from_eye);
 		}
-		else if(fog.fogMode == FOG_EXPONENTIAL_SQRD)
+		else if(fog.mode == FM_EXPONENTIAL_SQRD)
 		{
-			fogFactor = exp(-pow(fog.density * distFromEye, 2));
+			fog_factor = exp(-pow(fog.density * dist_from_eye, 2));
 		}
-		fogFactor = clamp(fogFactor, 0.0, 1.0);
-		finalColor = mix(fog.color, color, fogFactor);
+		fog_factor = clamp(fog_factor, 0.0, 1.0);
+		final_color = mix(vec4(fog.color, 1.0), color, fog_factor);
 	}
-	return finalColor;
+	return final_color;
 }
 

@@ -42,13 +42,28 @@ void material_init(void)
 	uniform->location = shader_get_uniform_location(unshaded_mat->shader, uniform->name);
 
 	uniform = array_grow(unshaded_mat->pipeline_params, struct Uniform);
-	uniform->name = str_new("view_mat");
-	uniform->type = UT_MAT4;
+	uniform->name = str_new("fog.mode");
+	uniform->type = UT_INT;
 	uniform->location = shader_get_uniform_location(unshaded_mat->shader, uniform->name);
 
 	uniform = array_grow(unshaded_mat->pipeline_params, struct Uniform);
-	uniform->name = str_new("inv_model_mat");
-	uniform->type = UT_MAT4;
+	uniform->name = str_new("fog.density");
+	uniform->type = UT_FLOAT;
+	uniform->location = shader_get_uniform_location(unshaded_mat->shader, uniform->name);
+
+	uniform = array_grow(unshaded_mat->pipeline_params, struct Uniform);
+	uniform->name = str_new("fog.start_dist");
+	uniform->type = UT_FLOAT;
+	uniform->location = shader_get_uniform_location(unshaded_mat->shader, uniform->name);
+
+	uniform = array_grow(unshaded_mat->pipeline_params, struct Uniform);
+	uniform->name = str_new("fog.max_dist");
+	uniform->type = UT_FLOAT;
+	uniform->location = shader_get_uniform_location(unshaded_mat->shader, uniform->name);
+
+	uniform = array_grow(unshaded_mat->pipeline_params, struct Uniform);
+	uniform->name = str_new("fog.color");
+	uniform->type = UT_VEC3;
 	uniform->location = shader_get_uniform_location(unshaded_mat->shader, uniform->name);
 
 	/* Material params */
@@ -95,6 +110,36 @@ void material_init(void)
 	uniform->type = UT_MAT4;
 	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
 
+	uniform = array_grow(blinn_phong_mat->pipeline_params, struct Uniform);
+	uniform->name = str_new("fog.mode");
+	uniform->type = UT_INT;
+	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
+
+	uniform = array_grow(blinn_phong_mat->pipeline_params, struct Uniform);
+	uniform->name = str_new("fog.density");
+	uniform->type = UT_FLOAT;
+	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
+
+	uniform = array_grow(blinn_phong_mat->pipeline_params, struct Uniform);
+	uniform->name = str_new("fog.start_dist");
+	uniform->type = UT_FLOAT;
+	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
+
+	uniform = array_grow(blinn_phong_mat->pipeline_params, struct Uniform);
+	uniform->name = str_new("fog.max_dist");
+	uniform->type = UT_FLOAT;
+	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
+
+	uniform = array_grow(blinn_phong_mat->pipeline_params, struct Uniform);
+	uniform->name = str_new("fog.color");
+	uniform->type = UT_VEC3;
+	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
+
+	uniform = array_grow(blinn_phong_mat->pipeline_params, struct Uniform);
+	uniform->name = str_new("ambient_light");
+	uniform->type = UT_VEC3;
+	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
+	
 	/* Material params */
 	uniform = array_grow(blinn_phong_mat->model_params, struct Uniform);
 	uniform->name = str_new("diffuse_color");

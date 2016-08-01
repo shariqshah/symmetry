@@ -21,6 +21,7 @@ static int def_albedo_tex = -1;
 static int def_depth_tex = -1;
 static int quad_geo = -1;
 static int composition_shader = -1;
+static struct Render_Settings settings;
 
 void on_framebuffer_size_change(GLFWwindow* window, int width, int height);
 
@@ -33,6 +34,13 @@ void renderer_init(GLFWwindow* window)
 	glCullFace(GL_BACK);
 	glfwSetFramebufferSizeCallback(window, on_framebuffer_size_change);
 
+	settings.fog.mode = FM_EXPONENTIAL;
+	settings.fog.density = 0.01f;
+	settings.fog.start_dist = 50.f;
+	settings.fog.max_dist = 150.f;
+	vec3_fill(&settings.fog.color, 60.f/255.f, 60.f/255.f, 75.f/255.f);
+	vec3_fill(&settings.ambient_light, 0.1f, 0.1f, 0.12f);
+	
 	/* Quad geometry for final render */
 	vec3* vertices = array_new(vec3);
 	vec2* uvs = array_new(vec2);
@@ -199,4 +207,9 @@ int renderer_check_glerror(const char* context)
 		error = 0;
 
 	return error;
+}
+
+struct Render_Settings* renderer_get_settings(void)
+{
+	return &settings;
 }

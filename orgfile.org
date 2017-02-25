@@ -45,7 +45,8 @@ All the code in this repository is under GPLv3, see LICENSE for more information
 - State "DONE"       from "TODO"       [2016-05-27 Fri 18:02]
 ** DONE A simpler build system without dependencies
 - State "DONE"       from "TODO"       [2016-05-27 Fri 14:50]
-** TODO Remove dependencies
+** DONE Remove dependencies
+- State "DONE"       from "TODO"       [2017-02-26 Sun 01:46]
 - glfw3
 - glew
 ** DONE Remove Kazmath dependency
@@ -60,6 +61,7 @@ All the code in this repository is under GPLv3, see LICENSE for more information
 ** DONE Test render
 - State "DONE"       from "TODO"       [2015-08-19 Wed 13:30]
 ** TODO Bounding Boxes
+- Recalculated bounding boxes for rotated meshes?
 ** TODO File extension checking for asset loading
 ** DONE Materials
 - State "DONE"       from "TODO"       [2015-10-13 Tue 19:38]
@@ -74,11 +76,18 @@ All the code in this repository is under GPLv3, see LICENSE for more information
 - State "DONE"       from "TODO"       [2016-05-30 Mon 00:57]
 ** TODO Draw light volumes
 ** TODO Fix problems with frustrum culling
+- Recalculate bounding boxes for rotated meshes?
 ** TODO 2d drawing routines
 ** TODO Gui
 ** TODO Image based lighting?
-** TODO Deferred rendering?
+** CANCELED Deferred rendering?
+- State "CANCELED"   from "TODO"       [2017-02-26 Sun 01:49] \\
+  Sticking with forward rendering for now and focusing on tools etc.
 ** TODO Physics
+** TODO Variant type
+** TODO Event Subsystem
+** TODO Fix mouse bugs
+** TODO Fix issues with opengl context showing 2.1 only
 ** TODO Improve this readme
 ** TODO ???
 ** TODO Profit!

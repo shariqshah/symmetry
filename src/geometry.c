@@ -6,9 +6,7 @@
 #include "renderer.h"
 #include "bounding_volumes.h"
 #include "transform.h"
-
-#include "GL/glew.h"
-#include "GLFW/glfw3.h"
+#include "gl_load.h"
 
 #include <stdlib.h>
 #include <stdio.h>

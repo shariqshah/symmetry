@@ -5,12 +5,11 @@
 #include "log.h"
 #include "num_types.h"
 #include "renderer.h"
+#include "gl_load.h"
 
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
-#include "GL/glew.h"
-#include "GLFW/glfw3.h"
 
 struct Texture
 {

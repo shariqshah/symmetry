@@ -27,11 +27,8 @@ struct Render_Settings
 	vec3 ambient_light;
 };
 
-
-typedef struct GLFWwindow GLFWwindow;
-
 struct Render_Settings* renderer_get_settings(void);
-void renderer_init(GLFWwindow* window);
+void renderer_init(void);
 void renderer_draw(void);
 void renderer_cleanup(void);
 void renderer_set_clearcolor(float r, float g, float b, float a);

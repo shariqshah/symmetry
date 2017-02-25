@@ -1,6 +1,5 @@
 #include "renderer.h"
-#include "GL/glew.h"
-#include "GLFW/glfw3.h"
+#include "gl_load.h"
 
 #include "log.h"
 #include "camera.h"
@@ -11,10 +10,10 @@
 #include "geometry.h"
 #include "shader.h"
 #include "num_types.h"
-#include "window_system.h"
 #include "light.h"
 #include "entity.h"
 #include "transform.h"
+#include "game.h"
 
 static int def_fbo = -1;
 static int def_albedo_tex = -1;
@@ -23,16 +22,16 @@ static int quad_geo = -1;
 static int composition_shader = -1;
 static struct Render_Settings settings;
 
-void on_framebuffer_size_change(GLFWwindow* window, int width, int height);
+void on_framebuffer_size_change(int width, int height);
 
-void renderer_init(GLFWwindow* window)
+void renderer_init(void)
 {
 	glClearColor(0.3f, 0.6f, 0.9f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
-	glfwSetFramebufferSizeCallback(window, on_framebuffer_size_change);
+	platform_windowresize_callback_set(on_framebuffer_size_change);
 
 	settings.fog.mode = FM_EXPONENTIAL;
 	settings.fog.density = 0.01f;
@@ -72,7 +71,8 @@ void renderer_init(GLFWwindow* window)
 	array_free(indices);
 
 	int width = -1, height = -1;
-	window_get_size(&width, &height);
+	struct Game_State* game_state = game_state_get();
+	window_get_size(game_state->window, &width, &height);
 	def_albedo_tex = texture_create("def_albedo_texture",
 									TU_DIFFUSE,
 									width, height,
@@ -134,7 +134,8 @@ void renderer_draw(void)
 	}
 
 	int width, height;
-	window_get_size(&width, &height);
+	struct Game_State* game_state = game_state_get();
+	window_get_size(game_state->window, &width, &height);
 	glViewport(0, 0, width, height);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	shader_bind(composition_shader);
@@ -154,7 +155,7 @@ void renderer_cleanup(void)
 	texture_remove(def_depth_tex);
 }
 
-void on_framebuffer_size_change(GLFWwindow* window, int width, int height)
+void on_framebuffer_size_change(int width, int height)
 {
 	glViewport(0, 0, width, height);
 	struct Camera* camera = camera_get(0);

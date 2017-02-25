@@ -2,10 +2,9 @@
 #include <string.h>
 #include <stddef.h>
 #include <time.h>
-#include <GLFW/glfw3.h>
 
 #include "game.h"
-#include "window_system.h"
+#include "platform.h"
 #include "input.h"
 #include "renderer.h"
 #include "log.h"
@@ -23,28 +22,30 @@
 #include "material.h"
 #include "framebuffer.h"
 #include "light.h"
+#include "gl_load.h"
 
-void run(void);
-void update(float dt);
-void render(void);
-void debug(float dt);
-void scene_setup(void);
+static void run(void);
+static void update(float dt);
+static void render(void);
+static void debug(float dt);
+static void scene_setup(void);
 
-int player_node = -1;
-int player_pitch_node = -1;
+static struct Game_State* game_state = NULL;
 
-void game_init(void)
+void game_init(struct Window* window)
 {
 	/* TODO: Implement dealing with init failures */
-	GLFWwindow* window = window_get_active();
+	game_state = malloc(sizeof(*game_state));
+	game_state->window = window;
+								  
 	/* Init systems */
-	input_init(window);
+	input_init();
 	io_file_init("/mnt/Dev/Projects/symmetry/assets/");/* TODO: Implement proper way of getting binary directory */
 	shader_init();
 	texture_init();
 	framebuffer_init();
 	geom_init();
-	renderer_init(window);
+	renderer_init();
 	transform_init();
 	light_init();
 	camera_init();
@@ -61,32 +62,32 @@ void game_init(void)
 
 void scene_setup(void)
 {
-	int forward_keys[2] = {'W', GLFW_KEY_UP};
-	int backward_keys[2] = {'S', GLFW_KEY_DOWN};
-	int up_keys[2] = {'Q'};
-	int down_keys[2] = {'E'};
-	int left_keys[2] = {'A', GLFW_KEY_LEFT};
-	int right_keys[2] = {'D', GLFW_KEY_RIGHT};
-	int turn_right_keys[1] = {'L'};
-	int turn_left_keys[1] = {'J'};
-	int turn_up_keys[1] = {'I'};
-	int turn_down_keys[1] = {'K'};
-	int sprint_keys[2] = {GLFW_KEY_LEFT_SHIFT, GLFW_KEY_RIGHT_SHIFT};
-	input_map_create("Move_Forward", forward_keys, 2);
-	input_map_create("Move_Backward", backward_keys, 2);
-	input_map_create("Move_Up", up_keys, 1);
-	input_map_create("Move_Down", down_keys, 1);
-	input_map_create("Move_Left", left_keys, 2);
-	input_map_create("Move_Right", right_keys, 2);
-	input_map_create("Turn_Right", turn_right_keys, 1);
-	input_map_create("Turn_Left", turn_left_keys, 1);
-	input_map_create("Turn_Up", turn_up_keys, 1);
-	input_map_create("Turn_Down", turn_down_keys, 1);
-	input_map_create("Sprint", sprint_keys, 2);
+	int forward_keys[2]    = {KEY_W, KEY_UP};
+	int backward_keys[2]   = {KEY_S, KEY_DOWN};
+	int up_keys[2]         = {KEY_Q};
+	int down_keys[2]       = {KEY_E};
+	int left_keys[2]       = {KEY_A, KEY_LEFT};
+	int right_keys[2]      = {KEY_D, KEY_RIGHT};
+	int turn_right_keys[1] = {KEY_L};
+	int turn_left_keys[1]  = {KEY_J};
+	int turn_up_keys[1]    = {KEY_I};
+	int turn_down_keys[1]  = {KEY_K};
+	int sprint_keys[2]     = {KEY_LSHIFT, KEY_RSHIFT};
+	input_map_create("Move_Forward",  forward_keys,    2);
+	input_map_create("Move_Backward", backward_keys,   2);
+	input_map_create("Move_Up",       up_keys,         1);
+	input_map_create("Move_Down",     down_keys,       1);
+	input_map_create("Move_Left",     left_keys,       2);
+	input_map_create("Move_Right",    right_keys,      2);
+	input_map_create("Turn_Right",    turn_right_keys, 1);
+	input_map_create("Turn_Left",     turn_left_keys,  1);
+	input_map_create("Turn_Up",       turn_up_keys,    1);
+	input_map_create("Turn_Down",     turn_down_keys,  1);
+	input_map_create("Sprint",        sprint_keys,     2);
 	
 	struct Entity* player = scene_add_new("player", "None");
-	player_node = player->node;
-	vec3 viewer_pos = {5, 4, 20};
+	game_state->player_node = player->node;
+	vec3 viewer_pos = {10, 4, 100};
 	struct Transform* viewer_tran = entity_component_get(player, C_TRANSFORM);
 	struct Model* player_model = entity_component_add(player, C_MODEL, "sphere.pamesh", NULL);
 	vec4 color = {0.f, 1.f, 1.f, 1.f };
@@ -180,7 +181,7 @@ void scene_setup(void)
 void debug(float dt)
 {
 	//struct Entity* entity = entity_get(player_node);
-	struct Entity* entity = !input_key_state_get('C', GLFW_PRESS) ? entity_get(player_node) : scene_find("Screen_Camera");
+	struct Entity* entity = !input_key_state_get('C', KS_PRESSED) ? entity_get(game_state->player_node) : scene_find("Screen_Camera");
 	struct Camera* cam = entity_component_get(entity, C_CAMERA);
 	camera_set_primary_viewer(cam);
 	struct Transform* transform = entity_component_get(entity, C_TRANSFORM);
@@ -194,24 +195,25 @@ void debug(float dt)
 	vec3 rot_axis_left_right = {0, 1, 0};
 
 	/* Look around */
-	if(input_map_state_get("Turn_Up", GLFW_PRESS)) turn_up_down += turn_speed;
-	if(input_map_state_get("Turn_Down", GLFW_PRESS)) turn_up_down -= turn_speed;
-	if(input_map_state_get("Turn_Right", GLFW_PRESS)) turn_left_right += turn_speed;
-	if(input_map_state_get("Turn_Left", GLFW_PRESS)) turn_left_right -= turn_speed;
+	if(input_map_state_get("Turn_Up", KS_PRESSED)) turn_up_down += turn_speed;
+	if(input_map_state_get("Turn_Down", KS_PRESSED)) turn_up_down -= turn_speed;
+	if(input_map_state_get("Turn_Right", KS_PRESSED)) turn_left_right += turn_speed;
+	if(input_map_state_get("Turn_Left", KS_PRESSED)) turn_left_right -= turn_speed;
 	
-	if(input_mousebutton_state_get(GLFW_MOUSE_BUTTON_RIGHT, GLFW_PRESS))
+	if(input_mousebutton_state_get(MB_RIGHT, KS_PRESSED))
 	{
-		input_cursor_mode_set(CM_LOCKED);
+		if(input_mouse_mode_get() != MM_RELATIVE) input_mouse_mode_set(MM_RELATIVE);
 		const double scale = 0.25;
-		double cursor_lr, cursor_ud;
-		input_cursor_pos_get(&cursor_lr, &cursor_ud);
+		int cursor_lr, cursor_ud;
+		input_mouse_pos_get(&cursor_lr, &cursor_ud);
+		log_message("Mouse position : %d, %d", cursor_lr, cursor_ud);
 		turn_up_down = -cursor_ud * turn_speed * dt * scale;
 		turn_left_right = cursor_lr * turn_speed * dt * scale;
-		input_cursor_pos_set(0.0, 0.0);
+		input_mouse_pos_set(0.0, 0.0);
 	}
 	else
 	{
-		input_cursor_mode_set(CM_NORMAL);
+		input_mouse_mode_set(MM_NORMAL);
 		turn_up_down *= dt;
 		turn_left_right *= dt;
 	}
@@ -254,13 +256,13 @@ void debug(float dt)
 	}
 	
 	/* Movement */
-	if(input_map_state_get("Sprint", GLFW_PRESS)) move_speed *= move_scale;
-	if(input_map_state_get("Move_Forward", GLFW_PRESS)) offset.z -= move_speed;
-	if(input_map_state_get("Move_Backward", GLFW_PRESS)) offset.z += move_speed;
-	if(input_map_state_get("Move_Left", GLFW_PRESS)) offset.x -= move_speed;
-	if(input_map_state_get("Move_Right", GLFW_PRESS)) offset.x += move_speed;
-	if(input_map_state_get("Move_Up", GLFW_PRESS)) offset.y += move_speed;
-	if(input_map_state_get("Move_Down", GLFW_PRESS)) offset.y -= move_speed;
+	if(input_map_state_get("Sprint", KS_PRESSED)) move_speed *= move_scale;
+	if(input_map_state_get("Move_Forward", KS_PRESSED)) offset.z -= move_speed;
+	if(input_map_state_get("Move_Backward", KS_PRESSED)) offset.z += move_speed;
+	if(input_map_state_get("Move_Left", KS_PRESSED)) offset.x -= move_speed;
+	if(input_map_state_get("Move_Right", KS_PRESSED)) offset.x += move_speed;
+	if(input_map_state_get("Move_Up", KS_PRESSED)) offset.y += move_speed;
+	if(input_map_state_get("Move_Down", KS_PRESSED)) offset.y -= move_speed;
 
 	vec3_scale(&offset, &offset, dt);
 	if(offset.x != 0 || offset.y != 0 || offset.z != 0)
@@ -269,7 +271,7 @@ void debug(float dt)
  		log_message("Position : %s", tostr_vec3(&transform->position));
 	}
 
-	if(input_key_state_get(GLFW_KEY_SPACE, GLFW_PRESS))
+	if(input_key_state_get(KEY_SPACE, KS_PRESSED))
 	{
 		struct Entity* model = scene_find("Model_Entity");
 		struct Transform* mod_tran = entity_component_get(model, C_TRANSFORM);
@@ -277,7 +279,7 @@ void debug(float dt)
 		transform_rotate(mod_tran, &x_axis, 25.f * dt, TS_WORLD);
 	}
 
-	if(input_key_state_get(GLFW_KEY_M, GLFW_PRESS))
+	if(input_key_state_get(KEY_M, KS_PRESSED))
 	{
 		struct Entity* model = scene_find("Model_Entity");
 		struct Transform* mod_tran = entity_component_get(model, C_TRANSFORM);
@@ -287,7 +289,7 @@ void debug(float dt)
 		transform_translate(mod_tran, &amount, TS_LOCAL);
 	}
 
-	if(input_key_state_get(GLFW_KEY_N, GLFW_PRESS))
+	if(input_key_state_get(KEY_N, KS_PRESSED))
 	{
 		struct Entity* model = scene_find("Model_Entity");
 		struct Transform* mod_tran = entity_component_get(model, C_TRANSFORM);
@@ -297,41 +299,42 @@ void debug(float dt)
 		transform_translate(mod_tran, &amount, TS_LOCAL);
 	}	
 
-	/* if(input_key_state_get(GLFW_KEY_C, GLFW_PRESS)) */
+	/* if(input_key_state_get(GLFW_KEY_C, KS_PRESSED)) */
 	/* { */
 	/* 	struct Entity* cam_ent = scene_find("Screen_Camera"); */
 	/* 	struct Camera* cam = entity_component_get(cam_ent, C_CAMERA); */
 	/* 	camera_set_primary_viewer(cam); */
 	/* } */
 
-	/* if(input_key_state_get(GLFW_KEY_V, GLFW_PRESS)) */
+	/* if(input_key_state_get(GLFW_KEY_V, KS_PRESSED)) */
 	/* { */
 	/* 	struct Camera* cam = entity_component_get(entity, C_CAMERA); */
-	/* 	camera_set_primary_viewer(cam); */
+	/* 	camera_set_priimary_viewer(cam); */
 	/* } */
 }
 
 void run(void)
 {
-	double last_time = glfwGetTime();
-	while(!window_should_close())
+	uint32 last_time = platform_get_ticks();
+	int should_window_close = 0;
+	while(!should_window_close)
 	{
-		double curr_time = glfwGetTime();
-		float delta_time = (float)(curr_time - last_time);
+		uint32 curr_time = platform_get_ticks();
+		float delta_time = (float)(curr_time - last_time) / 1000.f;
 		last_time = curr_time;
 		
 		update(delta_time);
 		render();
-		window_swap_buffers();
-		window_poll_events();
+		window_swap_buffers(game_state->window);
+		platform_poll_events(&should_window_close);
 	}
 }
 
 void update(float dt)
 {
 	input_update();
-	if(input_key_state_get(GLFW_KEY_ESCAPE, GLFW_PRESS))
-		window_set_should_close(1);
+	//if(input_key_state_get(KEY_ESCAPE, KS_PRESSED))
+		//window_set_should_close(1);
 
 	debug(dt);
 }
@@ -357,4 +360,14 @@ void game_cleanup(void)
 	framebuffer_cleanup();
 	texture_cleanup();
 	shader_cleanup();
+	window_destroy(game_state->window);
+	gl_cleanup();
+	window_cleanup();
+	platform_cleanup();
+	free(game_state);
+}
+
+struct Game_State* game_state_get(void)
+{
+	return game_state;
 }

@@ -6,14 +6,12 @@
 #include "log.h"
 #include "renderer.h"
 #include "texture.h"
+#include "gl_load.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-
-#include "GL/glew.h"
-#include "GLFW/glfw3.h"
 
 // Constants for locations of attributes inside all shaders
 const int POSITION_LOC = 0;

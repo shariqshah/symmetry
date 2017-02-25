@@ -3,9 +3,8 @@
 #include "renderer.h"
 #include "log.h"
 #include "texture.h"
+#include "gl_load.h"
 
-#include "GL/glew.h"
-#include "GLFW/glfw3.h"
 #include <assert.h>
 
 struct FBO

@@ -3,7 +3,7 @@ CC=gcc
 SRC_DIR=../../src
 SRCS=$(patsubst $(SRC_DIR)/%.c, %.c, $(wildcard ../../src/*.c))
 OBJS=$(patsubst %.c,%.o,$(SRCS))
-CFLAGS= -g -Wall
+CFLAGS= -o3 -Wall
 LIBS=$(shell pkg-config --static --libs glfw3 glew)
 
 all: $(OBJS)

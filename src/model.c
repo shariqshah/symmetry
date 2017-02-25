@@ -10,9 +10,7 @@
 #include "renderer.h"
 #include "material.h"
 #include "light.h"
-
-#include "GL/glew.h"
-#include "GLFW/glfw3.h"
+#include "gl_load.h"
 
 #include <assert.h>
 #include <string.h>

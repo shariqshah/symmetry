@@ -100,10 +100,10 @@ void material_init(void)
 	uniform->type = UT_MAT4;
 	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
 
-	uniform = array_grow(blinn_phong_mat->pipeline_params, struct Uniform);
-	uniform->name = str_new("view_mat");
-	uniform->type = UT_MAT4;
-	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
+	/* uniform = array_grow(blinn_phong_mat->pipeline_params, struct Uniform); */
+	/* uniform->name = str_new("view_mat"); */
+	/* uniform->type = UT_MAT4; */
+	/* uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name); */
 
 	uniform = array_grow(blinn_phong_mat->pipeline_params, struct Uniform);
 	uniform->name = str_new("inv_model_mat");

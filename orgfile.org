@@ -74,7 +74,9 @@ All the code in this repository is under GPLv3, see LICENSE for more information
 ** TODO Lights!
 ** DONE Fix problems with texture units
 - State "DONE"       from "TODO"       [2016-05-30 Mon 00:57]
-** TODO Draw light volumes
+** CANCELED Draw light volumes
+- State "CANCELED"   from "TODO"       [2017-02-26 Sun 15:39] \\
+  Deferred rendering on hold for now.
 ** TODO Fix problems with frustrum culling
 - Recalculate bounding boxes for rotated meshes?
 ** TODO 2d drawing routines
@@ -87,7 +89,8 @@ All the code in this repository is under GPLv3, see LICENSE for more information
 ** TODO Variant type
 ** TODO Event Subsystem
 ** TODO Fix mouse bugs
-** TODO Fix issues with opengl context showing 2.1 only
+** DONE Fix issues with opengl context showing 2.1 only
+- State "DONE"       from "TODO"       [2017-02-26 Sun 15:39]
 ** TODO Improve this readme
 ** TODO ???
 ** TODO Profit!

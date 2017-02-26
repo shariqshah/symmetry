@@ -299,10 +299,12 @@ void texture_set_param(int index, int parameter, int value)
 		return;
 
 	GLint curr_texture = 0;
-	glGetIntegerv(GL_TEXTURE_2D, &curr_texture);
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &curr_texture);
+	renderer_check_glerror("texture:set_param:glGetIntegerv");
 	glBindTexture(GL_TEXTURE_2D, texture->handle);
+	renderer_check_glerror("texture:set_param:glBindTexture");
 	glTexParameteri(GL_TEXTURE_2D, parameter, value);
-	renderer_check_glerror("texture:set_param");
+	renderer_check_glerror("texture:set_param:glTexParameteri");
 	if(curr_texture != 0)
 		glBindTexture(GL_TEXTURE_2D, curr_texture);
 }

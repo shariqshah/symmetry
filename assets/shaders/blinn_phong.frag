@@ -36,7 +36,6 @@ vec3 calc_point_light(in Light light)
 	vec3  specular_comp = vec3(0.0);
 	vec3  light_direction = vertex - light.position;
 	float dist = abs(length(light_direction));
-
 	if(dist <= light.radius)
 	{
 		light_direction = normalize(light_direction);

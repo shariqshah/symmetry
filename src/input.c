@@ -227,3 +227,8 @@ int input_mouse_mode_get(void)
 }
 
 	
+void input_mouse_delta_get(int* xpos, int* ypos)
+{
+	platform_mouse_delta_get(xpos, ypos);
+}
+

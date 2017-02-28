@@ -244,9 +244,10 @@ int platform_key_state_get(int key)
 
 int platform_mousebutton_state_get(uint button)
 {
+	int pressed = 0;
 	uint32 current_button_state = SDL_GetMouseState(NULL, NULL);
-	//return (current_button_state & button);
-	return current_button_state & button;
+	if((current_button_state & SDL_BUTTON(button)) > 0) pressed = 1;
+	return pressed;
 }
 
 void platform_mouse_position_get(int* x, int* y)
@@ -277,4 +278,9 @@ int platform_mouse_relative_mode_get(void)
 uint32 platform_get_ticks(void)
 {
 	return SDL_GetTicks();
+}
+
+void platform_mouse_delta_get(int* x, int* y)
+{
+	SDL_GetRelativeMouseState(x, y);
 }

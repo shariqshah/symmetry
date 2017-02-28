@@ -25,7 +25,7 @@
 #include "gl_load.h"
 
 static void run(void);
-static void update(float dt);
+static void update(float dt, int* window_should_close);
 static void render(void);
 static void debug(float dt);
 static void scene_setup(void);
@@ -195,18 +195,20 @@ void debug(float dt)
 	vec3 rot_axis_left_right = {0, 1, 0};
 
 	/* Look around */
-	if(input_map_state_get("Turn_Up", KS_PRESSED)) turn_up_down += turn_speed;
-	if(input_map_state_get("Turn_Down", KS_PRESSED)) turn_up_down -= turn_speed;
+	if(input_map_state_get("Turn_Up",    KS_PRESSED)) turn_up_down += turn_speed;
+	if(input_map_state_get("Turn_Down",  KS_PRESSED)) turn_up_down -= turn_speed;
 	if(input_map_state_get("Turn_Right", KS_PRESSED)) turn_left_right += turn_speed;
-	if(input_map_state_get("Turn_Left", KS_PRESSED)) turn_left_right -= turn_speed;
+	if(input_map_state_get("Turn_Left",  KS_PRESSED)) turn_left_right -= turn_speed;
+
+	/* if(input_key_state_get(KEY_TAB, KS_PRESSED))  */
+	/* if(input_key_state_get(KEY_TAB, KS_PRESSED) && input_key_state_get(KEY_LSHIFT, KS_PRESSED)) input_mouse_mode_set(MM_NORMAL); */
 	
 	if(input_mousebutton_state_get(MB_RIGHT, KS_PRESSED))
 	{
 		if(input_mouse_mode_get() != MM_RELATIVE) input_mouse_mode_set(MM_RELATIVE);
 		const double scale = 0.25;
 		int cursor_lr, cursor_ud;
-		input_mouse_pos_get(&cursor_lr, &cursor_ud);
-		log_message("Mouse position : %d, %d", cursor_lr, cursor_ud);
+		input_mouse_delta_get(&cursor_lr, &cursor_ud);
 		turn_up_down = -cursor_ud * turn_speed * dt * scale;
 		turn_left_right = cursor_lr * turn_speed * dt * scale;
 		input_mouse_pos_set(0.0, 0.0);
@@ -256,13 +258,13 @@ void debug(float dt)
 	}
 	
 	/* Movement */
-	if(input_map_state_get("Sprint", KS_PRESSED)) move_speed *= move_scale;
-	if(input_map_state_get("Move_Forward", KS_PRESSED)) offset.z -= move_speed;
-	if(input_map_state_get("Move_Backward", KS_PRESSED)) offset.z += move_speed;
-	if(input_map_state_get("Move_Left", KS_PRESSED)) offset.x -= move_speed;
-	if(input_map_state_get("Move_Right", KS_PRESSED)) offset.x += move_speed;
-	if(input_map_state_get("Move_Up", KS_PRESSED)) offset.y += move_speed;
-	if(input_map_state_get("Move_Down", KS_PRESSED)) offset.y -= move_speed;
+	if(input_map_state_get("Sprint",        KS_PRESSED)) move_speed *= move_scale;
+	if(input_map_state_get("Move_Forward",  KS_PRESSED)) offset.z   -= move_speed;
+	if(input_map_state_get("Move_Backward", KS_PRESSED)) offset.z   += move_speed;
+	if(input_map_state_get("Move_Left",     KS_PRESSED)) offset.x   -= move_speed;
+	if(input_map_state_get("Move_Right",    KS_PRESSED)) offset.x   += move_speed;
+	if(input_map_state_get("Move_Up",       KS_PRESSED)) offset.y   += move_speed;
+	if(input_map_state_get("Move_Down",     KS_PRESSED)) offset.y   -= move_speed;
 
 	vec3_scale(&offset, &offset, dt);
 	if(offset.x != 0 || offset.y != 0 || offset.z != 0)
@@ -323,18 +325,18 @@ void run(void)
 		float delta_time = (float)(curr_time - last_time) / 1000.f;
 		last_time = curr_time;
 		
-		update(delta_time);
+		update(delta_time, &should_window_close);
 		render();
 		window_swap_buffers(game_state->window);
 		platform_poll_events(&should_window_close);
 	}
 }
 
-void update(float dt)
+void update(float dt, int* window_should_close)
 {
 	input_update();
-	//if(input_key_state_get(KEY_ESCAPE, KS_PRESSED))
-		//window_set_should_close(1);
+	if(input_key_state_get(KEY_ESCAPE, KS_PRESSED))
+		*window_should_close = 1;
 
 	debug(dt);
 }

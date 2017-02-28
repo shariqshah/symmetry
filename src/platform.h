@@ -34,6 +34,7 @@ void   platform_windowresize_callback_set(Windowresize_Event_Func func);
 int    platform_key_state_get(int key);
 int    platform_mousebutton_state_get(uint button);
 void   platform_mouse_position_get(int* x, int* y);
+void   platform_mouse_delta_get(int* x, int* y); // Use with relative mouse mode
 void   platform_mouse_position_set(struct Window* window, int x, int y);
 void   platform_mouse_global_position_set(int x, int y);
 void   platform_mouse_relative_mode_set(int relative_mode);

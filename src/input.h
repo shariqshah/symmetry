@@ -397,6 +397,7 @@ void input_cleanup(void);
 int  input_mousebutton_state_get(uint button, int state_type);
 int  input_key_state_get(int key, int state_type);
 void input_mouse_pos_get(int* xpos, int* ypos);
+void input_mouse_delta_get(int* xpos, int* ypos); // Use with relative mouse mode
 void input_mouse_pos_set(int xpos, int ypos);
 void input_mouse_mode_set(enum Mouse_Mode mode);
 int  input_mouse_mode_get(void);

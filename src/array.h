@@ -33,6 +33,6 @@ int  array_len(void* array);
 int  array_capacity(void* array);
 void array_free(void* array);
 
-/* TODO function to increase capacity of array by certain number similar to reserve in stl vector? */
+/* TODO: function to increase capacity of array by certain number similar to reserve in stl vector? */
 
 #endif

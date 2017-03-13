@@ -1,6 +1,7 @@
 #include "platform.h"
 #include "log.h"
 #include "input.h"
+#include "string_utils.h"
 #include <SDL2/SDL.h>
 
 //#define GL_DEBUG_CONTEXT
@@ -283,4 +284,16 @@ uint32 platform_get_ticks(void)
 void platform_mouse_delta_get(int* x, int* y)
 {
 	SDL_GetRelativeMouseState(x, y);
+}
+
+char* platform_get_base_path(void)
+{
+	char* returned_path = SDL_GetBasePath();
+	char* path = NULL;
+	if(returned_path)
+	{
+		path = str_new(returned_path);
+		SDL_free(returned_path);
+	}
+	return path;
 }

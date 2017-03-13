@@ -96,7 +96,7 @@ void renderer_init(void)
 	texture_set_param(def_depth_tex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	texture_set_param(def_depth_tex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	texture_set_param(def_depth_tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	texture_set_param(def_depth_tex, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+	texture_set_param(def_depth_tex, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 	texture_set_param(def_depth_tex, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 
 	def_fbo = framebuffer_create(width, height, 1, 1);
@@ -194,12 +194,12 @@ int renderer_check_glerror(const char* context)
 	case GL_OUT_OF_MEMORY:
 		errorString = "Out of Memory";
 		break;
-	case GL_STACK_UNDERFLOW:
-		errorString = "Stack Underflow";
-		break;
-	case GL_STACK_OVERFLOW:
-		errorString = "Stack Overflow";
-		break;
+	/* case GL_STACK_UNDERFLOW: */
+	/* 	errorString = "Stack Underflow"; */
+	/* 	break; */
+	/* case GL_STACK_OVERFLOW: */
+	/* 	errorString = "Stack Overflow"; */
+	/* 	break; */
 	}
 
 	if(error_code != GL_NO_ERROR)

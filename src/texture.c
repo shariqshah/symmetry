@@ -40,6 +40,8 @@ struct Tga_Header
 static struct Texture* texture_list;
 static int* empty_indices;
 
+#define MAX_PIXEL_BYTES 5
+
 int  load_img(FILE* file, GLubyte** image_data, int* width, int* height, int* fmt, int* internal_fmt);
 void debug_write_tga(struct Tga_Header* header, GLubyte* image_data);
 void copy_tga_pixel(GLubyte* source, GLubyte* dest, size_t bytes_per_pixel);
@@ -82,14 +84,14 @@ int texture_create_from_file(const char* filename, int texture_unit)
 			{
 				texture_set_param(index, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 				texture_set_param(index, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				texture_set_param(index,GL_TEXTURE_WRAP_S,GL_REPEAT);
-				texture_set_param(index,GL_TEXTURE_WRAP_T,GL_REPEAT);
+				texture_set_param(index, GL_TEXTURE_WRAP_S,GL_REPEAT);
+				texture_set_param(index, GL_TEXTURE_WRAP_T,GL_REPEAT);
 			}
 			else
 			{
 				log_error("texture:create_from_file", "Error creating texture");
 			}
-			free(img_data);
+			if(img_data) free(img_data);
 		}
 		fclose(file);
 	}
@@ -165,7 +167,7 @@ int load_img(FILE* file, GLubyte** image_data, int* width, int* height, int* fmt
 	int success = 0;
 	struct Tga_Header header; 
 	size_t items_read = fread(&header, sizeof(struct Tga_Header), 1, file);
-	 
+
 	 if(items_read == 1)
 	 {
 		 if(header.datatypecode == 0)
@@ -212,14 +214,15 @@ int load_img(FILE* file, GLubyte** image_data, int* width, int* height, int* fmt
 			 /* Start reading pixel by pixel */
 			 if(header.datatypecode == 2) /* uncompressed image data */
 			 {
-				 GLubyte pixel[bytes_per_pixel];
+				 GLubyte pixel[MAX_PIXEL_BYTES];
 				 GLubyte* curr_pixel = *image_data;
 				 for(int i = 0; i < header.width * header.height; i++)
 				 {
 					 if(fread(&pixel, 1, bytes_per_pixel, file) != bytes_per_pixel)
 					 {
 						 log_error("texture:load_img", "Unexpected end of file at pixel %d", i);
-						 free(image_data);
+						 free(*image_data);
+						 *image_data = NULL;
 						 return success;
 					 }
 
@@ -230,15 +233,17 @@ int load_img(FILE* file, GLubyte** image_data, int* width, int* height, int* fmt
 			 }
 			 else if(header.datatypecode == 10) /* RLE encoded image data */
 			 {
-				 GLubyte chunk[bytes_per_pixel + 1];
+                 size_t chunk_size = bytes_per_pixel + 1;
+                 GLubyte chunk[MAX_PIXEL_BYTES];
 				 GLubyte* curr_chunk = *image_data;
 				 for(int i = 0; i < header.width * header.height;)
 				 {
 					 /* read chunk (header+pixel) */
-					 if(fread(chunk, 1, sizeof(chunk), file) != sizeof(chunk))
+                     if(fread(chunk, 1, chunk_size, file) != chunk_size)
 					 {
 						 log_error("texture:img_load", "Unexpected end of file at chunk %d", i);
 						 free(*image_data);
+						 *image_data = NULL;
 						 return success;
 					 }
 					 i++;
@@ -263,6 +268,7 @@ int load_img(FILE* file, GLubyte** image_data, int* width, int* height, int* fmt
 							 {
 								 log_error("texture:img_load", "Unexpected end of file at pixel %d", i);
 								 free(*image_data);
+								 *image_data = NULL;
 								 return success;
 							 }
 							 copy_tga_pixel(&chunk[1], curr_chunk, bytes_per_pixel);
@@ -274,11 +280,11 @@ int load_img(FILE* file, GLubyte** image_data, int* width, int* height, int* fmt
 			 }
 			 
 			 //debug_write_tga(&header, *image_data);
-			 *height = header.height;
-			 *width = header.width;
-			 *fmt = bytes_per_pixel == 3 ? GL_RGB : GL_RGBA;
+			 *height       = header.height;
+			 *width        = header.width;
+			 *fmt          = bytes_per_pixel == 3 ? GL_RGB : GL_RGBA;
 			 *internal_fmt = *fmt;
-			 success = 1;
+			 success       = 1;
 		 }
 	 }
 	 else

@@ -1,6 +1,10 @@
 #ifndef GL_LOAD_H
 #define GL_LOAD_H
 
+#ifdef USE_GLAD
+#include <glad/glad.h>
+#else
+
 #include <SDL2/SDL_opengl.h>
 
 #define SYMMETRY_GL_LIST \
@@ -52,6 +56,8 @@
 #define GLE(ret, name, ...) typedef ret APIENTRY name##proc(__VA_ARGS__); extern name##proc * gl##name;
 SYMMETRY_GL_LIST
 #undef GLE
+
+#endif
 
 int  gl_load_library(void);
 int  gl_load_extentions(void);

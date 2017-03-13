@@ -40,7 +40,9 @@ void game_init(struct Window* window)
 								  
 	/* Init systems */
 	input_init();
-	io_file_init("/mnt/Dev/Projects/symmetry/assets/");/* TODO: Implement proper way of getting binary directory */
+	char* base_path = platform_get_base_path();
+	io_file_init(base_path);
+	free(base_path);
 	shader_init();
 	texture_init();
 	framebuffer_init();

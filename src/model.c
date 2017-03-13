@@ -17,6 +17,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#define MAX_NAME_LEN 64
+
 static struct Model* model_list;
 static int* empty_indices;
 static int use_blinn = 1;
@@ -202,9 +204,8 @@ void model_render_all(struct Camera* camera)
 			{
 				int valid_light_count = 0;
 				int* light_index_list = light_get_valid_indices(&valid_light_count);
-				const int max_name_len = 64;
-				char uniform_name[max_name_len];
-				memset(uniform_name, '\0', max_name_len);
+				char uniform_name[MAX_NAME_LEN];
+				memset(uniform_name, '\0', MAX_NAME_LEN);
 				for(int i = 0; i < valid_light_count; i++)
 				{
 					struct Light* light = light_get(light_index_list[i]); /* TODO: Cull lights according to camera frustum */
@@ -215,48 +216,48 @@ void model_render_all(struct Camera* camera)
 
 					if(light->type != LT_POINT)
 					{
-						snprintf(uniform_name, max_name_len, "lights[%d].direction", i);
+						snprintf(uniform_name, MAX_NAME_LEN, "lights[%d].direction", i);
 						transform_get_absolute_lookat(transform, &light_pos);
 						vec3_norm(&light_pos, &light_pos);
 						shader_set_uniform_vec3(material->shader, uniform_name, &light_pos);
-						memset(uniform_name, '\0', max_name_len);
+						memset(uniform_name, '\0', MAX_NAME_LEN);
 					}
 
 
 					if(light->type != LT_DIR)
 					{
-						snprintf(uniform_name, max_name_len, "lights[%d].position", i);
+						snprintf(uniform_name, MAX_NAME_LEN, "lights[%d].position", i);
 						shader_set_uniform_vec3(material->shader,  uniform_name, &light_pos);
-						memset(uniform_name, '\0', max_name_len);
+						memset(uniform_name, '\0', MAX_NAME_LEN);
 
-						snprintf(uniform_name, max_name_len, "lights[%d].outer_angle", i);
+						snprintf(uniform_name, MAX_NAME_LEN, "lights[%d].outer_angle", i);
 						shader_set_uniform_float(material->shader, uniform_name, light->outer_angle);
-						memset(uniform_name, '\0', max_name_len);
+						memset(uniform_name, '\0', MAX_NAME_LEN);
 					
-						snprintf(uniform_name, max_name_len, "lights[%d].inner_angle", i);
+						snprintf(uniform_name, MAX_NAME_LEN, "lights[%d].inner_angle", i);
 						shader_set_uniform_float(material->shader, uniform_name, light->inner_angle);
-						memset(uniform_name, '\0', max_name_len);
+						memset(uniform_name, '\0', MAX_NAME_LEN);
 					
-						snprintf(uniform_name, max_name_len, "lights[%d].falloff", i);
+						snprintf(uniform_name, MAX_NAME_LEN, "lights[%d].falloff", i);
 						shader_set_uniform_float(material->shader, uniform_name, light->falloff);
-						memset(uniform_name, '\0', max_name_len);
+						memset(uniform_name, '\0', MAX_NAME_LEN);
 
-						snprintf(uniform_name, max_name_len, "lights[%d].radius", i);
+						snprintf(uniform_name, MAX_NAME_LEN, "lights[%d].radius", i);
 						shader_set_uniform_int(material->shader, uniform_name, light->radius);
-						memset(uniform_name, '\0', max_name_len);
+						memset(uniform_name, '\0', MAX_NAME_LEN);
 					}
 					
-					snprintf(uniform_name, max_name_len, "lights[%d].color", i);
+					snprintf(uniform_name, MAX_NAME_LEN, "lights[%d].color", i);
 					shader_set_uniform_vec3(material->shader,  uniform_name, &light->color);
-					memset(uniform_name, '\0', max_name_len);
+					memset(uniform_name, '\0', MAX_NAME_LEN);
 					
-					snprintf(uniform_name, max_name_len, "lights[%d].intensity", i);
+					snprintf(uniform_name, MAX_NAME_LEN, "lights[%d].intensity", i);
 					shader_set_uniform_float(material->shader, uniform_name, light->intensity);
-					memset(uniform_name, '\0', max_name_len);
+					memset(uniform_name, '\0', MAX_NAME_LEN);
 					
-					snprintf(uniform_name, max_name_len, "lights[%d].type", i);
+					snprintf(uniform_name, MAX_NAME_LEN, "lights[%d].type", i);
 					shader_set_uniform_int(material->shader, uniform_name, light->type);
-					memset(uniform_name, '\0', max_name_len);
+					memset(uniform_name, '\0', MAX_NAME_LEN);
 				}
 
 				shader_set_uniform_int(material->shader, "total_active_lights", valid_light_count);

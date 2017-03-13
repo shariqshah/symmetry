@@ -40,11 +40,11 @@ struct Material
 struct Material* material_get_all_materials(void);
 struct Material* material_find(const char* material_name);
 struct Material* material_get(int index);
-int  material_get_index(const char* material_name);
-void material_init(void);
-void material_cleanup(void);
-int  material_register_model(struct Model* model, int model_index, const char* material_name);
-void material_unregister_model(struct Model* model, int model_index);
-void material_remove(int index);
+int 			 material_get_index(const char* material_name);
+void			 material_init(void);
+void			 material_cleanup(void);
+int 			 material_register_model(struct Model* model, int model_index, const char* material_name);
+void			 material_unregister_model(struct Model* model, int model_index);
+void			 material_remove(int index);
 
 #endif

@@ -40,5 +40,6 @@ void   platform_mouse_global_position_set(int x, int y);
 void   platform_mouse_relative_mode_set(int relative_mode);
 int    platform_mouse_relative_mode_get(void);
 uint32 platform_get_ticks(void);
+char*  platform_get_base_path(void);
 
 #endif

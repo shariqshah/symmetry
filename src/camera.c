@@ -1,4 +1,3 @@
-#include "GLFW/glfw3.h"
 #include "camera.h"
 #include "entity.h"
 #include "transform.h"
@@ -9,6 +8,7 @@
 
 #include "utils.h"
 #include "log.h"
+#include "gl_load.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -165,7 +165,7 @@ void camera_attach_fbo(struct Camera* camera, int width, int height, int has_dep
 		texture_set_param(camera->depth_tex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		texture_set_param(camera->depth_tex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		texture_set_param(camera->depth_tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		texture_set_param(camera->depth_tex, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+		texture_set_param(camera->depth_tex, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 		texture_set_param(camera->depth_tex, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 
 		camera->fbo = framebuffer_create(width, height, 0, 1);

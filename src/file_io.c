@@ -9,7 +9,7 @@ static char* base_assets_path;
 
 void io_file_init(const char* assets_path)
 {
-	base_assets_path = str_new(assets_path);
+	base_assets_path = str_new("%s/assets/", assets_path);
 }
 
 void io_file_cleanup(void)

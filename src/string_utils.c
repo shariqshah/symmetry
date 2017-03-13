@@ -1,22 +1,55 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
+#include <stdio.h>
 
 #include "string_utils.h"
 #include "array.h"
+#include "log.h"
 
-char* str_new(const char* string)
+char* str_new(const char* string, ...)
 {
-	size_t length = strlen(string);
-	char* new_string = malloc(length + 1);
-	strcpy(new_string, string);
+	int length       = 0;
+	char* new_string = NULL;
+
+	/* First pass, find out the length of the string by passing NULL and zero length */
+	va_list list;
+	va_start(list, string);
+	length = vsnprintf(new_string, 0, string, list);
+	va_end(list);
+
+	if(length < 0)
+	{
+		log_error("str_new", "Could not find length of string");
+		return new_string;
+	}
+
+	length++;
+	new_string = malloc(length);
+	if(!new_string)
+	{
+		log_error("str_new", "Malloc failed, out of memory!");
+		new_string = NULL;
+		return new_string;
+	}
+	/* Actual string allocation and copy */
+	va_start(list, string);
+	length = vsnprintf(new_string, length, string, list);
+	if(length < 0)
+	{
+		log_error("str_new", "Writing to new string failed");
+		free(new_string);
+		return new_string;
+	}
+	va_end(list);
 	return new_string;
 }
 
 char* str_concat(char* string, const char* str_to_concat)
 {
-	size_t length = strlen(str_to_concat);
-	size_t length_orig = strlen(string);
-
+	size_t length      = strlen(str_to_concat);
+	size_t length_orig = string ? strlen(string) : 0;
+	
 	char* temp = realloc(string, length + length_orig + 1); /* +1 at the end to cope for null byte */
 	if(temp)
 	{
@@ -28,11 +61,11 @@ char* str_concat(char* string, const char* str_to_concat)
 
 char* str_replace(char* string, const char* pattern, const char* replacement)
 {
-	int* indices = array_new(int);
+	int* indices      = array_new(int);
 	size_t string_len = strlen(string);
 
 	/* Calculate size of new string and allocate new memory */
-	size_t pattern_len = strlen(pattern);
+	size_t pattern_len     = strlen(pattern);
 	size_t replacement_len = strlen(replacement);
 
 	int done = 0;

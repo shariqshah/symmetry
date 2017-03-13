@@ -2,6 +2,7 @@
 #define input_H
 
 #include <stdlib.h>
+#include "num_types.h"
 #include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_mouse.h>
 #include <SDL2/SDL_events.h>

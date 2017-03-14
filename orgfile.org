@@ -4,8 +4,7 @@
 * Project Symmetry
 
 ** What?
-An attempt to convert all previous code written in Project Abstraction(written in C++) to C 
-while using as few libraries as possible.
+A topdown 2D shooter exploring symmetry.
 
 ** Why?
 - To create a platform on which i will base further projects on.
@@ -54,6 +53,9 @@ All the code in this repository is under GPLv3, see LICENSE for more information
 ** DONE Entity
 - State "DONE"       from "TODO"       [2015-09-15 Tue 12:17]
 ** TODO Positive and negative values for input_maps and returning corresponding values when they are true
+** DONE Find a permanent solution for build system
+- State "DONE"       from "TODO"       [2017-03-15 Wed 00:59]
+** TODO Text rendering using freetype or stb lib
 ** DONE Textures
 - State "DONE"       from "TODO"       [2015-10-09 Fri 18:47]
 ** DONE Camera

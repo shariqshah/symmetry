@@ -92,6 +92,8 @@ All the code in this repository is under GPLv3, see LICENSE for more information
   Sticking with forward rendering for now and focusing on tools etc.
 ** TODO Fix mouse bugs on windows
 ** TODO Physics
+** TODO Allow passsing base path as commandline argument?
+** TODO Validate necessary assets at game launch
 ** TODO Variant type
 ** TODO Event Subsystem
 ** DONE Compile and test on windows

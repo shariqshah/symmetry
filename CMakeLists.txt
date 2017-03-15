@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.2)
 
 project(Symmetry)
 
@@ -41,6 +41,11 @@ elseif(UNIX AND NOT APPLE)
   find_library(SDL2_LIBRARY SDL2 HINTS libs/${SYMMETRY_BUILD_TYPE}/linux64_gcc REQUIRED)
   target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY} ${LIB_PTHREAD} ${LIB_M} ${LIB_RT} ${CMAKE_DL_LIBS})
   set(CMAKE_C_FLAGS "-Wall -Wno-undefined -std=c99")
+  #after build is complete create a link to assets folder
+  add_custom_command(
+	TARGET ${PROJECT_NAME}
+	POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_SOURCE_DIR}/assets ${CMAKE_BINARY_DIR}/assets)
 else()
   message(FATAL_ERROR "Unsupported Platform! Currently only Windows and Linux supported")
 endif(WIN32)

@@ -52,15 +52,17 @@ _________________
 .. 2.36 CANCELED Deferred rendering?
 .. 2.37 TODO Fix mouse bugs on windows
 .. 2.38 TODO Physics
-.. 2.39 TODO Variant type
-.. 2.40 TODO Event Subsystem
-.. 2.41 DONE Compile and test on windows
-.. 2.42 TODO Array based string type comptible with cstring(char*)
-.. 2.43 DONE Fix mouse bugs
-.. 2.44 DONE Fix issues with opengl context showing 2.1 only
-.. 2.45 TODO Improve this readme
-.. 2.46 TODO ???
-.. 2.47 TODO Profit!
+.. 2.39 TODO Allow passsing base path as commandline argument?
+.. 2.40 TODO Validate necessary assets at game launch
+.. 2.41 TODO Variant type
+.. 2.42 TODO Event Subsystem
+.. 2.43 DONE Compile and test on windows
+.. 2.44 TODO Array based string type comptible with cstring(char*)
+.. 2.45 DONE Fix mouse bugs
+.. 2.46 DONE Fix issues with opengl context showing 2.1 only
+.. 2.47 TODO Improve this readme
+.. 2.48 TODO ???
+.. 2.49 TODO Profit!
 
 
 1 Project Symmetry
@@ -310,43 +312,51 @@ _________________
 ~~~~~~~~~~~~~~~~~
 
 
-2.39 TODO Variant type
+2.39 TODO Allow passsing base path as commandline argument?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+2.40 TODO Validate necessary assets at game launch
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+2.41 TODO Variant type
 ~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.40 TODO Event Subsystem
+2.42 TODO Event Subsystem
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.41 DONE Compile and test on windows
+2.43 DONE Compile and test on windows
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   - State "DONE" from "TODO" [2017-03-14 Tue 00:32]
 
 
-2.42 TODO Array based string type comptible with cstring(char*)
+2.44 TODO Array based string type comptible with cstring(char*)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.43 DONE Fix mouse bugs
+2.45 DONE Fix mouse bugs
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
   - State "DONE" from "TODO" [2017-03-01 Wed 00:45]
 
 
-2.44 DONE Fix issues with opengl context showing 2.1 only
+2.46 DONE Fix issues with opengl context showing 2.1 only
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   - State "DONE" from "TODO" [2017-02-26 Sun 15:39]
 
 
-2.45 TODO Improve this readme
+2.47 TODO Improve this readme
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.46 TODO ???
+2.48 TODO ???
 ~~~~~~~~~~~~~
 
 
-2.47 TODO Profit!
+2.49 TODO Profit!
 ~~~~~~~~~~~~~~~~~

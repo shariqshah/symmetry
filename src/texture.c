@@ -42,14 +42,14 @@ static int* empty_indices;
 
 #define MAX_PIXEL_BYTES 5
 
-int  load_img(FILE* file, GLubyte** image_data, int* width, int* height, int* fmt, int* internal_fmt);
-void debug_write_tga(struct Tga_Header* header, GLubyte* image_data);
-void copy_tga_pixel(GLubyte* source, GLubyte* dest, size_t bytes_per_pixel);
-int  create_gl_texture(uint* out_handle, int width, int height, int format, int int_fmt, int type, void* data);
+static int  load_img(FILE* file, GLubyte** image_data, int* width, int* height, int* fmt, int* internal_fmt);
+static void debug_write_tga(struct Tga_Header* header, GLubyte* image_data);
+static void copy_tga_pixel(GLubyte* source, GLubyte* dest, size_t bytes_per_pixel);
+static int  create_gl_texture(uint* out_handle, int width, int height, int format, int int_fmt, int type, const void* data);
 
 void texture_init(void)
 {
-	texture_list = array_new(struct Texture);
+	texture_list  = array_new(struct Texture);
 	empty_indices = array_new(int);
 }
 
@@ -368,13 +368,13 @@ void texture_dec_refcount(int index)
 }
 
 int texture_create(const char* name,
-				   int   texture_unit,
-				   int   width,
-				   int   height,
-				   int   format,
-				   int   int_fmt,
-				   int   type,
-				   void* data)
+				   int   	   texture_unit,
+				   int   	   width,
+				   int   	   height,
+				   int   	   format,
+				   int   	   int_fmt,
+				   int   	   type,
+				   const void* data)
 {
 	assert(name && texture_unit > -1 && texture_unit <= TU_SHADOWMAP4);
 	int index = -1;
@@ -402,7 +402,7 @@ int texture_create(const char* name,
 	return index;
 }
 
-int create_gl_texture(uint* out_handle, int width, int height, int format, int int_fmt, int type, void* data)
+int create_gl_texture(uint* out_handle, int width, int height, int format, int int_fmt, int type, const void* data)
 {
 	int success = 1;
 	glGenTextures(1, out_handle);

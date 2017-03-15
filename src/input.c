@@ -5,6 +5,7 @@
 #include "array.h"
 #include "platform.h"
 #include "log.h"
+#include "gui.h"
 
 /* #define KS_INACTIVE -1; 			/\* state for input map is set to KS_INACTIVE(KeyState_Inactive) when */
 /* 									   the key is neither pressed nor released *\/ */
@@ -18,7 +19,8 @@ struct Input_Map
 
 static void input_on_key(int key, int scancode, int state, int mod_ctrl, int mod_shift);
 static void input_on_mousebutton(int button, int state, int x, int y, int8 num_clicks);
-static void input_on_mouse_motion(int x, int y, int xrel, int yrel);
+static void input_on_mousemotion(int x, int y, int xrel, int yrel);
+static void input_on_mousewheel(int x, int y);
 static int  map_find(const char* name);
 
 static struct Input_Map* input_map_list;
@@ -27,7 +29,8 @@ void input_init(void)
 {
 	platform_keyboard_callback_set(&input_on_key);
 	platform_mousebutton_callback_set(&input_on_mousebutton);
-	platform_mousemotion_callback_set(&input_on_mouse_motion);
+	platform_mousemotion_callback_set(&input_on_mousemotion);
+	platform_mousewheel_callback_set(&input_on_mousewheel);
 	
 	input_map_list = array_new(struct Input_Map);
 }
@@ -42,9 +45,16 @@ void input_cleanup(void)
 	array_free(input_map_list);
 }
 
-void input_on_mouse_motion(int x, int y, int xrel, int yrel)
+void input_on_mousemotion(int x, int y, int xrel, int yrel)
 {
-	
+	/* TODO: This is temporary. After proper event loop is added this code should not be here */
+	gui_handle_mousemotion_event(x, y, xrel, yrel);
+}
+
+void input_on_mousewheel(int x, int y)
+{
+	/* TODO: This is temporary. After proper event loop is added this code should not be here */
+	gui_handle_mousewheel_event(x, y);
 }
 
 void input_mouse_pos_get(int* xpos, int* ypos)
@@ -72,6 +82,8 @@ void input_on_key(int key, int scancode, int state, int mod_ctrl, int mod_shift)
 			}
 		}
 	}
+	/* TODO: This is temporary. After proper event loop is added this code should not be here */
+	gui_handle_keyboard_event(key, state, mod_ctrl, mod_shift);
 }
 
 void input_on_mousebutton(int button, int state, int x, int y, int8 num_clicks)
@@ -79,6 +91,8 @@ void input_on_mousebutton(int button, int state, int x, int y, int8 num_clicks)
 	/* Probably add 'mouse maps', same as input maps for keyvboard but with buttons
 	   Do we even need that?
 	*/
+	/* TODO: This is temporary. After proper event loop is added this code should not be here */
+	gui_handle_mousebutton_event(button, state, x, y);
 }
 
 void input_mouse_mode_set(enum Mouse_Mode mode)

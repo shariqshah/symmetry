@@ -83,7 +83,10 @@ All the code in this repository is under GPLv3, see LICENSE for more information
 ** TODO Fix problems with frustrum culling
 - Recalculate bounding boxes for rotated meshes?
 ** TODO 2d drawing routines
-** TODO Gui
+- Sprite batching
+- Debug drawing
+** DONE Gui
+- State "DONE"       from "TODO"       [2017-03-15 Wed 23:41]
 ** CANCELED Image based lighting?
 - State "CANCELED"   from "TODO"       [2017-03-14 Tue 00:31] \\
   Not a requirement for current project
@@ -91,17 +94,26 @@ All the code in this repository is under GPLv3, see LICENSE for more information
 - State "CANCELED"   from "TODO"       [2017-02-26 Sun 01:49] \\
   Sticking with forward rendering for now and focusing on tools etc.
 ** TODO Fix mouse bugs on windows
-** TODO Physics
+** TODO Physics/Collision detection in 2d
+** TODO Complete gui integration
+- Font selection
+- Font atlas proper cleanup
+- Decoupled event handling of gui and input if possible
+- Custom rendering for gui
 ** TODO Allow passsing base path as commandline argument?
 ** TODO Validate necessary assets at game launch
 ** TODO Variant type
+** TODO Log and debug/stats output in gui
+** TODO Editor
 ** TODO Event Subsystem
+** TODO Keybindings for gui?
 ** DONE Compile and test on windows
 - State "DONE"       from "TODO"       [2017-03-14 Tue 00:32]
 ** TODO Array based string type comptible with cstring(char*)
 ** DONE Fix mouse bugs
 - State "DONE"       from "TODO"       [2017-03-01 Wed 00:45]
-** DONE Fix issues with opengl context showing 2.1 only
+** DONE Fix
+** TODO issues with opengl context showing 2.1 only
 - State "DONE"       from "TODO"       [2017-02-26 Sun 15:39]
 ** TODO Improve this readme
 ** TODO ???

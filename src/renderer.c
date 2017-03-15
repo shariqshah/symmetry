@@ -14,6 +14,7 @@
 #include "entity.h"
 #include "transform.h"
 #include "game.h"
+#include "gui.h"
 
 static int def_fbo = -1;
 static int def_albedo_tex = -1;
@@ -28,17 +29,20 @@ void renderer_init(void)
 {
 	glClearColor(0.3f, 0.6f, 0.9f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
-	/* glEnable(GL_TEXTURE_2D); */
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 	platform_windowresize_callback_set(on_framebuffer_size_change);
-
+	
 	settings.fog.mode = FM_EXPONENTIAL;
 	settings.fog.density = 0.01f;
 	settings.fog.start_dist = 50.f;
 	settings.fog.max_dist = 150.f;
 	vec3_fill(&settings.fog.color, 60.f/255.f, 60.f/255.f, 75.f/255.f);
 	vec3_fill(&settings.ambient_light, 0.1f, 0.1f, 0.12f);
+	settings.max_gui_vertex_memory =  512 * 1024;
+	settings.max_gui_element_memory = 128 * 1024;
+
+	gui_init();
 	
 	/* Quad geometry for final render */
 	vec3* vertices = array_new(vec3);
@@ -145,10 +149,15 @@ void renderer_draw(void)
 	geom_render(quad_geo);
 	shader_unbind();
 	texture_unbind(final_render_tex);
+
+	renderer_check_glerror("Before Gui Render");
+	gui_render(NK_ANTI_ALIASING_ON, settings.max_gui_vertex_memory, settings.max_gui_element_memory);
+	renderer_check_glerror("After Gui Render");
 }
 
 void renderer_cleanup(void)
 {
+	gui_cleanup();
 	geom_remove(quad_geo);
 	framebuffer_remove(def_fbo);
 	texture_remove(def_albedo_tex);
@@ -173,37 +182,19 @@ int renderer_check_glerror(const char* context)
 {
 	int error = 1;
 	GLenum error_code = glGetError();
-	const char* errorString = "No Error";
+	const char* error_string = "No Error";
 	switch(error_code)
 	{
-	case GL_INVALID_OPERATION:
-		errorString = "Invalid Operation";
-		break;
-	case GL_NO_ERROR:
-		errorString = "No Error";
-		break;
-	case GL_INVALID_ENUM:
-		errorString = "Invalid ENUM";
-		break;
-	case GL_INVALID_VALUE:
-		errorString = "Invalid Value";
-		break;
-	case GL_INVALID_FRAMEBUFFER_OPERATION:
-		errorString = "Invalid FrameBuffer Operation";
-		break;
-	case GL_OUT_OF_MEMORY:
-		errorString = "Out of Memory";
-		break;
-	/* case GL_STACK_UNDERFLOW: */
-	/* 	errorString = "Stack Underflow"; */
-	/* 	break; */
-	/* case GL_STACK_OVERFLOW: */
-	/* 	errorString = "Stack Overflow"; */
-	/* 	break; */
+	case GL_INVALID_OPERATION: 			   error_string = "Invalid Operation"; 		       break;
+	case GL_NO_ERROR:		   			   error_string = "No Error";		  		       break;
+	case GL_INVALID_ENUM:	   			   error_string = "Invalid ENUM";	  		       break;
+	case GL_INVALID_VALUE:	   			   error_string = "Invalid Value";	  		       break;
+	case GL_INVALID_FRAMEBUFFER_OPERATION: error_string = "Invalid FrameBuffer Operation"; break;
+	case GL_OUT_OF_MEMORY:		           error_string = "Out of Memory";		           break;
 	}
 
 	if(error_code != GL_NO_ERROR)
-		log_error(context, errorString);
+		log_error(context, error_string);
 	else
 		error = 0;
 

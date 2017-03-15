@@ -29,6 +29,6 @@ int  texture_create(const char* name,
 					int         format,
 					int         int_fmt,
 					int         type,
-					void*       data);
+					const void* data);
 
 #endif

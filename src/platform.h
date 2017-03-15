@@ -7,7 +7,9 @@
 typedef void (*Keyboard_Event_Func)     (int key, int scancode, int state, int mod_ctrl, int mod_shift);
 typedef void (*Mousebutton_Event_Func)  (int button, int state, int x, int y, int8 num_clicks);
 typedef void (*Mousemotion_Event_Func)  (int x, int y, int xrel, int yrel);
+typedef void (*Mousewheel_Event_Func)   (int x, int y);
 typedef void (*Windowresize_Event_Func) (int x, int y);
+typedef void (*Textinput_Event_Func)    (const char* text);
 
 // Window Related functions
 struct Window;
@@ -21,6 +23,7 @@ void           window_make_context_current(struct Window* window);
 void           window_cleanup(void);
 void           window_set_size(struct Window* window, int width, int height);
 void           window_get_size(struct Window* window, int* out_width, int* out_height);
+void           window_get_drawable_size(struct Window* window, int* out_width, int* out_height);
 void           window_swap_buffers(struct Window* window);
 
 // Platform functions
@@ -30,7 +33,9 @@ void   platform_poll_events(int* out_quit);
 void   platform_keyboard_callback_set(Keyboard_Event_Func func);
 void   platform_mousebutton_callback_set(Mousebutton_Event_Func func);
 void   platform_mousemotion_callback_set(Mousemotion_Event_Func func);
+void   platform_mousewheel_callback_set(Mousewheel_Event_Func func);
 void   platform_windowresize_callback_set(Windowresize_Event_Func func);
+void   platform_textinput_callback_set(Textinput_Event_Func func);
 int    platform_key_state_get(int key);
 int    platform_mousebutton_state_get(uint button);
 void   platform_mouse_position_get(int* x, int* y);
@@ -41,5 +46,7 @@ void   platform_mouse_relative_mode_set(int relative_mode);
 int    platform_mouse_relative_mode_get(void);
 uint32 platform_get_ticks(void);
 char*  platform_get_base_path(void);
+void   platform_clipboard_text_set(const char* text);
+char*  platform_clipboard_text_get(void);
 
 #endif

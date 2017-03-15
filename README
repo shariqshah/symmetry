@@ -47,22 +47,27 @@ _________________
 .. 2.31 CANCELED Draw light volumes
 .. 2.32 TODO Fix problems with frustrum culling
 .. 2.33 TODO 2d drawing routines
-.. 2.34 TODO Gui
+.. 2.34 DONE Gui
 .. 2.35 CANCELED Image based lighting?
 .. 2.36 CANCELED Deferred rendering?
 .. 2.37 TODO Fix mouse bugs on windows
-.. 2.38 TODO Physics
-.. 2.39 TODO Allow passsing base path as commandline argument?
-.. 2.40 TODO Validate necessary assets at game launch
-.. 2.41 TODO Variant type
-.. 2.42 TODO Event Subsystem
-.. 2.43 DONE Compile and test on windows
-.. 2.44 TODO Array based string type comptible with cstring(char*)
-.. 2.45 DONE Fix mouse bugs
-.. 2.46 DONE Fix issues with opengl context showing 2.1 only
-.. 2.47 TODO Improve this readme
-.. 2.48 TODO ???
-.. 2.49 TODO Profit!
+.. 2.38 TODO Physics/Collision detection in 2d
+.. 2.39 TODO Complete gui integration
+.. 2.40 TODO Allow passsing base path as commandline argument?
+.. 2.41 TODO Validate necessary assets at game launch
+.. 2.42 TODO Variant type
+.. 2.43 TODO Log and debug/stats output in gui
+.. 2.44 TODO Editor
+.. 2.45 TODO Event Subsystem
+.. 2.46 TODO Keybindings for gui?
+.. 2.47 DONE Compile and test on windows
+.. 2.48 TODO Array based string type comptible with cstring(char*)
+.. 2.49 DONE Fix mouse bugs
+.. 2.50 DONE Fix
+.. 2.51 TODO issues with opengl context showing 2.1 only
+.. 2.52 TODO Improve this readme
+.. 2.53 TODO ???
+.. 2.54 TODO Profit!
 
 
 1 Project Symmetry
@@ -285,9 +290,14 @@ _________________
 2.33 TODO 2d drawing routines
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+  - Sprite batching
+  - Debug drawing
 
-2.34 TODO Gui
+
+2.34 DONE Gui
 ~~~~~~~~~~~~~
+
+  - State "DONE" from "TODO" [2017-03-15 Wed 23:41]
 
 
 2.35 CANCELED Image based lighting?
@@ -308,55 +318,80 @@ _________________
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.38 TODO Physics
-~~~~~~~~~~~~~~~~~
+2.38 TODO Physics/Collision detection in 2d
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.39 TODO Allow passsing base path as commandline argument?
+2.39 TODO Complete gui integration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  - Font selection
+  - Font atlas proper cleanup
+  - Decoupled event handling of gui and input if possible
+  - Custom rendering for gui
+
+
+2.40 TODO Allow passsing base path as commandline argument?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.40 TODO Validate necessary assets at game launch
+2.41 TODO Validate necessary assets at game launch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.41 TODO Variant type
+2.42 TODO Variant type
 ~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.42 TODO Event Subsystem
+2.43 TODO Log and debug/stats output in gui
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+2.44 TODO Editor
+~~~~~~~~~~~~~~~~
+
+
+2.45 TODO Event Subsystem
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.43 DONE Compile and test on windows
+2.46 TODO Keybindings for gui?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+2.47 DONE Compile and test on windows
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   - State "DONE" from "TODO" [2017-03-14 Tue 00:32]
 
 
-2.44 TODO Array based string type comptible with cstring(char*)
+2.48 TODO Array based string type comptible with cstring(char*)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.45 DONE Fix mouse bugs
+2.49 DONE Fix mouse bugs
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
   - State "DONE" from "TODO" [2017-03-01 Wed 00:45]
 
 
-2.46 DONE Fix issues with opengl context showing 2.1 only
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2.50 DONE Fix
+~~~~~~~~~~~~~
+
+
+2.51 TODO issues with opengl context showing 2.1 only
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   - State "DONE" from "TODO" [2017-02-26 Sun 15:39]
 
 
-2.47 TODO Improve this readme
+2.52 TODO Improve this readme
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.48 TODO ???
+2.53 TODO ???
 ~~~~~~~~~~~~~
 
 
-2.49 TODO Profit!
+2.54 TODO Profit!
 ~~~~~~~~~~~~~~~~~

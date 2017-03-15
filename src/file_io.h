@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 void  io_file_init(const char* assets_path);
-char* io_file_read(const char* path);
+char* io_file_read(const char* path, const char* mode, long* file_size);
 FILE* io_file_open(const char* path, const char* mode);
 void  io_file_cleanup(void);
 

@@ -17,7 +17,9 @@ struct Platform_State
 	Keyboard_Event_Func     on_keyboard_func;
 	Mousebutton_Event_Func  on_mousebutton_func;
 	Mousemotion_Event_Func  on_mousemotion_func;
+	Mousewheel_Event_Func   on_mousewheel_func;
 	Windowresize_Event_Func on_windowresize_func;
+	Textinput_Event_Func    on_textinput_func;
 };
 
 /* TODO: Find a better way to handle internal state */
@@ -48,6 +50,7 @@ struct Window* window_create(const char* title, int width, int height)
 	SDL_GL_SetAttribute(SDL_GL_BUFFER_SIZE, 24);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
 #ifdef GL_DEBUG_CONTEXT
@@ -134,6 +137,11 @@ void window_get_size(struct Window* window, int* out_width, int* out_height)
 	SDL_GetWindowSize((SDL_Window*)window->sdl_window, out_width, out_height);
 }
 
+void window_get_drawable_size(struct Window* window, int* out_width, int* out_height)
+{
+	SDL_GL_GetDrawableSize((SDL_Window*)window->sdl_window, out_width, out_height);
+}
+
 void window_swap_buffers(struct Window* window)
 {
 	SDL_GL_SwapWindow(window->sdl_window);
@@ -203,6 +211,16 @@ void platform_poll_events(int* out_quit)
 			int y    = event.motion.y;
 			platform_state->on_mousemotion_func(x, y, xrel, yrel);
 		}
+		case SDL_MOUSEWHEEL:
+		{
+			int x = event.wheel.x;
+			int y = event.wheel.y;
+			platform_state->on_mousewheel_func(x, y);
+		}
+		case SDL_TEXTINPUT:
+		{
+			platform_state->on_textinput_func(event.text.text);
+		}
 		case SDL_WINDOWEVENT:
 		{
 			if(event.window.type == SDL_WINDOWEVENT_RESIZED)
@@ -229,6 +247,16 @@ void platform_mousebutton_callback_set(Mousebutton_Event_Func func)
 void platform_mousemotion_callback_set(Mousemotion_Event_Func func)
 {
 	platform_state->on_mousemotion_func = func;
+}
+
+void platform_mousewheel_callback_set(Mousewheel_Event_Func func)
+{
+	platform_state->on_mousewheel_func = func;
+}
+
+void platform_textinput_callback_set(Textinput_Event_Func func)
+{
+	platform_state->on_textinput_func = func;
 }
 
 void platform_windowresize_callback_set(Windowresize_Event_Func func)
@@ -296,4 +324,21 @@ char* platform_get_base_path(void)
 		SDL_free(returned_path);
 	}
 	return path;
+}
+
+void platform_clipboard_text_set(const char* text)
+{
+	SDL_SetClipboardText(text);
+}
+
+char* platform_clipboard_text_get(void)
+{
+	char* returned_text = SDL_GetClipboardText();
+	char* text = NULL;
+	if(returned_text)
+	{
+		text = str_new(returned_text);
+		SDL_free(returned_text);
+	}
+	return text;
 }

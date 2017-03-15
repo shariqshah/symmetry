@@ -28,5 +28,6 @@ void shader_set_uniform_mat4(const int shader_index,  const char* name, const ma
 void shader_set_uniform(const int uniform_type, const int uniform_loc, void* value);
 void shader_cleanup(void);
 int  shader_get_uniform_location(const int shader_index, const char* name);
+int  shader_get_attribute_location(const int shader_index, const char* attrib_name);
 
 #endif

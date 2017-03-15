@@ -20,7 +20,7 @@ const int UV_LOC       = 2;
 const int COLOR_LOC    = 3;
 
 static uint* shader_list;
-static int* empty_indices;
+static int*  empty_indices;
 
 void debug_print_shader(const char* shaderText)
 {
@@ -56,7 +56,7 @@ char* run_preprocessor(char* shader_text)
 			{
 				char* path = str_new("shaders/");
 				path = str_concat(path, filename);
-				char* file = io_file_read(path);
+				char* file = io_file_read(path, "r", NULL);
 				char* shader_copy = str_new(shader_text);
 				char* temp = realloc(shader_text, (strlen(shader_text) + strlen(file) + 2));
 				if(temp)
@@ -96,8 +96,8 @@ int shader_create(const char* vert_shader_name, const char* frag_shader_name)
 	GLuint vert_shader = glCreateShader(GL_VERTEX_SHADER);
 	GLuint frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
 
-	char* vert_source = io_file_read(vs_path);
-	char* frag_source = io_file_read(fs_path);
+	char* vert_source = io_file_read(vs_path, "r", NULL);
+	char* frag_source = io_file_read(fs_path, "r", NULL);
 
 	assert(vert_source != NULL);
 	assert(frag_source != NULL);
@@ -349,4 +349,10 @@ void shader_set_uniform(const int uniform_type, const int uniform_loc, void* val
 		break;
 	}
 	}
+}
+
+int shader_get_attribute_location(const int shader_index, const char* attrib_name)
+{
+	assert(shader_index > -1 && shader_index < array_len(shader_list));
+	return glGetAttribLocation(shader_list[shader_index], attrib_name);
 }

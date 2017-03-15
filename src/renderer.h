@@ -24,7 +24,9 @@ struct Fog
 struct Render_Settings
 {
 	struct Fog fog;
-	vec3 ambient_light;
+	vec3       ambient_light;
+	int        max_gui_vertex_memory;
+	int        max_gui_element_memory;
 };
 
 struct Render_Settings* renderer_get_settings(void);

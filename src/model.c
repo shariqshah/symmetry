@@ -20,8 +20,7 @@
 #define MAX_NAME_LEN 64
 
 static struct Model* model_list;
-static int* empty_indices;
-static int use_blinn = 1;
+static        int*   empty_indices;
 
 struct Model* model_get(int index)
 {
@@ -35,7 +34,7 @@ struct Model* model_get(int index)
 
 void model_init(void)
 {
-	model_list = array_new(struct Model);
+	model_list    = array_new(struct Model);
 	empty_indices = array_new(int);
 }
 

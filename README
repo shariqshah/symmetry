@@ -54,20 +54,24 @@ _________________
 .. 2.38 TODO Physics/Collision detection in 2d
 .. 2.39 TODO Complete gui integration
 .. 2.40 TODO Allow passsing base path as commandline argument?
-.. 2.41 TODO Validate necessary assets at game launch
-.. 2.42 TODO Variant type
-.. 2.43 TODO Log and debug/stats output in gui
-.. 2.44 TODO Editor
-.. 2.45 TODO Event Subsystem
-.. 2.46 TODO Keybindings for gui?
-.. 2.47 DONE Compile and test on windows
-.. 2.48 TODO Array based string type comptible with cstring(char*)
-.. 2.49 DONE Fix mouse bugs
-.. 2.50 DONE Fix
-.. 2.51 TODO issues with opengl context showing 2.1 only
-.. 2.52 TODO Improve this readme
-.. 2.53 TODO ???
-.. 2.54 TODO Profit!
+.. 2.41 DONE Resizable framebuffers and textures
+.. 2.42 DONE Support for multiple color attachments in framebuffers?
+.. 2.43 TODO Multisampled textures and framebuffers
+.. 2.44 DONE Better way to store and manage textures attached to framebuffers
+.. 2.45 TODO Validate necessary assets at game launch
+.. 2.46 TODO Variant type
+.. 2.47 TODO Log and debug/stats output in gui
+.. 2.48 TODO Editor
+.. 2.49 TODO Event Subsystem
+.. 2.50 TODO Keybindings for gui?
+.. 2.51 DONE Compile and test on windows
+.. 2.52 TODO Array based string type comptible with cstring(char*)
+.. 2.53 DONE Fix mouse bugs
+.. 2.54 DONE Fix
+.. 2.55 TODO issues with opengl context showing 2.1 only
+.. 2.56 TODO Improve this readme
+.. 2.57 TODO ???
+.. 2.58 TODO Profit!
 
 
 1 Project Symmetry
@@ -325,8 +329,7 @@ _________________
 2.39 TODO Complete gui integration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  - Font selection
-  - Font atlas proper cleanup
+  x Font selection x Font atlas proper cleanup
   - Decoupled event handling of gui and input if possible
   - Custom rendering for gui
 
@@ -335,63 +338,85 @@ _________________
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.41 TODO Validate necessary assets at game launch
+2.41 DONE Resizable framebuffers and textures
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  - State "DONE" from "TODO" [2017-03-16 Thu 22:50]
+
+
+2.42 DONE Support for multiple color attachments in framebuffers?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  - State "DONE" from "TODO" [2017-03-16 Thu 22:51]
+
+
+2.43 TODO Multisampled textures and framebuffers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+2.44 DONE Better way to store and manage textures attached to framebuffers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  - State "DONE" from "TODO" [2017-03-16 Thu 22:51]
+
+
+2.45 TODO Validate necessary assets at game launch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.42 TODO Variant type
+2.46 TODO Variant type
 ~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.43 TODO Log and debug/stats output in gui
+2.47 TODO Log and debug/stats output in gui
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.44 TODO Editor
+2.48 TODO Editor
 ~~~~~~~~~~~~~~~~
 
 
-2.45 TODO Event Subsystem
+2.49 TODO Event Subsystem
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.46 TODO Keybindings for gui?
+2.50 TODO Keybindings for gui?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.47 DONE Compile and test on windows
+2.51 DONE Compile and test on windows
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   - State "DONE" from "TODO" [2017-03-14 Tue 00:32]
 
 
-2.48 TODO Array based string type comptible with cstring(char*)
+2.52 TODO Array based string type comptible with cstring(char*)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.49 DONE Fix mouse bugs
+2.53 DONE Fix mouse bugs
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
   - State "DONE" from "TODO" [2017-03-01 Wed 00:45]
 
 
-2.50 DONE Fix
+2.54 DONE Fix
 ~~~~~~~~~~~~~
 
 
-2.51 TODO issues with opengl context showing 2.1 only
+2.55 TODO issues with opengl context showing 2.1 only
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   - State "DONE" from "TODO" [2017-02-26 Sun 15:39]
 
 
-2.52 TODO Improve this readme
+2.56 TODO Improve this readme
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.53 TODO ???
+2.57 TODO ???
 ~~~~~~~~~~~~~
 
 
-2.54 TODO Profit!
+2.58 TODO Profit!
 ~~~~~~~~~~~~~~~~~

@@ -96,11 +96,18 @@ All the code in this repository is under GPLv3, see LICENSE for more information
 ** TODO Fix mouse bugs on windows
 ** TODO Physics/Collision detection in 2d
 ** TODO Complete gui integration
-- Font selection
-- Font atlas proper cleanup
+x Font selection
+x Font atlas proper cleanup
 - Decoupled event handling of gui and input if possible
 - Custom rendering for gui
 ** TODO Allow passsing base path as commandline argument?
+** DONE Resizable framebuffers and textures
+- State "DONE"       from "TODO"       [2017-03-16 Thu 22:50]
+** DONE Support for multiple color attachments in framebuffers?
+- State "DONE"       from "TODO"       [2017-03-16 Thu 22:51]
+** TODO Multisampled textures and framebuffers
+** DONE Better way to store and manage textures attached to framebuffers
+- State "DONE"       from "TODO"       [2017-03-16 Thu 22:51]
 ** TODO Validate necessary assets at game launch
 ** TODO Variant type
 ** TODO Log and debug/stats output in gui

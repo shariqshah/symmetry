@@ -7,13 +7,17 @@
 
 #include <assert.h>
 
+#define MAX_TEXTURE_ATTACHMENTS 3 /* Pointless define just to avoid VLA's and be compatible with msvc */
+
 struct FBO
 {
 	uint handle;
-	uint renderbuffer;
-	int  texture;
+	uint depth_renderbuffer;
+	uint color_renderbuffer;
+	int  texture_attachments[MAX_TEXTURE_ATTACHMENTS];
 	int  width;
 	int  height;
+	int  resizeable;
 };
 
 struct FBO* fbo_list;
@@ -34,36 +38,50 @@ void framebuffer_cleanup(void)
 	array_free(empty_indices);
 }
 
-int framebuffer_create(int width, int height, int has_depth, int has_color)
+int framebuffer_create(int width, int height, int has_depth, int has_color, int resizeable)
 {
-	int index = -1;
-	GLuint fbo;
-	GLuint renderbuffer;
-		
+	int    index              = -1;
+	GLuint fbo                =  0;
+	GLuint depth_renderbuffer =  0;
+	GLuint color_renderbuffer =  0;
+
 	glGenFramebuffers(1, &fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-	glGenRenderbuffers(1, &renderbuffer);
-	glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer);
-	glRenderbufferStorage(GL_RENDERBUFFER,
-						  GL_DEPTH_COMPONENT,
-						  width,
-						  height);
-	renderer_check_glerror("framebuffer:create");
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER,
-							  GL_DEPTH_ATTACHMENT,
-							  GL_RENDERBUFFER,
-							  renderbuffer);
-	renderer_check_glerror("framebuffer:create");
-	if(has_color)
-	{
-		glDrawBuffer(GL_COLOR_ATTACHMENT0);
-	}
-		
 	if(has_depth)
 	{
-		glDrawBuffer(GL_NONE);
+		glGenRenderbuffers(1, &depth_renderbuffer);
+		glBindRenderbuffer(GL_RENDERBUFFER, depth_renderbuffer);
+		glRenderbufferStorage(GL_RENDERBUFFER,
+							  GL_DEPTH_COMPONENT,
+							  width,
+							  height);
+		renderer_check_glerror("framebuffer:create:depth_renderbuffer");
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER,
+								  GL_DEPTH_ATTACHMENT,
+								  GL_RENDERBUFFER,
+								  depth_renderbuffer);
+		renderer_check_glerror("framebuffer:create:depth_renderbuffer");
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
 	}
-		
+
+	if(has_color)
+	{
+		glGenRenderbuffers(1, &color_renderbuffer);
+		glBindRenderbuffer(GL_RENDERBUFFER, color_renderbuffer);
+		glRenderbufferStorage(GL_RENDERBUFFER,
+							  GL_RGBA8,
+							  width,
+							  height);
+		renderer_check_glerror("framebuffer:create:color_renderbuffer");
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER,
+								  GL_COLOR_ATTACHMENT0,
+								  GL_RENDERBUFFER,
+								  color_renderbuffer);
+		renderer_check_glerror("framebuffer:create:color_renderbuffer");
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	}
+
+	glDrawBuffer(has_color ? GL_COLOR_ATTACHMENT0 : GL_NONE);
 	renderer_check_glerror("framebuffer:create");
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if(status != GL_FRAMEBUFFER_COMPLETE)
@@ -85,16 +103,16 @@ int framebuffer_create(int width, int height, int has_depth, int has_color)
 			array_pop(empty_indices);
 		}
 		
-		framebuffer->handle       = fbo;
-		framebuffer->renderbuffer = renderbuffer;
-		framebuffer->texture      = -1;
-		framebuffer->width        = width;
-		framebuffer->height       = height;
+		framebuffer->handle             = fbo;
+		framebuffer->depth_renderbuffer = depth_renderbuffer;
+		framebuffer->color_renderbuffer = color_renderbuffer;
+		framebuffer->width              = width;
+		framebuffer->height             = height;
+		framebuffer->resizeable         = resizeable;
+		for(int i = 0; i < FA_NUM_ATTACHMENTS; i++) framebuffer->texture_attachments[i] = -1;
 		log_message("Framebuffer created successfully");
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glBindRenderbuffer(GL_RENDERBUFFER, 0);
-	
 	return index;
 }
 
@@ -102,15 +120,32 @@ void framebuffer_bind(int index)
 {
 	assert(index < array_len(fbo_list) && index > -1);
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo_list[index].handle);
+	/* if(fbo_list[index].color_renderbuffer != 0) */
+	/* 	glDrawBuffer(GL_COLOR_ATTACHMENT0); */
+	/* else */
+	/* 	glDrawBuffer(GL_NONE); */
 }
 
 void framebuffer_remove(int index)
 {
 	assert(index < array_len(fbo_list) && index > -1);
 	struct FBO* fbo = &fbo_list[index];
-	if(fbo->texture != -1) texture_remove(fbo->texture);
-	glDeleteRenderbuffers(1, &fbo->renderbuffer);
+	for(int i = 0; i < FA_NUM_ATTACHMENTS; i++)
+	{
+		if(fbo->texture_attachments[i] != -1)
+		{
+			texture_remove(fbo->texture_attachments[i]);
+			fbo->texture_attachments[i] = -1;
+		}
+	}
+	if(fbo->depth_renderbuffer != 0) glDeleteRenderbuffers(1, &fbo->depth_renderbuffer);
+	if(fbo->color_renderbuffer != 0) glDeleteRenderbuffers(1, &fbo->color_renderbuffer);
 	glDeleteFramebuffers(1, &fbo->handle);
+	fbo->color_renderbuffer =  0;
+	fbo->depth_renderbuffer =  0;
+	fbo->handle             =  0;
+	fbo->width              = -1;
+	fbo->height             = -1;
 }
 
 void framebuffer_unbind(void)
@@ -124,44 +159,142 @@ int framebuffer_get_width(int index)
 	return fbo_list[index].width;
 }
 
-int  framebuffer_get_height(int index)
+int framebuffer_get_height(int index)
 {
 	assert(index < array_len(fbo_list) && index > -1);
 	return fbo_list[index].height;
 }
 
-void framebuffer_set_texture(int index, int texture, int attachment)
+void framebuffer_set_texture(int index, int texture, enum Framebuffer_Attachment attachment)
 {
 	assert(index < array_len(fbo_list) && index > -1);
+	GLenum gl_attachment = -1;
+	switch(attachment)
+	{
+	case     FA_COLOR_ATTACHMENT0: gl_attachment = GL_COLOR_ATTACHMENT0; break;
+	case     FA_DEPTH_ATTACHMENT:  gl_attachment = GL_DEPTH_ATTACHMENT;  break;
+	default: log_error("framebuffer:set_texture", "Invalid attachment type"); return;
+	};
+
+	struct FBO* fbo     = &fbo_list[index];
+	int current_texture = fbo->texture_attachments[attachment];
+	if(current_texture != -1)
+	{
+		texture_remove(current_texture);
+		fbo->texture_attachments[attachment] = -1;
+	}
+
+	if(texture == -1) return;
+	
 	GLint current_fbo = 0;
 	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
 	renderer_check_glerror("framebuffer:set_texture:glGet");
 	framebuffer_bind(index);
 	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER,
-						   attachment,
+						   gl_attachment,
 						   GL_TEXTURE_2D,
 						   texture_get_texture_handle(texture),
 						   0);
-	/* if(!renderer_check_glerror("framebuffer:set_texture:glFramebuffertexture")) */
-	/* { */
-	/* 	int current_fbo_tex = fbo_list[index].texture; */
-	/* 	if(current_fbo_tex > -1) */
-	/* 		texture_remove(current_fbo_tex); */
-
-	/* 	fbo_list[index].texture = texture; */
-	/* 	texture_inc_refcount(texture); */
-	/* } */
+	renderer_check_glerror("framebuffer:set_texture:glFramebuffertexture2d");
+	fbo->texture_attachments[attachment] = texture;
+	if(attachment == FA_COLOR_ATTACHMENT0) glDrawBuffer(GL_COLOR_ATTACHMENT0);
 	glBindFramebuffer(GL_FRAMEBUFFER, current_fbo);
 }
 
-int framebuffer_get_texture(int index)
+int framebuffer_get_texture(int index, enum Framebuffer_Attachment attachment)
 {
-	assert(index < array_len(fbo_list) && index > -1);
-	return fbo_list[index].texture;
+	assert(index < array_len(fbo_list) &&
+		   index > -1 &&
+		   attachment < FA_NUM_ATTACHMENTS &&
+		   (int)attachment > -1);
+	return fbo_list[index].texture_attachments[attachment];
 }
 
 uint framebuffer_get_gl_handle(int index)
 {
 	assert(index < array_len(fbo_list) && index > -1);
 	return fbo_list[index].handle;
+}
+
+void framebuffer_resize(int index, int width, int height)
+{
+	assert(index > -1 && index < array_len(fbo_list));
+	width  -= (width % 2);
+	height -= (height % 2);
+	GLint current_fbo = 0;
+	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
+	renderer_check_glerror("framebuffer:resize:glGet");
+	struct FBO* fbo = &fbo_list[index];
+	if(!fbo->resizeable) return;
+	framebuffer_bind(index);
+	if(fbo->depth_renderbuffer != 0)
+	{
+		glBindRenderbuffer(GL_RENDERBUFFER, fbo->depth_renderbuffer);
+		glRenderbufferStorage(GL_RENDERBUFFER,
+							  GL_DEPTH_COMPONENT,
+							  width,
+							  height);
+		renderer_check_glerror("framebuffer:resize:depth_renderbuffer");
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER,
+								  GL_DEPTH_ATTACHMENT,
+								  GL_RENDERBUFFER,
+								  fbo->depth_renderbuffer);
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	}
+
+	if(fbo->color_renderbuffer != 0)
+	{
+		glBindRenderbuffer(GL_RENDERBUFFER, fbo->color_renderbuffer);
+		glRenderbufferStorage(GL_RENDERBUFFER,
+							  GL_RGBA8,
+							  width,
+							  height);
+		renderer_check_glerror("framebuffer:resize:color_renderbuffer");
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER,
+								  GL_COLOR_ATTACHMENT0,
+								  GL_RENDERBUFFER,
+								  fbo->color_renderbuffer);
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	}
+
+	for(int i = 0; i < FA_NUM_ATTACHMENTS; i++)
+	{
+		if(fbo->texture_attachments[i] != -1)
+		{
+			int texture = fbo->texture_attachments[i];
+			GLenum gl_attachment = -1;
+			switch(i)
+			{
+			case     FA_COLOR_ATTACHMENT0: gl_attachment = GL_COLOR_ATTACHMENT0; break;
+			case     FA_DEPTH_ATTACHMENT:  gl_attachment = GL_DEPTH_ATTACHMENT;  break;
+			default: log_error("framebuffer:resize", "Invalid attachment type"); continue;
+			};
+			
+			texture_resize(texture, width, height, NULL);
+			glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER,
+								   gl_attachment,
+								   GL_TEXTURE_2D,
+								   texture_get_texture_handle(texture),
+								   0);
+		}
+	}
+	
+	glBindFramebuffer(GL_FRAMEBUFFER, current_fbo);
+	fbo->width  = width;
+	fbo->height = height;
+	log_message("Resized framebuffer to %dx%d", width, height);
+}
+
+void framebuffer_resize_all(int width, int height)
+{
+	for(int i = 0; i < array_len(fbo_list); i++)
+	{
+		if(fbo_list[i].resizeable) framebuffer_resize(i, width, height);
+	}
+}
+
+void framebuffer_resizeable_set(int index, int resizeable)
+{
+	assert(index > -1 && index < array_len(fbo_list));
+	fbo_list[index].resizeable = resizeable ? 1 : 0;
 }

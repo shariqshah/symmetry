@@ -223,9 +223,8 @@ void platform_poll_events(int* out_quit)
 		}
 		case SDL_WINDOWEVENT:
 		{
-			if(event.window.type == SDL_WINDOWEVENT_RESIZED)
+			if(event.window.event == SDL_WINDOWEVENT_RESIZED)
 			{
-				/* Notify renderer here */
 				platform_state->on_windowresize_func(event.window.data1, event.window.data2);
 			}
 		}

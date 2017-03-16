@@ -102,7 +102,7 @@ void scene_setup(void)
 	render_width = 1024;
 	render_height = 768;
 	struct Camera* camera = entity_component_add(player, C_CAMERA, render_width, render_height);
-	camera_attach_fbo(camera, render_width, render_height, 1, 1);
+	camera_attach_fbo(camera, render_width, render_height, 1, 0, 1);
 	vec4_fill(&camera->clear_color, 0.3f, 0.6f, 0.9f, 1.0f);
 	camera_set_primary_viewer(camera);
 	
@@ -151,16 +151,16 @@ void scene_setup(void)
 	transform_set_position(ground_tran, &pos);
 	transform_scale(ground_tran, &scale_ground);
 
-	/* struct Entity* screen = scene_add_new("Screen", NULL); */
-	/* struct Model* screen_model = entity_component_add(screen, C_MODEL, NULL, NULL); */
-	/* screen_model->geometry_index = geom_find("Quad"); */
-	/* struct Entity* screen_camera = scene_add_as_child("Screen_Camera", NULL, screen->node); */
-	/* struct Transform* screen_camera_tran = entity_component_get(screen_camera, C_TRANSFORM); */
-	/* transform_rotate(screen_camera_tran, &UNIT_Y, 180.f, TS_WORLD); */
-	/* struct Camera* cam = entity_component_add(screen_camera, C_CAMERA, 50, 50); */
-	/* camera_attach_fbo(cam, 50, 50, 1, 1); */
-	/* model_set_material_param(screen_model, "diffuse_color", &color); */
-	/* model_set_material_param(screen_model, "diffuse_texture", &cam->render_tex); */
+	struct Entity* screen = scene_add_new("Screen", NULL);
+	struct Model* screen_model = entity_component_add(screen, C_MODEL, NULL, NULL);
+	screen_model->geometry_index = geom_find("Quad");
+	struct Entity* screen_camera = scene_add_as_child("Screen_Camera", NULL, screen->node);
+	struct Transform* screen_camera_tran = entity_component_get(screen_camera, C_TRANSFORM);
+	transform_rotate(screen_camera_tran, &UNIT_Y, 180.f, TS_WORLD);
+	struct Camera* cam = entity_component_add(screen_camera, C_CAMERA, 50, 50);
+	camera_attach_fbo(cam, 128, 128, 1, 1, 0);
+	model_set_material_param(screen_model, "diffuse_color", &color);
+	model_set_material_param(screen_model, "diffuse_texture", &cam->render_tex);
 
 	const int MAX_LIGHTS = 3;
 	for(int i = 0; i < MAX_LIGHTS; i++)
@@ -274,7 +274,7 @@ void debug(float dt)
 	if(offset.x != 0 || offset.y != 0 || offset.z != 0)
 	{
 		transform_translate(transform, &offset, TS_LOCAL);
- 		log_message("Position : %s", tostr_vec3(&transform->position));
+ 		//log_message("Position : %s", tostr_vec3(&transform->position));
 	}
 
 	if(input_key_state_get(KEY_SPACE, KS_PRESSED))

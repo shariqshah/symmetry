@@ -27,8 +27,9 @@ int  texture_create(const char* name,
 					int         width,
 					int         height,
 					int         format,
-					int         int_fmt,
+					int         internal_format,
 					int         type,
 					const void* data);
+void texture_resize(int index, int width, int height, const void* data);
 
 #endif

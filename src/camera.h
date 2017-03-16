@@ -31,7 +31,12 @@ int  camera_create(int node, int width, int height);
 void camera_update_view_proj(struct Camera* camera);
 void camera_update_view(struct Camera* camera);
 void camera_update_proj(struct Camera* camera);
-void camera_attach_fbo(struct Camera* camera, int width, int height, int has_depth, int has_color);
+void camera_attach_fbo(struct Camera* camera,
+					   int            width,
+					   int            height,
+					   int            has_depth,
+					   int            has_color,
+					   int            resizeable);
 void camera_set_primary_viewer(struct Camera* camera);
 
 #endif

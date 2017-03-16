@@ -13,10 +13,13 @@
 
 struct Texture
 {
-	char* name;
-	uint  handle;
-	int   ref_count;
-	int   texture_unit;
+	char*  name;
+	uint   handle;
+	int    ref_count;
+	int    texture_unit;
+	GLenum format;
+	GLint  internal_format;
+	GLenum type;
 };
 
 #pragma pack(push, 1)
@@ -42,10 +45,10 @@ static int* empty_indices;
 
 #define MAX_PIXEL_BYTES 5
 
-static int  load_img(FILE* file, GLubyte** image_data, int* width, int* height, int* fmt, int* internal_fmt);
+static int  load_img(FILE* file, GLubyte** image_data, int* width, int* height, int* fmt, int* internal_format);
 static void debug_write_tga(struct Tga_Header* header, GLubyte* image_data);
 static void copy_tga_pixel(GLubyte* source, GLubyte* dest, size_t bytes_per_pixel);
-static int  create_gl_texture(uint* out_handle, int width, int height, int format, int int_fmt, int type, const void* data);
+static int  create_gl_texture(uint* out_handle, int width, int height, int format, int internal_format, int type, const void* data);
 
 void texture_init(void)
 {
@@ -64,22 +67,21 @@ int texture_create_from_file(const char* filename, int texture_unit)
 		return index;
 	}
 	/* If texture not already loaded then try to load it */
-	char* full_path = str_new("textures/");
-	full_path = str_concat(full_path, filename);
+	char* full_path = str_new("textures/%s", filename);
 	FILE* file = io_file_open(full_path, "rb");
 	int img_load_success = -1;
 	
 	if(file)
 	{
 		/* Load texture here */
-		int width, height, int_fmt, fmt;
+		int width, height, internal_format, fmt;
 		GLubyte* img_data = NULL;
-		width = height = int_fmt = fmt = -1;
-		img_load_success = load_img(file, &img_data, &width, &height, &fmt, &int_fmt);
+		width = height = internal_format = fmt = -1;
+		img_load_success = load_img(file, &img_data, &width, &height, &fmt, &internal_format);
 
 		if(img_load_success)
 		{
-			index = texture_create(filename, texture_unit, width, height, fmt, int_fmt, GL_UNSIGNED_BYTE, img_data);
+			index = texture_create(filename, texture_unit, width, height, fmt, internal_format, GL_UNSIGNED_BYTE, img_data);
 			if(index > -1)
 			{
 				texture_set_param(index, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -115,9 +117,12 @@ void texture_remove(int index)
 			{	
 				glDeleteTextures(1, &texture->handle);
 				if(texture->name) free(texture->name);
-				texture->name = NULL;
-				texture->ref_count = -1;
-				texture->texture_unit = -1;
+				texture->name            = NULL;
+				texture->ref_count       = -1;
+				texture->texture_unit    = -1;
+				texture->format          = -1;
+				texture->internal_format = -1;
+				texture->type            = -1;
 				array_push(empty_indices, index, int);			
 			}
 		}
@@ -162,7 +167,7 @@ void texture_unbind(int index)
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-int load_img(FILE* file, GLubyte** image_data, int* width, int* height, int* fmt, int* internal_fmt)
+int load_img(FILE* file, GLubyte** image_data, int* width, int* height, int* fmt, int* internal_format)
 {	
 	int success = 0;
 	struct Tga_Header header; 
@@ -278,13 +283,12 @@ int load_img(FILE* file, GLubyte** image_data, int* width, int* height, int* fmt
 					 }
 				 }
 			 }
-			 
 			 //debug_write_tga(&header, *image_data);
-			 *height       = header.height;
-			 *width        = header.width;
-			 *fmt          = bytes_per_pixel == 3 ? GL_RGB : GL_RGBA;
-			 *internal_fmt = *fmt;
-			 success       = 1;
+			 *height          = header.height;
+			 *width           = header.width;
+			 *fmt             = bytes_per_pixel == 3 ? GL_RGB : GL_RGBA;
+			 *internal_format = *fmt;
+			 success          = 1;
 		 }
 	 }
 	 else
@@ -372,14 +376,14 @@ int texture_create(const char* name,
 				   int   	   width,
 				   int   	   height,
 				   int   	   format,
-				   int   	   int_fmt,
+				   int   	   internal_format,
 				   int   	   type,
 				   const void* data)
 {
 	assert(name && texture_unit > -1 && texture_unit <= TU_SHADOWMAP4);
-	int index = -1;
+	int index   = -1;
 	uint handle = 0;
-	int success = create_gl_texture(&handle, width, height, format, int_fmt, type, data);
+	int success = create_gl_texture(&handle, width, height, format, internal_format, type, data);
 	if(success)
 	{
 		struct Texture* new_tex = NULL;
@@ -392,17 +396,26 @@ int texture_create(const char* name,
 		else
 		{
 			new_tex = array_grow(texture_list, struct Texture);
-			index = array_len(texture_list) - 1;
+			index   = array_len(texture_list) - 1;
 		}
-		new_tex->name = str_new(name);
-		new_tex->handle = handle;
-		new_tex->ref_count = 1;
-		new_tex->texture_unit = texture_unit;
+		new_tex->name            = str_new(name);
+		new_tex->handle          = handle;
+		new_tex->ref_count       = 1;
+		new_tex->texture_unit    = texture_unit;
+		new_tex->format          = format;
+		new_tex->internal_format = internal_format;
+		new_tex->type            = type;
 	}
 	return index;
 }
 
-int create_gl_texture(uint* out_handle, int width, int height, int format, int int_fmt, int type, const void* data)
+int create_gl_texture(uint*       out_handle,
+					  int         width,
+					  int         height,
+					  int         format,
+					  int         internal_format,
+					  int         type,
+					  const void* data)
 {
 	int success = 1;
 	glGenTextures(1, out_handle);
@@ -413,10 +426,35 @@ int create_gl_texture(uint* out_handle, int width, int height, int format, int i
 	else
 	{
 		glBindTexture(GL_TEXTURE_2D, *out_handle);
-		glTexImage2D(GL_TEXTURE_2D, 0, int_fmt, width, height, 0, format, type, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, format, type, data);
 		if(renderer_check_glerror("texture:create_gl_texture:glTexImage2d"))
 			success = 0;
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 	return success;
+}
+
+void texture_resize(int index, int width, int height, const void* data)
+{
+	assert(index > -1 && index < array_len(texture_list));
+	width  -= (width % 2);
+	height -= (height % 2);
+	struct Texture* texture = &texture_list[index];
+
+	GLint curr_texture = 0;
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &curr_texture);
+	renderer_check_glerror("texture:set_param:glGetIntegerv");
+	glBindTexture(GL_TEXTURE_2D, texture->handle);
+	renderer_check_glerror("texture:set_param:glBindTexture");
+	glTexImage2D(GL_TEXTURE_2D,
+				 0,
+				 texture->internal_format,
+				 width,
+				 height,
+				 0,
+				 texture->format,
+				 texture->type,
+				 data);
+	if(curr_texture != 0)
+		glBindTexture(GL_TEXTURE_2D, curr_texture);
 }

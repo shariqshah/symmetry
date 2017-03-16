@@ -359,18 +359,18 @@ void debug_gui(float dt)
 		nk_menubar_begin(ctx);
 		nk_layout_row_begin(ctx, NK_STATIC, 25, 2);
 		nk_layout_row_push(ctx, 45);
-		if (nk_menu_begin_label(ctx, "FILE", NK_TEXT_LEFT, nk_vec2(120, 200))) {
+		if (nk_menu_begin_label(ctx, "File", NK_TEXT_LEFT, nk_vec2(120, 200))) {
 			nk_layout_row_dynamic(ctx, 30, 1);
-			nk_menu_item_label(ctx, "OPEN", NK_TEXT_LEFT);
-			nk_menu_item_label(ctx, "CLOSE", NK_TEXT_LEFT);
+			nk_menu_item_label(ctx, "Open", NK_TEXT_LEFT);
+			nk_menu_item_label(ctx, "Close", NK_TEXT_LEFT);
 			nk_menu_end(ctx);
 		}
 		nk_layout_row_push(ctx, 45);
-		if (nk_menu_begin_label(ctx, "EDIT", NK_TEXT_LEFT, nk_vec2(120, 200))) {
+		if (nk_menu_begin_label(ctx, "Edit", NK_TEXT_LEFT, nk_vec2(120, 200))) {
 			nk_layout_row_dynamic(ctx, 30, 1);
-			nk_menu_item_label(ctx, "COPY", NK_TEXT_LEFT);
-			nk_menu_item_label(ctx, "CUT", NK_TEXT_LEFT);
-			nk_menu_item_label(ctx, "PASTE", NK_TEXT_LEFT);
+			nk_menu_item_label(ctx, "Copy", NK_TEXT_LEFT);
+			nk_menu_item_label(ctx, "Cut", NK_TEXT_LEFT);
+			nk_menu_item_label(ctx, "Paste", NK_TEXT_LEFT);
 			nk_menu_end(ctx);
 		}
 		nk_layout_row_end(ctx);

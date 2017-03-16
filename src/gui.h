@@ -19,6 +19,7 @@ struct Gui_State
     struct nk_draw_null_texture null;
 	struct nk_context           context;
 	struct nk_font_atlas        atlas;
+	struct nk_font*             current_font;
     GLuint                      vbo, vao, ebo;
 	int   					    shader;
     GLuint					    vert_shdr;
@@ -28,8 +29,16 @@ struct Gui_State
     GLint 					    attrib_col;
     GLint 					    uniform_tex;
     GLint 					    uniform_proj;
-    int					        font_tex;           
-    //GLuint					        font_tex;           
+    int					        font_tex;
+};
+
+enum Gui_Theme
+{
+	GT_DEFAULT = 0,
+	GT_WHITE,
+	GT_RED,
+	GT_BLUE,
+	GT_DARK
 };
 
 int  			  gui_init(void);
@@ -41,6 +50,8 @@ void 			  gui_handle_mousebutton_event(int button, int state, int x, int y);
 void 			  gui_handle_keyboard_event(int key, int state, int mod_ctrl, int mod_shift);
 void              gui_input_begin(void);
 void              gui_input_end(void);
+void              gui_font_set(const char* font_name, float font_height);
+void              gui_theme_set(enum Gui_Theme theme);
 struct Gui_State* gui_state_get(void);
 	
 #endif

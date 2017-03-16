@@ -9,11 +9,10 @@
 #include "input.h"
 #include "renderer.h"
 #include "file_io.h"
+#include "string_utils.h"
 
 #include <string.h>
 #include <stdlib.h>
-
-#define FONT_SIZE 14.f
 
 struct Gui_Vertex
 {
@@ -25,8 +24,7 @@ static void gui_handle_clipbard_copy(nk_handle usr, const char *text, int len);
 static void gui_handle_clipbard_paste(nk_handle usr, struct nk_text_edit *edit);
 static void gui_handle_textinput_event(const char* text);
 static void gui_upload_atlas(const void *image, int width, int height);
-static void gui_font_stash_begin(struct nk_font_atlas **atlas);
-static void gui_font_stash_end(void);
+static void gui_font_set_default(void);
 
 static struct Gui_State* gui_state = NULL;
 
@@ -39,24 +37,22 @@ int gui_init(void)
 		log_error("gui:init", "Malloc failed, out of memory");
 		return success;
 	}
-
-	nk_init_default(&gui_state->context, 0);
-    gui_state->context.clip.copy = gui_handle_clipbard_copy;
-    gui_state->context.clip.paste = gui_handle_clipbard_paste;
-    gui_state->context.clip.userdata = nk_handle_ptr(0);
 	
-    nk_buffer_init_default(&gui_state->cmds);
-	gui_state->shader = shader_create("gui.vert", "gui.frag");
-
+	nk_init_default(&gui_state->context, 0);
+	nk_buffer_init_default(&gui_state->cmds);
+    gui_state->context.clip.copy     = gui_handle_clipbard_copy;
+    gui_state->context.clip.paste    = gui_handle_clipbard_paste;
+    gui_state->context.clip.userdata = nk_handle_ptr(0);
+	gui_state->current_font          = NULL;
+	gui_state->shader                = shader_create("gui.vert", "gui.frag");
 	if(gui_state->shader < 0)
 	{
 		log_error("gui:init", "Failed to create shader for gui");
 		free(gui_state);
 		return success;
 	}
-
-    gui_state->uniform_tex  = shader_get_uniform_location(gui_state->shader, "sampler");
-    gui_state->uniform_proj = shader_get_uniform_location(gui_state->shader, "proj_mat");
+    gui_state->uniform_tex  = shader_get_uniform_location(gui_state->shader,   "sampler");
+    gui_state->uniform_proj = shader_get_uniform_location(gui_state->shader,   "proj_mat");
     gui_state->attrib_pos   = shader_get_attribute_location(gui_state->shader, "vPosition");
     gui_state->attrib_uv    = shader_get_attribute_location(gui_state->shader, "vUV");
     gui_state->attrib_col   = shader_get_attribute_location(gui_state->shader, "vColor");
@@ -91,30 +87,8 @@ int gui_init(void)
     glBindVertexArray(0);
 
 	platform_textinput_callback_set(&gui_handle_textinput_event);
-
-	renderer_check_glerror("Before font upload check");
-	/* Load default font and roboto */
-	struct nk_font_atlas* atlas = NULL;
-	gui_font_stash_begin(&atlas);
-	gui_font_stash_end();
-	long size = 0;
-	char* font_data = io_file_read("fonts/roboto.ttf", "rb", &size);
-	if(!font_data)
-	{
-		log_error("gui:init", "Could not load font %s", "roboto.ttf");
-	}
-	else
-	{
-		gui_font_stash_begin(&atlas);
-		struct nk_font *roboto = nk_font_atlas_add_from_memory(atlas, font_data, size, FONT_SIZE, NULL);
-		gui_font_stash_end();
-		if(roboto)
-			nk_style_set_font(&gui_state->context, &roboto->handle);
-		else
-			log_error("gui:init", "Could not add font %s", "roboto.ttf");
-		free(font_data);
-	}
-	//nk_font_atlas_cleanup(atlas);
+	gui_font_set("roboto.ttf", 18);
+	gui_theme_set(GT_DARK);
 	success = 1;
 	return success;
 }
@@ -269,23 +243,6 @@ void gui_handle_clipbard_copy(nk_handle usr, const char *text, int len)
     free(str);
 }
 
-void gui_font_stash_begin(struct nk_font_atlas **atlas)
-{
-    nk_font_atlas_init_default(&gui_state->atlas);
-    nk_font_atlas_begin(&gui_state->atlas);
-    *atlas = &gui_state->atlas;
-}
-
-void gui_font_stash_end(void)
-{
-    const void *image; int w, h;
-    image = nk_font_atlas_bake(&gui_state->atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
-    gui_upload_atlas(image, w, h);
-    nk_font_atlas_end(&gui_state->atlas, nk_handle_id((int)gui_state->font_tex), &gui_state->null);
-    if (gui_state->atlas.default_font)
-        nk_style_set_font(&gui_state->context, &gui_state->atlas.default_font->handle);
-}
-
 void gui_handle_keyboard_event(int key, int state, int mod_ctrl, int mod_shift)
 {
     struct nk_context *ctx = &gui_state->context;
@@ -402,4 +359,210 @@ void gui_input_begin(void)
 void gui_input_end(void)
 {
 	nk_input_end(&gui_state->context);
+}
+
+void gui_font_set(const char* font_name, float font_size)
+{
+	assert(font_name && font_size > 1.f);
+	struct nk_font_atlas* atlas = &gui_state->atlas;
+	long size = 0;
+	char* font_file_name = str_new("fonts/%s", font_name);
+	char* font_data = io_file_read(font_file_name, "rb", &size);
+	free(font_file_name);
+	if(!font_data)
+	{
+		log_error("gui:init", "Could not load font %s, reverting to default", font_name);
+		if(!gui_state->current_font) gui_font_set_default();
+	}
+	else
+	{
+		if(gui_state->current_font)
+		{
+			nk_font_atlas_clear(&gui_state->atlas);
+			texture_remove(gui_state->font_tex);
+			gui_state->font_tex = -1;
+			gui_state->current_font = NULL;
+		}
+		const void *image = NULL;
+		int w = 0, h = 0;
+		nk_font_atlas_init_default(atlas);
+		nk_font_atlas_begin(atlas);		
+		struct nk_font *new_font = nk_font_atlas_add_from_memory(atlas, font_data, size, font_size, NULL);
+		image = nk_font_atlas_bake(atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
+		gui_upload_atlas(image, w, h);
+		nk_font_atlas_end(atlas, nk_handle_id((int)gui_state->font_tex), &gui_state->null);
+		if(new_font)
+		{
+			nk_style_set_font(&gui_state->context, &new_font->handle);
+			log_message("Set %s as current font", font_name);
+			gui_state->current_font = new_font;
+		}
+		else
+		{
+			log_error("gui:init", "Could not add font %s, reverting to default", font_name);
+			gui_font_set_default();
+		}
+		free(font_data);
+	}
+}
+
+void gui_font_set_default(void)
+{
+	if(gui_state->current_font)
+	{
+		nk_font_atlas_clear(&gui_state->atlas);
+		texture_remove(gui_state->font_tex);
+	}
+	struct nk_font_atlas* atlas = &gui_state->atlas;
+	nk_font_atlas_init_default(atlas);
+	const void *image = NULL;
+	int w = 0, h = 0;
+	image = nk_font_atlas_bake(atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
+	gui_upload_atlas(image, w, h);
+	nk_style_set_font(&gui_state->context, &atlas->default_font->handle);
+	gui_state->current_font = atlas->default_font;
+	nk_font_atlas_end(atlas, nk_handle_id((int)gui_state->font_tex), &gui_state->null);
+	log_message("Set default font");
+}
+
+void gui_theme_set(enum Gui_Theme theme)
+{
+    struct nk_color table[NK_COLOR_COUNT];
+    if(theme == GT_WHITE)
+	{
+        table[NK_COLOR_TEXT] = nk_rgba(70, 70, 70, 255);
+        table[NK_COLOR_WINDOW] = nk_rgba(175, 175, 175, 255);
+        table[NK_COLOR_HEADER] = nk_rgba(175, 175, 175, 255);
+        table[NK_COLOR_BORDER] = nk_rgba(0, 0, 0, 255);
+        table[NK_COLOR_BUTTON] = nk_rgba(185, 185, 185, 255);
+        table[NK_COLOR_BUTTON_HOVER] = nk_rgba(170, 170, 170, 255);
+        table[NK_COLOR_BUTTON_ACTIVE] = nk_rgba(160, 160, 160, 255);
+        table[NK_COLOR_TOGGLE] = nk_rgba(150, 150, 150, 255);
+        table[NK_COLOR_TOGGLE_HOVER] = nk_rgba(120, 120, 120, 255);
+        table[NK_COLOR_TOGGLE_CURSOR] = nk_rgba(175, 175, 175, 255);
+        table[NK_COLOR_SELECT] = nk_rgba(190, 190, 190, 255);
+        table[NK_COLOR_SELECT_ACTIVE] = nk_rgba(175, 175, 175, 255);
+        table[NK_COLOR_SLIDER] = nk_rgba(190, 190, 190, 255);
+        table[NK_COLOR_SLIDER_CURSOR] = nk_rgba(80, 80, 80, 255);
+        table[NK_COLOR_SLIDER_CURSOR_HOVER] = nk_rgba(70, 70, 70, 255);
+        table[NK_COLOR_SLIDER_CURSOR_ACTIVE] = nk_rgba(60, 60, 60, 255);
+        table[NK_COLOR_PROPERTY] = nk_rgba(175, 175, 175, 255);
+        table[NK_COLOR_EDIT] = nk_rgba(150, 150, 150, 255);
+        table[NK_COLOR_EDIT_CURSOR] = nk_rgba(0, 0, 0, 255);
+        table[NK_COLOR_COMBO] = nk_rgba(175, 175, 175, 255);
+        table[NK_COLOR_CHART] = nk_rgba(160, 160, 160, 255);
+        table[NK_COLOR_CHART_COLOR] = nk_rgba(45, 45, 45, 255);
+        table[NK_COLOR_CHART_COLOR_HIGHLIGHT] = nk_rgba( 255, 0, 0, 255);
+        table[NK_COLOR_SCROLLBAR] = nk_rgba(180, 180, 180, 255);
+        table[NK_COLOR_SCROLLBAR_CURSOR] = nk_rgba(140, 140, 140, 255);
+        table[NK_COLOR_SCROLLBAR_CURSOR_HOVER] = nk_rgba(150, 150, 150, 255);
+        table[NK_COLOR_SCROLLBAR_CURSOR_ACTIVE] = nk_rgba(160, 160, 160, 255);
+        table[NK_COLOR_TAB_HEADER] = nk_rgba(180, 180, 180, 255);
+        nk_style_from_table(&gui_state->context, table);
+    }
+	else if(theme == GT_RED)
+	{
+        table[NK_COLOR_TEXT] = nk_rgba(190, 190, 190, 255);
+        table[NK_COLOR_WINDOW] = nk_rgba(30, 33, 40, 215);
+        table[NK_COLOR_HEADER] = nk_rgba(181, 45, 69, 220);
+        table[NK_COLOR_BORDER] = nk_rgba(51, 55, 67, 255);
+        table[NK_COLOR_BUTTON] = nk_rgba(181, 45, 69, 255);
+        table[NK_COLOR_BUTTON_HOVER] = nk_rgba(190, 50, 70, 255);
+        table[NK_COLOR_BUTTON_ACTIVE] = nk_rgba(195, 55, 75, 255);
+        table[NK_COLOR_TOGGLE] = nk_rgba(51, 55, 67, 255);
+        table[NK_COLOR_TOGGLE_HOVER] = nk_rgba(45, 60, 60, 255);
+        table[NK_COLOR_TOGGLE_CURSOR] = nk_rgba(181, 45, 69, 255);
+        table[NK_COLOR_SELECT] = nk_rgba(51, 55, 67, 255);
+        table[NK_COLOR_SELECT_ACTIVE] = nk_rgba(181, 45, 69, 255);
+        table[NK_COLOR_SLIDER] = nk_rgba(51, 55, 67, 255);
+        table[NK_COLOR_SLIDER_CURSOR] = nk_rgba(181, 45, 69, 255);
+        table[NK_COLOR_SLIDER_CURSOR_HOVER] = nk_rgba(186, 50, 74, 255);
+        table[NK_COLOR_SLIDER_CURSOR_ACTIVE] = nk_rgba(191, 55, 79, 255);
+        table[NK_COLOR_PROPERTY] = nk_rgba(51, 55, 67, 255);
+        table[NK_COLOR_EDIT] = nk_rgba(51, 55, 67, 225);
+        table[NK_COLOR_EDIT_CURSOR] = nk_rgba(190, 190, 190, 255);
+        table[NK_COLOR_COMBO] = nk_rgba(51, 55, 67, 255);
+        table[NK_COLOR_CHART] = nk_rgba(51, 55, 67, 255);
+        table[NK_COLOR_CHART_COLOR] = nk_rgba(170, 40, 60, 255);
+        table[NK_COLOR_CHART_COLOR_HIGHLIGHT] = nk_rgba( 255, 0, 0, 255);
+        table[NK_COLOR_SCROLLBAR] = nk_rgba(30, 33, 40, 255);
+        table[NK_COLOR_SCROLLBAR_CURSOR] = nk_rgba(64, 84, 95, 255);
+        table[NK_COLOR_SCROLLBAR_CURSOR_HOVER] = nk_rgba(70, 90, 100, 255);
+        table[NK_COLOR_SCROLLBAR_CURSOR_ACTIVE] = nk_rgba(75, 95, 105, 255);
+        table[NK_COLOR_TAB_HEADER] = nk_rgba(181, 45, 69, 220);
+        nk_style_from_table(&gui_state->context, table);
+    }
+	else if(theme == GT_BLUE)
+	{
+        table[NK_COLOR_TEXT] = nk_rgba(20, 20, 20, 255);
+        table[NK_COLOR_WINDOW] = nk_rgba(202, 212, 214, 215);
+        table[NK_COLOR_HEADER] = nk_rgba(137, 182, 224, 220);
+        table[NK_COLOR_BORDER] = nk_rgba(140, 159, 173, 255);
+        table[NK_COLOR_BUTTON] = nk_rgba(137, 182, 224, 255);
+        table[NK_COLOR_BUTTON_HOVER] = nk_rgba(142, 187, 229, 255);
+        table[NK_COLOR_BUTTON_ACTIVE] = nk_rgba(147, 192, 234, 255);
+        table[NK_COLOR_TOGGLE] = nk_rgba(177, 210, 210, 255);
+        table[NK_COLOR_TOGGLE_HOVER] = nk_rgba(182, 215, 215, 255);
+        table[NK_COLOR_TOGGLE_CURSOR] = nk_rgba(137, 182, 224, 255);
+        table[NK_COLOR_SELECT] = nk_rgba(177, 210, 210, 255);
+        table[NK_COLOR_SELECT_ACTIVE] = nk_rgba(137, 182, 224, 255);
+        table[NK_COLOR_SLIDER] = nk_rgba(177, 210, 210, 255);
+        table[NK_COLOR_SLIDER_CURSOR] = nk_rgba(137, 182, 224, 245);
+        table[NK_COLOR_SLIDER_CURSOR_HOVER] = nk_rgba(142, 188, 229, 255);
+        table[NK_COLOR_SLIDER_CURSOR_ACTIVE] = nk_rgba(147, 193, 234, 255);
+        table[NK_COLOR_PROPERTY] = nk_rgba(210, 210, 210, 255);
+        table[NK_COLOR_EDIT] = nk_rgba(210, 210, 210, 225);
+        table[NK_COLOR_EDIT_CURSOR] = nk_rgba(20, 20, 20, 255);
+        table[NK_COLOR_COMBO] = nk_rgba(210, 210, 210, 255);
+        table[NK_COLOR_CHART] = nk_rgba(210, 210, 210, 255);
+        table[NK_COLOR_CHART_COLOR] = nk_rgba(137, 182, 224, 255);
+        table[NK_COLOR_CHART_COLOR_HIGHLIGHT] = nk_rgba( 255, 0, 0, 255);
+        table[NK_COLOR_SCROLLBAR] = nk_rgba(190, 200, 200, 255);
+        table[NK_COLOR_SCROLLBAR_CURSOR] = nk_rgba(64, 84, 95, 255);
+        table[NK_COLOR_SCROLLBAR_CURSOR_HOVER] = nk_rgba(70, 90, 100, 255);
+        table[NK_COLOR_SCROLLBAR_CURSOR_ACTIVE] = nk_rgba(75, 95, 105, 255);
+        table[NK_COLOR_TAB_HEADER] = nk_rgba(156, 193, 220, 255);
+        nk_style_from_table(&gui_state->context, table);
+    }
+	else if(theme == GT_DARK)
+	{
+        table[NK_COLOR_TEXT] = nk_rgba(210, 210, 210, 255);
+        table[NK_COLOR_WINDOW] = nk_rgba(57, 67, 71, 215);
+        table[NK_COLOR_HEADER] = nk_rgba(51, 51, 56, 220);
+        table[NK_COLOR_BORDER] = nk_rgba(46, 46, 46, 255);
+        table[NK_COLOR_BUTTON] = nk_rgba(48, 83, 111, 255);
+        table[NK_COLOR_BUTTON_HOVER] = nk_rgba(58, 93, 121, 255);
+        table[NK_COLOR_BUTTON_ACTIVE] = nk_rgba(63, 98, 126, 255);
+        table[NK_COLOR_TOGGLE] = nk_rgba(50, 58, 61, 255);
+        table[NK_COLOR_TOGGLE_HOVER] = nk_rgba(45, 53, 56, 255);
+        table[NK_COLOR_TOGGLE_CURSOR] = nk_rgba(48, 83, 111, 255);
+        table[NK_COLOR_SELECT] = nk_rgba(57, 67, 61, 255);
+        table[NK_COLOR_SELECT_ACTIVE] = nk_rgba(48, 83, 111, 255);
+        table[NK_COLOR_SLIDER] = nk_rgba(50, 58, 61, 255);
+        table[NK_COLOR_SLIDER_CURSOR] = nk_rgba(48, 83, 111, 245);
+        table[NK_COLOR_SLIDER_CURSOR_HOVER] = nk_rgba(53, 88, 116, 255);
+        table[NK_COLOR_SLIDER_CURSOR_ACTIVE] = nk_rgba(58, 93, 121, 255);
+        table[NK_COLOR_PROPERTY] = nk_rgba(50, 58, 61, 255);
+        table[NK_COLOR_EDIT] = nk_rgba(50, 58, 61, 225);
+        table[NK_COLOR_EDIT_CURSOR] = nk_rgba(210, 210, 210, 255);
+        table[NK_COLOR_COMBO] = nk_rgba(50, 58, 61, 255);
+        table[NK_COLOR_CHART] = nk_rgba(50, 58, 61, 255);
+        table[NK_COLOR_CHART_COLOR] = nk_rgba(48, 83, 111, 255);
+        table[NK_COLOR_CHART_COLOR_HIGHLIGHT] = nk_rgba(255, 0, 0, 255);
+        table[NK_COLOR_SCROLLBAR] = nk_rgba(50, 58, 61, 255);
+        table[NK_COLOR_SCROLLBAR_CURSOR] = nk_rgba(48, 83, 111, 255);
+        table[NK_COLOR_SCROLLBAR_CURSOR_HOVER] = nk_rgba(53, 88, 116, 255);
+        table[NK_COLOR_SCROLLBAR_CURSOR_ACTIVE] = nk_rgba(58, 93, 121, 255);
+        table[NK_COLOR_TAB_HEADER] = nk_rgba(48, 83, 111, 255);
+        nk_style_from_table(&gui_state->context, table);
+    }
+	else if(theme == GT_DEFAULT)
+	{
+        nk_style_default(&gui_state->context);
+    }
+	else
+	{
+		log_error("gui:theme_set", "Unrecognized theme, reverting to default");
+		nk_style_default(&gui_state->context);
+	}
 }

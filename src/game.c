@@ -102,7 +102,7 @@ void scene_setup(void)
 	render_width = 1024;
 	render_height = 768;
 	struct Camera* camera = entity_component_add(player, C_CAMERA, render_width, render_height);
-	camera_attach_fbo(camera, render_width, render_height, 1, 0, 1);
+	camera_attach_fbo(camera, render_width, render_height, 1, 1, 1);
 	vec4_fill(&camera->clear_color, 0.3f, 0.6f, 0.9f, 1.0f);
 	camera_set_primary_viewer(camera);
 	

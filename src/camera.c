@@ -140,41 +140,47 @@ void camera_attach_fbo(struct Camera* camera,
 		log_error("camera:attach_fbo", "Camera already has fbo attached!");
 		return;
 	}
-	camera->fbo = framebuffer_create(width, height, has_depth, has_color, resizeable);
+	camera->fbo = framebuffer_create(width, height, has_depth, 0, resizeable);
 	if(camera->fbo > -1)
 	{
 		char tex_name[128];
-		snprintf(tex_name, 128, "cam_render_tex_%d", camera->node);
-		camera->render_tex = texture_create(tex_name,
-											TU_DIFFUSE,
-											width, height,
-											GL_RGBA,
-											GL_RGBA8,
-											GL_UNSIGNED_BYTE,
-											NULL);
-		texture_set_param(camera->render_tex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		texture_set_param(camera->render_tex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		texture_set_param(camera->render_tex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		texture_set_param(camera->render_tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		if(has_color)
+		{
+			snprintf(tex_name, 128, "cam_render_tex_%d", camera->node);
+			camera->render_tex = texture_create(tex_name,
+												TU_DIFFUSE,
+												width, height,
+												GL_RGBA,
+												GL_RGBA8,
+												GL_UNSIGNED_BYTE,
+												NULL);
+			texture_set_param(camera->render_tex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			texture_set_param(camera->render_tex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			texture_set_param(camera->render_tex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			texture_set_param(camera->render_tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			framebuffer_set_texture(camera->fbo, camera->render_tex, FA_COLOR_ATTACHMENT0);
+		}
 
 		memset(tex_name, '\0', 128);
-		snprintf(tex_name, 128, "cam_depth_tex_%d", camera->node);
-		camera->depth_tex = texture_create(tex_name,
-										   TU_SHADOWMAP1,
-										   width, height,
-										   GL_DEPTH_COMPONENT,
-										   GL_DEPTH_COMPONENT,
-										   GL_UNSIGNED_BYTE,
-										   NULL);
-		texture_set_param(camera->depth_tex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		texture_set_param(camera->depth_tex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		texture_set_param(camera->depth_tex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		texture_set_param(camera->depth_tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		texture_set_param(camera->depth_tex, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-		texture_set_param(camera->depth_tex, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 
-		framebuffer_set_texture(camera->fbo, camera->render_tex, FA_COLOR_ATTACHMENT0);
-		framebuffer_set_texture(camera->fbo, camera->depth_tex, FA_DEPTH_ATTACHMENT);
+		if(has_depth)
+		{
+			snprintf(tex_name, 128, "cam_depth_tex_%d", camera->node);
+			camera->depth_tex = texture_create(tex_name,
+											   TU_SHADOWMAP1,
+											   width, height,
+											   GL_DEPTH_COMPONENT,
+											   GL_DEPTH_COMPONENT,
+											   GL_UNSIGNED_BYTE,
+											   NULL);
+			texture_set_param(camera->depth_tex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			texture_set_param(camera->depth_tex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			texture_set_param(camera->depth_tex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			texture_set_param(camera->depth_tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			texture_set_param(camera->depth_tex, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+			texture_set_param(camera->depth_tex, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+			framebuffer_set_texture(camera->fbo, camera->depth_tex, FA_DEPTH_ATTACHMENT);
+		}
 	}
 	else
 	{

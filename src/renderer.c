@@ -16,11 +16,12 @@
 #include "game.h"
 #include "gui.h"
 
-static int def_fbo = -1;
-static int def_albedo_tex = -1;
-static int def_depth_tex = -1;
-static int quad_geo = -1;
+static int def_fbo            = -1;
+static int def_albedo_tex     = -1;
+static int def_depth_tex      = -1;
+static int quad_geo           = -1;
 static int composition_shader = -1;
+static int debug_shader       = -1;
 static struct Render_Settings settings;
 
 #define MAX_GUI_VERTEX_MEMORY  512 * 1024
@@ -108,8 +109,9 @@ void renderer_init(void)
 
 	def_fbo = framebuffer_create(width, height, 1, 0, 1);
 	framebuffer_set_texture(def_fbo, def_albedo_tex, FA_COLOR_ATTACHMENT0);
-	/* framebuffer_set_texture(def_fbo, def_depth_tex, GL_DEPTH_ATTACHMENT); */
+	framebuffer_set_texture(def_fbo, def_depth_tex, FA_DEPTH_ATTACHMENT);
 	composition_shader = shader_create("fbo.vert", "fbo.frag");
+	debug_shader       = shader_create("debug.vert", "debug.frag");
 }
 
 void renderer_draw(void)
@@ -135,7 +137,7 @@ void renderer_draw(void)
 			glEnable(GL_CULL_FACE );
 			glCullFace(GL_BACK);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			model_render_all(camera);
+			model_render_all(camera, GDM_TRIANGLES);
 		}
 		framebuffer_unbind();
 		glDisable(GL_DEPTH_TEST);
@@ -169,10 +171,34 @@ void renderer_draw(void)
 	struct Camera* active_camera = camera_get_primary();
 	int final_render_tex = active_camera->render_tex == -1 ? def_albedo_tex : active_camera->render_tex;
 	texture_bind(final_render_tex);
-	geom_render(quad_geo);
+	geom_render(quad_geo, GDM_TRIANGLES);
 	texture_unbind(final_render_tex);
 	shader_unbind();
 
+	/* Debug Pass */
+	shader_bind(debug_shader);
+	{
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+		static vec3 wireframe_color = {0, 1, 0};
+		static mat4 mvp;
+		shader_set_uniform_vec3(debug_shader, "wireframe_color", &wireframe_color);
+		struct Model* model_list = model_get_all();
+		for(int i = 0; i < array_len(model_list); i++)
+		{
+			struct Model*     model     = &model_list[i];
+			struct Entity*    entity    = entity_get(model->node);
+			struct Transform* transform = entity_component_get(entity, C_TRANSFORM);
+			int               geometry  = model->geometry_index;
+			mat4_identity(&mvp);
+			mat4_mul(&mvp, &active_camera->view_proj_mat, &transform->trans_mat);
+			shader_set_uniform_mat4(debug_shader, "mvp", &mvp);
+			geom_render(geometry, GDM_LINES);
+		}
+	}
+	shader_unbind();
+	
 	gui_render(NK_ANTI_ALIASING_ON, settings.max_gui_vertex_memory, settings.max_gui_element_memory);
 }
 
@@ -192,7 +218,6 @@ void on_framebuffer_size_change(int width, int height)
 	float aspect = (float)width / (float)height;
 	camera->aspect_ratio = aspect > 0.f ? aspect : 4.f / 3.f;
 	camera_update_proj(camera);
-	//framebuffer_resize(def_fbo, width, height);
 	framebuffer_resize_all(width, height);
 }
 

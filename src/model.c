@@ -1,7 +1,6 @@
 #include "model.h"
 #include "array.h"
 #include "log.h"
-#include "geometry.h"
 #include "camera.h"
 #include "entity.h"
 #include "shader.h"
@@ -107,7 +106,7 @@ void model_cleanup(void)
 	array_free(empty_indices);
 }
 
-void model_render_all(struct Camera* camera)
+void model_render_all(struct Camera* camera, enum Geometry_Draw_Mode draw_mode)
 {
 	static mat4 mvp;
 	struct Material* material_list = material_get_all_materials();
@@ -269,7 +268,7 @@ void model_render_all(struct Camera* camera)
 			
 			/* Render the geometry */
 			//geom_render_in_frustum(model->geometry_index, &camera->frustum[0], transform);
-			geom_render(model->geometry_index);
+			geom_render(model->geometry_index, draw_mode);
 
 			for(int k = 0; k < array_len(model->material_params); k++)
 			{
@@ -341,33 +340,26 @@ int model_get_material_param(struct Model* model, const char* name, void* value_
 	for(int i = 0; i < array_len(model->material_params); i++)
 	{
 		struct Material_Param* param = &model->material_params[i];
-		struct Uniform* uniform = &material->model_params[param->uniform_index];
+		struct Uniform* uniform      = &material->model_params[param->uniform_index];
 		if(strcmp(uniform->name, name) == 0)
 		{
 			switch(uniform->type)
 			{
-			case UT_INT:
-				*((int*)value_out) = *((int*)param->value);
-				break;
-			case UT_FLOAT:
-				*((float*)value_out) = *((float*)param->value);
-				break;
-			case UT_VEC2:
-				vec2_assign((vec2*)value_out, (vec2*)param->value);
-				break;
-			case UT_VEC3:
-				vec3_assign((vec3*)value_out, (vec3*)param->value);
-				break;
-			case UT_VEC4:
-				vec4_assign((vec4*)value_out, (vec4*)param->value);
-				break;
-			case UT_MAT4:
-				mat4_assign((mat4*)value_out, (mat4*)param->value);
-				break;
+			case UT_INT:   *((int*)value_out)   = *((int*)param->value);       break;
+			case UT_FLOAT: *((float*)value_out) = *((float*)param->value);     break;
+			case UT_VEC2:  vec2_assign((vec2*)value_out, (vec2*)param->value); break;
+			case UT_VEC3:  vec3_assign((vec3*)value_out, (vec3*)param->value); break;
+			case UT_VEC4:  vec4_assign((vec4*)value_out, (vec4*)param->value); break;
+			case UT_MAT4:  mat4_assign((mat4*)value_out, (mat4*)param->value); break;
 			}
 			break; /* break for */
 			success = 1;
 		}
 	}
 	return success;
+}
+
+struct Model* model_get_all(void)
+{
+	return model_list;
 }

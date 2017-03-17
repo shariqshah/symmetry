@@ -93,10 +93,9 @@ void scene_setup(void)
 	game_state->player_node = player->node;
 	vec3 viewer_pos = {10, 4, 100};
 	struct Transform* viewer_tran = entity_component_get(player, C_TRANSFORM);
-	struct Model* player_model = entity_component_add(player, C_MODEL, "sphere.pamesh", NULL);
-	vec4 color = {0.f, 1.f, 1.f, 1.f };
-	model_set_material_param(player_model, "diffuse_color", &color);
-	vec4_fill(&color, 1.f, 1.f, 1.f, 1.f);
+	/* struct Model* player_model = entity_component_add(player, C_MODEL, "sphere.pamesh", NULL); */
+	/* model_set_material_param(player_model, "diffuse_color", &color); */
+	/* vec4_fill(&color, 1.f, 1.f, 1.f, 1.f); */
 	transform_set_position(viewer_tran, &viewer_pos);
 	int render_width, render_height;
 	render_width = 1024;
@@ -105,7 +104,8 @@ void scene_setup(void)
 	camera_attach_fbo(camera, render_width, render_height, 1, 1, 1);
 	vec4_fill(&camera->clear_color, 0.3f, 0.6f, 0.9f, 1.0f);
 	camera_set_primary_viewer(camera);
-	
+
+	vec4 color = {0.f, 1.f, 1.f, 1.f };
 	struct Entity* new_ent = scene_add_new("Model_Entity", NULL);
 	struct Transform* tran = entity_component_get(new_ent, C_TRANSFORM);
 	vec3 position = {0, 0, -5};

@@ -101,6 +101,7 @@ x Font atlas proper cleanup
 - Decoupled event handling of gui and input if possible
 - Custom rendering for gui
 ** TODO Allow passsing base path as commandline argument?
+** TODO Sprite sheet animations
 ** DONE Resizable framebuffers and textures
 - State "DONE"       from "TODO"       [2017-03-16 Thu 22:50]
 ** DONE Support for multiple color attachments in framebuffers?

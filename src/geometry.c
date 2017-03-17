@@ -16,20 +16,20 @@
 
 struct Geometry 
 {
-	char* filename;
-	int   draw_indexed;
-	uint  vao;
-	uint  vertex_vbo;
-	uint  uv_vbo;
-	uint  normal_vbo;
-	uint  color_vbo;
-	uint  index_vbo;
-	int   ref_count;
-	vec3* vertices;
-	vec3* vertex_colors;
-	vec3* normals;
-	vec2* uvs;
-	uint* indices;
+	char* 		  		   filename;
+	int   		  		   draw_indexed;
+	uint  		  		   vao;
+	uint  		  		   vertex_vbo;
+	uint  		  		   uv_vbo;
+	uint  		  		   normal_vbo;
+	uint  		  		   color_vbo;
+	uint  		  		   index_vbo;
+	int   		  		   ref_count;
+	vec3* 		  		   vertices;
+	vec3* 		  		   vertex_colors;
+	vec3* 		  		   normals;
+	vec2* 		  		   uvs;
+	uint* 		  		   indices;
 	struct Bounding_Box    bounding_box;
 	struct Bounding_Sphere bounding_sphere;
 };
@@ -37,17 +37,22 @@ struct Geometry
 
 /* Data */
 static struct Geometry* geometry_list;
-static int* empty_indices;
+static int*             empty_indices;
+static GLenum*          draw_modes;
 
-static int  load_from_file(struct Geometry* geometry, const char* filename);
-static void create_vao(struct Geometry* geometry);
+static int              load_from_file(struct Geometry* geometry, const char* filename);
+static void             create_vao(struct Geometry* geometry);
 static struct Geometry* generate_new_index(int* out_new_index);
-static void generate_bounding_volume(int geomtry_index);
+static void             generate_bounding_volume(int geomtry_index);
 
 void geom_init(void)
 {
 	geometry_list = array_new(struct Geometry);
 	empty_indices = array_new(int);
+	draw_modes    = array_new_cap(GLenum, GDM_NUM_DRAWMODES);
+	draw_modes[GDM_TRIANGLES]     = GL_TRIANGLES;
+	draw_modes[GDM_LINES]         = GL_LINES;
+	draw_modes[GDM_POINTS]        = GL_POINTS;
 }
 
 int geom_find(const char* filename)
@@ -138,7 +143,12 @@ int geom_create_from_file(const char* name)
 	return index;
 }
 
-int geom_create(const char* name, vec3* vertices, vec2* uvs, vec3* normals, uint* indices, vec3* vertex_colors)
+int geom_create(const char* name,
+				vec3*       vertices,
+				vec2*       uvs,
+				vec3*       normals,
+				uint*       indices,
+				vec3*       vertex_colors)
 {
 	assert(name && vertices && uvs && normals && indices);
 	int index = -1;
@@ -180,12 +190,12 @@ void geom_remove(int index)
 			geometry->ref_count--;
 			if(geometry->ref_count < 0)
 			{
-				if(geometry->indices) array_free(geometry->indices);
-				if(geometry->vertices) array_free(geometry->vertices);
-				if(geometry->uvs) array_free(geometry->uvs);
-				if(geometry->normals) array_free(geometry->normals);
+				if(geometry->indices)       array_free(geometry->indices);
+				if(geometry->vertices)      array_free(geometry->vertices);
+				if(geometry->uvs)           array_free(geometry->uvs);
+				if(geometry->normals)       array_free(geometry->normals);
 				if(geometry->vertex_colors) array_free(geometry->vertex_colors);
-				if(geometry->filename) free(geometry->filename);
+				if(geometry->filename)      free(geometry->filename);
 				geometry->indices       = NULL;
 				geometry->vertices      = NULL;
 				geometry->uvs           = NULL;
@@ -205,14 +215,14 @@ void geom_cleanup(void)
 	
 	array_free(geometry_list);
 	array_free(empty_indices);
+	array_free(draw_modes);
 }
 
 static int load_from_file(struct Geometry* geometry, const char* filename)
 {
 	assert(filename);
 	int success = 1;
-	char* full_path = str_new("models/");
-	full_path = str_concat(full_path, filename);
+	char* full_path = str_new("models/%s", filename);
 			
 	FILE* file = io_file_open(full_path, "rb");
 	free(full_path);
@@ -334,19 +344,23 @@ static void create_vao(struct Geometry* geometry)
 	glBindVertexArray(0);
 }
 
-void geom_render(int index)
+void geom_render(int index, enum Geometry_Draw_Mode draw_mode)
 {
+	assert((int)draw_mode > -1 && draw_mode < GDM_NUM_DRAWMODES);
 	struct Geometry* geo = &geometry_list[index];
 	glBindVertexArray(geo->vao);
 	if(geo->draw_indexed)
-		glDrawElements(GL_TRIANGLES, array_len(geo->indices), GL_UNSIGNED_INT, (void*)0);
+		glDrawElements(draw_modes[draw_mode], array_len(geo->indices), GL_UNSIGNED_INT, (void*)0);
 	else
-		glDrawArrays(GL_TRIANGLES, 0, array_len(geo->vertices));
+		glDrawArrays(draw_modes[draw_mode], 0, array_len(geo->vertices));
 	glBindVertexArray(0);
 			
 }
 
-void geom_render_in_frustum(int index, vec4* frustum, struct Transform* transform)
+void geom_render_in_frustum(int                     index,
+							vec4*                   frustum,
+							struct Transform*       transform,
+							enum Geometry_Draw_Mode draw_mode)
 {
 	struct Geometry* geometry = &geometry_list[index];
 	int intersection = bv_intersect_frustum_sphere(frustum, &geometry->bounding_sphere, transform);
@@ -354,6 +368,6 @@ void geom_render_in_frustum(int index, vec4* frustum, struct Transform* transfor
 	{
 		intersection = bv_intersect_frustum_box(frustum, &geometry->bounding_box, transform);
 		if(intersection == IT_INTERSECT || intersection == IT_INSIDE)
-			geom_render(index);
+			geom_render(index, draw_mode);
 	}
 }

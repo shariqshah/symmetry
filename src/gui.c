@@ -87,8 +87,9 @@ int gui_init(void)
     glBindVertexArray(0);
 
 	platform_textinput_callback_set(&gui_handle_textinput_event);
-	gui_font_set("roboto.ttf", 18);
-	gui_theme_set(GT_DEFAULT);
+	gui_font_set("Ubuntu-R.ttf", 14);
+	/* gui_font_set("FiraSans-Regular.ttf", 14); */
+	gui_theme_set(GT_RED);
 	success = 1;
 	return success;
 }

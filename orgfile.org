@@ -93,7 +93,8 @@ All the code in this repository is under GPLv3, see LICENSE for more information
 - State "CANCELED"   from "TODO"       [2017-02-26 Sun 01:49] \\
   Sticking with forward rendering for now and focusing on tools etc.
 ** TODO Fix mouse bugs on windows
-** TODO Fix mousewheel bugs and gui not responding to mousewheel input
+** DONE Fix mousewheel bugs and gui not responding to mousewheel input
+- State "DONE"       from "TODO"       [2017-03-19 Sun 01:31]
 ** TODO Ability to mark meshes for debug rendering with possibility of different color for each?
 ** TODO Setup cross compilation with mingw or stick to msvc?
 ** DONE Toggleable debug drawing for meshes

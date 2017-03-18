@@ -46,38 +46,39 @@ _________________
 .. 2.30 DONE Fix problems with texture units
 .. 2.31 CANCELED Draw light volumes
 .. 2.32 TODO Fix problems with frustrum culling
-.. 2.33 TODO 
-.. 2.34 TODO 
-.. 2.35 TODO 2d drawing routines
-.. 2.36 DONE Gui
-.. 2.37 CANCELED Image based lighting?
-.. 2.38 CANCELED Deferred rendering?
-.. 2.39 TODO Fix mouse bugs on windows
-.. 2.40 DONE Toggleable debug drawing for meshes
-.. 2.41 TODO Interleaved vbos for meshes and changes to blender exporter accordingly
-.. 2.42 TODO Enumerate and save all the uniform and attribute positions in shader when it is added and cache them in shader object?
-.. 2.43 TODO Physics/Collision detection in 2d
-.. 2.44 TODO Complete gui integration
-.. 2.45 TODO Allow passsing base path as commandline argument?
-.. 2.46 TODO Sprite sheet animations
-.. 2.47 DONE Resizable framebuffers and textures
-.. 2.48 DONE Support for multiple color attachments in framebuffers?
-.. 2.49 TODO Multisampled textures and framebuffers
-.. 2.50 DONE Better way to store and manage textures attached to framebuffers
-.. 2.51 TODO Validate necessary assets at game launch
-.. 2.52 TODO Variant type
-.. 2.53 TODO Log and debug/stats output in gui
-.. 2.54 TODO Editor
-.. 2.55 TODO Event Subsystem
-.. 2.56 TODO Keybindings for gui?
-.. 2.57 DONE Compile and test on windows
-.. 2.58 TODO Array based string type comptible with cstring(char*)
-.. 2.59 DONE Fix mouse bugs
-.. 2.60 DONE Fix
-.. 2.61 TODO issues with opengl context showing 2.1 only
-.. 2.62 TODO Improve this readme
-.. 2.63 TODO ???
-.. 2.64 TODO Profit!
+.. 2.33 TODO 2d drawing routines
+.. 2.34 DONE Gui
+.. 2.35 CANCELED Image based lighting?
+.. 2.36 CANCELED Deferred rendering?
+.. 2.37 TODO Fix mouse bugs on windows
+.. 2.38 DONE Fix mousewheel bugs and gui not responding to mousewheel input
+.. 2.39 TODO Ability to mark meshes for debug rendering with possibility of different color for each?
+.. 2.40 TODO Setup cross compilation with mingw or stick to msvc?
+.. 2.41 DONE Toggleable debug drawing for meshes
+.. 2.42 TODO Interleaved vbos for meshes and changes to blender exporter accordingly
+.. 2.43 TODO Enumerate and save all the uniform and attribute positions in shader when it is added and cache them in shader object?
+.. 2.44 TODO Physics/Collision detection in 2d
+.. 2.45 TODO Complete gui integration
+.. 2.46 TODO Allow passsing base path as commandline argument?
+.. 2.47 TODO Sprite sheet animations
+.. 2.48 DONE Resizable framebuffers and textures
+.. 2.49 DONE Support for multiple color attachments in framebuffers?
+.. 2.50 TODO Multisampled textures and framebuffers
+.. 2.51 DONE Better way to store and manage textures attached to framebuffers
+.. 2.52 TODO Validate necessary assets at game launch
+.. 2.53 TODO Variant type
+.. 2.54 TODO Log and debug/stats output in gui
+.. 2.55 TODO Editor
+.. 2.56 TODO Event Subsystem
+.. 2.57 TODO Keybindings for gui?
+.. 2.58 DONE Compile and test on windows
+.. 2.59 TODO Array based string type comptible with cstring(char*)
+.. 2.60 DONE Fix mouse bugs
+.. 2.61 DONE Fix
+.. 2.62 TODO issues with opengl context showing 2.1 only
+.. 2.63 TODO Improve this readme
+.. 2.64 TODO ???
+.. 2.65 TODO Profit!
 
 
 1 Project Symmetry
@@ -294,66 +295,72 @@ _________________
 2.32 TODO Fix problems with frustrum culling
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
-2.33 TODO 
-~~~~~~~~~~
-
-
-2.34 TODO 
-~~~~~~~~~~
-
   - Recalculate bounding boxes for rotated meshes?
 
 
-2.35 TODO 2d drawing routines
+2.33 TODO 2d drawing routines
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   - Sprite batching
 
 
-2.36 DONE Gui
+2.34 DONE Gui
 ~~~~~~~~~~~~~
 
   - State "DONE" from "TODO" [2017-03-15 Wed 23:41]
 
 
-2.37 CANCELED Image based lighting?
+2.35 CANCELED Image based lighting?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   - State "CANCELED" from "TODO" [2017-03-14 Tue 00:31]
       Not a requirement for current project
 
 
-2.38 CANCELED Deferred rendering?
+2.36 CANCELED Deferred rendering?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   - State "CANCELED" from "TODO" [2017-02-26 Sun 01:49]
       Sticking with forward rendering for now and focusing on tools etc.
 
 
-2.39 TODO Fix mouse bugs on windows
+2.37 TODO Fix mouse bugs on windows
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.40 DONE Toggleable debug drawing for meshes
+2.38 DONE Fix mousewheel bugs and gui not responding to mousewheel input
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  - State "DONE" from "TODO" [2017-03-19 Sun 01:31]
+
+
+2.39 TODO Ability to mark meshes for debug rendering with possibility of different color for each?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+2.40 TODO Setup cross compilation with mingw or stick to msvc?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+2.41 DONE Toggleable debug drawing for meshes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   - State "DONE" from "TODO" [2017-03-18 Sat 16:18]
 
 
-2.41 TODO Interleaved vbos for meshes and changes to blender exporter accordingly
+2.42 TODO Interleaved vbos for meshes and changes to blender exporter accordingly
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.42 TODO Enumerate and save all the uniform and attribute positions in shader when it is added and cache them in shader object?
+2.43 TODO Enumerate and save all the uniform and attribute positions in shader when it is added and cache them in shader object?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.43 TODO Physics/Collision detection in 2d
+2.44 TODO Physics/Collision detection in 2d
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.44 TODO Complete gui integration
+2.45 TODO Complete gui integration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   x Font selection x Font atlas proper cleanup
@@ -361,93 +368,93 @@ _________________
   - Custom rendering for gui
 
 
-2.45 TODO Allow passsing base path as commandline argument?
+2.46 TODO Allow passsing base path as commandline argument?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.46 TODO Sprite sheet animations
+2.47 TODO Sprite sheet animations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.47 DONE Resizable framebuffers and textures
+2.48 DONE Resizable framebuffers and textures
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   - State "DONE" from "TODO" [2017-03-16 Thu 22:50]
 
 
-2.48 DONE Support for multiple color attachments in framebuffers?
+2.49 DONE Support for multiple color attachments in framebuffers?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   - State "DONE" from "TODO" [2017-03-16 Thu 22:51]
 
 
-2.49 TODO Multisampled textures and framebuffers
+2.50 TODO Multisampled textures and framebuffers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.50 DONE Better way to store and manage textures attached to framebuffers
+2.51 DONE Better way to store and manage textures attached to framebuffers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   - State "DONE" from "TODO" [2017-03-16 Thu 22:51]
 
 
-2.51 TODO Validate necessary assets at game launch
+2.52 TODO Validate necessary assets at game launch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.52 TODO Variant type
+2.53 TODO Variant type
 ~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.53 TODO Log and debug/stats output in gui
+2.54 TODO Log and debug/stats output in gui
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.54 TODO Editor
+2.55 TODO Editor
 ~~~~~~~~~~~~~~~~
 
 
-2.55 TODO Event Subsystem
+2.56 TODO Event Subsystem
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.56 TODO Keybindings for gui?
+2.57 TODO Keybindings for gui?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.57 DONE Compile and test on windows
+2.58 DONE Compile and test on windows
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   - State "DONE" from "TODO" [2017-03-14 Tue 00:32]
 
 
-2.58 TODO Array based string type comptible with cstring(char*)
+2.59 TODO Array based string type comptible with cstring(char*)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.59 DONE Fix mouse bugs
+2.60 DONE Fix mouse bugs
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
   - State "DONE" from "TODO" [2017-03-01 Wed 00:45]
 
 
-2.60 DONE Fix
+2.61 DONE Fix
 ~~~~~~~~~~~~~
 
 
-2.61 TODO issues with opengl context showing 2.1 only
+2.62 TODO issues with opengl context showing 2.1 only
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   - State "DONE" from "TODO" [2017-02-26 Sun 15:39]
 
 
-2.62 TODO Improve this readme
+2.63 TODO Improve this readme
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-2.63 TODO ???
+2.64 TODO ???
 ~~~~~~~~~~~~~
 
 
-2.64 TODO Profit!
+2.65 TODO Profit!
 ~~~~~~~~~~~~~~~~~

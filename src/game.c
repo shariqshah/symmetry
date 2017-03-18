@@ -389,7 +389,7 @@ void debug_gui(float dt)
     if (scale_left) window_flags |= NK_WINDOW_SCALE_LEFT;
     if (minimizable) window_flags |= NK_WINDOW_MINIMIZABLE;
 
-    if (nk_begin(ctx, "Overview", nk_rect(10, 10, 400, 600), window_flags))
+    if (nk_begin(ctx, "Overview", nk_rect(70, 70, 400, 600), window_flags))
     {
         if (show_menu)
         {

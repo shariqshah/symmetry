@@ -84,6 +84,7 @@ float vec3_dot(vec3* v1, vec3* v2);
 /* vec4 */
 int vec4_equals(vec4* v1, vec4* v2);
 void vec4_fill(vec4* res, float x, float y, float z, float w);
+void vec4_fill_vec3(vec4* res, const vec3* v, float w);
 void vec4_transform_norm(vec4* res, const vec4* val, const mat4* mat);
 void vec4_scale(vec4* res, const vec4* val, float s);
 void vec4_mul_mat4(vec4* res, vec4* val, mat4* mat);

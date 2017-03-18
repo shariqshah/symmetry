@@ -46,7 +46,7 @@ void renderer_init(void)
 	settings.max_gui_element_memory = MAX_GUI_ELEMENT_MEMORY;
 	vec3_fill(&settings.fog.color, 60.f/255.f, 60.f/255.f, 75.f/255.f);
 	vec3_fill(&settings.ambient_light, 0.1f, 0.1f, 0.12f);
-	vec3_fill(&settings.debug_draw_color, 0.f, 1.f, 0.f);
+	vec4_fill(&settings.debug_draw_color, 0.f, 1.f, 0.f, 1.f);
 
 	gui_init();
 	

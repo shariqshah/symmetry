@@ -27,6 +27,6 @@ int  		  model_get_material_param(struct Model* model, const char* name, void* v
 void          model_render_all_debug(struct Camera*          camera,
 									 int                     debug_shader,
 									 enum Geometry_Draw_Mode draw_mode,
-									 const vec3*             debug_color);
+									 const vec4*             debug_color);
 
 #endif

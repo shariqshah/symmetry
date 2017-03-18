@@ -29,7 +29,7 @@ struct Render_Settings
 	int        				max_gui_vertex_memory;
 	int        				max_gui_element_memory;
 	int       				debug_draw_enabled;
-	vec3       				debug_draw_color;
+	vec4       				debug_draw_color;
 	enum Geometry_Draw_Mode debug_draw_mode;
 };
 

@@ -197,6 +197,14 @@ void vec4_fill(vec4* res, float x, float y, float z, float w)
 	res->w = w;
 }
 
+void vec4_fill_vec3(vec4* res, const vec3* v, float w)
+{
+	res->x = v->x;
+	res->y = v->y;
+	res->z = v->z;
+	res->w = w;
+}
+
 void vec4_add(vec4* res, vec4* v1, vec4* v4)
 {
 	res->x = v1->x + v4->x;

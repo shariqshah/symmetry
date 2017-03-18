@@ -7,7 +7,6 @@
 #include "texture.h"
 #include "framebuffer.h"
 #include "array.h"
-#include "geometry.h"
 #include "shader.h"
 #include "num_types.h"
 #include "light.h"
@@ -37,14 +36,17 @@ void renderer_init(void)
 	glCullFace(GL_BACK);
 	platform_windowresize_callback_set(on_framebuffer_size_change);
 	
-	settings.fog.mode = FM_EXPONENTIAL;
-	settings.fog.density = 0.01f;
-	settings.fog.start_dist = 50.f;
-	settings.fog.max_dist = 150.f;
-	vec3_fill(&settings.fog.color, 60.f/255.f, 60.f/255.f, 75.f/255.f);
-	vec3_fill(&settings.ambient_light, 0.1f, 0.1f, 0.12f);
+	settings.fog.mode               = FM_EXPONENTIAL;
+	settings.fog.density            = 0.01f;
+	settings.fog.start_dist         = 50.f;
+	settings.fog.max_dist           = 150.f;
+	settings.debug_draw_enabled     = 0;
+	settings.debug_draw_mode        = GDM_LINES;
 	settings.max_gui_vertex_memory  = MAX_GUI_VERTEX_MEMORY;
 	settings.max_gui_element_memory = MAX_GUI_ELEMENT_MEMORY;
+	vec3_fill(&settings.fog.color, 60.f/255.f, 60.f/255.f, 75.f/255.f);
+	vec3_fill(&settings.ambient_light, 0.1f, 0.1f, 0.12f);
+	vec3_fill(&settings.debug_draw_color, 0.f, 1.f, 0.f);
 
 	gui_init();
 	
@@ -176,28 +178,29 @@ void renderer_draw(void)
 	shader_unbind();
 
 	/* Debug Pass */
-	shader_bind(debug_shader);
-	{
-		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
-		static vec3 wireframe_color = {0, 1, 0};
-		static mat4 mvp;
-		shader_set_uniform_vec3(debug_shader, "wireframe_color", &wireframe_color);
-		struct Model* model_list = model_get_all();
-		for(int i = 0; i < array_len(model_list); i++)
-		{
-			struct Model*     model     = &model_list[i];
-			struct Entity*    entity    = entity_get(model->node);
-			struct Transform* transform = entity_component_get(entity, C_TRANSFORM);
-			int               geometry  = model->geometry_index;
-			mat4_identity(&mvp);
-			mat4_mul(&mvp, &active_camera->view_proj_mat, &transform->trans_mat);
-			shader_set_uniform_mat4(debug_shader, "mvp", &mvp);
-			geom_render(geometry, GDM_LINES);
-		}
-	}
-	shader_unbind();
+	/* shader_bind(debug_shader); */
+	/* { */
+	/* 	glEnable(GL_DEPTH_TEST); */
+	/* 	glEnable(GL_CULL_FACE); */
+	/* 	glCullFace(GL_BACK); */
+	/* 	static vec3 wireframe_color = {0, 1, 0}; */
+	/* 	static mat4 mvp; */
+	/* 	shader_set_uniform_vec3(debug_shader, "wireframe_color", &wireframe_color); */
+	/* 	struct Model* model_list = model_get_all(); */
+	/* 	for(int i = 0; i < array_len(model_list); i++) */
+	/* 	{ */
+	/* 		struct Model*     model     = &model_list[i]; */
+	/* 		struct Entity*    entity    = entity_get(model->node); */
+	/* 		struct Transform* transform = entity_component_get(entity, C_TRANSFORM); */
+	/* 		int               geometry  = model->geometry_index; */
+	/* 		mat4_identity(&mvp); */
+	/* 		mat4_mul(&mvp, &active_camera->view_proj_mat, &transform->trans_mat); */
+	/* 		shader_set_uniform_mat4(debug_shader, "mvp", &mvp); */
+	/* 		geom_render(geometry, GDM_LINES); */
+	/* 	} */
+	/* } */
+	/* shader_unbind(); */
+	if(settings.debug_draw_enabled) model_render_all_debug(active_camera, debug_shader, settings.debug_draw_mode, &settings.debug_draw_color);
 	
 	gui_render(NK_ANTI_ALIASING_ON, settings.max_gui_vertex_memory, settings.max_gui_element_memory);
 }
@@ -221,7 +224,7 @@ void on_framebuffer_size_change(int width, int height)
 	framebuffer_resize_all(width, height);
 }
 
-void renderer_set_clearcolor(float red, float green, float blue, float alpha)
+void renderer_clearcolor_set(float red, float green, float blue, float alpha)
 {
 	glClearColor(red, green, blue, alpha);
 }
@@ -252,4 +255,9 @@ int renderer_check_glerror(const char* context)
 struct Render_Settings* renderer_get_settings(void)
 {
 	return &settings;
+}
+
+void renderer_debug_draw_enabled(int enabled)
+{
+	settings.debug_draw_enabled = enabled;
 }

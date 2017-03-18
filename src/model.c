@@ -363,3 +363,28 @@ struct Model* model_get_all(void)
 {
 	return model_list;
 }
+
+void model_render_all_debug(struct Camera*          camera,
+							int                     debug_shader,
+							enum Geometry_Draw_Mode draw_mode,
+							const vec3*             debug_color)
+{
+	assert(debug_shader > -1);
+	shader_bind(debug_shader);
+	{
+		static mat4 mvp;
+		shader_set_uniform_vec3(debug_shader, "debug_color", debug_color);
+		for(int i = 0; i < array_len(model_list); i++)
+		{
+			struct Model*     model     = &model_list[i];
+			struct Entity*    entity    = entity_get(model->node);
+			struct Transform* transform = entity_component_get(entity, C_TRANSFORM);
+			int               geometry  = model->geometry_index;
+			mat4_identity(&mvp);
+			mat4_mul(&mvp, &camera->view_proj_mat, &transform->trans_mat);
+			shader_set_uniform_mat4(debug_shader, "mvp", &mvp);
+			geom_render(geometry, draw_mode);
+		}
+	}
+	shader_unbind();
+}

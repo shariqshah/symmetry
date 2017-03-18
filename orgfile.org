@@ -81,10 +81,11 @@ All the code in this repository is under GPLv3, see LICENSE for more information
 - State "CANCELED"   from "TODO"       [2017-02-26 Sun 15:39] \\
   Deferred rendering on hold for now.
 ** TODO Fix problems with frustrum culling
+** TODO 
+** TODO 
 - Recalculate bounding boxes for rotated meshes?
 ** TODO 2d drawing routines
 - Sprite batching
-- Debug drawing
 ** DONE Gui
 - State "DONE"       from "TODO"       [2017-03-15 Wed 23:41]
 ** CANCELED Image based lighting?
@@ -94,6 +95,10 @@ All the code in this repository is under GPLv3, see LICENSE for more information
 - State "CANCELED"   from "TODO"       [2017-02-26 Sun 01:49] \\
   Sticking with forward rendering for now and focusing on tools etc.
 ** TODO Fix mouse bugs on windows
+** DONE Toggleable debug drawing for meshes
+- State "DONE"       from "TODO"       [2017-03-18 Sat 16:18]
+** TODO Interleaved vbos for meshes and changes to blender exporter accordingly
+** TODO Enumerate and save all the uniform and attribute positions in shader when it is added and cache them in shader object?
 ** TODO Physics/Collision detection in 2d
 ** TODO Complete gui integration
 x Font selection

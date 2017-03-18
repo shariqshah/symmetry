@@ -33,12 +33,12 @@ struct Render_Settings
 	enum Geometry_Draw_Mode debug_draw_mode;
 };
 
-struct Render_Settings* renderer_get_settings(void);
-void renderer_init(void);
-void renderer_draw(void);
-void renderer_cleanup(void);
-void renderer_clearcolor_set(float r, float g, float b, float a);
-void renderer_debug_draw_enabled(int enabled);
-int  renderer_check_glerror(const char* context);
+struct Render_Settings* renderer_settings_get(void);
+void 					renderer_init(void);
+void 					renderer_draw(void);
+void 					renderer_cleanup(void);
+void 					renderer_clearcolor_set(float r, float g, float b, float a);
+void 					renderer_debug_draw_enabled(int enabled);
+int  					renderer_check_glerror(const char* context);
 
 #endif

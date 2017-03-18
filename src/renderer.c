@@ -252,7 +252,7 @@ int renderer_check_glerror(const char* context)
 	return error;
 }
 
-struct Render_Settings* renderer_get_settings(void)
+struct Render_Settings* renderer_settings_get(void)
 {
 	return &settings;
 }

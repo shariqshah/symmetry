@@ -136,7 +136,7 @@ void model_render_all(struct Camera* camera, enum Geometry_Draw_Mode draw_mode)
 			}
 
 			/* Set pipeline uniforms */
-			struct Render_Settings* render_settings = renderer_get_settings();
+			struct Render_Settings* render_settings = renderer_settings_get();
 			for(int k = 0; k < array_len(material->pipeline_params); k++)
 			{
 				/* TODO: change this into something better */

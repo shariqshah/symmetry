@@ -88,7 +88,7 @@ int gui_init(void)
 
 	platform_textinput_callback_set(&gui_handle_textinput_event);
 	gui_font_set("roboto.ttf", 18);
-	gui_theme_set(GT_DARK);
+	gui_theme_set(GT_DEFAULT);
 	success = 1;
 	return success;
 }

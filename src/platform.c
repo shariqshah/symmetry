@@ -210,16 +210,19 @@ void platform_poll_events(int* out_quit)
 			int x    = event.motion.x;
 			int y    = event.motion.y;
 			platform_state->on_mousemotion_func(x, y, xrel, yrel);
+			break;
 		}
 		case SDL_MOUSEWHEEL:
 		{
 			int x = event.wheel.x;
 			int y = event.wheel.y;
 			platform_state->on_mousewheel_func(x, y);
+			break;
 		}
 		case SDL_TEXTINPUT:
 		{
 			platform_state->on_textinput_func(event.text.text);
+			break;
 		}
 		case SDL_WINDOWEVENT:
 		{

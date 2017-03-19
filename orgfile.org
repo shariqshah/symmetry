@@ -128,7 +128,8 @@ x Font atlas proper cleanup
 ** DONE Fix mouse bugs
 - State "DONE"       from "TODO"       [2017-03-01 Wed 00:45]
 ** DONE Fix
-** TODO issues with opengl context showing 2.1 only
+** DONE issues with opengl context showing 2.1 only
+- State "DONE"       from "TODO"       [2017-03-19 Sun 14:03]
 - State "DONE"       from "TODO"       [2017-02-26 Sun 15:39]
 ** TODO Improve this readme
 ** TODO ???

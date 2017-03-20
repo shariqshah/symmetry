@@ -177,29 +177,6 @@ void renderer_draw(void)
 	texture_unbind(final_render_tex);
 	shader_unbind();
 
-	/* Debug Pass */
-	/* shader_bind(debug_shader); */
-	/* { */
-	/* 	glEnable(GL_DEPTH_TEST); */
-	/* 	glEnable(GL_CULL_FACE); */
-	/* 	glCullFace(GL_BACK); */
-	/* 	static vec3 wireframe_color = {0, 1, 0}; */
-	/* 	static mat4 mvp; */
-	/* 	shader_set_uniform_vec3(debug_shader, "wireframe_color", &wireframe_color); */
-	/* 	struct Model* model_list = model_get_all(); */
-	/* 	for(int i = 0; i < array_len(model_list); i++) */
-	/* 	{ */
-	/* 		struct Model*     model     = &model_list[i]; */
-	/* 		struct Entity*    entity    = entity_get(model->node); */
-	/* 		struct Transform* transform = entity_component_get(entity, C_TRANSFORM); */
-	/* 		int               geometry  = model->geometry_index; */
-	/* 		mat4_identity(&mvp); */
-	/* 		mat4_mul(&mvp, &active_camera->view_proj_mat, &transform->trans_mat); */
-	/* 		shader_set_uniform_mat4(debug_shader, "mvp", &mvp); */
-	/* 		geom_render(geometry, GDM_LINES); */
-	/* 	} */
-	/* } */
-	/* shader_unbind(); */
 	if(settings.debug_draw_enabled) model_render_all_debug(active_camera, debug_shader, settings.debug_draw_mode, &settings.debug_draw_color);
 	
 	gui_render(NK_ANTI_ALIASING_ON, settings.max_gui_vertex_memory, settings.max_gui_element_memory);
@@ -216,11 +193,7 @@ void renderer_cleanup(void)
 
 void on_framebuffer_size_change(int width, int height)
 {
-	glViewport(0, 0, width, height);
-	struct Camera* camera = camera_get(0); /* TODO: This is an ugly hack, remove it as soon as possible */
-	float aspect = (float)width / (float)height;
-	camera->aspect_ratio = aspect > 0.f ? aspect : 4.f / 3.f;
-	camera_update_proj(camera);
+	camera_resize_all(width, height);
 	framebuffer_resize_all(width, height);
 }
 

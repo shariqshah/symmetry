@@ -267,8 +267,8 @@ void model_render_all(struct Camera* camera, enum Geometry_Draw_Mode draw_mode)
 			}
 			
 			/* Render the geometry */
-			//geom_render_in_frustum(model->geometry_index, &camera->frustum[0], transform);
-			geom_render(model->geometry_index, draw_mode);
+			geom_render_in_frustum(model->geometry_index, &camera->frustum[0], transform, draw_mode);
+			//geom_render(model->geometry_index, draw_mode);
 
 			for(int k = 0; k < array_len(model->material_params); k++)
 			{

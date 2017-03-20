@@ -109,6 +109,9 @@ x Font atlas proper cleanup
 - Custom rendering for gui
 ** TODO Allow passsing base path as commandline argument?
 ** TODO Sprite sheet animations
+** TODO Replace orgfile with simple text readme and reduce duplication?
+** DONE Camera resize on window reisze
+- State "DONE"       from "TODO"       [2017-03-20 Mon 15:22]
 ** DONE Resizable framebuffers and textures
 - State "DONE"       from "TODO"       [2017-03-16 Thu 22:50]
 ** DONE Support for multiple color attachments in framebuffers?
@@ -122,6 +125,9 @@ x Font atlas proper cleanup
 ** TODO Editor
 ** TODO Event Subsystem
 ** TODO Keybindings for gui?
+** TODO Textual/Binary format for data serialization and persistance 
+** TODO Better logging
+** TODO Hatching/Ink rendering style
 ** DONE Compile and test on windows
 - State "DONE"       from "TODO"       [2017-03-14 Tue 00:32]
 ** TODO Array based string type comptible with cstring(char*)

@@ -40,9 +40,10 @@ void camera_remove(int index)
 	if(index > -1 && index < array_len(camera_list))
 	{
 		struct Camera* camera = &camera_list[index];
-		if(camera->fbo != -1) framebuffer_remove(camera->fbo);
+		if(camera->fbo != -1)        framebuffer_remove(camera->fbo);
 		if(camera->render_tex != -1) texture_remove(camera->render_tex);
-		if(camera->depth_tex != -1) texture_remove(camera->depth_tex);
+		if(camera->depth_tex != -1)  texture_remove(camera->depth_tex);
+		camera->resizeable = 0;
 		camera->fbo = camera->render_tex = camera->depth_tex = camera->node = -1;
 		array_push(empty_indices, index, int);
 	}
@@ -71,16 +72,17 @@ int camera_create(int node, int width, int height)
 		new_camera = array_grow(camera_list, struct Camera);
 		index = array_len(camera_list) - 1;
 	}
-	new_camera->fbo = -1;
+	new_camera->fbo        = -1;
 	new_camera->render_tex = -1;
-	new_camera->depth_tex = -1;
-	new_camera->node = node;
-	new_camera->farz = 1000.f;
-	new_camera->nearz = 0.1f;
-	new_camera->fov = 60.f;
+	new_camera->depth_tex  = -1;
+	new_camera->node       = node;
+	new_camera->farz       = 1000.f;
+	new_camera->nearz      = 0.1f;
+	new_camera->fov        = 60.f;
+	new_camera->ortho      = 0;
+	new_camera->resizeable = 1;
 	float aspect_ratio = (float)width / (float)height;
 	new_camera->aspect_ratio = aspect_ratio <= 0.f ? (4.f / 3.f) : aspect_ratio;
-	new_camera->ortho = 0;
 	mat4_identity(&new_camera->view_mat);
 	mat4_identity(&new_camera->proj_mat);
 	mat4_identity(&new_camera->view_proj_mat);
@@ -98,10 +100,10 @@ void camera_update_view_proj(struct Camera* camera)
 
 void camera_update_view(struct Camera* camera)
 {
-	struct Entity* entity = entity_get(camera->node);
+	struct Entity* entity       = entity_get(camera->node);
 	struct Transform* transform = entity_component_get(entity, C_TRANSFORM);
-	vec3 lookat = {0.f, 0.f, 0.f};
-	vec3 up = {0.f, 0.f, 0.f};
+	vec3 lookat   = {0.f, 0.f, 0.f};
+	vec3 up       = {0.f, 0.f, 0.f};
 	vec3 position = {0.f, 0.f, 0.f};
 	transform_get_absolute_lookat(transform, &lookat);
 	transform_get_absolute_up(transform, &up);
@@ -263,5 +265,18 @@ static void update_frustum(struct Camera* camera)
 		vec3 plane_xyz = {camera->frustum[i].x, camera->frustum[i].y, camera->frustum[i].z};
 		float length = vec3_len(&plane_xyz);
 		vec4_scale(&camera->frustum[i], &camera->frustum[i], (1.f / length));
+	}
+}
+
+void camera_resize_all(int width, int height)
+{
+	for(int i = 0; i < array_len(camera_list); i++)
+	{
+		struct Camera* camera = &camera_list[i];
+		if(!camera->resizeable) continue;
+
+		float aspect = (float)width / (float)height;
+		camera->aspect_ratio = aspect > 0.f ? aspect : 4.f / 3.f;
+		camera_update_proj(camera);
 	}
 }

@@ -160,16 +160,19 @@ void scene_setup(void)
 	transform_set_position(ground_tran, &pos);
 	transform_scale(ground_tran, &scale_ground);
 
-	struct Entity* screen = scene_add_new("Screen", NULL);
-	struct Model* screen_model = entity_component_add(screen, C_MODEL, NULL, NULL);
-	screen_model->geometry_index = geom_find("Quad");
-	struct Entity* screen_camera = scene_add_as_child("Screen_Camera", NULL, screen->node);
-	struct Transform* screen_camera_tran = entity_component_get(screen_camera, C_TRANSFORM);
-	transform_rotate(screen_camera_tran, &UNIT_Y, 180.f, TS_WORLD);
-	struct Camera* cam = entity_component_add(screen_camera, C_CAMERA, 50, 50);
-	camera_attach_fbo(cam, 128, 128, 1, 1, 0);
-	model_set_material_param(screen_model, "diffuse_color", &color);
-	model_set_material_param(screen_model, "diffuse_texture", &cam->render_tex);
+	/* struct Entity* screen = scene_add_new("Screen", NULL); */
+	/* struct Model* screen_model = entity_component_add(screen, C_MODEL, NULL, NULL); */
+	/* screen_model->geometry_index = geom_find("Quad"); */
+	/* struct Entity* screen_camera = scene_add_as_child("Screen_Camera", NULL, screen->node); */
+	/* struct Transform* screen_camera_tran = entity_component_get(screen_camera, C_TRANSFORM); */
+	/* transform_rotate(screen_camera_tran, &UNIT_Y, 180.f, TS_WORLD); */
+	/* struct Camera* cam = entity_component_add(screen_camera, C_CAMERA, 50, 50); */
+	/* cam->nearz = 0.1f; */
+	/* cam->farz  = 50.f; */
+	/* camera_update_proj(cam); */
+	/* camera_attach_fbo(cam, 128, 128, 1, 1, 0); */
+	/* model_set_material_param(screen_model, "diffuse_color", &color); */
+	/* model_set_material_param(screen_model, "diffuse_texture", &cam->render_tex); */
 
 	const int MAX_LIGHTS = 3;
 	for(int i = 0; i < MAX_LIGHTS; i++)
@@ -355,7 +358,7 @@ void update(float dt, int* window_should_close)
 	if(input_key_state_get(KEY_F1, KS_PRESSED))		editor_toggle();
 	
 	debug(dt);
-	debug_gui(dt);
+	//debug_gui(dt);
 	editor_update(dt);
 }
 

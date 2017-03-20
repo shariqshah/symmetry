@@ -19,6 +19,7 @@ struct Camera
 	int   depth_tex;
 	vec4  clear_color;
 	vec4  frustum[6];
+	int   resizeable;
 };
 
 struct Camera* camera_get(int index);
@@ -38,5 +39,6 @@ void camera_attach_fbo(struct Camera* camera,
 					   int            has_color,
 					   int            resizeable);
 void camera_set_primary_viewer(struct Camera* camera);
+void camera_resize_all(int width, int height);
 
 #endif

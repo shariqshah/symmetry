@@ -31,7 +31,7 @@ static void editor_color_combo(struct nk_context* context, vec4* color, int widt
 void editor_init(void)
 {
 	editor_state.enabled                  = 1;
-	editor_state.renderer_settings_window = 1;
+	editor_state.renderer_settings_window = 0;
 	editor_state.top_panel_height         = 30;
 }
 

@@ -20,7 +20,7 @@ int  geom_find(const char* filename);
 void geom_remove(int index);
 void geom_cleanup(void);
 void geom_render(int index, enum Geometry_Draw_Mode);
-void geom_render_in_frustum(int                     index,
+int  geom_render_in_frustum(int                     index,
 							vec4*                   frustum,
 							struct Transform*       transform,
 							enum Geometry_Draw_Mode draw_mode);

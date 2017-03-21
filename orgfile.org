@@ -108,8 +108,11 @@ x Font atlas proper cleanup
 - Decoupled event handling of gui and input if possible
 - Custom rendering for gui
 ** TODO Allow passsing base path as commandline argument?
+** TODO 3d sound using OpenAL
+** TODO Array-based Hashmaps
 ** TODO Sprite sheet animations
 ** TODO Replace orgfile with simple text readme and reduce duplication?
+** TODO Live data views in editor
 ** DONE Camera resize on window reisze
 - State "DONE"       from "TODO"       [2017-03-20 Mon 15:22]
 ** DONE Resizable framebuffers and textures

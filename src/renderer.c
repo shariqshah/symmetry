@@ -41,7 +41,7 @@ void renderer_init(void)
 	settings.fog.start_dist         = 50.f;
 	settings.fog.max_dist           = 150.f;
 	settings.debug_draw_enabled     = 0;
-	settings.debug_draw_mode        = GDM_LINES;
+	settings.debug_draw_mode        = GDM_TRIANGLES;
 	settings.max_gui_vertex_memory  = MAX_GUI_VERTEX_MEMORY;
 	settings.max_gui_element_memory = MAX_GUI_ELEMENT_MEMORY;
 	vec3_fill(&settings.fog.color, 60.f/255.f, 60.f/255.f, 75.f/255.f);
@@ -177,7 +177,12 @@ void renderer_draw(void)
 	texture_unbind(final_render_tex);
 	shader_unbind();
 
-	if(settings.debug_draw_enabled) model_render_all_debug(active_camera, debug_shader, settings.debug_draw_mode, &settings.debug_draw_color);
+	if(settings.debug_draw_enabled)
+	{
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		model_render_all_debug(active_camera, debug_shader, settings.debug_draw_mode, &settings.debug_draw_color);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
 	
 	gui_render(NK_ANTI_ALIASING_ON, settings.max_gui_vertex_memory, settings.max_gui_element_memory);
 }

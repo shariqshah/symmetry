@@ -9,6 +9,8 @@
 #include "renderer.h"
 #include "material.h"
 #include "light.h"
+#include "editor.h"
+#include "variant.h"
 #include "gl_load.h"
 
 #include <assert.h>
@@ -20,6 +22,8 @@
 
 static struct Model* model_list;
 static        int*   empty_indices;
+static        int    num_culled = 0, num_rendered = 0, num_indices = 0;
+static        int    num_culled_slot = -1, num_rendered_slot = -1, num_indices_slot = -1;
 
 struct Model* model_get(int index)
 {
@@ -33,8 +37,11 @@ struct Model* model_get(int index)
 
 void model_init(void)
 {
-	model_list    = array_new(struct Model);
-	empty_indices = array_new(int);
+	model_list        = array_new(struct Model);
+	empty_indices     = array_new(int);
+	num_culled_slot   = editor_debugvar_slot_create("Culled Geom",   VT_INT);
+	num_rendered_slot = editor_debugvar_slot_create("Rendered Geom", VT_INT);
+	num_indices_slot  = editor_debugvar_slot_create("Total Indices", VT_INT);
 }
 
 int model_create(int node, const char* geo_name, const char* material_name)
@@ -267,7 +274,16 @@ void model_render_all(struct Camera* camera, enum Geometry_Draw_Mode draw_mode)
 			}
 			
 			/* Render the geometry */
-			geom_render_in_frustum(model->geometry_index, &camera->frustum[0], transform, draw_mode);
+			int indices = geom_render_in_frustum(model->geometry_index, &camera->frustum[0], transform, draw_mode);
+			if(indices > 0)
+			{
+				num_rendered++;
+				num_indices += indices;
+			}
+			else
+			{
+				num_culled++;
+			}
 			//geom_render(model->geometry_index, draw_mode);
 
 			for(int k = 0; k < array_len(model->material_params); k++)
@@ -284,6 +300,11 @@ void model_render_all(struct Camera* camera, enum Geometry_Draw_Mode draw_mode)
 		}
 		shader_unbind();
 	}
+	editor_debugvar_slot_set_int(num_rendered_slot, num_rendered);
+	editor_debugvar_slot_set_int(num_culled_slot, num_culled);
+	editor_debugvar_slot_set_int(num_indices_slot, num_indices);
+
+	num_culled = num_rendered = num_indices = 0;
 }
 
 int model_set_material_param(struct Model* model, const char* name, void* value)

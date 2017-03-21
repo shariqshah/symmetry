@@ -62,10 +62,10 @@ void game_init(struct Window* window)
 	light_init();
 	camera_init();
 	material_init();
+	editor_init();
 	model_init();
 	entity_init();
 	scene_init();
-	editor_init();
 	
 	/* Debug scene setup */
 	scene_setup();
@@ -100,7 +100,7 @@ void scene_setup(void)
 	
 	struct Entity* player = scene_add_new("player", "None");
 	game_state->player_node = player->node;
-	vec3 viewer_pos = {10, 4, 100};
+	vec3 viewer_pos = {10, 5, 100};
 	struct Transform* viewer_tran = entity_component_get(player, C_TRANSFORM);
 	/* struct Model* player_model = entity_component_add(player, C_MODEL, "sphere.pamesh", NULL); */
 	/* model_set_material_param(player_model, "diffuse_color", &color); */
@@ -1573,6 +1573,7 @@ void render(void)
 
 void game_cleanup(void)
 {
+	editor_cleanup();
 	scene_cleanup();
 	entity_cleanup();
 	model_cleanup();

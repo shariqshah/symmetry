@@ -14,17 +14,31 @@
 #include "transform.h"
 #include "game.h"
 #include "gui.h"
+#include "array.h"
+#include "variant.h"
+#include "string_utils.h"
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
 
 struct Editor_State
 {
 	int enabled;
 	int renderer_settings_window;
+	int debug_vars_window;
 	int top_panel_height;
 };
 
-static struct Editor_State editor_state;
+struct Debug_Variable
+{
+	struct Variant data;
+	char*          name;
+};
+
+static struct Editor_State    editor_state;
+static struct Debug_Variable* debug_vars_list = NULL;
+static int*                   empty_indices   = NULL;
 
 static void editor_color_combo(struct nk_context* context, vec4* color, int width, int height);
 
@@ -32,7 +46,83 @@ void editor_init(void)
 {
 	editor_state.enabled                  = 1;
 	editor_state.renderer_settings_window = 0;
+	editor_state.debug_vars_window        = 0;
 	editor_state.top_panel_height         = 30;
+	debug_vars_list                       = array_new_cap(struct Debug_Variable, 20);
+	empty_indices                         = array_new(int);
+}
+
+int editor_debugvar_slot_create(const char* name, int value_type)
+{
+	int index = -1;
+	struct Debug_Variable* debug_var = NULL;
+	if(array_len(empty_indices) > 0)
+	{
+		index = *array_get_last(empty_indices, int);
+		array_pop(empty_indices);
+		debug_var = &debug_vars_list[index];
+	}
+	else
+	{
+		debug_var = array_grow(debug_vars_list, struct Debug_Variable);
+		index = array_len(debug_vars_list) - 1;
+	}
+	debug_var->name      = str_new(name);
+	debug_var->data.type = value_type;
+	
+	return index;
+}
+
+void editor_debugvar_slot_remove(int index)
+{
+	assert(index > -1 && index < array_len(debug_vars_list));
+	struct Debug_Variable* debug_var = &debug_vars_list[index];
+	variant_free(&debug_var->data);
+	if(debug_var->name) free(debug_var->name);
+	debug_var->name      = NULL;
+	debug_var->data.type = VT_NONE;
+}
+
+void editor_debugvar_slot_set_float(int index, float value)
+{
+	assert(index > -1 && index < array_len(debug_vars_list));
+	variant_assign_float(&debug_vars_list[index].data, value);
+}
+
+void editor_debugvar_slot_set_int(int index, int value)
+{
+	assert(index > -1 && index < array_len(debug_vars_list));
+	variant_assign_int(&debug_vars_list[index].data, value);
+}
+
+void editor_debugvar_slot_set_double(int index, double value)
+{
+	assert(index > -1 && index < array_len(debug_vars_list));
+	variant_assign_double(&debug_vars_list[index].data, value);
+}
+
+void editor_debugvar_slot_set_vec2(int index, vec2* value)
+{
+	assert(index > -1 && index < array_len(debug_vars_list));
+	variant_assign_vec2(&debug_vars_list[index].data, value);
+}
+
+void editor_debugvar_slot_set_vec3(int index, vec3* value)
+{
+	assert(index > -1 && index < array_len(debug_vars_list));
+	variant_assign_vec3(&debug_vars_list[index].data, value);
+}
+
+void editor_debugvar_slot_set_vec4(int index, vec4* value)
+{
+	assert(index > -1 && index < array_len(debug_vars_list));
+	variant_assign_vec4(&debug_vars_list[index].data, value);
+}
+
+void editor_debugvar_slot_set_quat(int index, quat* value)
+{
+	assert(index > -1 && index < array_len(debug_vars_list));
+	variant_assign_quat(&debug_vars_list[index].data, value);
 }
 
 void editor_update(float dt)
@@ -46,13 +136,18 @@ void editor_update(float dt)
 	int win_width = 0, win_height = 0;
 	window_get_drawable_size(game_state->window, &win_width, &win_height);
 	int half_width = win_width / 2, half_height = win_height / 2;
-
+	static int default_window_flags = NK_WINDOW_BORDER |
+		                              NK_WINDOW_CLOSABLE |
+		                              NK_WINDOW_MOVABLE |
+		                              NK_WINDOW_SCROLL_AUTO_HIDE |
+		                              NK_WINDOW_SCALABLE |
+		                              NK_WINDOW_MINIMIZABLE;
 
 	/* Top Panel */
 	if(nk_begin(context, "Top_Panel", nk_recti(0, 0, win_width, win_height - (win_height - editor_state.top_panel_height)),
 				NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
 	{
-		float ratios[] = {0.1f, 0.8f, 0.1f};
+		float ratios[] = {0.1f, 0.1f, 0.7f, 0.1f};
 		static int   frames  = 0;
 		static int   fps     = 0;
 		static float seconds = 0.f;
@@ -60,24 +155,24 @@ void editor_update(float dt)
 		frames++;
 		if(seconds >= 1.f)
 		{
-			fps = frames;
+			fps     = frames;
 			seconds = 0.f;
-			frames = 0;
+			frames  = 0;
 		}
-		nk_layout_row(context, NK_DYNAMIC, 22, 3, ratios);
+		nk_layout_row(context, NK_DYNAMIC, 22, 4, ratios);
 		if(nk_button_label(context, "Render Settings"))
 			editor_state.renderer_settings_window = !editor_state.renderer_settings_window;
+		if(nk_button_label(context, "Debug Variables"))
+			editor_state.debug_vars_window = !editor_state.debug_vars_window;
 		nk_spacing(context, 1);
 		nk_labelf(context, NK_TEXT_ALIGN_RIGHT | NK_TEXT_ALIGN_MIDDLE, "FPS : %.d", fps);
 	}
 	nk_end(context);
 
-	/* Debug Window */
+	/* Render Settings Window */
 	if(editor_state.renderer_settings_window)
 	{
-		if(nk_begin_titled(context, "Renderer_Settings_Window", "Renderer Settings", nk_rect(half_width, half_height, 300, 350),
-						   NK_WINDOW_BORDER | NK_WINDOW_CLOSABLE | NK_WINDOW_MOVABLE |
-						   NK_WINDOW_SCROLL_AUTO_HIDE | NK_WINDOW_SCALABLE | NK_WINDOW_MINIMIZABLE))
+		if(nk_begin_titled(context, "Renderer_Settings_Window", "Renderer Settings", nk_rect(half_width, half_height, 300, 350), default_window_flags))
 		{
 			if(nk_tree_push(context, NK_TREE_TAB, "Debug", NK_MAXIMIZED))
 			{
@@ -144,12 +239,48 @@ void editor_update(float dt)
 								  5.f, 10.f);
 
 				nk_tree_pop(context);
-			}
-			
+			}			
 		}
 		else
 		{
 			editor_state.renderer_settings_window = 0;
+		}
+		nk_end(context);
+	}
+
+	/* Debug Vars Window */
+	if(editor_state.debug_vars_window)
+	{
+		if(nk_begin_titled(context, "Debug_Variables_Window", "Debug Variables", nk_rect(20, 20, 300, 300), default_window_flags))
+		{
+			nk_layout_row_static(context, 200, 200, 2);
+			if(nk_group_begin(context, "Name", NK_WINDOW_BORDER | NK_WINDOW_TITLE | NK_WINDOW_SCROLL_AUTO_HIDE))
+			{
+				for(int i = 0; i < array_len(debug_vars_list); i++)
+				{
+					struct Debug_Variable* debug_var = &debug_vars_list[i];
+					if(debug_var->data.type == VT_NONE) continue;
+					nk_layout_row_dynamic(context, 20, 2);
+					nk_label(context, debug_var->name, NK_TEXT_ALIGN_LEFT);
+					struct Variant* var_data = &debug_var->data;
+					switch(debug_var->data.type)
+					{
+					case VT_INT:    nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%d",   var_data->val_int); break;
+					case VT_FLOAT:  nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%.4f", var_data->val_float); break;
+					case VT_DOUBLE: nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%d",   var_data->val_double); break;
+					case VT_VEC2:   nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "(%.2f, %.2f)", var_data->val_vec2.x, var_data->val_vec2.y); break;
+					case VT_VEC3:   nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "(%.2f, %.2f, %.2f)", var_data->val_vec3.x, var_data->val_vec3.y, var_data->val_vec3.z); break;
+					case VT_VEC4:   nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "(%.2f, %.2f, %.2f, %.2f)", var_data->val_vec4.x, var_data->val_vec4.y, var_data->val_vec4.z, var_data->val_vec4.w); break;
+					case VT_QUAT:   nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "(%.2f, %.2f, %.2f, %.2f)", var_data->val_quat.x, var_data->val_quat.y, var_data->val_quat.z, var_data->val_quat.w); break;
+					default:        nk_label(context, "Unsupported Value type", NK_TEXT_ALIGN_RIGHT); break;
+					};
+				}
+				nk_group_end(context);
+			}
+		}
+		else
+		{
+			editor_state.debug_vars_window = 0;
 		}
 		nk_end(context);
 	}
@@ -193,4 +324,12 @@ void editor_color_combo(struct nk_context* context, vec4* color, int width, int 
 		nk_color_f(&color->x, &color->y, &color->z, &color->w, temp_color);
 		nk_combo_end(context);
 	}
+}
+
+void editor_cleanup(void)
+{
+	for(int i = 0; i < array_len(debug_vars_list); i++)
+		editor_debugvar_slot_remove(i);
+	array_free(debug_vars_list);
+	array_free(empty_indices);
 }

@@ -50,9 +50,9 @@ void geom_init(void)
 	geometry_list = array_new(struct Geometry);
 	empty_indices = array_new(int);
 	draw_modes    = array_new_cap(GLenum, GDM_NUM_DRAWMODES);
-	draw_modes[GDM_TRIANGLES]     = GL_TRIANGLES;
-	draw_modes[GDM_LINES]         = GL_LINES;
-	draw_modes[GDM_POINTS]        = GL_POINTS;
+	draw_modes[GDM_TRIANGLES] = GL_TRIANGLES;
+	draw_modes[GDM_LINES]     = GL_LINES;
+	draw_modes[GDM_POINTS]    = GL_POINTS;
 }
 
 int geom_find(const char* filename)
@@ -87,7 +87,7 @@ static void generate_bounding_volume(int geometry_index)
 		if(vertex->z < box->min.z) box->min.z = vertex->z;
 	}
 	vec3_add(&sphere->center, &box->max, &box->min);
-	vec3_scale(&sphere->center, &sphere->center, (1.f / 2.f));
+	vec3_scale(&sphere->center, &sphere->center, 0.5f);
 	vec3 len_vec;
 	vec3_sub(&len_vec, &box->max, &sphere->center);
 	sphere->radius = fabs(vec3_len(&len_vec));
@@ -357,17 +357,22 @@ void geom_render(int index, enum Geometry_Draw_Mode draw_mode)
 			
 }
 
-void geom_render_in_frustum(int                     index,
+int geom_render_in_frustum(int                     index,
 							vec4*                   frustum,
 							struct Transform*       transform,
 							enum Geometry_Draw_Mode draw_mode)
 {
+	int rendered = 0;
 	struct Geometry* geometry = &geometry_list[index];
 	int intersection = bv_intersect_frustum_sphere(frustum, &geometry->bounding_sphere, transform);
 	if(intersection == IT_INTERSECT || intersection == IT_INSIDE)
 	{
 		intersection = bv_intersect_frustum_box(frustum, &geometry->bounding_box, transform);
 		if(intersection == IT_INTERSECT || intersection == IT_INSIDE)
+		{
 			geom_render(index, draw_mode);
+			rendered = array_len(geometry->indices);
+		}
 	}
+	return rendered;
 }

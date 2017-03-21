@@ -13,7 +13,6 @@ enum Variant_Type
 	VT_VEC3,
 	VT_VEC4,
 	VT_QUAT,
-	VT_MAT3,
 	VT_MAT4,
 	VT_VOID_PTR,
 	VT_NUM_TYPES
@@ -36,8 +35,14 @@ struct Variant
 };
 
 void variant_init_empty(struct Variant* variant);
-void variant_init_mat4(struct Variant* out_new_variant, const mat4* source);
+void variant_assign_mat4(struct Variant* variant, const mat4* source);
+void variant_assign_float(struct Variant* variant, float value);
+void variant_assign_int(struct Variant* variant, int value);
+void variant_assign_double(struct Variant* variant, double value);
+void variant_assign_vec2(struct Variant* variant, vec2* value);
+void variant_assign_vec3(struct Variant* variant, vec3* value);
+void variant_assign_vec4(struct Variant* variant, vec4* value);
+void variant_assign_quat(struct Variant* variant, quat* value);
 void variant_free(struct Variant* variant);
-
 
 #endif

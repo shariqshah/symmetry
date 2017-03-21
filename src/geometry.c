@@ -367,12 +367,14 @@ int geom_render_in_frustum(int                     index,
 	int intersection = bv_intersect_frustum_sphere(frustum, &geometry->bounding_sphere, transform);
 	if(intersection == IT_INTERSECT || intersection == IT_INSIDE)
 	{
-		intersection = bv_intersect_frustum_box(frustum, &geometry->bounding_box, transform);
-		if(intersection == IT_INTERSECT || intersection == IT_INSIDE)
-		{
-			geom_render(index, draw_mode);
-			rendered = array_len(geometry->indices);
-		}
+		geom_render(index, draw_mode);
+		rendered = array_len(geometry->indices);
+		/* intersection = bv_intersect_frustum_box(frustum, &geometry->bounding_box, transform); */
+		/* if(intersection == IT_INTERSECT || intersection == IT_INSIDE) */
+		/* { */
+		/* 	geom_render(index, draw_mode); */
+		/* 	rendered = array_len(geometry->indices); */
+		/* } */
 	}
 	return rendered;
 }

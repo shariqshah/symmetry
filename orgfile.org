@@ -112,7 +112,8 @@ x Font atlas proper cleanup
 ** TODO Array-based Hashmaps
 ** TODO Sprite sheet animations
 ** TODO Replace orgfile with simple text readme and reduce duplication?
-** TODO Live data views in editor
+** DONE Live data views in editor
+- State "DONE"       from "TODO"       [2017-03-22 Wed 02:14]
 ** DONE Camera resize on window reisze
 - State "DONE"       from "TODO"       [2017-03-20 Mon 15:22]
 ** DONE Resizable framebuffers and textures
@@ -123,7 +124,8 @@ x Font atlas proper cleanup
 ** DONE Better way to store and manage textures attached to framebuffers
 - State "DONE"       from "TODO"       [2017-03-16 Thu 22:51]
 ** TODO Validate necessary assets at game launch
-** TODO Variant type
+** DONE Variant type
+- State "DONE"       from "TODO"       [2017-03-22 Wed 02:14]
 ** TODO Log and debug/stats output in gui
 ** TODO Editor
 ** TODO Event Subsystem
@@ -131,6 +133,7 @@ x Font atlas proper cleanup
 ** TODO Textual/Binary format for data serialization and persistance 
 ** TODO Better logging
 ** TODO Hatching/Ink rendering style
+** TODO Fix frustum culling sometimes not working
 ** DONE Compile and test on windows
 - State "DONE"       from "TODO"       [2017-03-14 Tue 00:32]
 ** TODO Array based string type comptible with cstring(char*)

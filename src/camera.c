@@ -94,13 +94,14 @@ int camera_create(int node, int width, int height)
 
 void camera_update_view_proj(struct Camera* camera)
 {
+	mat4_identity(&camera->view_proj_mat);
 	mat4_mul(&camera->view_proj_mat, &camera->proj_mat, &camera->view_mat);
 	update_frustum(camera);
 }
 
 void camera_update_view(struct Camera* camera)
 {
-	struct Entity* entity       = entity_get(camera->node);
+	struct Entity*    entity    = entity_get(camera->node);
 	struct Transform* transform = entity_component_get(entity, C_TRANSFORM);
 	vec3 lookat   = {0.f, 0.f, 0.f};
 	vec3 up       = {0.f, 0.f, 0.f};

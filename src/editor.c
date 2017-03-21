@@ -46,7 +46,7 @@ void editor_init(void)
 {
 	editor_state.enabled                  = 1;
 	editor_state.renderer_settings_window = 0;
-	editor_state.debug_vars_window        = 0;
+	editor_state.debug_vars_window        = 1;
 	editor_state.top_panel_height         = 30;
 	debug_vars_list                       = array_new_cap(struct Debug_Variable, 20);
 	empty_indices                         = array_new(int);
@@ -140,8 +140,7 @@ void editor_update(float dt)
 		                              NK_WINDOW_CLOSABLE |
 		                              NK_WINDOW_MOVABLE |
 		                              NK_WINDOW_SCROLL_AUTO_HIDE |
-		                              NK_WINDOW_SCALABLE |
-		                              NK_WINDOW_MINIMIZABLE;
+		                              NK_WINDOW_SCALABLE;
 
 	/* Top Panel */
 	if(nk_begin(context, "Top_Panel", nk_recti(0, 0, win_width, win_height - (win_height - editor_state.top_panel_height)),
@@ -253,8 +252,8 @@ void editor_update(float dt)
 	{
 		if(nk_begin_titled(context, "Debug_Variables_Window", "Debug Variables", nk_rect(20, 20, 300, 300), default_window_flags))
 		{
-			nk_layout_row_static(context, 200, 200, 2);
-			if(nk_group_begin(context, "Name", NK_WINDOW_BORDER | NK_WINDOW_TITLE | NK_WINDOW_SCROLL_AUTO_HIDE))
+			nk_layout_row_static(context, 250, 250, 2);
+			if(nk_group_begin(context, "Name", NK_WINDOW_BORDER | NK_WINDOW_SCROLL_AUTO_HIDE))
 			{
 				for(int i = 0; i < array_len(debug_vars_list); i++)
 				{

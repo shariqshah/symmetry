@@ -8,9 +8,10 @@ struct Entity
 	int   node;
 	char* name;
 	char* tag;
-	int   components[MAX_COMPONENTS];
+	int   components[NUM_COMPONENTS];
 	int   parent;
 	int*  children;
+	int   is_listener;
 };
 
 void           entity_init(void);

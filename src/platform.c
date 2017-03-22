@@ -150,7 +150,7 @@ void window_swap_buffers(struct Window* window)
 int platform_init(void)
 {
 	int success = 1;
-	if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_EVENTS | SDL_INIT_TIMER) != 0)
+	if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_TIMER) != 0)
 	{
 		success = 0;
 		log_error("platform_init", "SDL Init failed : %s", SDL_GetError());

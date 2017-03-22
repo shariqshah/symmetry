@@ -108,7 +108,12 @@ x Font atlas proper cleanup
 - Decoupled event handling of gui and input if possible
 - Custom rendering for gui
 ** TODO Allow passsing base path as commandline argument?
-** TODO 3d sound using OpenAL
+** DONE 3d sound using OpenAL
+- State "DONE"       from "TODO"       [2017-03-23 Thu 01:43]
+** TODO Ogg format loading and playback
+** TODO Sound streaming
+** TODO Implment missing sound source properties (inner/outer cone, getting sound source data)
+** TODO Better handling of wav format checking at load time
 ** TODO Array-based Hashmaps
 ** TODO Sprite sheet animations
 ** TODO Replace orgfile with simple text readme and reduce duplication?
@@ -124,6 +129,7 @@ x Font atlas proper cleanup
 ** DONE Better way to store and manage textures attached to framebuffers
 - State "DONE"       from "TODO"       [2017-03-16 Thu 22:51]
 ** TODO Validate necessary assets at game launch
+** TODO Gamma correctness
 ** DONE Variant type
 - State "DONE"       from "TODO"       [2017-03-22 Wed 02:14]
 ** TODO Log and debug/stats output in gui

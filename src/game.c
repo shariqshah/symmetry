@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <string.h>
 #include <stddef.h>
 #include <time.h>
 #include <limits.h>
@@ -25,6 +24,7 @@
 #include "light.h"
 #include "gl_load.h"
 #include "gui.h"
+#include "sound.h"
 #include "editor.h"
 
 #define UNUSED(a) (void)a
@@ -53,6 +53,7 @@ void game_init(struct Window* window)
 	char* base_path = platform_get_base_path();
 	io_file_init(base_path);
 	free(base_path);
+	sound_init();
 	shader_init();
 	texture_init();
 	framebuffer_init();
@@ -113,6 +114,7 @@ void scene_setup(void)
 	camera_attach_fbo(camera, render_width, render_height, 1, 1, 1);
 	vec4_fill(&camera->clear_color, 0.3f, 0.6f, 0.9f, 1.0f);
 	camera_set_primary_viewer(camera);
+	sound_listener_set(player->node);
 
 	vec4 color = {0.f, 1.f, 1.f, 1.f };
 	struct Entity* new_ent = scene_add_new("Model_Entity", NULL);
@@ -126,6 +128,15 @@ void scene_setup(void)
 	struct Transform* model_tran = entity_component_get(new_ent, C_TRANSFORM);
 	vec3 scale = {1, 1, 1};
 	transform_scale(model_tran, &scale);
+	struct Sound_Source* source = entity_component_add(new_ent, C_SOUND_SOURCE);
+	if(source)
+	{
+		sound_source_load_wav(source, "BigExplosion.wav");
+		//sound_source_relative_set(source, 1);
+		sound_source_volume_set(source, 1.f);
+		sound_source_loop_set(source, 1);
+		sound_source_play(source);
+	}
 
 	int parent_node = new_ent->node;
 	int num_suz = 100;
@@ -1588,10 +1599,10 @@ void game_cleanup(void)
 	framebuffer_cleanup();
 	texture_cleanup();
 	shader_cleanup();
+	sound_cleanup();
 	window_destroy(game_state->window);
 	gl_cleanup();
 	window_cleanup();
-	platform_cleanup();
 	free(game_state);
 }
 

@@ -7,14 +7,12 @@
 
 #include <assert.h>
 
-#define MAX_TEXTURE_ATTACHMENTS 3 /* Pointless define just to avoid VLA's and be compatible with msvc */
-
 struct FBO
 {
 	uint handle;
 	uint depth_renderbuffer;
 	uint color_renderbuffer;
-	int  texture_attachments[MAX_TEXTURE_ATTACHMENTS];
+	int  texture_attachments[FA_NUM_ATTACHMENTS];
 	int  width;
 	int  height;
 	int  resizeable;

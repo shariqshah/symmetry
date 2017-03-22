@@ -6,6 +6,7 @@
 #include "camera.h"
 #include "light.h"
 #include "model.h"
+#include "sound.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -35,7 +36,7 @@ void entity_remove(int index)
 	struct Entity* entity = &entity_list[index];
 	if(entity->node == -1) return;
 	
-	for(int i = 0; i < MAX_COMPONENTS; i++)
+	for(int i = 0; i < NUM_COMPONENTS; i++)
 	{
 		if(i == C_TRANSFORM)
 		{
@@ -47,8 +48,9 @@ void entity_remove(int index)
 			entity_component_remove(entity, i);
 		}
 	}
-	entity->node = -1;
-	entity->parent = -1;
+	entity->node        = -1;
+	entity->parent      = -1;
+	entity->is_listener =  0;
 	array_free(entity->children);
 	free(entity->name);
 	free(entity->tag);
@@ -77,12 +79,13 @@ struct Entity* entity_create(const char* name, const char* tag)
 	if(new_entity->name) free(new_entity->name);
 	if(new_entity->tag)  free(new_entity->tag);
 
-	new_entity->name = name ? str_new(name) : str_new("DEFAULT_NAME");
-	new_entity->tag = tag ? str_new(tag) : str_new("DEFAULT_TAG");
-	new_entity->node = index;
-	new_entity->parent = -1;
-	new_entity->children = array_new(int);
-	for(int i = 0; i < MAX_COMPONENTS; i++)
+	new_entity->name        = name ? str_new(name) : str_new("DEFAULT_NAME");
+	new_entity->tag         = tag ? str_new(tag) : str_new("DEFAULT_TAG");
+	new_entity->node        = index;
+	new_entity->parent      = -1;
+	new_entity->is_listener = 0;
+	new_entity->children    = array_new(int);
+	for(int i = 0; i < NUM_COMPONENTS; i++)
 		new_entity->components[i] = -1;
 	new_entity->components[C_TRANSFORM] = transform_create(new_entity->node);
 
@@ -94,8 +97,6 @@ struct Entity* entity_get(int index)
 	struct Entity* entity = NULL;
 	if(index >= 0 && index < array_len(entity_list))
 		entity = &entity_list[index];
-	/* else */
-	/* 	log_error("entity:get", "Invalid index '%d'", index); */
 	return entity;
 }
 
@@ -124,14 +125,15 @@ int entity_component_remove(struct Entity* entity, enum Component component)
 	int comp_index = entity->components[component];
 	switch(component)
 	{
-	case C_TRANSFORM: log_error("entity:remove_component", "Cannot remove TRANSFORM"); break;
-	case C_MODEL:     if(comp_index != -1) model_remove(comp_index); break;
-	case C_CAMERA:    if(comp_index != -1) camera_remove(comp_index); break;
-	case C_LIGHT:     if(comp_index != -1) light_remove(comp_index); break;
+	case C_TRANSFORM: 	 log_error("entity:remove_component", "Cannot remove TRANSFORM"); break;
+	case C_MODEL:     	 if(comp_index != -1) model_remove(comp_index);        break;
+	case C_CAMERA:    	 if(comp_index != -1) camera_remove(comp_index);       break;
+	case C_LIGHT:     	 if(comp_index != -1) light_remove(comp_index);        break;
+	case C_SOUND_SOURCE: if(comp_index != -1) sound_source_remove(comp_index); break;
 	case C_RIGIDBODY:
 		break;
 	default:
-		/* Only called for MAX_COMPONENTS, do nothing */
+		/* Only called for NUM_COMPONENTS, do nothing */
 		break;
 	}
 	entity->components[component] = -1;
@@ -149,10 +151,11 @@ void* entity_component_get(struct Entity* entity, enum Component component)
 	{
 		switch(component)
 		{
-		case C_TRANSFORM: comp_obj = transform_get(comp_index); break;
-		case C_MODEL:     comp_obj = model_get(comp_index); break;
-		case C_CAMERA:    comp_obj = camera_get(comp_index); break;
-		case C_LIGHT:     comp_obj = light_get(comp_index); break;
+		case C_TRANSFORM: 	 comp_obj = transform_get(comp_index);    break;
+		case C_MODEL:     	 comp_obj = model_get(comp_index);        break;
+		case C_CAMERA:    	 comp_obj = camera_get(comp_index);       break;
+		case C_LIGHT:     	 comp_obj = light_get(comp_index);        break;
+		case C_SOUND_SOURCE: comp_obj = sound_source_get(comp_index); break;
 		case C_RIGIDBODY:
 			break;
 		default: log_error("entity:component_get", "Invalid component type"); break;
@@ -180,28 +183,35 @@ void* entity_component_add(struct Entity* entity, enum Component component, ...)
 		log_error("entity:add_component", "Entity already has Transform component");
 	case C_MODEL:
 	{
-		const char* filename = va_arg(args, const char*);
+		const char* filename      = va_arg(args, const char*);
 		const char* material_name = va_arg(args, const char*);
 		new_comp_index = model_create(entity->node, filename, material_name);
-		new_comp = model_get(new_comp_index);
+		new_comp       = model_get(new_comp_index);
 	}
 	break;
 	case C_CAMERA:
 	{
-		int width = va_arg(args, int);
+		int width  = va_arg(args, int);
 		int height = va_arg(args, int);
 		new_comp_index = camera_create(entity->node, width, height);
-		new_comp = camera_get(new_comp_index);
+		new_comp       = camera_get(new_comp_index);
 	}
 	break;
 	case C_LIGHT:
 	{
 		int light_type = va_arg(args, int);
 		new_comp_index = light_create(entity->node, light_type);
-		new_comp = light_get(new_comp_index);
+		new_comp       = light_get(new_comp_index);
+	}
+	break;
+	case C_SOUND_SOURCE:
+	{
+		new_comp_index = sound_source_create(entity->node);
+		new_comp       = sound_source_get(new_comp_index);
 	}
 	break;
 	case C_RIGIDBODY:
+		log_error("entity:component_add", "Unsupported component RIGIDBODY");
 		break;
 	default:
 		log_error("entity:component_add", "Invalid component type");
@@ -211,8 +221,8 @@ void* entity_component_add(struct Entity* entity, enum Component component, ...)
 	if(new_comp_index == -1)
 	{
 		log_error("entity:component_add", "%s component not added to %s",
-									   comp_to_str(component),
-									   entity->name);
+				  comp_to_str(component),
+				  entity->name);
 	}
 	else
 	{
@@ -239,6 +249,14 @@ void entity_sync_components(struct Entity* entity)
 		struct Camera* camera = entity_component_get(entity, C_CAMERA);
 		camera_update_view(camera);
 	}
+
+	if(entity_has_component(entity, C_SOUND_SOURCE))
+	{
+		struct Sound_Source* source = entity_component_get(entity, C_SOUND_SOURCE);
+		sound_source_update(source);
+	}
+
+	if(entity->is_listener) sound_listener_update();
 }
 
 struct Entity* entity_get_all(void)

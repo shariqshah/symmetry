@@ -20,9 +20,9 @@ void transform_init(void);
 void transform_cleanup(void);
 int  transform_create(int node);
 void transform_translate(struct Transform* transform, vec3* amount, enum Transform_Space space);
-void transform_rotate(struct Transform* transform,
-					  vec3*  axis,
-					  float angle,
+void transform_rotate(struct Transform*    transform,
+					  vec3*                axis,
+					  float                angle,
 					  enum Transform_Space space);
 void transform_scale(struct Transform* transform, vec3* scale);
 void transform_set_position(struct Transform* transform, vec3* new_position);
@@ -36,5 +36,6 @@ void transform_get_absolute_lookat(struct Transform* transform, vec3* res);
 void transform_get_absolute_up(struct Transform* transform, vec3* res);
 void transform_get_absolute_rot(struct Transform* transform, quat* res);
 void transform_get_absolute_right(struct Transform* transform, vec3* res);
+void transform_get_absolute_forward(struct Transform* transform, vec3* res);
 
 #endif

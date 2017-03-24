@@ -11,8 +11,8 @@ OBJS_RELEASE    = $(patsubst %.c,.release/%.o,$(SRCS))
 OBJS_DEBUG      = $(patsubst %.c,.debug/%.o,$(SRCS))
 CFLAGS          = -Wall -I$(INCLUDE_DIR) -DUSE_GLAD
 CFLAGS_DEBUG    = -g -DGL_DEBUG_CONTEXT -DAL_DEBUG -std=c99
-CFLAGS_RELEASE  = -O3
-LFLAGS          = -lSDL2 -lopenal -lGL -lsndio -lpthread -ldl -lm
+CFLAGS_RELEASE  = -O2
+LFLAGS          = -lSDL2 -lpthread -ldl -lm -lopenal -lsndio -lGL
 
 all: release
 

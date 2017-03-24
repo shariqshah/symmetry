@@ -13,6 +13,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 static struct Camera* camera_list;
 static int* empty_indices;
@@ -264,7 +265,7 @@ static void update_frustum(struct Camera* camera)
 	for(int i = 0; i < 6; i++)
 	{
 		vec3 plane_xyz = {camera->frustum[i].x, camera->frustum[i].y, camera->frustum[i].z};
-		float length = vec3_len(&plane_xyz);
+		float length = fabsf(vec3_len(&plane_xyz));
 		vec4_scale(&camera->frustum[i], &camera->frustum[i], (1.f / length));
 	}
 }

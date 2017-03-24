@@ -32,9 +32,10 @@ void transform_get_up(struct Transform* transform, vec3* res);
 void transform_get_right(struct Transform* transform, vec3* res);
 void transform_update_transmat(struct Transform* transform);
 void transform_get_absolute_pos(struct Transform* transform, vec3* res);
+void transform_get_absolute_rot(struct Transform* transform, quat* res);
+void transform_get_absolute_scale(struct Transform* transform, vec3* res);
 void transform_get_absolute_lookat(struct Transform* transform, vec3* res);
 void transform_get_absolute_up(struct Transform* transform, vec3* res);
-void transform_get_absolute_rot(struct Transform* transform, quat* res);
 void transform_get_absolute_right(struct Transform* transform, vec3* res);
 void transform_get_absolute_forward(struct Transform* transform, vec3* res);
 

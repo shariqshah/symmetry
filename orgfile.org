@@ -110,6 +110,7 @@ x Font atlas proper cleanup
 - Custom rendering for gui
 ** TODO Allow passsing base path as commandline argument?
 ** TODO Better handling incase assets folder is not found?
+** TODO OpenAL not working in release builds
 ** DONE 3d sound using OpenAL
 - State "DONE"       from "TODO"       [2017-03-23 Thu 01:43]
 ** TODO Ogg format loading and playback

@@ -147,7 +147,8 @@ void scene_setup(void)
 		int y = rand() % num_suz;
 		int z = rand() % num_suz;
 		x++; y++; z++;
-		struct Entity* suz = scene_add_as_child("Suzanne", NULL, parent_node);
+		//struct Entity* suz = scene_add_as_child("Suzanne", NULL, parent_node);
+		struct Entity* suz = scene_add_new("Suzanne", NULL);
 		struct Model* suz_model = entity_component_add(suz, C_MODEL, "suzanne.pamesh", "Blinn_Phong");
 		model_set_material_param(suz_model, "diffuse_color", &color);
 		float spec_str = 80.f;

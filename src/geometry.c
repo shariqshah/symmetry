@@ -357,7 +357,7 @@ void geom_render(int index, enum Geometry_Draw_Mode draw_mode)
 			
 }
 
-int geom_render_in_frustum(int                     index,
+int geom_render_in_frustum(int                      index,
 							vec4*                   frustum,
 							struct Transform*       transform,
 							enum Geometry_Draw_Mode draw_mode)
@@ -377,4 +377,10 @@ int geom_render_in_frustum(int                     index,
 		/* } */
 	}
 	return rendered;
+}
+
+struct Bounding_Sphere* geom_bounding_sphere_get(int index)
+{
+	assert(index > -1 && index < array_len(geometry_list));
+	return &geometry_list[index].bounding_sphere;
 }

@@ -6,7 +6,7 @@
 #ifdef AL_DEBUG
     #define al_check(expr) {expr; sound_error_check(__FILE__, __LINE__, #expr);}
 #else
-    #define al_check(expr);
+    #define al_check(expr) expr;
 #endif
 
 struct Sound_Source

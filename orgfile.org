@@ -93,6 +93,7 @@ All the code in this repository is under GPLv3, see LICENSE for more information
 - State "CANCELED"   from "TODO"       [2017-02-26 Sun 01:49] \\
   Sticking with forward rendering for now and focusing on tools etc.
 ** TODO Fix mouse bugs on windows
+** TODO Configuration/Settings load/save handling
 ** DONE Fix mousewheel bugs and gui not responding to mousewheel input
 - State "DONE"       from "TODO"       [2017-03-19 Sun 01:31]
 ** TODO Ability to mark meshes for debug rendering with possibility of different color for each?
@@ -108,6 +109,7 @@ x Font atlas proper cleanup
 - Decoupled event handling of gui and input if possible
 - Custom rendering for gui
 ** TODO Allow passsing base path as commandline argument?
+** TODO Better handling incase assets folder is not found?
 ** DONE 3d sound using OpenAL
 - State "DONE"       from "TODO"       [2017-03-23 Thu 01:43]
 ** TODO Ogg format loading and playback

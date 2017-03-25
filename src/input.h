@@ -396,7 +396,7 @@ enum Keyboard_Scancode
 void input_init(void);
 void input_cleanup(void);
 int  input_mousebutton_state_get(uint button, int state_type);
-int  input_key_state_get(int key, int state_type);
+int  input_is_key_pressed(int key);
 void input_mouse_pos_get(int* xpos, int* ypos);
 void input_mouse_delta_get(int* xpos, int* ypos); // Use with relative mouse mode
 void input_mouse_pos_set(int xpos, int ypos);

@@ -403,22 +403,9 @@ void model_render_all_debug(struct Camera*          camera,
 			struct Entity*    entity    = entity_get(model->node);
 			struct Transform* transform = entity_component_get(entity, C_TRANSFORM);
 			int               geometry_ac  = model->geometry_index;
-			struct Bounding_Sphere* sphere = geom_bounding_sphere_get(geometry_ac);
-			struct Transform temp_trans;
-			memcpy(&temp_trans, transform, sizeof(struct Transform));
-			temp_trans.node = -1;
-			vec3_scale(&temp_trans.scale, &temp_trans.scale, sphere->radius);
-			transform_update_transmat(&temp_trans);
-			struct Entity* parent = entity_get(entity->parent);
-			if(parent)
-			{
-				struct Transform* parent_transform = entity_component_get(parent, C_TRANSFORM);
-				mat4_mul(&temp_trans.trans_mat, &temp_trans.trans_mat, &parent_transform->trans_mat);
-			}
-			//log_message("Radius %.3f", sphere->radius);
 			mat4_identity(&mvp);
-			//mat4_mul(&mvp, &camera->view_proj_mat, &transform->trans_mat);
-			mat4_mul(&mvp, &camera->view_proj_mat, &temp_trans.trans_mat);
+			mat4_mul(&mvp, &camera->view_proj_mat, &transform->trans_mat);
+			//mat4_mul(&mvp, &camera->view_proj_mat, &temp_trans.trans_mat);
 			shader_set_uniform_mat4(debug_shader, "mvp", &mvp);
 			geom_render(geometry, draw_mode);
 		}

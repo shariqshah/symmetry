@@ -266,7 +266,7 @@ void platform_windowresize_callback_set(Windowresize_Event_Func func)
 	platform_state->on_windowresize_func = func;
 }
 
-int platform_key_state_get(int key)
+int platform_is_key_pressed(int key)
 {
 	/* Returns 1 if key is pressed, 0 otherwise */
 	const Uint8* keyboard_state = SDL_GetKeyboardState(NULL);

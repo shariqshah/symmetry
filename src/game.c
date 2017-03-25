@@ -87,7 +87,8 @@ void scene_setup(void)
 	int turn_up_keys[1]    = {KEY_I};
 	int turn_down_keys[1]  = {KEY_K};
 	int sprint_keys[2]     = {KEY_LSHIFT, KEY_RSHIFT};
-	int recompute_keys[2]     = {KEY_F5, KEY_H};
+	int recompute_keys[2]  = {KEY_F5, KEY_H};
+	int ed_toggle_keys[1]  = {KEY_F1};
 	input_map_create("Move_Forward",  forward_keys,    2);
 	input_map_create("Move_Backward", backward_keys,   2);
 	input_map_create("Move_Up",       up_keys,         1);
@@ -100,6 +101,7 @@ void scene_setup(void)
 	input_map_create("Turn_Down",     turn_down_keys,  1);
 	input_map_create("Sprint",        sprint_keys,     2);
 	input_map_create("Recompute",     recompute_keys,  2);
+	input_map_create("Editor_Toggle", ed_toggle_keys,  1);
 	
 	struct Entity* player = scene_add_new("player", "None");
 	game_state->player_node = player->node;
@@ -149,8 +151,8 @@ void scene_setup(void)
 		int y = rand() % num_suz;
 		int z = rand() % num_suz;
 		x++; y++; z++;
-		//struct Entity* suz = scene_add_as_child("Suzanne", NULL, parent_node);
-		struct Entity* suz = scene_add_new("Suzanne", NULL);
+		struct Entity* suz = scene_add_as_child("Suzanne", NULL, parent_node);
+		//struct Entity* suz = scene_add_new("Suzanne", NULL);
 		struct Model* suz_model = entity_component_add(suz, C_MODEL, "suzanne.pamesh", "Blinn_Phong");
 		model_set_material_param(suz_model, "diffuse_color", &color);
 		float spec_str = 80.f;
@@ -211,7 +213,7 @@ void scene_setup(void)
 void debug(float dt)
 {
 	//struct Entity* entity = entity_get(player_node);
-	struct Entity* entity = !input_key_state_get('C', KS_PRESSED) ? entity_get(game_state->player_node) : scene_find("Screen_Camera");
+	struct Entity* entity =  entity_get(game_state->player_node);
 	struct Camera* cam = entity_component_get(entity, C_CAMERA);
 	camera_set_primary_viewer(cam);
 	struct Transform* transform = entity_component_get(entity, C_TRANSFORM);
@@ -235,8 +237,8 @@ void debug(float dt)
 		log_message("Regenerating Bounding Volumes");
 		geom_bounding_volume_generate_all();
 	}
-	/* if(input_key_state_get(KEY_TAB, KS_PRESSED))  */
-	/* if(input_key_state_get(KEY_TAB, KS_PRESSED) && input_key_state_get(KEY_LSHIFT, KS_PRESSED)) input_mouse_mode_set(MM_NORMAL); */
+	/* if(input_is_key_pressed(KEY_TAB, KS_PRESSED))  */
+	/* if(input_is_key_pressed(KEY_TAB, KS_PRESSED) && input_is_key_pressed(KEY_LSHIFT, KS_PRESSED)) input_mouse_mode_set(MM_NORMAL); */
 	
 	if(input_mousebutton_state_get(MSB_RIGHT, KS_PRESSED))
 	{
@@ -308,7 +310,7 @@ void debug(float dt)
  		//log_message("Position : %s", tostr_vec3(&transform->position));
 	}
 
-	if(input_key_state_get(KEY_SPACE, KS_PRESSED))
+	if(input_is_key_pressed(KEY_SPACE))
 	{
 		struct Entity* model = scene_find("Model_Entity");
 		struct Transform* mod_tran = entity_component_get(model, C_TRANSFORM);
@@ -316,7 +318,7 @@ void debug(float dt)
 		transform_rotate(mod_tran, &x_axis, 25.f * dt, TS_WORLD);
 	}
 
-	if(input_key_state_get(KEY_M, KS_PRESSED))
+	if(input_is_key_pressed(KEY_M))
 	{
 		struct Entity* model = scene_find("Model_Entity");
 		struct Transform* mod_tran = entity_component_get(model, C_TRANSFORM);
@@ -326,7 +328,7 @@ void debug(float dt)
 		transform_translate(mod_tran, &amount, TS_LOCAL);
 	}
 
-	if(input_key_state_get(KEY_N, KS_PRESSED))
+	if(input_is_key_pressed(KEY_N))
 	{
 		struct Entity* model = scene_find("Model_Entity");
 		struct Transform* mod_tran = entity_component_get(model, C_TRANSFORM);
@@ -336,14 +338,14 @@ void debug(float dt)
 		transform_translate(mod_tran, &amount, TS_LOCAL);
 	}	
 
-	/* if(input_key_state_get(GLFW_KEY_C, KS_PRESSED)) */
+	/* if(input_is_key_pressed(GLFW_KEY_C, KS_PRESSED)) */
 	/* { */
 	/* 	struct Entity* cam_ent = scene_find("Screen_Camera"); */
 	/* 	struct Camera* cam = entity_component_get(cam_ent, C_CAMERA); */
 	/* 	camera_set_primary_viewer(cam); */
 	/* } */
 
-	/* if(input_key_state_get(GLFW_KEY_V, KS_PRESSED)) */
+	/* if(input_is_key_pressed(GLFW_KEY_V, KS_PRESSED)) */
 	/* { */
 	/* 	struct Camera* cam = entity_component_get(entity, C_CAMERA); */
 	/* 	camera_set_priimary_viewer(cam); */
@@ -370,15 +372,15 @@ void run(void)
 }
 
 void update(float dt, int* window_should_close)
-{
-	input_update();
-	
-	if(input_key_state_get(KEY_ESCAPE, KS_PRESSED)) *window_should_close = 1;
-	if(input_key_state_get(KEY_F1, KS_PRESSED))		editor_toggle();
+{	
+	if(input_is_key_pressed(KEY_ESCAPE)) *window_should_close = 1;
+	if(input_map_state_get("Editor_Toggle", KS_RELEASED)) editor_toggle();
 	
 	debug(dt);
 	//debug_gui(dt);
 	editor_update(dt);
+	input_update();	/* This should always be the last thing. Probably
+					 * put this in post update? */
 }
 
 void debug_gui(float dt)

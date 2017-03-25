@@ -70,6 +70,7 @@ void input_mouse_pos_set(int xpos, int ypos)
 
 void input_on_key(int key, int scancode, int state, int mod_ctrl, int mod_shift)
 {
+	log_message("Key %s", state == KS_PRESSED ? "Pressed" : "Released");
 	for(int i = 0; i < array_len(input_map_list); i++)
 	{
 		struct Input_Map* map = &input_map_list[i];
@@ -119,25 +120,11 @@ int input_map_state_get(const char* map_name, int state)
 		result = 1;
 	}
 	return result;
-	
-	//return state == current_state ? 1 : 0;
-	/* if(state == KS_PRESSED) */
-	/* { */
-	/* 	if(current_state == KS_PRESSED)// || current_state == GLFW_REPEAT) */
-	/* 		 return 1; */
-	/* 	 else */
-	/* 		 return 0; */
-	/* } */
-	/* else */
-	/* { */
-	/* 	return state == current_state ? 1 : 0; */
-	/* } */
 }
 
-int input_key_state_get(int key, int state_type)
+int input_is_key_pressed(int key)
 {
-	int current_state = platform_key_state_get(key);
-	return state_type == current_state ? 1 : 0;
+	return platform_is_key_pressed(key);
 }
 
 int input_mousebutton_state_get(uint button, int state_type)

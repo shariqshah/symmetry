@@ -36,7 +36,7 @@ void   platform_mousemotion_callback_set(Mousemotion_Event_Func func);
 void   platform_mousewheel_callback_set(Mousewheel_Event_Func func);
 void   platform_windowresize_callback_set(Windowresize_Event_Func func);
 void   platform_textinput_callback_set(Textinput_Event_Func func);
-int    platform_key_state_get(int key);
+int    platform_is_key_pressed(int key);
 int    platform_mousebutton_state_get(uint button);
 void   platform_mouse_position_get(int* x, int* y);
 void   platform_mouse_delta_get(int* x, int* y); // Use with relative mouse mode

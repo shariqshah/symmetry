@@ -111,7 +111,8 @@ x Font atlas proper cleanup
 - Decoupled event handling of gui and input if possible
 - Custom rendering for gui
 ** TODO Allow passsing base path as commandline argument?
-** TODO Fix Key release not being reported
+** DONE Fix Key release not being reported
+- State "DONE"       from "TODO"       [2017-03-26 Sun 01:16]
 ** TODO Better handling incase assets folder is not found?
 ** DONE OpenAL not working in releasebuilds
 - State "DONE"       from "TODO"       [2017-03-25 Sat 02:06]
@@ -124,6 +125,8 @@ x Font atlas proper cleanup
 ** TODO Array-based Hashmaps
 ** TODO Sprite sheet animations
 ** TODO Replace orgfile with simple text readme and reduce duplication?
+** TODO Ray picking
+** TODO Do input maps really need to be queried by their string names?
 ** DONE Live data views in editor
 - State "DONE"       from "TODO"       [2017-03-22 Wed 02:14]
 ** DONE Camera resize on window reisze

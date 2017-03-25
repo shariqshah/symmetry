@@ -35,7 +35,7 @@ pre_build:
 	-@mkdir .debug .release
 
 post_build:
-	-@ln -fs /mnt/Dev/Projects/symmetry/assets assets
+	-@ln -fs /mnt/Dev/Projects/symmetry/assets /mnt/Dev/Projects/symmetry/build/linux
 
 clean:
 	-rm -f  $(PROJECT_NAME)

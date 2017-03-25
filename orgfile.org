@@ -98,6 +98,7 @@ All the code in this repository is under GPLv3, see LICENSE for more information
 - State "DONE"       from "TODO"       [2017-03-19 Sun 01:31]
 ** TODO Ability to mark meshes for debug rendering with possibility of different color for each?
 ** TODO Setup cross compilation with mingw or stick to msvc?
+** TODO Add marking or queuing up custom meshes for debug render with particular transform and color for rendering bounding spheres for example
 ** DONE Toggleable debug drawing for meshes
 - State "DONE"       from "TODO"       [2017-03-18 Sat 16:18]
 ** TODO Interleaved vbos for meshes and changes to blender exporter accordingly
@@ -110,7 +111,8 @@ x Font atlas proper cleanup
 - Custom rendering for gui
 ** TODO Allow passsing base path as commandline argument?
 ** TODO Better handling incase assets folder is not found?
-** TODO OpenAL not working in release builds
+** DONE OpenAL not working in release builds
+- State "DONE"       from "TODO"       [2017-03-25 Sat 02:06]
 ** DONE 3d sound using OpenAL
 - State "DONE"       from "TODO"       [2017-03-23 Thu 01:43]
 ** TODO Ogg format loading and playback

@@ -13,6 +13,7 @@
 #include <string.h>
 #include <assert.h>
 #include <math.h>
+#include <float.h>
 
 struct Geometry 
 {
@@ -75,6 +76,12 @@ static void generate_bounding_volume(int geometry_index)
 	struct Geometry*        geometry = &geometry_list[geometry_index];
 	struct Bounding_Box*    box      = &geometry->bounding_box;
 	struct Bounding_Sphere* sphere   = &geometry->bounding_sphere;
+	
+	vec3_fill(&box->max, -FLT_MIN, -FLT_MIN, -FLT_MIN);
+	vec3_fill(&box->min,  FLT_MAX,  FLT_MAX,  FLT_MAX);
+	vec3_fill(&sphere->center, 0.f, 0.f, 0.f);
+	sphere->radius = 0.f;
+	
 	for(int i = 0; i < array_len(geometry->vertices); i++)
 	{
 		vec3* vertex = &geometry->vertices[i];
@@ -90,7 +97,7 @@ static void generate_bounding_volume(int geometry_index)
 	vec3_scale(&sphere->center, &sphere->center, 0.5f);
 	vec3 len_vec;
 	vec3_sub(&len_vec, &box->max, &sphere->center);
-	sphere->radius = fabs(vec3_len(&len_vec));
+	sphere->radius = fabsf(vec3_len(&len_vec));
 }
 
 static struct Geometry* generate_new_index(int* out_new_index)

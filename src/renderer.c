@@ -40,7 +40,7 @@ void renderer_init(void)
 	settings.fog.density            = 0.01f;
 	settings.fog.start_dist         = 50.f;
 	settings.fog.max_dist           = 150.f;
-	settings.debug_draw_enabled     = 0;
+	settings.debug_draw_enabled     = 1;
 	settings.debug_draw_mode        = GDM_TRIANGLES;
 	settings.max_gui_vertex_memory  = MAX_GUI_VERTEX_MEMORY;
 	settings.max_gui_element_memory = MAX_GUI_ELEMENT_MEMORY;

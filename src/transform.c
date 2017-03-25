@@ -41,6 +41,7 @@ int transform_create(int node)
 		vec3_fill(&new_transform->position, 0.f, 0.f, 0.f);
 		vec3_fill(&new_transform->scale, 1.f, 1.f, 1.f);
 		quat_identity(&new_transform->rotation);
+		mat4_identity(&new_transform->trans_mat);
 		transform_update_transmat(new_transform);
 	}
 	return index;

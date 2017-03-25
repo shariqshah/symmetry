@@ -415,7 +415,7 @@ void model_render_all_debug(struct Camera*          camera,
 				struct Transform* parent_transform = entity_component_get(parent, C_TRANSFORM);
 				mat4_mul(&temp_trans.trans_mat, &temp_trans.trans_mat, &parent_transform->trans_mat);
 			}
-			
+			//log_message("Radius %.3f", sphere->radius);
 			mat4_identity(&mvp);
 			//mat4_mul(&mvp, &camera->view_proj_mat, &transform->trans_mat);
 			mat4_mul(&mvp, &camera->view_proj_mat, &temp_trans.trans_mat);

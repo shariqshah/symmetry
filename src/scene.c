@@ -14,6 +14,7 @@ void scene_init(void)
 	/* Add root node to scene */
 	struct Entity* root = entity_create("ROOT", NULL);
 	root_node = root->node;
+	log_message("Root Parent : %d", root->parent);
 }
 
 struct Entity* scene_add_new(const char* name, const char* tag)

@@ -6,28 +6,30 @@ LIB_DIR_RELEASE = ../../libs/release/linux64_gcc
 LIB_DIR_DEBUG   = ../../libs/debug/linux64_gcc
 BUILD_TYPE      = release
 SRCS            = $(patsubst $(SRC_DIR)/%.c, %.c, $(wildcard ../../src/*.c))
-OBJS            = $(patsubst %.c,%.o,$(SRCS))
 OBJS_RELEASE    = $(patsubst %.c,.release/%.o,$(SRCS))
 OBJS_DEBUG      = $(patsubst %.c,.debug/%.o,$(SRCS))
 CFLAGS          = -Wall -I$(INCLUDE_DIR) -DUSE_GLAD
 CFLAGS_DEBUG    = -g -DGL_DEBUG_CONTEXT -DAL_DEBUG -std=c99
-CFLAGS_RELEASE  = -O2
+CFLAGS_RELEASE  = -O3 -ffast-math
 LFLAGS          = -lSDL2 -lpthread -ldl -lm -lopenal -lsndio -lGL
 
 all: release
 
 release: BUILD_TYPE  = release
 release: CFLAGS     += $(CFLAGS_RELEASE)
-release: pre_build $(OBJS) post_build
+release: pre_build $(OBJS_RELEASE) post_build
 	$(CC) $(OBJS_RELEASE) -L$(LIB_DIR_RELEASE) $(LFLAGS) -o $(PROJECT_NAME)
 
 debug: BUILD_TYPE  = debug
 debug: CFLAGS     += $(CFLAGS_DEBUG)
-debug: pre_build $(OBJS) post_build
+debug: pre_build $(OBJS_DEBUG) post_build
 	$(CC) $(OBJS_DEBUG) -L$(LIB_DIR_DEBUG) $(LFLAGS) -o $(PROJECT_NAME)
 
-%.o: $(SRC_DIR)/%.c
-	$(CC) $(CFLAGS) -c $< -o .$(BUILD_TYPE)/$@
+.release/%.o: $(SRC_DIR)/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+.debug/%.o: $(SRC_DIR)/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 pre_build:
 	-@mkdir .debug .release

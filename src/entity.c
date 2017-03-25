@@ -18,7 +18,7 @@ static int* empty_indices;
 
 void entity_init(void)
 {
-	entity_list = array_new(struct Entity);
+	entity_list   = array_new(struct Entity);
 	empty_indices = array_new(int);
 }
 
@@ -52,6 +52,7 @@ void entity_remove(int index)
 	entity->parent      = -1;
 	entity->is_listener =  0;
 	array_free(entity->children);
+	entity->children    = NULL;
 	free(entity->name);
 	free(entity->tag);
 	entity->name = entity->tag = NULL;
@@ -80,7 +81,7 @@ struct Entity* entity_create(const char* name, const char* tag)
 	if(new_entity->tag)  free(new_entity->tag);
 
 	new_entity->name        = name ? str_new(name) : str_new("DEFAULT_NAME");
-	new_entity->tag         = tag ? str_new(tag) : str_new("DEFAULT_TAG");
+	new_entity->tag         = tag  ? str_new(tag)  : str_new("DEFAULT_TAG");
 	new_entity->node        = index;
 	new_entity->parent      = -1;
 	new_entity->is_listener = 0;
@@ -172,8 +173,8 @@ void* entity_component_get(struct Entity* entity, enum Component component)
 
 void* entity_component_add(struct Entity* entity, enum Component component, ...)
 {
-	void* new_comp = NULL;
 	assert(entity);
+	void* new_comp = NULL;
 	va_list args;
 	va_start(args, component);
 	int new_comp_index = -1;

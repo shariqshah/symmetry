@@ -31,7 +31,8 @@ enum Frustum_Planes
 	FP_BOTTOM,
 	FP_TOP,
 	FP_NEAR,
-	FP_FAR
+	FP_FAR,
+	FP_NUM_PLANES
 };
 
 int  bv_intersect_frustum_box(vec4* frustum, struct Bounding_Box* box, struct Transform* transform);

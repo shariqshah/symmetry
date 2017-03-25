@@ -146,7 +146,8 @@ x Font atlas proper cleanup
 ** TODO Textual/Binary format for data serialization and persistance 
 ** TODO Better logging
 ** TODO Hatching/Ink rendering style
-** TODO Fix frustum culling sometimes not working
+** DONE Fix frustum culling sometimes not working
+- State "DONE"       from "TODO"       [2017-03-25 Sat 19:10]
 ** DONE Compile and test on windows
 - State "DONE"       from "TODO"       [2017-03-14 Tue 00:32]
 ** TODO Array based string type comptible with cstring(char*)

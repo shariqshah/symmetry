@@ -16,8 +16,9 @@
 #include <math.h>
 
 static struct Camera* camera_list;
-static int* empty_indices;
-static int primary_camera_index;
+static int*           empty_indices;
+static int            primary_camera_index;
+
 static void update_frustum(struct Camera* camera);
 
 struct Camera* camera_get(int index)
@@ -31,8 +32,8 @@ struct Camera* camera_get(int index)
 
 void camera_init(void)
 {
-	camera_list = array_new(struct Camera);
-	empty_indices = array_new(int);
+	camera_list          = array_new(struct Camera);
+	empty_indices        = array_new(int);
 	primary_camera_index = -1;
 }
 
@@ -44,8 +45,15 @@ void camera_remove(int index)
 		if(camera->fbo != -1)        framebuffer_remove(camera->fbo);
 		if(camera->render_tex != -1) texture_remove(camera->render_tex);
 		if(camera->depth_tex != -1)  texture_remove(camera->depth_tex);
-		camera->resizeable = 0;
 		camera->fbo = camera->render_tex = camera->depth_tex = camera->node = -1;
+		camera->ortho = camera->resizeable = 0;
+		camera->fov = camera->aspect_ratio = camera->nearz = camera->farz = 0.f;
+		mat4_identity(&camera->view_mat);
+		mat4_identity(&camera->proj_mat);
+		mat4_identity(&camera->view_proj_mat);
+		for(int i = 0; i < FP_NUM_PLANES; i++)
+			vec4_fill(&camera->frustum[i], 0.f, 0.f, 0.f, 0.f);
+		vec4_fill(&camera->clear_color, 0.f, 1.f, 0.f, 1.0);
 		array_push(empty_indices, index, int);
 	}
 }
@@ -87,6 +95,8 @@ int camera_create(int node, int width, int height)
 	mat4_identity(&new_camera->view_mat);
 	mat4_identity(&new_camera->proj_mat);
 	mat4_identity(&new_camera->view_proj_mat);
+	for(int i = 0; i < FP_NUM_PLANES; i++)
+		vec4_fill(&new_camera->frustum[i], 0.f, 0.f, 0.f, 0.f);
 	camera_update_view(new_camera);
 	camera_update_proj(new_camera);
 	vec4_fill(&new_camera->clear_color, 1.f, 1.f, 1.f, 1.f);
@@ -262,10 +272,10 @@ static void update_frustum(struct Camera* camera)
 	camera->frustum[FP_FAR].z    = mvp[11] - mvp[10];
 	camera->frustum[FP_FAR].w    = mvp[15] - mvp[14];
 
-	for(int i = 0; i < 6; i++)
+	for(int i = 0; i < FP_NUM_PLANES; i++)
 	{
 		vec3 plane_xyz = {camera->frustum[i].x, camera->frustum[i].y, camera->frustum[i].z};
-		float length = fabsf(vec3_len(&plane_xyz));
+		float length   = fabsf(vec3_len(&plane_xyz));
 		vec4_scale(&camera->frustum[i], &camera->frustum[i], (1.f / length));
 	}
 }

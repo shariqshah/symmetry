@@ -6,6 +6,13 @@
 int bv_intersect_frustum_box(vec4* frustum, struct Bounding_Box* box, struct Transform* transform)
 {
 	vec3 min, max, size, center, half_ext, half_size;
+	vec3_fill(&min, 0.f, 0.f, 0.f);
+	vec3_fill(&max, 0.f, 0.f, 0.f);
+	vec3_fill(&size, 0.f, 0.f, 0.f);
+	vec3_fill(&center, 0.f, 0.f, 0.f);
+	vec3_fill(&half_ext, 0.f, 0.f, 0.f);
+	vec3_fill(&half_size, 0.f, 0.f, 0.f);
+	
 	vec3_add(&min, &box->min, &transform->position);
 	vec3_mul(&min, &min, &transform->scale);
 	vec3_add(&max, &box->max, &transform->position);
@@ -17,15 +24,13 @@ int bv_intersect_frustum_box(vec4* frustum, struct Bounding_Box* box, struct Tra
 	vec3_scale(&half_size, &size, 0.5f);
 	for(int i = 0; i < 6; i++)
 	{
-		vec3 normal = {frustum[i].x, frustum[i].y, frustum[i].z};
-		float distance = frustum[i].w;
-		float d = vec3_dot(&normal, &center);
-		vec3 abs_normal = {fabsf(normal.x), fabsf(normal.y), fabsf(normal.z)};
-		float r = vec3_dot(&half_ext, &abs_normal);
+		vec3  normal     = {frustum[i].x, frustum[i].y, frustum[i].z};
+		float distance   = frustum[i].w;
+		float d          = vec3_dot(&normal, &center);
+		vec3  abs_normal = {fabsf(normal.x), fabsf(normal.y), fabsf(normal.z)};
+		float r          = vec3_dot(&half_ext, &abs_normal);
 		if(d + r < -distance)
-		{
 			return IT_OUTSIDE;
-		}
 	}
 	return IT_INSIDE;
 }
@@ -33,24 +38,26 @@ int bv_intersect_frustum_box(vec4* frustum, struct Bounding_Box* box, struct Tra
 int bv_intersect_frustum_sphere(vec4* frustum, struct Bounding_Sphere* sphere, struct Transform* transform)
 {
 	int   intersect_type = IT_INSIDE;
-	vec3  center;
+	vec3  center, abs_pos, abs_scale;
 	float radius = sphere->radius;
-	vec3 abs_pos, abs_scale;
+	vec3_fill(&center, 0.f, 0.f, 0.f);
+	vec3_fill(&abs_pos, 0.f, 0.f, 0.f);
+	vec3_fill(&abs_scale, 0.f, 0.f, 0.f);
+	
 	transform_get_absolute_pos(transform, &abs_pos);
 	transform_get_absolute_scale(transform, &abs_scale);
 	float max_scale_dimension = fabsf(abs_scale.x);
 	if(fabsf(abs_scale.y) > max_scale_dimension) max_scale_dimension = fabsf(abs_scale.y);
 	if(fabsf(abs_scale.z) > max_scale_dimension) max_scale_dimension = fabsf(abs_scale.z);
 	radius *= max_scale_dimension;
-	vec3_fill(&center, 0.f, 0.f, 0.f);
 	vec3_add(&center, &sphere->center, &abs_pos);
 	//vec3_mul(&center, &center, &transform->scale);
 	
 	for(int i = 0; i < 6; i++)
 	{
-		vec3 plane_normal = {frustum[i].x, frustum[i].y, frustum[i].z};
-		float distance = frustum[i].w;
-		float dot = vec3_dot(&plane_normal, &center) + distance;
+		vec3  plane_normal = {frustum[i].x, frustum[i].y, frustum[i].z};
+		float distance     = frustum[i].w;
+		float dot          = vec3_dot(&plane_normal, &center) + distance;
 		if(dot < -radius)
 		{
 			intersect_type = IT_OUTSIDE;

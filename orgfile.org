@@ -92,7 +92,8 @@ All the code in this repository is under GPLv3, see LICENSE for more information
 ** CANCELED Deferred rendering?
 - State "CANCELED"   from "TODO"       [2017-02-26 Sun 01:49] \\
   Sticking with forward rendering for now and focusing on tools etc.
-** TODO Fix mouse bugs on windows
+** DONE Fix mouse bugs on windows
+- State "DONE"       from "TODO"       [2017-03-25 Sat 17:27]
 ** TODO Configuration/Settings load/save handling
 ** DONE Fix mousewheel bugs and gui not responding to mousewheel input
 - State "DONE"       from "TODO"       [2017-03-19 Sun 01:31]
@@ -110,8 +111,9 @@ x Font atlas proper cleanup
 - Decoupled event handling of gui and input if possible
 - Custom rendering for gui
 ** TODO Allow passsing base path as commandline argument?
+** TODO Fix Key release not being reported
 ** TODO Better handling incase assets folder is not found?
-** DONE OpenAL not working in release builds
+** DONE OpenAL not working in releasebuilds
 - State "DONE"       from "TODO"       [2017-03-25 Sat 02:06]
 ** DONE 3d sound using OpenAL
 - State "DONE"       from "TODO"       [2017-03-23 Thu 01:43]

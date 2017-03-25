@@ -314,9 +314,9 @@ void gui_handle_mousebutton_event(int button, int state, int x, int y)
 {
 	int down = state == KS_PRESSED;
 	struct nk_context *ctx = &gui_state->context;
-	if(button == MB_LEFT)   nk_input_button(ctx, NK_BUTTON_LEFT,   x, y, down);
-	if(button == MB_MIDDLE)	nk_input_button(ctx, NK_BUTTON_MIDDLE, x, y, down);
-	if(button == MB_RIGHT)	nk_input_button(ctx, NK_BUTTON_RIGHT,  x, y, down);
+	if(button == MSB_LEFT)   nk_input_button(ctx, NK_BUTTON_LEFT,   x, y, down);
+	if(button == MSB_MIDDLE) nk_input_button(ctx, NK_BUTTON_MIDDLE, x, y, down);
+	if(button == MSB_RIGHT)	 nk_input_button(ctx, NK_BUTTON_RIGHT,  x, y, down);
 }
 
 void gui_handle_mousemotion_event(int x, int y, int xrel, int yrel)

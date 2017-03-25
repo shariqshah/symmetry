@@ -1,5 +1,5 @@
 PROJECT_NAME    = Symmetry
-CC              = gcc
+CC              = clang
 SRC_DIR         = ../../src
 INCLUDE_DIR     = ../../include
 LIB_DIR_RELEASE = ../../libs/release/linux64_gcc

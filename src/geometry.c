@@ -44,7 +44,6 @@ static GLenum*          draw_modes;
 static int              load_from_file(struct Geometry* geometry, const char* filename);
 static void             create_vao(struct Geometry* geometry);
 static struct Geometry* generate_new_index(int* out_new_index);
-static void             generate_bounding_volume(int geomtry_index);
 
 void geom_init(void)
 {
@@ -71,9 +70,9 @@ int geom_find(const char* filename)
 	return index;
 }
 
-static void generate_bounding_volume(int geometry_index)
+void geom_bounding_volume_generate(int index)
 {
-	struct Geometry*        geometry = &geometry_list[geometry_index];
+	struct Geometry*        geometry = &geometry_list[index];
 	struct Bounding_Box*    box      = &geometry->bounding_box;
 	struct Bounding_Sphere* sphere   = &geometry->bounding_sphere;
 	
@@ -98,6 +97,13 @@ static void generate_bounding_volume(int geometry_index)
 	vec3 len_vec;
 	vec3_sub(&len_vec, &box->max, &sphere->center);
 	sphere->radius = fabsf(vec3_len(&len_vec));
+	log_message("Radius : %.3f", sphere->radius);
+}
+
+void geom_bounding_volume_generate_all(void)
+{
+	for(int i = 0; i < array_len(geometry_list); i++)
+		geom_bounding_volume_generate(i);
 }
 
 static struct Geometry* generate_new_index(int* out_new_index)
@@ -134,7 +140,7 @@ int geom_create_from_file(const char* name)
 		if(load_from_file(new_geo, name))
 		{
 			create_vao(new_geo);
-			generate_bounding_volume(index);
+			geom_bounding_volume_generate(index);
 		}
 		else
 		{

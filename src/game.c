@@ -87,6 +87,7 @@ void scene_setup(void)
 	int turn_up_keys[1]    = {KEY_I};
 	int turn_down_keys[1]  = {KEY_K};
 	int sprint_keys[2]     = {KEY_LSHIFT, KEY_RSHIFT};
+	int recompute_keys[2]     = {KEY_F5, KEY_H};
 	input_map_create("Move_Forward",  forward_keys,    2);
 	input_map_create("Move_Backward", backward_keys,   2);
 	input_map_create("Move_Up",       up_keys,         1);
@@ -98,6 +99,7 @@ void scene_setup(void)
 	input_map_create("Turn_Up",       turn_up_keys,    1);
 	input_map_create("Turn_Down",     turn_down_keys,  1);
 	input_map_create("Sprint",        sprint_keys,     2);
+	input_map_create("Recompute",     recompute_keys,  2);
 	
 	struct Entity* player = scene_add_new("player", "None");
 	game_state->player_node = player->node;
@@ -228,10 +230,15 @@ void debug(float dt)
 	if(input_map_state_get("Turn_Right", KS_PRESSED)) turn_left_right += turn_speed;
 	if(input_map_state_get("Turn_Left",  KS_PRESSED)) turn_left_right -= turn_speed;
 
+	if(input_map_state_get("Recompute", KS_PRESSED))
+	{
+		log_message("Regenerating Bounding Volumes");
+		geom_bounding_volume_generate_all();
+	}
 	/* if(input_key_state_get(KEY_TAB, KS_PRESSED))  */
 	/* if(input_key_state_get(KEY_TAB, KS_PRESSED) && input_key_state_get(KEY_LSHIFT, KS_PRESSED)) input_mouse_mode_set(MM_NORMAL); */
 	
-	if(input_mousebutton_state_get(MB_RIGHT, KS_PRESSED))
+	if(input_mousebutton_state_get(MSB_RIGHT, KS_PRESSED))
 	{
 		if(input_mouse_mode_get() != MM_RELATIVE) input_mouse_mode_set(MM_RELATIVE);
 		const double scale = 0.25;
@@ -1574,7 +1581,7 @@ void debug_gui(float dt)
         }
     }
     nk_end(ctx);
-    return !nk_window_is_closed(ctx, "Overview");
+    //return !nk_window_is_closed(ctx, "Overview");
 }
 
 

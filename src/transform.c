@@ -11,7 +11,7 @@ static int* empty_indices;
 void transform_init(void)
 {
 	transform_list = array_new(struct Transform);
-	empty_indices = array_new(int);
+	empty_indices  = array_new(int);
 }
 
 void transform_cleanup(void)
@@ -57,7 +57,7 @@ void transform_translate(struct Transform* transform, vec3* amount, enum Transfo
 	}
 	else if(space == TS_PARENT)
 	{
-		struct Entity* parent = entity_get_parent(transform->node);
+		struct Entity* parent         = entity_get_parent(transform->node);
 		struct Transform* parent_tran = entity_component_get(parent, C_TRANSFORM);
 		quat_mul_vec3(&translation_amount, &parent_tran->rotation, &translation_amount);
 	}
@@ -169,9 +169,10 @@ void transform_update_transmat(struct Transform* transform)
 		}
 
 		/* Update all children */
-		if(array_len(entity->children) > 0)
+		int children = array_len(entity->children);
+		if(children > 0)
 		{
-			for(int i = 0; i < array_len(entity->children); i++)
+			for(int i = 0; i < children; i++)
 			{
 				struct Entity* child = entity_get(entity->children[i]);
 				struct Transform* child_tran = entity_component_get(child, C_TRANSFORM);

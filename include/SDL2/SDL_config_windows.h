@@ -24,7 +24,6 @@
 
 /* General platform specific identifiers */
 #include "SDL_platform.h"
-
 /* C language features */
 /* #undef const */
 /* #undef inline */
@@ -51,26 +50,26 @@
 #define HAVE_DXGI_H 1
 
 /* Comment this if you want to build without any C library requirements */
-/* #undef HAVE_LIBC */
+#define HAVE_LIBC 1
 #if HAVE_LIBC
 
 /* Useful headers */
 /* #undef HAVE_ALLOCA_H */
 /* #undef HAVE_SYS_TYPES_H */
-/* #undef HAVE_STDIO_H */
-/* #undef STDC_HEADERS */
+#define HAVE_STDIO_H 1
+#define STDC_HEADERS 1
 /* #undef HAVE_STDLIB_H */
-#define HAVE_STDARG_H 1
+/* #undef HAVE_STDARG_H */
 /* #undef HAVE_MALLOC_H */
 /* #undef HAVE_MEMORY_H */
-/* #undef HAVE_STRING_H */
+#define HAVE_STRING_H 1
 /* #undef HAVE_STRINGS_H */
 /* #undef HAVE_INTTYPES_H */
 /* #undef HAVE_STDINT_H */
-/* #undef HAVE_CTYPE_H */
-/* #undef HAVE_MATH_H */
+#define HAVE_CTYPE_H 1
+#define HAVE_MATH_H 1
 /* #undef HAVE_ICONV_H */
-/* #undef HAVE_SIGNAL_H */
+#define HAVE_SIGNAL_H 1
 /* #undef HAVE_ALTIVEC_H */
 /* #undef HAVE_PTHREAD_NP_H */
 /* #undef HAVE_LIBUDEV_H */
@@ -79,77 +78,77 @@
 /* #undef HAVE_FCITX_FRONTEND_H */
 
 /* C library functions */
-/* #undef HAVE_MALLOC */
-/* #undef HAVE_CALLOC */
-/* #undef HAVE_REALLOC */
-/* #undef HAVE_FREE */
-/* #undef HAVE_ALLOCA */
+#define HAVE_MALLOC 1
+#define HAVE_CALLOC 1
+#define HAVE_REALLOC 1
+#define HAVE_FREE 1
+#define HAVE_ALLOCA 1
 #ifndef __WIN32__ /* Don't use C runtime versions of these on Windows */
 /* #undef HAVE_GETENV */
 /* #undef HAVE_SETENV */
 /* #undef HAVE_PUTENV */
 /* #undef HAVE_UNSETENV */
 #endif
-/* #undef HAVE_QSORT */
-/* #undef HAVE_ABS */
+#define HAVE_QSORT 1
+#define HAVE_ABS 1
 /* #undef HAVE_BCOPY */
-/* #undef HAVE_MEMSET */
-/* #undef HAVE_MEMCPY */
-/* #undef HAVE_MEMMOVE */
-/* #undef HAVE_MEMCMP */
-/* #undef HAVE_STRLEN */
+#define HAVE_MEMSET 1
+#define HAVE_MEMCPY 1
+#define HAVE_MEMMOVE 1
+#define HAVE_MEMCMP 1
+#define HAVE_STRLEN 1
 /* #undef HAVE_STRLCPY */
 /* #undef HAVE_STRLCAT */
 /* #undef HAVE_STRDUP */
-/* #undef HAVE__STRREV */
-/* #undef HAVE__STRUPR */
-/* #undef HAVE__STRLWR */
+#define HAVE__STRREV 1
+#define HAVE__STRUPR 1
+#define HAVE__STRLWR 1
 /* #undef HAVE_INDEX */
 /* #undef HAVE_RINDEX */
-/* #undef HAVE_STRCHR */
-/* #undef HAVE_STRRCHR */
-/* #undef HAVE_STRSTR */
-/* #undef HAVE_ITOA */
-/* #undef HAVE__LTOA */
+#define HAVE_STRCHR 1
+#define HAVE_STRRCHR 1
+#define HAVE_STRSTR 1
+#define HAVE_ITOA 1
+#define HAVE__LTOA 1
 /* #undef HAVE__UITOA */
-/* #undef HAVE__ULTOA */
-/* #undef HAVE_STRTOL */
-/* #undef HAVE_STRTOUL */
+#define HAVE__ULTOA 1
+#define HAVE_STRTOL 1
+#define HAVE_STRTOUL 1
 /* #undef HAVE__I64TOA */
 /* #undef HAVE__UI64TOA */
-/* #undef HAVE_STRTOLL */
+#define HAVE_STRTOLL 1
 /* #undef HAVE_STRTOULL */
-/* #undef HAVE_STRTOD */
-/* #undef HAVE_ATOI */
-/* #undef HAVE_ATOF */
-/* #undef HAVE_STRCMP */
-/* #undef HAVE_STRNCMP */
-/* #undef HAVE__STRICMP */
+#define HAVE_STRTOD 1
+#define HAVE_ATOI 1
+#define HAVE_ATOF 1
+#define HAVE_STRCMP 1
+#define HAVE_STRNCMP 1
+#define HAVE__STRICMP 1
 /* #undef HAVE_STRCASECMP */
-/* #undef HAVE__STRNICMP */
+#define HAVE__STRNICMP 1
 /* #undef HAVE_STRNCASECMP */
 /* #undef HAVE_VSSCANF */
 /* #undef HAVE_VSNPRINTF */
-/* #undef HAVE_M_PI */
-/* #undef HAVE_ATAN */
-/* #undef HAVE_ATAN2 */
-/* #undef HAVE_ACOS */
-/* #undef HAVE_ASIN */
-/* #undef HAVE_CEIL */
-/* #undef HAVE_COPYSIGN */
-/* #undef HAVE_COS */
-/* #undef HAVE_COSF */
-/* #undef HAVE_FABS */
-/* #undef HAVE_FLOOR */
-/* #undef HAVE_LOG */
-/* #undef HAVE_POW */
-/* #undef HAVE_SCALBN */
-/* #undef HAVE_SIN */
-/* #undef HAVE_SINF */
-/* #undef HAVE_SQRT */
-/* #undef HAVE_SQRTF */
-/* #undef HAVE_TAN */
-/* #undef HAVE_TANF */
+#define HAVE_M_PI 1
+#define HAVE_ATAN 1
+#define HAVE_ATAN2 1
+#define HAVE_ACOS 1
+#define HAVE_ASIN 1
+#define HAVE_CEIL 1
+#define HAVE_COPYSIGN 1
+#define HAVE_COS 1
+#define HAVE_COSF 1
+#define HAVE_FABS 1
+#define HAVE_FLOOR 1
+#define HAVE_LOG 1
+#define HAVE_POW 1
+#define HAVE_SCALBN 1
+#define HAVE_SIN 1
+#define HAVE_SINF 1
+#define HAVE_SQRT 1
+#define HAVE_SQRTF 1
+#define HAVE_TAN 1
+#define HAVE_TANF 1
 /* #undef HAVE_FSEEKO */
 /* #undef HAVE_FSEEKO64 */
 /* #undef HAVE_SIGACTION */
@@ -166,8 +165,8 @@
 /* #undef HAVE_PTHREAD_SET_NAME_NP */
 /* #undef HAVE_SEM_TIMEDWAIT */
 #elif __WIN32__
-#define HAVE_STDARG_H 1
-#define HAVE_STDDEF_H 1
+/* #undef HAVE_STDARG_H */
+/* #undef HAVE_STDDEF_H */
 #else
 /* We may need some replacement for stdarg.h here */
 #include <stdarg.h>
@@ -314,18 +313,18 @@
 /* #undef SDL_VIDEO_RENDER_D3D11 */
 #define SDL_VIDEO_RENDER_OGL 1
 /* #undef SDL_VIDEO_RENDER_OGL_ES */
-#define SDL_VIDEO_RENDER_OGL_ES2 1
+/* #undef SDL_VIDEO_RENDER_OGL_ES2 */
 /* #undef SDL_VIDEO_RENDER_DIRECTFB */
 
 /* Enable OpenGL support */
 #define SDL_VIDEO_OPENGL 1
 /* #undef SDL_VIDEO_OPENGL_ES */
-#define SDL_VIDEO_OPENGL_ES2 1
+/* #undef SDL_VIDEO_OPENGL_ES2 */
 /* #undef SDL_VIDEO_OPENGL_BGL */
 /* #undef SDL_VIDEO_OPENGL_CGL */
 /* #undef SDL_VIDEO_OPENGL_GLX */
 #define SDL_VIDEO_OPENGL_WGL 1
-#define SDL_VIDEO_OPENGL_EGL 1
+/* #undef SDL_VIDEO_OPENGL_EGL */
 /* #undef SDL_VIDEO_OPENGL_OSMESA */
 /* #undef SDL_VIDEO_OPENGL_OSMESA_DYNAMIC */
 

@@ -276,6 +276,7 @@ void sound_source_load_wav(struct Sound_Source* source, const char* file_name)
 	}
 	else
 	{
+		/* TODO: FIX THIS!!!! This should resemble the if condition  */
 		if(wav_spec.format == AUDIO_U8)
 			format = AL_FORMAT_STEREO8;
 		else if(wav_spec.format == AUDIO_S16)

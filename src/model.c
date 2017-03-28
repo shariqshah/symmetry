@@ -392,7 +392,6 @@ void model_render_all_debug(struct Camera*          camera,
 							const vec4*             debug_color)
 {
 	assert(debug_shader > -1);
-	int geometry  = geom_create_from_file("sphere.pamesh");
 	shader_bind(debug_shader);
 	{
 		static mat4 mvp;
@@ -402,10 +401,9 @@ void model_render_all_debug(struct Camera*          camera,
 			struct Model*     model     = &model_list[i];
 			struct Entity*    entity    = entity_get(model->node);
 			struct Transform* transform = entity_component_get(entity, C_TRANSFORM);
-			int               geometry_ac  = model->geometry_index;
+			int               geometry  = model->geometry_index;
 			mat4_identity(&mvp);
 			mat4_mul(&mvp, &camera->view_proj_mat, &transform->trans_mat);
-			//mat4_mul(&mvp, &camera->view_proj_mat, &temp_trans.trans_mat);
 			shader_set_uniform_mat4(debug_shader, "mvp", &mvp);
 			geom_render(geometry, draw_mode);
 		}

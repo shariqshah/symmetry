@@ -1,5 +1,7 @@
 #include "variant.h"
 #include "log.h"
+#include "string_utils.h"
+
 #include <stdlib.h>
 
 void variant_init_empty(struct Variant* variant)
@@ -44,6 +46,20 @@ void variant_assign_double(struct Variant* variant, double value)
 	variant->val_double = value;
 }
 
+void variant_assign_bool(struct Variant* variant, int value)
+{
+	if(variant->type != VT_BOOL) variant_free(variant);
+	variant->type    = VT_BOOL;
+	variant->val_int = value;
+}
+
+void variant_assign_str(struct Variant* variant, const char* value)
+{
+	if(variant->type != VT_STR) variant_free(variant);
+	variant->type    = VT_STR;
+	variant->val_str = str_new(value);
+}
+
 void variant_assign_vec2(struct Variant* variant, vec2* value)
 {
 	if(variant->type != VT_VEC2) variant_free(variant);
@@ -72,27 +88,26 @@ void variant_assign_quat(struct Variant* variant, quat* value)
 	quat_assign(&variant->val_quat, value);
 }
 
-
-
-
-void variant_free_mat4(struct Variant* variant)
+void variant_free(struct Variant* variant)
 {
-	if(variant->type == VT_MAT4)
+	switch(variant->type)
 	{
+	case VT_MAT4:
 		if(variant->val_voidptr)
 		{
 			free(variant->val_voidptr);
 			variant->val_voidptr = NULL;
 		}
-	}
-	else
-	{
-		log_error("variant:free_mat4", "Cannot free, variant is not of MAT4 type");
-	}
-}
-
-void variant_free(struct Variant* variant)
-{
-	if(variant->type == VT_MAT4)
-		variant_free_mat4(variant);
+		break;
+	case VT_STR:
+		if(variant->val_str)
+		{
+			free(variant->val_str);
+			variant->val_str = NULL;
+		}
+		break;
+	default: /* Nothing to be done for the rest*/
+		break;
+	};
+	variant->type = VT_NONE;
 }

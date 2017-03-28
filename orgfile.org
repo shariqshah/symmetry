@@ -6,14 +6,37 @@
 ** What?
 A topdown 2D shooter exploring symmetry.
 
-** Why?
-- To create a platform on which i will base further projects on.
-- To learn and remove as many black boxes as possible.
-- Profit!?!
-
 ** License
 All the code in this repository is under GPLv3, see LICENSE for more information
 
+** File format specifications
+*** Entity
+// Comment, Sample entity definition in file, paremeters left out are set to defaults
+// Empty line at the end specifies end of entity definition
+entity:   "Something"
+position: 0 0 0
+scale:    1 1 1
+rotation: 0 0 0 1
+model:    "suzanne.pamesh"
+material: "blinn_phong"
+diffuse_color: 1 0 0 1
+diffuse_texture: "checkered.tga"
+specular: 0.55
+
+*** Configuration Variables a.k.a cvars
+// Comment
+render_width: 1024
+render_height: 1024
+fog_enabled: 1
+fog_color: 0.5 0.2 0.2 1
+// There can be comments or empty newlines in between unlike entity definitions
+
+ambient_light: 0.1 0.1 0.1 1
+msaa: 1
+msaa_levels: 8
+
+*** Keybindings
+*** Level/Scene
 * Things TODO
 ** DONE Input
    - State "DONE"       from "TODO"       [2015-07-02 Thu 01:24]
@@ -80,8 +103,8 @@ All the code in this repository is under GPLv3, see LICENSE for more information
 ** CANCELED Draw light volumes
 - State "CANCELED"   from "TODO"       [2017-02-26 Sun 15:39] \\
   Deferred rendering on hold for now.
-** TODO Fix problems with frustrum culling 
-- Recalculate bounding boxes for rotated meshes?
+** DONE Fix problems with frustrum culling 
+- State "DONE"       from "TODO"       [2017-03-26 Sun 01:33]
 ** TODO 2d drawing routines
 - Sprite batching
 ** DONE Gui
@@ -111,6 +134,8 @@ x Font atlas proper cleanup
 - Decoupled event handling of gui and input if possible
 - Custom rendering for gui
 ** TODO Allow passsing base path as commandline argument?
+** DONE Add strings and booleans to variant types
+- State "DONE"       from "TODO"       [2017-03-29 Wed 00:23]
 ** DONE Fix Key release not being reported
 - State "DONE"       from "TODO"       [2017-03-26 Sun 01:16]
 ** TODO Better handling incase assets folder is not found?
@@ -121,12 +146,28 @@ x Font atlas proper cleanup
 ** TODO Ogg format loading and playback
 ** TODO Sound streaming
 ** TODO Implment missing sound source properties (inner/outer cone, getting sound source data)
+** TODO Ingame console and console commands etc
+** TODO Allow binding/unbinding input maps to functions at runtime, for example if input map "Recompute" is triggered, it would call some function that can recompute bounding spheres.
 ** TODO Better handling of wav format checking at load time
 ** TODO Array-based Hashmaps
 ** TODO Sprite sheet animations
 ** TODO Replace orgfile with simple text readme and reduce duplication?
 ** TODO Ray picking
+** TODO Shadow maps
+** TODO Log output to file on every run
+** TODO Print processor stats and machine capabilites RAM etc on every run to log.
+** TODO Milestone: Pong!
+- In order to put things into perspective and get a feel for what really needs to be prioritized, a very small but actual game release is necessary.
+- Release platforms: Windows and Linux
+- Makefile additions. Try to compile game as a dynamically loaded library with ability to reload on recompile
+- Separation between game and engine base
+- Game .so with init, update and cleanup functions
+- Configuration files and "cvars" load/reload
+- Keybindings in config
+- Log output on every run.
 ** TODO Do input maps really need to be queried by their string names?
+** TODO Reloading shaders?
+** TODO Separate Debug/Editor camera from the active camera in the scene that can be switched to at any time
 ** DONE Live data views in editor
 - State "DONE"       from "TODO"       [2017-03-22 Wed 02:14]
 ** DONE Camera resize on window reisze

@@ -97,7 +97,6 @@ void geom_bounding_volume_generate(int index)
 	vec3 len_vec;
 	vec3_sub(&len_vec, &box->max, &sphere->center);
 	sphere->radius = fabsf(vec3_len(&len_vec));
-	log_message("Radius : %.3f", sphere->radius);
 }
 
 void geom_bounding_volume_generate_all(void)

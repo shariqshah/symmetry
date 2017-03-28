@@ -70,7 +70,6 @@ void input_mouse_pos_set(int xpos, int ypos)
 
 void input_on_key(int key, int scancode, int state, int mod_ctrl, int mod_shift)
 {
-	log_message("Key %s", state == KS_PRESSED ? "Pressed" : "Released");
 	for(int i = 0; i < array_len(input_map_list); i++)
 	{
 		struct Input_Map* map = &input_map_list[i];

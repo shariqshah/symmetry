@@ -33,6 +33,8 @@
 #define LEN(a) (sizeof(a)/sizeof(a)[0])
 
 
+#define MAX_FRAME_TIME 1.f
+
 static void run(void);
 static void update(float dt, int* window_should_close);
 static void render(void);
@@ -361,6 +363,7 @@ void run(void)
 		uint32 curr_time = platform_get_ticks();
 		float delta_time = (float)(curr_time - last_time) / 1000.f;
 		last_time = curr_time;
+		if(delta_time > MAX_FRAME_TIME) delta_time = (1.f / 60.f); /* To deal with resuming from breakpoint we artificially set delta time */
 		
 		update(delta_time, &should_window_close);
 		render();

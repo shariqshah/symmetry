@@ -130,10 +130,11 @@ void gui_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element
 	struct Game_State* game_state = game_state_get();
 	window_get_size(game_state->window, &width, &height);
     window_get_drawable_size(game_state->window, &display_width, &display_height);
-	mat4_ortho(&gui_mat, 0, width, height, 0, -100, 100);
+	mat4_ortho(&gui_mat, 0, display_width, display_height, 0, -100, 100);
 
     scale.x = (float)display_width/(float)width;
     scale.y = (float)display_height/(float)height;
+	
 
     /* setup global state */
     glViewport(0,0,display_width,display_height);

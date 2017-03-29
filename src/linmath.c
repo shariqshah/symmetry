@@ -31,7 +31,7 @@ void vec2_sub(vec2* res, vec2* v1, vec2* v2)
 	res->y = v1->y - v2->y;
 }
 
-void vec2_assign(vec2* res, vec2* val)
+void vec2_assign(vec2* res, const vec2* val)
 {
 	res->x = val->x;
 	res->y = val->y;
@@ -221,7 +221,7 @@ void vec4_sub(vec4* res, vec4* v1, vec4* v4)
 	res->w = v1->w - v4->w;
 }
 
-void vec4_assign(vec4* res, vec4* val)
+void vec4_assign(vec4* res, const vec4* val)
 {
 	res->x = val->x;
 	res->y = val->y;

@@ -6,7 +6,7 @@
 /* Private use */
 void* array_new_(size_t object_size, int capacity);
 void* array_grow_(void** array);
-int   array_reset_(void** array, int length); // Resize to length objects whose data is unspecified
+int   array_reset_(void** array, int length); // Resize to length objects whose data is unspecified, previous data is freed
 int   array_pop_(void** array);	// Remove object with highest index
 int   array_remove_at_(void** array, int index);
 void  array_match_len_cap_(void** array);

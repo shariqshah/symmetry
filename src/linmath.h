@@ -62,7 +62,7 @@ extern const vec3 UNIT_Z_NEG;
 void  vec2_fill(vec2* res, float x, float y);
 void  vec2_add(vec2* res, vec2* v1, vec2* v2);
 void  vec2_sub(vec2* res, vec2* v1, vec2* v2);
-void  vec2_assign(vec2* res, vec2* val);
+void  vec2_assign(vec2* res, const vec2* val);
 void  vec2_mul(vec2* res, vec2* v1, vec2* v2);
 float vec2_len(vec2* val);void vec2_norm(vec2* res, vec2* val);
 
@@ -91,7 +91,7 @@ void  vec4_mul_mat4(vec4* res, vec4* val, mat4* mat);
 void  vec4_mul(vec4* res, vec4* v1, vec4* v4);
 void  vec4_norm(vec4* res, vec4* val);
 float vec4_len(vec4* val);
-void  vec4_assign(vec4* res, vec4* val);
+void  vec4_assign(vec4* res, const vec4* val);
 void  vec4_sub(vec4* res, vec4* v1, vec4* v4);
 void  vec4_add(vec4* res, vec4* v1, vec4* v4);
 

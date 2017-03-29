@@ -23,7 +23,7 @@ diffuse_color: 1 0 0 1
 diffuse_texture: "checkered.tga"
 specular: 0.55
 
-*** Configuration Variables a.k.a cvars
+*** Configuration Variables a.k.a cfg-vars
 // Comment
 render_width: 1024
 render_height: 1024
@@ -37,6 +37,8 @@ msaa_levels: 8
 
 *** Keybindings
 *** Level/Scene
+*** Materials
+*** Mesh/Geometry
 * Things TODO
 ** DONE Input
    - State "DONE"       from "TODO"       [2015-07-02 Thu 01:24]
@@ -166,7 +168,7 @@ x Font atlas proper cleanup
 - Keybindings in config
 - Log output on every run.
 ** TODO Do input maps really need to be queried by their string names?
-** TODO Reloading shaders?
+** TODO Reloading all the things! (textures/shaders/models/settings/entities etc)
 ** TODO Separate Debug/Editor camera from the active camera in the scene that can be switched to at any time
 ** DONE Live data views in editor
 - State "DONE"       from "TODO"       [2017-03-22 Wed 02:14]

@@ -26,6 +26,8 @@
 #include "gui.h"
 #include "sound.h"
 #include "editor.h"
+#include "config_vars.h"
+#include "hashmap.h"
 
 #define UNUSED(a) (void)a
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
@@ -68,6 +70,7 @@ void game_init(struct Window* window)
 	editor_init();
 	model_init();
 	entity_init();
+	config_vars_init();
 	scene_init();
 	
 	/* Debug scene setup */
@@ -210,6 +213,15 @@ void scene_setup(void)
 	/* struct Entity* sun = scene_add_new("Sun", NULL); */
 	/* struct Light* sun_light = entity_component_add(sun, C_LIGHT, LT_DIR); */
 	/* sun_light->intensity = 0.8f; */
+
+	struct Hashmap* cvars = config_vars_get();
+	hashmap_int_set(cvars, "My_Int", 20);
+	hashmap_str_set(cvars, "My_String", "This is my string");
+	hashmap_float_set(cvars, "Some_FLOAT", 42.222f);
+	hashmap_double_set(cvars, "Some_Double", 99.999);
+	hashmap_bool_set(cvars, "The_Truth", 0);
+
+	hashmap_debug_print(cvars);
 }
 
 void debug(float dt)
@@ -1599,6 +1611,7 @@ void game_cleanup(void)
 {
 	editor_cleanup();
 	scene_cleanup();
+	config_vars_cleanup();
 	entity_cleanup();
 	model_cleanup();
 	material_cleanup();

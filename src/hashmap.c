@@ -1,6 +1,7 @@
 #include "hashmap.h"
 #include "array.h"
 #include "variant.h"
+#include "log.h"
 #include "string_utils.h"
 
 #include <stdlib.h>
@@ -20,12 +21,12 @@ struct Hashmap
 	struct Hashmap_Entry* buckets[HASH_MAP_NUM_BUCKETS];
 };
 
-static int                   hashmap_generate_hash(const char* key);
+static unsigned int          hashmap_generate_hash(const char* key);
 static struct Hashmap_Entry* hashmap_entry_new(struct Hashmap* hashmap, const char* key);
 
 static struct Hashmap_Entry* hashmap_entry_new(struct Hashmap* hashmap, const char* key)
 {
-	int index = hashmap_generate_hash(key);
+	unsigned int index = hashmap_generate_hash(key);
 	struct Hashmap_Entry* new_entry = NULL;
 	for(int i = 0; i < array_len(hashmap->buckets[index]); i++) /* Look for duplicates and over-write if found */
 	{
@@ -41,10 +42,10 @@ static struct Hashmap_Entry* hashmap_entry_new(struct Hashmap* hashmap, const ch
 	return new_entry;
 }
 
-int hashmap_generate_hash(const char* key)
+unsigned int hashmap_generate_hash(const char* key)
 {
-	int       index      = -1;
-	const int multiplier = 51;
+	unsigned int index      = 0;
+	const int    multiplier = 51;
 	for(int i = 0; i < (int)strlen(key); i++)
 		index = index * multiplier + key[i];
 	return index % HASH_MAP_NUM_BUCKETS;
@@ -65,7 +66,7 @@ void hashmap_free(struct Hashmap* hashmap)
 	if(!hashmap) return;
 	for(int i = 0; i < HASH_MAP_NUM_BUCKETS; i++)
 	{
-		for(int j = 0; j < array_len(hashmap->buckets[j]); j++)
+		for(int j = 0; j < array_len(hashmap->buckets[i]); j++)
 		{
 			struct Hashmap_Entry* entry = &hashmap->buckets[i][j];
 			if(entry->key)
@@ -75,6 +76,8 @@ void hashmap_free(struct Hashmap* hashmap)
 			}
 			variant_free(&entry->value);
 		}
+		array_free(hashmap->buckets[i]);
+		hashmap->buckets[i] = NULL;
 	}
 	free(hashmap);
 	hashmap = NULL;
@@ -91,7 +94,7 @@ const struct Variant* hashmap_value_get(struct Hashmap* hashmap, const char* key
 {
 	if(!hashmap || !key) return NULL;
 	struct Variant* value = NULL;
-	int index = hashmap_generate_hash(key);
+	unsigned int index = hashmap_generate_hash(key);
 	for(int i = 0; i < array_len(hashmap->buckets[index]); i++)
 	{
 		if(strncmp(key, hashmap->buckets[index][i].key, HASH_MAX_KEY_LEN) == 0)
@@ -106,7 +109,7 @@ const struct Variant* hashmap_value_get(struct Hashmap* hashmap, const char* key
 void hashmap_value_remove(struct Hashmap* hashmap, const char* key)
 {
 	if(!hashmap || !key) return;
-	int index           = hashmap_generate_hash(key);
+	unsigned int index = hashmap_generate_hash(key);
 	int index_to_remove = -1;
 	for(int i = 0; i < array_len(hashmap->buckets[index]); i++)
 	{
@@ -250,4 +253,25 @@ void* hashmap_ptr_get(struct Hashmap* hashmap, const char* key)
 {
 	const struct Variant* variant = hashmap_value_get(hashmap, key);
 	return variant->val_voidptr;
+}
+
+void hashmap_debug_print(struct Hashmap* hashmap)
+{
+	if(!hashmap) return;
+	static char str[128];
+	memset(str, '\0', 128);
+	for(int i = 0; i < HASH_MAP_NUM_BUCKETS; i++)
+	{
+		log_message("Bucket : %d", i);
+		log_message("Bucket len : %d", array_len(hashmap->buckets[i]));
+		for(int j = 0; j < array_len(hashmap->buckets[i]); j++)
+		{
+			struct Hashmap_Entry* entry   = &hashmap->buckets[i][j];
+			const struct Variant* value = &entry->value;
+			log_message("Key : %s", entry->key);
+			variant_to_str(value, str, 128);
+			log_message("Value : %s", str);
+			memset(str, '\0', 128);
+		}
+	}
 }

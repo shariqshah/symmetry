@@ -36,4 +36,6 @@ const mat4*     	  hashmap_mat4_get(struct Hashmap* hashmap, const char* key);
 const char*     	  hashmap_str_get(struct Hashmap* hashmap, const char* key);
 void*           	  hashmap_ptr_get(struct Hashmap* hashmap, const char* key);
 
+void                  hashmap_debug_print(struct Hashmap* hashmap);
+
 #endif

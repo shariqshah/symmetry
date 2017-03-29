@@ -53,5 +53,6 @@ void variant_assign_mat4(struct Variant* variant, const mat4* source);
 void variant_assign_ptr(struct Variant* variant, void* source);
 void variant_copy(struct Variant* to, const struct Variant* from);
 void variant_free(struct Variant* variant);
+void variant_to_str(const struct Variant* variant, char* str, int len);
 
 #endif

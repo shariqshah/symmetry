@@ -3,6 +3,7 @@
 #include "string_utils.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
 void variant_init_empty(struct Variant* variant)
 {
@@ -138,5 +139,23 @@ void variant_copy(struct Variant* to, const struct Variant* from)
 	case VT_STR:    variant_assign_str(to, from->val_str);       break;
 	default: /* Nothing to be done for the rest*/
 		break;
+	}
+}
+
+void variant_to_str(const struct Variant* variant, char* str, int len)
+{
+	switch(variant->type)
+	{
+	case VT_BOOL:   snprintf(str, len, "%s", variant->val_bool ? "true" : "false"); break;
+	case VT_INT:    snprintf(str, len, "%d", variant->val_int); break;
+	case VT_FLOAT:  snprintf(str, len, "%.4f", variant->val_float); break;
+	case VT_DOUBLE: snprintf(str, len, "%.4f", variant->val_double); break;
+	case VT_VEC2:   snprintf(str, len, "%.3f, %.3f", variant->val_vec2.x, variant->val_vec2.y); break;
+	case VT_VEC3:   snprintf(str, len, "%.3f, %.3f, %.3f", variant->val_vec3.x, variant->val_vec3.y, variant->val_vec3.z); break;
+	case VT_VEC4:   snprintf(str, len, "%.3f, %.3f, %.3f, %.3f", variant->val_vec4.x, variant->val_vec4.y, variant->val_vec4.z, variant->val_vec4.w); break;
+	case VT_QUAT:   snprintf(str, len, "%.3f, %.3f, %.3f, %.3f", variant->val_quat.x, variant->val_quat.y, variant->val_quat.z, variant->val_quat.w); break;
+	case VT_STR:    snprintf(str, len, "%s", variant->val_str); break;
+	case VT_NONE:   snprintf(str, len, "%s", "NONE"); break;
+	default:        snprintf(str, len, "Unsupported Variant type"); break;
 	}
 }

@@ -136,6 +136,7 @@ x Font atlas proper cleanup
 - Decoupled event handling of gui and input if possible
 - Custom rendering for gui
 ** TODO Allow passsing base path as commandline argument?
+** TODO Variant -> String conversion procedure. Use in editor for debug var slots
 ** DONE Add strings and booleans to variant types
 - State "DONE"       from "TODO"       [2017-03-29 Wed 00:23]
 ** DONE Fix Key release not being reported

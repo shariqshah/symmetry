@@ -4,6 +4,10 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <assert.h>
+
+#define MAX_VARIANT_STR_LEN 1024
 
 void variant_init_empty(struct Variant* variant)
 {
@@ -157,5 +161,87 @@ void variant_to_str(const struct Variant* variant, char* str, int len)
 	case VT_STR:    snprintf(str, len, "%s", variant->val_str); break;
 	case VT_NONE:   snprintf(str, len, "%s", "NONE"); break;
 	default:        snprintf(str, len, "Unsupported Variant type"); break;
+	}
+}
+
+void variant_from_str(struct Variant* variant, const char* str, int variant_type)
+{
+	assert(variant_type > -1 && variant_type < VT_NUM_TYPES);
+	static char str_val[MAX_VARIANT_STR_LEN] = {'\0'};
+    switch(variant_type)
+	{
+	case VT_BOOL:
+	{
+		int boolean = -1;
+		memset(str_val, '\0', MAX_VARIANT_STR_LEN);
+		if(sscanf(str, "%1024s", str_val) == 1)
+		{
+			if(strncmp("true", str_val, 5) == 0)
+				boolean = 1;
+			else if(strncmp("false", str_val, 5) == 0)
+				boolean = 0;
+
+			if(boolean != -1)
+				variant_assign_bool(variant, boolean);
+		}
+	}
+	break;
+	case VT_INT:
+	{
+		int int_val = -1;
+		if(sscanf(str, "%d", &int_val) == 1)
+			variant_assign_int(variant, int_val);
+	}
+	break;
+	case VT_FLOAT:
+	{
+		float float_val = -1;
+		if(sscanf(str, "%f", &float_val) == 1)
+			variant_assign_float(variant, float_val);
+	}
+	break;
+	case VT_DOUBLE:
+	{
+		double double_val = -1;
+		if(sscanf(str, "%lf", &double_val) == 1)
+			variant_assign_double(variant, double_val);
+	}
+	break;
+	case VT_STR:
+	{
+		memset(str_val, '\0', MAX_VARIANT_STR_LEN);
+		if(sscanf(str, "%1024s", str_val) == 1)
+			variant_assign_str(variant, str_val);
+	}
+	break;
+	case VT_VEC2:
+	{
+		vec2 vec2_val = {.x = 0.f, .y = 0.f};
+		if(sscanf(str, "%f %f", &vec2_val.x, &vec2_val.y) == 2)
+			variant_assign_vec2(variant, &vec2_val);
+	}
+	break;
+	case VT_VEC3:
+	{
+		vec3 vec3_val = {.x = 0.f, .y = 0.f, .z = 0.f};
+		if(sscanf(str, "%f %f %f", &vec3_val.x, &vec3_val.y, &vec3_val.z) == 3)
+			variant_assign_vec3(variant, &vec3_val);
+	}
+	break;
+	case VT_VEC4:
+	{
+		vec4 vec4_val = {.x = 0.f, .y = 0.f, .z = 0.f, .w = 0.f};
+		if(sscanf(str, "%f %f %f %f", &vec4_val.x, &vec4_val.y, &vec4_val.z, &vec4_val.w) == 4)
+			variant_assign_vec4(variant, &vec4_val);
+	}
+	break;
+	case VT_QUAT:
+	{
+		quat quat_val = {.x = 0.f, .y = 0.f, .z = 0.f, .w = 0.f};
+		if(sscanf(str, "%f %f %f %f", &quat_val.x, &quat_val.y, &quat_val.z, &quat_val.w) == 4)
+			variant_assign_quat(variant, &quat_val);
+	}
+	break;
+	default: /* Other types not supported, quietly return */ break;
 	}
 }

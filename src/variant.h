@@ -6,10 +6,10 @@
 enum Variant_Type
 {
 	VT_NONE = 0,
+	VT_BOOL,
 	VT_INT,
 	VT_FLOAT,
 	VT_DOUBLE,
-	VT_BOOL,
 	VT_STR,
 	VT_VEC2,
 	VT_VEC3,
@@ -54,5 +54,6 @@ void variant_assign_ptr(struct Variant* variant, void* source);
 void variant_copy(struct Variant* to, const struct Variant* from);
 void variant_free(struct Variant* variant);
 void variant_to_str(const struct Variant* variant, char* str, int len);
+void variant_from_str(struct Variant* variant, const char* str, int variant_type);
 
 #endif

@@ -12,7 +12,7 @@
 
 struct Hashmap_Entry
 {
-	char* key;
+	char*          key;
 	struct Variant value;
 };
 

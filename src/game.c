@@ -28,6 +28,7 @@
 #include "editor.h"
 #include "config_vars.h"
 #include "hashmap.h"
+#include "variant.h"
 
 #define UNUSED(a) (void)a
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
@@ -214,14 +215,23 @@ void scene_setup(void)
 	/* struct Light* sun_light = entity_component_add(sun, C_LIGHT, LT_DIR); */
 	/* sun_light->intensity = 0.8f; */
 
-	struct Hashmap* cvars = config_vars_get();
-	hashmap_int_set(cvars, "My_Int", 20);
-	hashmap_str_set(cvars, "My_String", "This is my string");
-	hashmap_float_set(cvars, "Some_FLOAT", 42.222f);
-	hashmap_double_set(cvars, "Some_Double", 99.999);
-	hashmap_bool_set(cvars, "The_Truth", 0);
+/* 	struct Hashmap* cvars = config_vars_get(); */
+/* 	hashmap_int_set(cvars, "My_Int", 20); */
+/* 	hashmap_str_set(cvars, "My_String", "This is my string"); */
+/* 	hashmap_float_set(cvars, "Some_FLOAT", 42.222f); */
+/* 	hashmap_double_set(cvars, "Some_Double", 99.999); */
+/* 	hashmap_bool_set(cvars, "The_Truth", 0); */
 
-	hashmap_debug_print(cvars);
+/* 	hashmap_float_set(cvars, "Some_FLOAT", 99.3f); */
+/* 	hashmap_debug_print(cvars); */
+/* 	log_message("The value of Some_FLOAT is : %f", hashmap_float_get(cvars, "Some_FLOAT")); */
+/* } */
+
+	struct Variant variant;
+	variant_from_str(&variant, "3.333333333333333333333", VT_DOUBLE);
+	log_message("Variant val : %lf", variant.val_double);
+	log_message("Variant type : %s", variant.type == VT_DOUBLE ? "expected" : "not what's expected");
+	
 }
 
 void debug(float dt)

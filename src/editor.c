@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 
 struct Editor_State
 {
@@ -250,6 +251,7 @@ void editor_update(float dt)
 	/* Debug Vars Window */
 	if(editor_state.debug_vars_window)
 	{
+		static char variant_str[MAX_VARIANT_STR_LEN] = {'\0'};
 		if(nk_begin_titled(context, "Debug_Variables_Window", "Debug Variables", nk_rect(20, 20, 300, 300), default_window_flags))
 		{
 			nk_layout_row_static(context, 250, 250, 2);
@@ -261,18 +263,9 @@ void editor_update(float dt)
 					if(debug_var->data.type == VT_NONE) continue;
 					nk_layout_row_dynamic(context, 20, 2);
 					nk_label(context, debug_var->name, NK_TEXT_ALIGN_LEFT);
-					struct Variant* var_data = &debug_var->data;
-					switch(debug_var->data.type)
-					{
-					case VT_INT:    nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%d",   var_data->val_int); break;
-					case VT_FLOAT:  nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%.4f", var_data->val_float); break;
-					case VT_DOUBLE: nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%d",   var_data->val_double); break;
-					case VT_VEC2:   nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "(%.2f, %.2f)", var_data->val_vec2.x, var_data->val_vec2.y); break;
-					case VT_VEC3:   nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "(%.2f, %.2f, %.2f)", var_data->val_vec3.x, var_data->val_vec3.y, var_data->val_vec3.z); break;
-					case VT_VEC4:   nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "(%.2f, %.2f, %.2f, %.2f)", var_data->val_vec4.x, var_data->val_vec4.y, var_data->val_vec4.z, var_data->val_vec4.w); break;
-					case VT_QUAT:   nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "(%.2f, %.2f, %.2f, %.2f)", var_data->val_quat.x, var_data->val_quat.y, var_data->val_quat.z, var_data->val_quat.w); break;
-					default:        nk_label(context, "Unsupported Value type", NK_TEXT_ALIGN_RIGHT); break;
-					};
+					variant_to_str(&debug_var->data, variant_str, MAX_VARIANT_STR_LEN);
+					nk_label(context, variant_str, NK_TEXT_ALIGN_RIGHT);
+					memset(variant_str, '\0', MAX_VARIANT_STR_LEN);
 				}
 				nk_group_end(context);
 			}

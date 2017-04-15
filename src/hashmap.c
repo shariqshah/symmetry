@@ -1,13 +1,12 @@
 #include "hashmap.h"
-#include "array.h"
 #include "variant.h"
 #include "log.h"
 #include "string_utils.h"
 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
-#define HASH_MAP_NUM_BUCKETS 10
 #define HASH_MAX_KEY_LEN     128
 
 struct Hashmap_Entry
@@ -19,6 +18,7 @@ struct Hashmap_Entry
 struct Hashmap
 {
 	struct Hashmap_Entry* buckets[HASH_MAP_NUM_BUCKETS];
+	int iter_bucket, iter_index;
 };
 
 static unsigned int          hashmap_generate_hash(const char* key);
@@ -58,6 +58,8 @@ struct Hashmap* hashmap_new(void)
 		return NULL;
 	for(int i = 0; i < HASH_MAP_NUM_BUCKETS; i++)
 		hashmap->buckets[i] = array_new(struct Hashmap_Entry);
+	hashmap->iter_bucket =  0;
+	hashmap->iter_index  = -1;
 	return hashmap;
 }
 
@@ -90,7 +92,7 @@ void hashmap_value_set(struct Hashmap* hashmap, const char* key, const struct Va
 	variant_copy(&new_entry->value, value);
 }
 
-const struct Variant* hashmap_value_get(struct Hashmap* hashmap, const char* key)
+const struct Variant* hashmap_value_get(const struct Hashmap* hashmap, const char* key)
 {
 	if(!hashmap || !key) return NULL;
 	struct Variant* value = NULL;
@@ -189,73 +191,73 @@ void hashmap_ptr_set(struct Hashmap* hashmap, const char* key, void* value)
 	variant_assign_ptr(&new_entry->value, value);
 }
 
-float hashmap_float_get(struct Hashmap* hashmap, const char* key)
+float hashmap_float_get(const struct Hashmap* hashmap, const char* key)
 {
 	const struct Variant* variant = hashmap_value_get(hashmap, key);
 	return variant->val_float;
 }
 
-int hashmap_int_get(struct Hashmap* hashmap, const char* key)
+int hashmap_int_get(const struct Hashmap* hashmap, const char* key)
 {
 	const struct Variant* variant = hashmap_value_get(hashmap, key);
 	return variant->val_int;
 }
 
-double hashmap_double_get(struct Hashmap* hashmap, const char* key)
+double hashmap_double_get(const struct Hashmap* hashmap, const char* key)
 {
 	const struct Variant* variant = hashmap_value_get(hashmap, key);
 	return variant->val_double;
 }
 
-int hashmap_get_bool(struct Hashmap* hashmap, const char* key)
+int hashmap_get_bool(const struct Hashmap* hashmap, const char* key)
 {
 	const struct Variant* variant = hashmap_value_get(hashmap, key);
 	return variant->val_bool;
 }
 
-vec2 hashmap_vec2_get(struct Hashmap* hashmap, const char* key)
+vec2 hashmap_vec2_get(const struct Hashmap* hashmap, const char* key)
 {
 	const struct Variant* variant = hashmap_value_get(hashmap, key);
 	return variant->val_vec2;
 }
 
-vec3 hashmap_vec3_get(struct Hashmap* hashmap, const char* key)
+vec3 hashmap_vec3_get(const struct Hashmap* hashmap, const char* key)
 {
 	const struct Variant* variant = hashmap_value_get(hashmap, key);
 	return variant->val_vec3;
 }
 
-vec4 hashmap_vec4_get(struct Hashmap* hashmap, const char* key)
+vec4 hashmap_vec4_get(const struct Hashmap* hashmap, const char* key)
 {
 	const struct Variant* variant = hashmap_value_get(hashmap, key);
 	return variant->val_vec4;
 }
 
-quat hashmap_quat_get(struct Hashmap* hashmap, const char* key)
+quat hashmap_quat_get(const struct Hashmap* hashmap, const char* key)
 {
 	const struct Variant* variant = hashmap_value_get(hashmap, key);
 	return variant->val_quat;
 }
 
-const mat4* hashmap_mat4_get(struct Hashmap* hashmap, const char* key)
+const mat4* hashmap_mat4_get(const struct Hashmap* hashmap, const char* key)
 {
 	const struct Variant* variant = hashmap_value_get(hashmap, key);
 	return variant->val_mat4;
 }
 
-const char* hashmap_str_get(struct Hashmap* hashmap, const char* key)
+const char* hashmap_str_get(const struct Hashmap* hashmap, const char* key)
 {
 	const struct Variant* variant = hashmap_value_get(hashmap, key);
 	return variant->val_str;
 }
 
-void* hashmap_ptr_get(struct Hashmap* hashmap, const char* key)
+void* hashmap_ptr_get(const struct Hashmap* hashmap, const char* key)
 {
 	const struct Variant* variant = hashmap_value_get(hashmap, key);
 	return variant->val_voidptr;
 }
 
-void hashmap_debug_print(struct Hashmap* hashmap)
+void hashmap_debug_print(const struct Hashmap* hashmap)
 {
 	if(!hashmap) return;
 	static char str[128];
@@ -268,10 +270,40 @@ void hashmap_debug_print(struct Hashmap* hashmap)
 		{
 			struct Hashmap_Entry* entry   = &hashmap->buckets[i][j];
 			const struct Variant* value = &entry->value;
-			log_message("Key : %s", entry->key);
+			const char* key = entry->key;
+			log_message("Key : %s", key);
 			variant_to_str(value, str, 128);
 			log_message("Value : %s", str);
 			memset(str, '\0', 128);
 		}
 	}
+}
+
+void hashmap_iter_begin(struct Hashmap* hashmap)
+{
+	assert(hashmap);
+	hashmap->iter_bucket = 0;
+	hashmap->iter_index  = -1;
+}
+
+int hashmap_iter_next(struct Hashmap* hashmap, char** key, struct Variant** value)
+{
+	assert(hashmap);
+	for(;hashmap->iter_bucket < HASH_MAP_NUM_BUCKETS; hashmap->iter_bucket++)
+	{
+		if(hashmap->buckets[hashmap->iter_bucket])
+		{
+		    if(++hashmap->iter_index < array_len(hashmap->buckets[hashmap->iter_bucket]))
+			{
+				*key   = hashmap->buckets[hashmap->iter_bucket][hashmap->iter_index].key;
+				*value = &hashmap->buckets[hashmap->iter_bucket][hashmap->iter_index].value;
+				return 1;
+			}
+			else
+			{
+				hashmap->iter_index = -1;
+			}
+		}
+	}
+	return 0;
 }

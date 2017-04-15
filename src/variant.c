@@ -7,8 +7,6 @@
 #include <string.h>
 #include <assert.h>
 
-#define MAX_VARIANT_STR_LEN 1024
-
 void variant_init_empty(struct Variant* variant)
 {
 	variant->type        = VT_NONE;
@@ -148,6 +146,7 @@ void variant_copy(struct Variant* to, const struct Variant* from)
 
 void variant_to_str(const struct Variant* variant, char* str, int len)
 {
+	if(!variant) return;
 	switch(variant->type)
 	{
 	case VT_BOOL:   snprintf(str, len, "%s", variant->val_bool ? "true" : "false"); break;

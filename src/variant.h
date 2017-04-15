@@ -3,6 +3,8 @@
 
 #include "linmath.h"
 
+#define MAX_VARIANT_STR_LEN 1024
+
 enum Variant_Type
 {
 	VT_NONE = 0,

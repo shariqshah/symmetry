@@ -95,6 +95,7 @@ msaa_levels: 8
 ** DONE Mesh/Model
 - State "DONE"       from "TODO"       [2015-10-13 Tue 19:38]
 ** TODO Add modifiers to input maps to enable combinations for example, c-x, m-k etc
+** TODO Only allocate hashmap bucket when required
 ** DONE Heirarchical Transforms
 ** DONE Materials with textures
 - State "DONE"       from "TODO"       [2015-10-15 Thu 21:21]
@@ -171,6 +172,7 @@ x Font atlas proper cleanup
 ** TODO Do input maps really need to be queried by their string names?
 ** TODO Reloading all the things! (textures/shaders/models/settings/entities etc)
 ** TODO Separate Debug/Editor camera from the active camera in the scene that can be switched to at any time
+** TODO Use hashmaps for debugvar slots in editor
 ** DONE Live data views in editor
 - State "DONE"       from "TODO"       [2017-03-22 Wed 02:14]
 ** DONE Camera resize on window reisze

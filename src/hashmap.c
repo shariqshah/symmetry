@@ -39,6 +39,8 @@ static struct Hashmap_Entry* hashmap_entry_new(struct Hashmap* hashmap, const ch
 	}
 	if(!new_entry) new_entry = array_grow(hashmap->buckets[index], struct Hashmap_Entry);
 	new_entry->key = str_new(key);
+	new_entry->value.type = VT_NONE;
+	variant_free(&new_entry->value);
 	return new_entry;
 }
 

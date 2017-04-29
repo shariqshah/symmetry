@@ -25,15 +25,15 @@ char* io_file_read(const char* path, const char* mode, long* file_size)
 	int rc = fseek(file, 0, SEEK_END);
 	if(rc == 0)
 	{
-		long size = (size_t)ftell(file);
-		if(file_size) *file_size = size;
+		long length = (size_t)ftell(file);
+		if(file_size) *file_size = length;
 		rewind(file);
-		data = malloc(sizeof(char) * size + 1);
+		data = calloc(1, (sizeof(char) * length) + 1);
 		if(data)
 		{
-			if(fread(data, size, 1, file) > 0)
+			if(fread(data, length, 1, file) > 0)
 			{
-				if(data[size] != '\0') data[size] = '\0';
+				if(data[length] != '\0') data[length] = '\0';
 			}
 			else
 			{

@@ -36,7 +36,7 @@
 #define LEN(a) (sizeof(a)/sizeof(a)[0])
 
 
-#define MAX_FRAME_TIME 1.f
+#define MAX_FRAME_TIME 0.5f
 
 static void run(void);
 static void update(float dt, int* window_should_close);
@@ -131,7 +131,7 @@ void scene_setup(void)
 	struct Transform* tran = entity_component_get(new_ent, C_TRANSFORM);
 	vec3 position = {0, 0, -5};
 	transform_translate(tran, &position, TS_WORLD);
-	struct Model* box_model = entity_component_add(new_ent, C_MODEL, "torus.pamesh", "Blinn_Phong");
+	struct Model* box_model = entity_component_add(new_ent, C_MODEL, "default.pamesh", "Blinn_Phong");
 	model_set_material_param(box_model, "diffuse_color", &color);
 	int tex = texture_create_from_file("white.tga", TU_DIFFUSE);
 	model_set_material_param(box_model, "diffuse_texture", &tex);
@@ -149,7 +149,7 @@ void scene_setup(void)
 	}
 
 	int parent_node = new_ent->node;
-	int num_suz = 100;
+	int num_suz = 1;
 	srand(time(NULL));
 	for(int i = 0; i < num_suz; i++)
 	{
@@ -159,7 +159,7 @@ void scene_setup(void)
 		x++; y++; z++;
 		struct Entity* suz = scene_add_as_child("Suzanne", NULL, parent_node);
 		//struct Entity* suz = scene_add_new("Suzanne", NULL);
-		struct Model* suz_model = entity_component_add(suz, C_MODEL, "suzanne.pamesh", "Blinn_Phong");
+		struct Model* suz_model = entity_component_add(suz, C_MODEL, "default.pamesh", "Blinn_Phong");
 		model_set_material_param(suz_model, "diffuse_color", &color);
 		float spec_str = 80.f;
 		model_set_material_param(suz_model, "specular_strength", &spec_str);
@@ -216,7 +216,7 @@ void scene_setup(void)
 	/* sun_light->intensity = 0.8f; */
 
 	struct Hashmap* cvars = config_vars_get();
-	hashmap_int_set(cvars, "My_Int", 20);
+    hashmap_int_set(cvars, "My_Int", 20);
 	hashmap_str_set(cvars, "My_String", "This is my string");
 	hashmap_float_set(cvars, "Some_FLOAT", 42.222f);
 	hashmap_double_set(cvars, "Some_Double", 99.999);

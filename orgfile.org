@@ -89,6 +89,7 @@ msaa_levels: 8
 - State "DONE"       from "TODO"       [2015-08-19 Wed 13:30]
 ** TODO Bounding Boxes
 - Recalculated bounding boxes for rotated meshes?
+** TODO Fix input lag and other framerate related issues
 ** TODO File extension checking for asset loading
 ** DONE Materials
 - State "DONE"       from "TODO"       [2015-10-13 Tue 19:38]
@@ -148,6 +149,7 @@ x Font atlas proper cleanup
 ** DONE 3d sound using OpenAL
 - State "DONE"       from "TODO"       [2017-03-23 Thu 01:43]
 ** TODO Ogg format loading and playback
+** TODO Stick with OpenAL or switch to SoLoud + SDL for sound?
 ** TODO Sound streaming
 ** TODO Implment missing sound source properties (inner/outer cone, getting sound source data)
 ** TODO Ingame console and console commands etc

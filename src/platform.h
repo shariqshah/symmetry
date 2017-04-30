@@ -4,7 +4,7 @@
 #include "num_types.h"
 
 // Function Pointer decls
-typedef void (*Keyboard_Event_Func)     (int key, int scancode, int state, int mod_ctrl, int mod_shift);
+typedef void (*Keyboard_Event_Func)     (int key, int scancode, int state, int repeat, int mod_ctrl, int mod_shift);
 typedef void (*Mousebutton_Event_Func)  (int button, int state, int x, int y, int8 num_clicks);
 typedef void (*Mousemotion_Event_Func)  (int x, int y, int xrel, int yrel);
 typedef void (*Mousewheel_Event_Func)   (int x, int y);
@@ -25,6 +25,7 @@ void           window_set_size(struct Window* window, int width, int height);
 void           window_get_size(struct Window* window, int* out_width, int* out_height);
 void           window_get_drawable_size(struct Window* window, int* out_width, int* out_height);
 void           window_swap_buffers(struct Window* window);
+int            window_fullscreen_set(struct Window* window, int fullscreen);
 
 // Platform functions
 int    platform_init(void);
@@ -44,8 +45,8 @@ void   platform_mouse_position_set(struct Window* window, int x, int y);
 void   platform_mouse_global_position_set(int x, int y);
 void   platform_mouse_relative_mode_set(int relative_mode);
 int    platform_mouse_relative_mode_get(void);
-uint32 platform_get_ticks(void);
-char*  platform_get_base_path(void);
+uint32 platform_ticks_get(void);
+char*  platform_base_path_get(void);
 void   platform_clipboard_text_set(const char* text);
 char*  platform_clipboard_text_get(void);
 

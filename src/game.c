@@ -38,7 +38,7 @@
 
 #define MAX_FRAME_TIME 0.5f
 
-static void run(void);
+static int  run(void);
 static void update(float dt, int* window_should_close);
 static void render(void);
 static void debug(float dt);
@@ -47,15 +47,26 @@ static void scene_setup(void);
 
 static struct Game_State* game_state = NULL;
 
-void game_init(struct Window* window)
+int game_init(struct Window* window)
 {
-	/* TODO: Implement dealing with init failures */
 	game_state = malloc(sizeof(*game_state));
-	game_state->window = window;
-								  
+	if(!game_state)
+	{
+		log_error("game:init", "Out of memory, failed to allocate game_state");
+		return 0;
+	}
+	else
+	{
+		game_state->window = window;
+		game_state->player_node = -1;
+		game_state->player_pitch_node = -1;
+		game_state->is_initialized = 0;
+	}
+
+	/* TODO: Decouple systems' init/cleanup from game, they should exist and run even if there's no "game" */
 	/* Init systems */
 	input_init();
-	char* base_path = platform_get_base_path();
+	char* base_path = platform_base_path_get();
 	io_file_init(base_path);
 	free(base_path);
 	sound_init();
@@ -76,38 +87,42 @@ void game_init(struct Window* window)
 	
 	/* Debug scene setup */
 	scene_setup();
-
-	run();
+	game_state->is_initialized = 1;
+	return run();
 }
 
 void scene_setup(void)
 {
-	int forward_keys[2]    = {KEY_W, KEY_UP};
-	int backward_keys[2]   = {KEY_S, KEY_DOWN};
-	int up_keys[2]         = {KEY_Q};
-	int down_keys[2]       = {KEY_E};
-	int left_keys[2]       = {KEY_A, KEY_LEFT};
-	int right_keys[2]      = {KEY_D, KEY_RIGHT};
-	int turn_right_keys[1] = {KEY_L};
-	int turn_left_keys[1]  = {KEY_J};
-	int turn_up_keys[1]    = {KEY_I};
-	int turn_down_keys[1]  = {KEY_K};
-	int sprint_keys[2]     = {KEY_LSHIFT, KEY_RSHIFT};
-	int recompute_keys[2]  = {KEY_F5, KEY_H};
-	int ed_toggle_keys[1]  = {KEY_F1};
-	input_map_create("Move_Forward",  forward_keys,    2);
-	input_map_create("Move_Backward", backward_keys,   2);
-	input_map_create("Move_Up",       up_keys,         1);
-	input_map_create("Move_Down",     down_keys,       1);
-	input_map_create("Move_Left",     left_keys,       2);
-	input_map_create("Move_Right",    right_keys,      2);
-	input_map_create("Turn_Right",    turn_right_keys, 1);
-	input_map_create("Turn_Left",     turn_left_keys,  1);
-	input_map_create("Turn_Up",       turn_up_keys,    1);
-	input_map_create("Turn_Down",     turn_down_keys,  1);
-	input_map_create("Sprint",        sprint_keys,     2);
-	input_map_create("Recompute",     recompute_keys,  2);
-	input_map_create("Editor_Toggle", ed_toggle_keys,  1);
+	int forward_keys[2]      = {KEY_W, KEY_UP};
+	int backward_keys[2]     = {KEY_S, KEY_DOWN};
+	int up_keys[2]           = {KEY_Q};
+	int down_keys[2]         = {KEY_E};
+	int left_keys[2]         = {KEY_A, KEY_LEFT};
+	int right_keys[2]        = {KEY_D, KEY_RIGHT};
+	int turn_right_keys[1]   = {KEY_L};
+	int turn_left_keys[1]    = {KEY_J};
+	int turn_up_keys[1]      = {KEY_I};
+	int turn_down_keys[1]    = {KEY_K};
+	int sprint_keys[2]       = {KEY_LSHIFT, KEY_RSHIFT};
+	int recompute_keys[2]    = {KEY_F5, KEY_H};
+	int ed_toggle_keys[1]    = {KEY_F1};
+	int win_fullscr_keys[1]  = {KEY_F11};
+	int win_max_keys[1]      = {KEY_F12};
+	input_map_create("Move_Forward",      forward_keys,     2);
+	input_map_create("Move_Backward",     backward_keys,    2);
+	input_map_create("Move_Up",           up_keys,          1);
+	input_map_create("Move_Down",         down_keys,        1);
+	input_map_create("Move_Left",         left_keys,        2);
+	input_map_create("Move_Right",        right_keys,       2);
+	input_map_create("Turn_Right",        turn_right_keys,  1);
+	input_map_create("Turn_Left",         turn_left_keys,   1);
+	input_map_create("Turn_Up",           turn_up_keys,     1);
+	input_map_create("Turn_Down",         turn_down_keys,   1);
+	input_map_create("Sprint",            sprint_keys,      2);
+	input_map_create("Recompute",         recompute_keys,   2);
+	input_map_create("Editor_Toggle",     ed_toggle_keys,   1);
+	input_map_create("Window_Fullscreen", win_fullscr_keys, 1);
+	input_map_create("Window_Maximize",   win_max_keys,     1);
 	
 	struct Entity* player = scene_add_new("player", "None");
 	game_state->player_node = player->node;
@@ -149,7 +164,7 @@ void scene_setup(void)
 	}
 
 	int parent_node = new_ent->node;
-	int num_suz = 1;
+	int num_suz = 200;
 	srand(time(NULL));
 	for(int i = 0; i < num_suz; i++)
 	{
@@ -159,7 +174,7 @@ void scene_setup(void)
 		x++; y++; z++;
 		struct Entity* suz = scene_add_as_child("Suzanne", NULL, parent_node);
 		//struct Entity* suz = scene_add_new("Suzanne", NULL);
-		struct Model* suz_model = entity_component_add(suz, C_MODEL, "default.pamesh", "Blinn_Phong");
+		struct Model* suz_model = entity_component_add(suz, C_MODEL, "suzanne.pamesh", "Blinn_Phong");
 		model_set_material_param(suz_model, "diffuse_color", &color);
 		float spec_str = 80.f;
 		model_set_material_param(suz_model, "specular_strength", &spec_str);
@@ -386,30 +401,34 @@ void debug(float dt)
 	/* } */
 }
 
-void run(void)
+int run(void)
 {
-	uint32 last_time = platform_get_ticks();
-	int should_window_close = 0;
+	uint32 last_time = platform_ticks_get();
+	int    should_window_close = 0;
 	while(!should_window_close)
 	{
-		uint32 curr_time = platform_get_ticks();
+		uint32 curr_time = platform_ticks_get();
 		float delta_time = (float)(curr_time - last_time) / 1000.f;
 		last_time = curr_time;
 		if(delta_time > MAX_FRAME_TIME) delta_time = (1.f / 60.f); /* To deal with resuming from breakpoint we artificially set delta time */
+
+		gui_input_begin();
+		platform_poll_events(&should_window_close);
+		gui_input_end();
 		
 		update(delta_time, &should_window_close);
 		render();
 		window_swap_buffers(game_state->window);
-		gui_input_begin();
-		platform_poll_events(&should_window_close);
-		gui_input_end();
 	}
+	return 1;
 }
 
 void update(float dt, int* window_should_close)
 {	
-	if(input_is_key_pressed(KEY_ESCAPE)) *window_should_close = 1;
-	if(input_map_state_get("Editor_Toggle", KS_RELEASED)) editor_toggle();
+	if(input_is_key_pressed(KEY_ESCAPE))                      *window_should_close = 1;
+	if(input_map_state_get("Editor_Toggle", KS_RELEASED))     editor_toggle();
+	if(input_map_state_get("Window_Fullscreen", KS_RELEASED)) window_fullscreen_set(game_state->window, 1);
+	if(input_map_state_get("Window_Maximize", KS_RELEASED))   window_fullscreen_set(game_state->window, 0);
 	
 	debug(dt);
 	//debug_gui(dt);
@@ -1629,27 +1648,33 @@ void render(void)
 
 void game_cleanup(void)
 {
-	editor_cleanup();
-	scene_cleanup();
-	config_vars_cleanup();
-	entity_cleanup();
-	model_cleanup();
-	material_cleanup();
-	geom_cleanup();
-	light_cleanup();
-	transform_cleanup();
-	camera_cleanup();
-	input_cleanup();
-	renderer_cleanup();
-	io_file_cleanup();
-	framebuffer_cleanup();
-	texture_cleanup();
-	shader_cleanup();
-	sound_cleanup();
-	window_destroy(game_state->window);
-	gl_cleanup();
-	window_cleanup();
-	free(game_state);
+	if(game_state)
+	{
+		if(game_state->is_initialized)
+		{
+			editor_cleanup();
+			scene_cleanup();
+			config_vars_cleanup();
+			entity_cleanup();
+			model_cleanup();
+			material_cleanup();
+			geom_cleanup();
+			light_cleanup();
+			transform_cleanup();
+			camera_cleanup();
+			input_cleanup();
+			renderer_cleanup();
+			io_file_cleanup();
+			framebuffer_cleanup();
+			texture_cleanup();
+			shader_cleanup();
+			sound_cleanup();
+			window_destroy(game_state->window);
+			gl_cleanup();
+			window_cleanup();
+		}
+		free(game_state);
+	}
 }
 
 struct Game_State* game_state_get(void)

@@ -11,7 +11,7 @@ OBJS_DEBUG      = $(patsubst %.c,.debug/%.o,$(SRCS))
 CFLAGS          = -Wall -I$(INCLUDE_DIR) -DUSE_GLAD
 CFLAGS_DEBUG    = -g -DGL_DEBUG_CONTEXT -DAL_DEBUG -std=c99
 CFLAGS_RELEASE  = -O3 -ffast-math
-LFLAGS          = -lSDL2 -lpthread -ldl -lm -lopenal
+LFLAGS          = -Wl,--enable-new-dtags -lSDL2 -Wl,--no-undefined -lpthread -ldl -lm -lopenal
 
 all: release
 

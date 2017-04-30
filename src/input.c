@@ -17,7 +17,7 @@ struct Input_Map
 	int  state;
 };
 
-static void input_on_key(int key, int scancode, int state, int mod_ctrl, int mod_shift);
+static void input_on_key(int key, int scancode, int state, int repeat, int mod_ctrl, int mod_shift);
 static void input_on_mousebutton(int button, int state, int x, int y, int8 num_clicks);
 static void input_on_mousemotion(int x, int y, int xrel, int yrel);
 static void input_on_mousewheel(int x, int y);
@@ -68,8 +68,14 @@ void input_mouse_pos_set(int xpos, int ypos)
 	platform_mouse_global_position_set(xpos, ypos);
 }
 
-void input_on_key(int key, int scancode, int state, int mod_ctrl, int mod_shift)
+void input_on_key(int key, int scancode, int state, int repeat, int mod_ctrl, int mod_shift)
 {
+	if(repeat)
+	{
+		log_message("Repeat ignored");
+		return;			/* Ignore key repeat */
+	}
+	
 	for(int i = 0; i < array_len(input_map_list); i++)
 	{
 		struct Input_Map* map = &input_map_list[i];

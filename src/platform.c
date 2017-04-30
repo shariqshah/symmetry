@@ -10,6 +10,7 @@ struct Window
 {
 	void*         sdl_window;
 	SDL_GLContext gl_context;
+	int           is_fullscreen;
 };
 
 struct Platform_State
@@ -36,8 +37,9 @@ struct Window* window_create(const char* title, int width, int height)
 			log_error("window_create", "Out of memory");
 			return NULL;
 		}
-		new_window->sdl_window = NULL;
-		new_window->gl_context = NULL;
+		new_window->sdl_window    = NULL;
+		new_window->gl_context    = NULL;
+		new_window->is_fullscreen = 0;
 	}
 
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
@@ -94,6 +96,28 @@ struct Window* window_create(const char* title, int width, int height)
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
 	log_message("Window created and initialized with opengl core context %d.%d", major, minor);
 	return new_window;
+}
+
+int window_fullscreen_set(struct Window* window, int fullscreen)
+{
+	int success = 0;
+	int rc = SDL_SetWindowFullscreen(window->sdl_window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+	if(rc == 0)
+	{
+		window->is_fullscreen = fullscreen ? 1 : 0;
+		success = 1;
+		log_message("Window set to %s mode", fullscreen ? "fullscreen" : "windowed");
+		int w, h;
+		window_get_size(window, &w, &h);
+		log_message("Window size   : %dx%d", w, h);
+		window_get_drawable_size(window, &w, &h);
+		log_message("Drawable size : %dx%d", w, h);
+	}
+	else
+	{
+		log_error("platform:window_fullscreen", "window_fullscreen_set failed, %s", SDL_GetError());
+	}
+	return success;
 }
 
 void window_make_context_current(struct Window* window)
@@ -163,6 +187,15 @@ int platform_init(void)
 			log_error("platform_init", "Could not create platform state, out of memory");
 			success = 0;
 		}
+		else
+		{
+			platform_state->on_keyboard_func     = NULL;
+			platform_state->on_mousebutton_func  = NULL;
+			platform_state->on_mousemotion_func  = NULL;
+			platform_state->on_mousewheel_func   = NULL;
+			platform_state->on_textinput_func    = NULL;
+			platform_state->on_windowresize_func = NULL;
+		}
 	}
 	return success;
 }
@@ -188,9 +221,10 @@ void platform_poll_events(int* out_quit)
 			int scancode  = event.key.keysym.scancode;
 			int key       = event.key.keysym.sym;
 			int state     = event.key.state;
+			int repeat    = event.key.repeat;
 			int mod_ctrl  = (event.key.keysym.mod & KMOD_CTRL);
 			int mod_shift = (event.key.keysym.mod & KMOD_SHIFT);
-			platform_state->on_keyboard_func(key, scancode, state, mod_ctrl, mod_shift);
+			platform_state->on_keyboard_func(key, scancode, state, repeat, mod_ctrl, mod_shift);
 			break;
 		}
 		case SDL_MOUSEBUTTONDOWN: case SDL_MOUSEBUTTONUP:
@@ -306,7 +340,7 @@ int platform_mouse_relative_mode_get(void)
 	return SDL_GetRelativeMouseMode() == SDL_TRUE ? 1 : 0;
 }
 
-uint32 platform_get_ticks(void)
+uint32 platform_ticks_get(void)
 {
 	return SDL_GetTicks();
 }
@@ -316,7 +350,7 @@ void platform_mouse_delta_get(int* x, int* y)
 	SDL_GetRelativeMouseState(x, y);
 }
 
-char* platform_get_base_path(void)
+char* platform_base_path_get(void)
 {
 	char* returned_path = SDL_GetBasePath();
 	char* path = NULL;

@@ -56,6 +56,7 @@ dist: release
 	-@echo './Symmetry' >> $(DIST_DIR)/$(PROJECT_NAME)/Launch.sh
 	-@chmod +x $(DIST_DIR)/$(PROJECT_NAME)/Launch.sh
 	-@cp $(PROJECT_NAME) $(DIST_DIR)/$(PROJECT_NAME)
+	-@chmod +x $(DIST_DIR)/$(PROJECT_NAME)/$(PROJECT_NAME)
 	-@echo DONE creating distribution
 
 clean:

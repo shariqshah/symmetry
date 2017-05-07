@@ -14,6 +14,8 @@
 #include "transform.h"
 #include "game.h"
 #include "gui.h"
+#include "config_vars.h"
+#include "hashmap.h"
 
 static int def_fbo            = -1;
 static int def_albedo_tex     = -1;
@@ -35,18 +37,22 @@ void renderer_init(void)
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 	platform_windowresize_callback_set(on_framebuffer_size_change);
-	
-	settings.fog.mode               = FM_EXPONENTIAL;
-	settings.fog.density            = 0.01f;
-	settings.fog.start_dist         = 50.f;
-	settings.fog.max_dist           = 150.f;
-	settings.debug_draw_enabled     = 1;
-	settings.debug_draw_mode        = GDM_TRIANGLES;
+
+	struct Hashmap* cvars = config_vars_get();
+	settings.fog.mode               = hashmap_int_get(cvars,   "fog_mode");
+	settings.fog.density            = hashmap_float_get(cvars, "fog_density");
+	settings.fog.start_dist         = hashmap_float_get(cvars, "fog_start_dist");
+	settings.fog.max_dist           = hashmap_float_get(cvars, "fog_max_dist");
+	settings.fog.color              = hashmap_vec3_get(cvars,  "fog_color");
+	settings.debug_draw_enabled     = hashmap_bool_get(cvars,  "debug_draw_enabled");
+	settings.debug_draw_mode        = hashmap_int_get(cvars,   "debug_draw_mode");
+	settings.debug_draw_color       = hashmap_vec4_get(cvars,  "debug_draw_color");
+	settings.ambient_light          = hashmap_vec3_get(cvars,  "ambient_light");
 	settings.max_gui_vertex_memory  = MAX_GUI_VERTEX_MEMORY;
 	settings.max_gui_element_memory = MAX_GUI_ELEMENT_MEMORY;
-	vec3_fill(&settings.fog.color, 60.f/255.f, 60.f/255.f, 75.f/255.f);
-	vec3_fill(&settings.ambient_light, 0.1f, 0.1f, 0.12f);
-	vec4_fill(&settings.debug_draw_color, 0.f, 1.f, 0.f, 1.f);
+	/* vec3_fill(&settings.fog.color, 60.f/255.f, 60.f/255.f, 75.f/255.f); */
+	/* vec3_fill(&settings.ambient_light, 0.1f, 0.1f, 0.12f); */
+	/* vec4_fill(&settings.debug_draw_color, 0.f, 1.f, 0.f, 1.f); */
 
 	gui_init();
 	

@@ -66,9 +66,6 @@ int game_init(struct Window* window)
 	/* TODO: Decouple systems' init/cleanup from game, they should exist and run even if there's no "game" */
 	/* Init systems */
 	input_init();
-	char* base_path = platform_base_path_get();
-	io_file_init(base_path);
-	free(base_path);
 	sound_init();
 	shader_init();
 	texture_init();
@@ -82,7 +79,6 @@ int game_init(struct Window* window)
 	editor_init();
 	model_init();
 	entity_init();
-	config_vars_init();
 	scene_init();
 	
 	/* Debug scene setup */
@@ -230,22 +226,22 @@ void scene_setup(void)
 	/* struct Light* sun_light = entity_component_add(sun, C_LIGHT, LT_DIR); */
 	/* sun_light->intensity = 0.8f; */
 
-	struct Hashmap* cvars = config_vars_get();
-    hashmap_int_set(cvars, "My_Int", 20);
-	hashmap_str_set(cvars, "My_String", "This is my string");
-	hashmap_float_set(cvars, "Some_FLOAT", 42.222f);
-	hashmap_double_set(cvars, "Some_Double", 99.999);
-	hashmap_bool_set(cvars, "The_Truth", 0);
+	/* struct Hashmap* cvars = config_vars_get(); */
+    /* hashmap_int_set(cvars, "My_Int", 20); */
+	/* hashmap_str_set(cvars, "My_String", "This is my string"); */
+	/* hashmap_float_set(cvars, "Some_FLOAT", 42.222f); */
+	/* hashmap_double_set(cvars, "Some_Double", 99.999); */
+	/* hashmap_bool_set(cvars, "The_Truth", 0); */
 
-	char* key = NULL;
-	struct Variant* value = NULL;
-	char variant_str[256];
-	HASHMAP_FOREACH(cvars, key, value)
-	{
-		variant_to_str(value, variant_str, 256);
-		log_message("VAL :(%s) : (%s)", key, variant_str);
-		memset(variant_str, '\0', 256);
-	}
+	/* char* key = NULL; */
+	/* struct Variant* value = NULL; */
+	/* char variant_str[256]; */
+	/* HASHMAP_FOREACH(cvars, key, value) */
+	/* { */
+	/* 	variant_to_str(value, variant_str, 256); */
+	/* 	log_message("VAL :(%s) : (%s)", key, variant_str); */
+	/* 	memset(variant_str, '\0', 256); */
+	/* } */
 	
 /* 	hashmap_float_set(cvars, "Some_FLOAT", 99.3f); */
 	/* hashmap_debug_print(cvars); */
@@ -1654,7 +1650,6 @@ void game_cleanup(void)
 		{
 			editor_cleanup();
 			scene_cleanup();
-			config_vars_cleanup();
 			entity_cleanup();
 			model_cleanup();
 			material_cleanup();

@@ -14,7 +14,7 @@ typedef void (*Textinput_Event_Func)    (const char* text);
 // Window Related functions
 struct Window;
 
-struct Window* window_create(const char* title, int width, int height);
+struct Window* window_create(const char* title, int width, int height, int msaa, int msaa_levels);
 void           window_destroy(struct Window* window);
 void           window_show(struct Window* window);
 void           window_hide(struct Window* window);

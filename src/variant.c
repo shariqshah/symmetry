@@ -78,6 +78,34 @@ void variant_assign_quat(struct Variant* variant, const quat* value)
 	quat_assign(&variant->val_quat, value);
 }
 
+void variant_assign_vec2f(struct Variant* variant, const float x, const float y)
+{
+	if(variant->type != VT_VEC2) variant_free(variant);
+	variant->type     = VT_VEC2;
+	vec2_fill(&variant->val_vec2, x, y);
+}
+
+void variant_assign_vec3f(struct Variant* variant, const float x, const float y, const float z)
+{
+	if(variant->type != VT_VEC3) variant_free(variant);
+	variant->type     = VT_VEC3;
+	vec3_fill(&variant->val_vec3, x, y, z);
+}
+
+void variant_assign_vec4f(struct Variant* variant, const float x, const float y, const float z, const float w)
+{
+	if(variant->type != VT_VEC4) variant_free(variant);
+	variant->type     = VT_VEC4;
+	vec4_fill(&variant->val_vec4, x, y, z, w);
+}
+
+void variant_assign_quatf(struct Variant* variant, const float x, const float y, const float z, const float w)
+{
+	if(variant->type != VT_QUAT) variant_free(variant);
+	variant->type     = VT_QUAT;
+	quat_fill(&variant->val_quat, x, y, z, w);
+}
+
 void variant_assign_mat4(struct Variant* variant, const mat4* source)
 {
 	if(variant->type != VT_MAT4) variant_free(variant);

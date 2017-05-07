@@ -7,8 +7,6 @@
 #include <string.h>
 #include <assert.h>
 
-#define HASH_MAX_KEY_LEN     128
-
 struct Hashmap_Entry
 {
 	char*          key;
@@ -94,14 +92,16 @@ void hashmap_value_set(struct Hashmap* hashmap, const char* key, const struct Va
 	variant_copy(&new_entry->value, value);
 }
 
-const struct Variant* hashmap_value_get(const struct Hashmap* hashmap, const char* key)
+struct Variant* hashmap_value_get(const struct Hashmap* hashmap, const char* key)
 {
 	if(!hashmap || !key) return NULL;
 	struct Variant* value = NULL;
-	unsigned int index = hashmap_generate_hash(key);
+	unsigned int index    = hashmap_generate_hash(key);
+	int key_len           = strlen(key);
+	int compare_len       = key_len < HASH_MAX_KEY_LEN ? key_len : HASH_MAX_KEY_LEN;
 	for(int i = 0; i < array_len(hashmap->buckets[index]); i++)
 	{
-		if(strncmp(key, hashmap->buckets[index][i].key, HASH_MAX_KEY_LEN) == 0)
+		if(strncmp(key, hashmap->buckets[index][i].key, compare_len) == 0)
 		{
 			value = &hashmap->buckets[index][i].value;
 			break;
@@ -175,6 +175,30 @@ void hashmap_quat_set(struct Hashmap* hashmap, const char* key, const quat* valu
 	variant_assign_quat(&new_entry->value, value);
 }
 
+void hashmap_vec2_setf(struct Hashmap* hashmap, const char* key, const float x, const float y)
+{
+	struct Hashmap_Entry* new_entry = hashmap_entry_new(hashmap, key);
+	variant_assign_vec2f(&new_entry->value, x, y);
+}
+
+void hashmap_vec3_setf(struct Hashmap* hashmap, const char* key, const float x, const float y, const float z)
+{
+	struct Hashmap_Entry* new_entry = hashmap_entry_new(hashmap, key);
+	variant_assign_vec3f(&new_entry->value, x, y, z);
+}
+
+void hashmap_vec4_setf(struct Hashmap* hashmap, const char* key, const float x, const float y, const float z, const float w)
+{
+	struct Hashmap_Entry* new_entry = hashmap_entry_new(hashmap, key);
+	variant_assign_vec4f(&new_entry->value, x, y, z, w);
+}
+
+void hashmap_quat_setf(struct Hashmap* hashmap, const char* key, const float x, const float y, const float z, const float w)
+{	
+	struct Hashmap_Entry* new_entry = hashmap_entry_new(hashmap, key);
+	variant_assign_quatf(&new_entry->value, x, y, z, w);
+}
+
 void hashmap_mat4_set(struct Hashmap* hashmap, const char* key, const mat4* value)
 {
 	struct Hashmap_Entry* new_entry = hashmap_entry_new(hashmap, key);
@@ -211,7 +235,7 @@ double hashmap_double_get(const struct Hashmap* hashmap, const char* key)
 	return variant->val_double;
 }
 
-int hashmap_get_bool(const struct Hashmap* hashmap, const char* key)
+int hashmap_bool_get(const struct Hashmap* hashmap, const char* key)
 {
 	const struct Variant* variant = hashmap_value_get(hashmap, key);
 	return variant->val_bool;

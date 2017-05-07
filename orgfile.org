@@ -24,15 +24,15 @@ diffuse_texture: "checkered.tga"
 specular: 0.55
 
 *** Configuration Variables a.k.a cfg-vars
-// Comment
+# Comment
 render_width: 1024
 render_height: 1024
-fog_enabled: 1
+debug_draw_enabled: true
 fog_color: 0.5 0.2 0.2 1
-// There can be comments or empty newlines in between unlike entity definitions
+# There can be comments or empty newlines in between unlike entity definitions
 
 ambient_light: 0.1 0.1 0.1 1
-msaa: 1
+msaa: true
 msaa_levels: 8
 
 *** Keybindings
@@ -89,7 +89,8 @@ msaa_levels: 8
 - State "DONE"       from "TODO"       [2015-08-19 Wed 13:30]
 ** TODO Bounding Boxes
 - Recalculated bounding boxes for rotated meshes?
-** TODO Fix input lag and other framerate related issues
+** DONE Fix input lag and other framerate related issues
+- State "DONE"       from "TODO"       [2017-05-07 Sun 18:40]
 ** TODO File extension checking for asset loading
 ** DONE Materials
 - State "DONE"       from "TODO"       [2015-10-13 Tue 19:38]
@@ -138,7 +139,12 @@ x Font atlas proper cleanup
 - Decoupled event handling of gui and input if possible
 - Custom rendering for gui
 ** TODO Allow passsing base path as commandline argument?
-** TODO Variant -> String conversion procedure. Use in editor for debug var slots
+** TODO Show SDL dialogbox if we cannot launch at all?
+** TODO Writing back to config file + maybe with comments intact?
+** DONE Reading from config file
+- State "DONE"       from "TODO"       [2017-05-07 Sun 23:52]
+** DONE Variant -> String conversion procedure. Use in editor for debug var slots
+- State "DONE"       from "TODO"       [2017-05-07 Sun 18:43]
 ** DONE Add strings and booleans to variant types
 - State "DONE"       from "TODO"       [2017-03-29 Wed 00:23]
 ** DONE Fix Key release not being reported
@@ -155,7 +161,8 @@ x Font atlas proper cleanup
 ** TODO Ingame console and console commands etc
 ** TODO Allow binding/unbinding input maps to functions at runtime, for example if input map "Recompute" is triggered, it would call some function that can recompute bounding spheres.
 ** TODO Better handling of wav format checking at load time
-** TODO Array-based Hashmaps
+** DONE Array-based Hashmaps
+- State "DONE"       from "TODO"       [2017-05-07 Sun 18:42]
 ** TODO Sprite sheet animations
 ** TODO Replace orgfile with simple text readme and reduce duplication?
 ** TODO Ray picking

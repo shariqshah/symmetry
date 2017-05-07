@@ -72,7 +72,6 @@ void input_on_key(int key, int scancode, int state, int repeat, int mod_ctrl, in
 {
 	if(repeat)
 	{
-		log_message("Repeat ignored");
 		return;			/* Ignore key repeat */
 	}
 	

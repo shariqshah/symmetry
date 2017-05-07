@@ -16,6 +16,7 @@
 #include "gui.h"
 #include "array.h"
 #include "variant.h"
+#include "config_vars.h"
 #include "string_utils.h"
 
 #include <stdio.h>
@@ -147,7 +148,7 @@ void editor_update(float dt)
 	if(nk_begin(context, "Top_Panel", nk_recti(0, 0, win_width, win_height - (win_height - editor_state.top_panel_height)),
 				NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
 	{
-		float ratios[] = {0.1f, 0.1f, 0.7f, 0.1f};
+		float ratios[] = {0.1f, 0.1f, 0.1f, 0.6f, 0.1f};
 		static int   frames  = 0;
 		static int   fps     = 0;
 		static float seconds = 0.f;
@@ -159,11 +160,13 @@ void editor_update(float dt)
 			seconds = 0.f;
 			frames  = 0;
 		}
-		nk_layout_row(context, NK_DYNAMIC, 22, 4, ratios);
+		nk_layout_row(context, NK_DYNAMIC, 22, sizeof(ratios), ratios);
 		if(nk_button_label(context, "Render Settings"))
 			editor_state.renderer_settings_window = !editor_state.renderer_settings_window;
 		if(nk_button_label(context, "Debug Variables"))
 			editor_state.debug_vars_window = !editor_state.debug_vars_window;
+		if(nk_button_label(context, "Save config"))
+			config_vars_save("config.cfg");
 		nk_spacing(context, 1);
 		nk_labelf(context, NK_TEXT_ALIGN_RIGHT | NK_TEXT_ALIGN_MIDDLE, "FPS : %.d", fps);
 	}

@@ -81,28 +81,13 @@ int config_vars_load(const char* filename)
 			key_str[key_str_len] = '\0';
 		value_str++; /* Ignore the colon(:) */
 		
-		//char* key = NULL;
 		struct Variant* value = hashmap_value_get(cvars, key_str);
 		if(!value)
 		{
 			log_warning("Unknown value in config file %s, line %d", filename, current_line);
 			continue;
 		}
-
 		variant_from_str(value, value_str, value->type);
-		/* HASHMAP_FOREACH(cvars, key, value) */
-		/* { */
-		/* 	if(strncmp(line_buffer, key, strlen(key)) == 0) */
-		/* 	{ */
-		/* 		char* value_str = strstr(line_buffer, ":"); */
-		/* 		if(value_str) */
-		/* 		{ */
-		/* 			value_str++; */
-		/* 			variant_from_str(value, value_str, value->type); */
-		/* 		} */
-		/* 		break; */
-		/* 	} */
-		/* } */
 	}
 	
 	success = 1;
@@ -110,7 +95,28 @@ int config_vars_load(const char* filename)
 	return success;
 }
 
-void config_vars_save(const char* filename)
+int config_vars_save(const char* filename)
 {
-	
+	int success = 0;
+	FILE* config_file = io_file_open(filename, "w");
+	if(!config_file)
+	{
+		log_error("config:vars_save", "Failed to open config file %s for writing");
+		return success;
+	}
+
+	char* key = NULL;
+	struct Variant* value = NULL;
+	char variant_str[MAX_VARIANT_STR_LEN];
+	HASHMAP_FOREACH(cvars, key, value)
+	{
+		memset(variant_str, '\0', MAX_VARIANT_STR_LEN);
+		variant_to_str(value, variant_str, MAX_VARIANT_STR_LEN);
+		log_message("Writing : %s: %s", key, variant_str);
+		fprintf(config_file, "%s: %s\n", key, variant_str);
+	}
+	log_message("Config file %s written.", filename);
+	success = 1;
+	fclose(config_file);
+	return success;
 }

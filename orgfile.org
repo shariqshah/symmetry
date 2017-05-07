@@ -140,7 +140,8 @@ x Font atlas proper cleanup
 - Custom rendering for gui
 ** TODO Allow passsing base path as commandline argument?
 ** TODO Show SDL dialogbox if we cannot launch at all?
-** TODO Writing back to config file + maybe with comments intact?
+** DONE Writing back to config file
+- State "DONE"       from "TODO"       [2017-05-08 Mon 00:57]
 ** DONE Reading from config file
 - State "DONE"       from "TODO"       [2017-05-07 Sun 23:52]
 ** DONE Variant -> String conversion procedure. Use in editor for debug var slots
@@ -166,6 +167,7 @@ x Font atlas proper cleanup
 ** TODO Sprite sheet animations
 ** TODO Replace orgfile with simple text readme and reduce duplication?
 ** TODO Ray picking
+** TODO Remove reduntant "settings" structures and move all configuration stuff to config variables
 ** TODO Shadow maps
 ** TODO Log output to file on every run
 ** TODO Print processor stats and machine capabilites RAM etc on every run to log.
@@ -175,7 +177,7 @@ x Font atlas proper cleanup
 - Makefile additions. Try to compile game as a dynamically loaded library with ability to reload on recompile
 - Separation between game and engine base
 - Game .so with init, update and cleanup functions
-- Configuration files and "cvars" load/reload
+x Configuration files and "cvars" load/reload
 - Keybindings in config
 - Log output on every run.
 ** TODO Do input maps really need to be queried by their string names?

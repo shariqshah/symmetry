@@ -89,7 +89,7 @@ int game_init(struct Window* window)
 
 void scene_setup(void)
 {
-	struct Key_Combination forward_keys[2]      = {{KEY_W, KMD_NONE}, {KEY_UP, KMD_ALT}};
+	struct Key_Combination forward_keys[2]      = {{KEY_W, KMD_NONE}, {KEY_UP, KMD_ALT | KMD_SHIFT}};
 	struct Key_Combination backward_keys[2]     = {{KEY_S, KMD_NONE}, {KEY_DOWN, KMD_NONE}};
 	/* struct Key_Combination up_keys[2]           = {KEY_Q}; */
 	/* struct Key_Combination down_keys[2]         = {KEY_E}; */
@@ -427,7 +427,7 @@ void update(float dt, int* window_should_close)
 	/* if(input_map_state_get("Window_Maximize", KS_RELEASED))   window_fullscreen_set(game_state->window, 0); */
 	
 	debug(dt);
-	//debug_gui(dt);
+	debug_gui(dt);
 	editor_update(dt);
 	input_update();	/* This should always be the last thing. Probably
 					 * put this in post update? */

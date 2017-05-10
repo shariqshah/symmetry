@@ -76,17 +76,18 @@ void input_on_key(int key, int scancode, int state, int repeat, int mod_ctrl, in
 	if(mod_ctrl)  mods |= KMD_CTRL;
 	if(mod_shift) mods |= KMD_SHIFT;
 	if(mod_alt)   mods |= KMD_ALT;
-	
 	for(int i = 0; i < array_len(input_map_list); i++)
 	{
 		struct Input_Map* map = &input_map_list[i];
 		for(int j = 0; j < array_len(map->keys); j++)
 		{
-			if(map->state == KS_PRESSED && state == KS_RELEASED && map->keys[j].mods == mods)
+			if(map->state == KS_PRESSED &&
+			   state == KS_RELEASED     &&
+			   ((map->keys[j].mods & mods) == map->keys[j].mods))
 			{
 				map->state = state;
 			}
-			if(map->keys[j].key == key && (map->keys[j].mods == mods))
+			if(map->keys[j].key == key && ((map->keys[j].mods & mods) == map->keys[j].mods))
 			{
 				map->state = state;
 				break;

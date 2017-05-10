@@ -15,10 +15,11 @@ struct Key_Combination
 
 enum Key_Mod
 {
-	KMD_NONE  = KMOD_NONE,
 	KMD_ALT   = KMOD_ALT,
 	KMD_SHIFT = KMOD_SHIFT,
-	KMD_CTRL  = KMOD_CTRL
+	KMD_CTRL  = KMOD_CTRL,
+	//KMD_NONE  = !(KMD_ALT | KMD_SHIFT | KMD_CTRL)
+	KMD_NONE  = 0
 };
 
 enum Key_State

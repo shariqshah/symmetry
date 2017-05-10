@@ -409,6 +409,8 @@ enum Keyboard_Scancode
 };
 
 void input_init(void);
+int  input_load(const char* filename);
+int  input_save(const char* filename);
 void input_cleanup(void);
 int  input_mousebutton_state_get(uint button, int state_type);
 int  input_is_key_pressed(int key);

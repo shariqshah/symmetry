@@ -60,26 +60,25 @@ int config_vars_load(const char* filename)
 	while(fgets(line_buffer, MAX_LINE_LEN - 1, config_file))
 	{
 		current_line++;
-		line_buffer[strcspn(line_buffer, "\r\n")] = '\0';
+		memset(key_str, '\0', HASH_MAX_KEY_LEN);
 		
 		if(line_buffer[0] == '#' || strlen(line_buffer) == 0)
 			continue;
-
-		log_message("Line : %s", line_buffer);
-		memset(key_str, '\0', HASH_MAX_KEY_LEN);
+		
 		char* value_str = strstr(line_buffer, ":");
 		if(!value_str)
 		{
 			log_warning("Malformed value in config file %s, line %d", filename, current_line);
 			continue;
 		}
-		int key_str_len = value_str - line_buffer;
-		strncpy(key_str, line_buffer, key_str_len);
-		if(key_str_len >= HASH_MAX_KEY_LEN)
-			key_str[HASH_MAX_KEY_LEN - 1] = '\0';
-		else
-			key_str[key_str_len] = '\0';
+		
 		value_str++; /* Ignore the colon(:) */
+
+		if(sscanf(line_buffer, " %1024[^: ] : %*s", key_str) != 1)
+		{
+			log_warning("Unable to read key in config file %s, line %d", filename, current_line);
+			continue;
+		}
 		
 		struct Variant* value = hashmap_value_get(cvars, key_str);
 		if(!value)
@@ -112,7 +111,6 @@ int config_vars_save(const char* filename)
 	{
 		memset(variant_str, '\0', MAX_VARIANT_STR_LEN);
 		variant_to_str(value, variant_str, MAX_VARIANT_STR_LEN);
-		log_message("Writing : %s: %s", key, variant_str);
 		fprintf(config_file, "%s: %s\n", key, variant_str);
 	}
 	log_message("Config file %s written.", filename);

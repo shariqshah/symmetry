@@ -6,6 +6,7 @@
 #include "platform.h"
 #include "log.h"
 #include "gui.h"
+#include "file_io.h"
 
 struct Input_Map
 {
@@ -40,6 +41,67 @@ void input_cleanup(void)
 		array_free(map->keys);
 	}
 	array_free(input_map_list);
+}
+
+int input_load(const char* filename)
+{
+	int success = 0;
+	/* const int MAX_KEYBIND_LEN = 128; */
+	/* const int MAX_LINE_LEN    = 512; */
+	/* FILE* config_file = io_file_open(filename, "r"); */
+	/* if(!config_file) */
+	/* { */
+	/* 	log_error("input:vars_load", "Could not open %s", filename); */
+	/* 	return success; */
+	/* } */
+
+	/* /\* Read line by line, ignore comments *\/ */
+	/* char key_str[MAX_KEYBIND_LEN]; */
+	/* char line_buffer[MAX_LINE_LEN]; */
+	/* memset(key_str, '\0', MAX_KEYBIND_LEN); */
+	/* memset(line_buffer, '\0', MAX_LINE_LEN); */
+	/* int current_line = 0; */
+	/* while(fgets(line_buffer, MAX_LINE_LEN - 1, config_file)) */
+	/* { */
+	/* 	current_line++; */
+	/* 	line_buffer[strcspn(line_buffer, "\r\n")] = '\0'; */
+		
+	/* 	if(line_buffer[0] == '#' || strlen(line_buffer) == 0) */
+	/* 		continue; */
+
+	/* 	log_message("Line : %s", line_buffer); */
+	/* 	memset(key_str, '\0', MAX_KEYBIND_LEN); */
+	/* 	char* value_str = strstr(line_buffer, ":"); */
+	/* 	if(!value_str) */
+	/* 	{ */
+	/* 		log_warning("Malformed value in config file %s, line %d", filename, current_line); */
+	/* 		continue; */
+	/* 	} */
+	/* 	int key_str_len = value_str - line_buffer; */
+	/* 	strncpy(key_str, line_buffer, key_str_len); */
+	/* 	if(key_str_len >= MAX_KEYBIND_LEN) */
+	/* 		key_str[MAX_KEYBIND_LEN - 1] = '\0'; */
+	/* 	else */
+	/* 		key_str[key_str_len] = '\0'; */
+	/* 	value_str++; /\* Ignore the colon(:) *\/ */
+		
+	/* 	struct Variant* value = hashmap_value_get(cvars, key_str); */
+	/* 	if(!value) */
+	/* 	{ */
+	/* 		log_warning("Unknown value in config file %s, line %d", filename, current_line); */
+	/* 		continue; */
+	/* 	} */
+	/* 	variant_from_str(value, value_str, value->type); */
+	/* } */
+	
+	/* success = 1; */
+	/* fclose(config_file); */
+	return success;
+}
+
+int input_save(const char* filename)
+{
+	
 }
 
 void input_on_mousemotion(int x, int y, int xrel, int yrel)

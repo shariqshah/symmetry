@@ -7,6 +7,20 @@
 #include <SDL2/SDL_mouse.h>
 #include <SDL2/SDL_events.h>
 
+struct Key_Combination
+{
+	int key;
+	int mods;
+};
+
+enum Key_Mod
+{
+	KMD_NONE  = KMOD_NONE,
+	KMD_ALT   = KMOD_ALT,
+	KMD_SHIFT = KMOD_SHIFT,
+	KMD_CTRL  = KMOD_CTRL
+};
+
 enum Key_State
 {
 	KS_INACTIVE = -1,
@@ -404,9 +418,9 @@ void input_mouse_mode_set(enum Mouse_Mode mode);
 int  input_mouse_mode_get(void);
 void input_update(void);
 int  input_map_state_get(const char* map_name, int state);
-void input_map_create(const char* name, int* keys, size_t num_keys);
+void input_map_create(const char* name, struct Key_Combination* keys, size_t num_keys);
+int  input_map_keys_set(const char* name, struct Key_Combination* keys, int num_keys);
 int  input_map_remove(const char* name);
-int  input_map_keys_set(const char* name, int* keys, int num_keys);
 int  input_map_name_set(const char* name, const char* new_name);
 
 #endif

@@ -15,7 +15,7 @@ int   array_copy_(void* arr_src, void** arr_dest);
 
 /* Public Api */
 #define array_new(type)                  (type*) array_new_(sizeof(type), 0); // Use this for array creation
-#define array_new_cap(type, capacity)    (type*) array_new_(sizeof(type), capacity); // Use this for array with specific capacity
+#define array_new_cap(type, capacity)    (type*) array_new_(sizeof(type), capacity); // Use this for array with specific length and capacity
 #define array_clear(array)               array_reset(array, 0)
 #define array_grow(array, type)          (type*) array_grow_((void**)&array)
 #define array_push(array, value, type)   {type* new_val = array_grow(array, type); \

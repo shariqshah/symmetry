@@ -4,7 +4,7 @@
 #include "num_types.h"
 
 // Function Pointer decls
-typedef void (*Keyboard_Event_Func)     (int key, int scancode, int state, int repeat, int mod_ctrl, int mod_shift);
+typedef void (*Keyboard_Event_Func)     (int key, int scancode, int state, int repeat, int mod_ctrl, int mod_shift, int mod_alt);
 typedef void (*Mousebutton_Event_Func)  (int button, int state, int x, int y, int8 num_clicks);
 typedef void (*Mousemotion_Event_Func)  (int x, int y, int xrel, int yrel);
 typedef void (*Mousewheel_Event_Func)   (int x, int y);

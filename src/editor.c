@@ -50,7 +50,7 @@ void editor_init(void)
 	editor_state.renderer_settings_window = 0;
 	editor_state.debug_vars_window        = 1;
 	editor_state.top_panel_height         = 30;
-	debug_vars_list                       = array_new_cap(struct Debug_Variable, 20);
+	debug_vars_list                       = array_new(struct Debug_Variable);
 	empty_indices                         = array_new(int);
 }
 
@@ -219,9 +219,9 @@ void editor_update(float dt)
 				nk_slider_float(context, 0.f, &render_settings->fog.density, 1.f, 0.005);
 				if(nk_input_is_mouse_hovering_rect(&context->input, bounds))
 				{
-					static char float_str[6];
+					static char float_str[7];
 					snprintf(float_str, 6, "%.4f", render_settings->fog.density);
-					float_str[5] = '\0';
+					float_str[6] = '\0';
 					nk_tooltip(context, float_str);
 				}
 

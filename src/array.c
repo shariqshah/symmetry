@@ -25,11 +25,11 @@ static struct Array* array_get_ptr(void* array_data)
 
 void* array_new_(size_t object_size, int capacity)
 {
-	if(capacity == 0) capacity = ARRAY_MIN_CAPACITY;
-	struct Array* new_array = malloc(sizeof(*new_array) + (object_size * capacity));
-	new_array->object_size = object_size;
-	new_array->length = 0;
-	new_array->capacity = capacity;
+	int initial_capacity    = capacity == 0 ? ARRAY_MIN_CAPACITY : capacity;
+	struct Array* new_array = malloc(sizeof(*new_array) + (object_size * initial_capacity));
+	new_array->object_size  = object_size;
+	new_array->length       = capacity;
+	new_array->capacity     = initial_capacity;
 	
 	return new_array->data;
 }

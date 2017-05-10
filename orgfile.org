@@ -11,8 +11,8 @@ All the code in this repository is under GPLv3, see LICENSE for more information
 
 ** File format specifications
 *** Entity
-// Comment, Sample entity definition in file, paremeters left out are set to defaults
-// Empty line at the end specifies end of entity definition
+# Comment, Sample entity definition in file, paremeters left out are set to defaults
+# Empty line at the end specifies end of entity definition
 entity:   "Something"
 position: 0 0 0
 scale:    1 1 1
@@ -36,6 +36,13 @@ msaa: true
 msaa_levels: 8
 
 *** Keybindings
+# All keys are parsed by comparing the output of SDL_GetKeyname
+# Each line represents a keybinding
+Move_Forward: W
+# Multiple keys to a single binding are specified with commas
+Move_Backward: S,Down
+# Combinations are specified with a hyphen/dash
+Quit: Left Ctrl-Q
 *** Level/Scene
 *** Materials
 *** Mesh/Geometry
@@ -98,6 +105,7 @@ msaa_levels: 8
 - State "DONE"       from "TODO"       [2015-10-13 Tue 19:38]
 ** TODO Add modifiers to input maps to enable combinations for example, c-x, m-k etc
 ** TODO Only allocate hashmap bucket when required
+** TODO Mapping actions to keybindings, for example map action "Jump" to Space key etc
 ** DONE Heirarchical Transforms
 ** DONE Materials with textures
 - State "DONE"       from "TODO"       [2015-10-15 Thu 21:21]

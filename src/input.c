@@ -7,17 +7,14 @@
 #include "log.h"
 #include "gui.h"
 
-/* #define KS_INACTIVE -1; 			/\* state for input map is set to KS_INACTIVE(KeyState_Inactive) when */
-/* 									   the key is neither pressed nor released *\/ */
-
 struct Input_Map
 {
-	const char* name;
-	int* keys;
-	int  state;
+	const char*             name;
+	struct Key_Combination* keys;
+	int                     state;
 };
 
-static void input_on_key(int key, int scancode, int state, int repeat, int mod_ctrl, int mod_shift);
+static void input_on_key(int key, int scancode, int state, int repeat, int mod_ctrl, int mod_shift, int mod_alt);
 static void input_on_mousebutton(int button, int state, int x, int y, int8 num_clicks);
 static void input_on_mousemotion(int x, int y, int xrel, int yrel);
 static void input_on_mousewheel(int x, int y);
@@ -68,19 +65,28 @@ void input_mouse_pos_set(int xpos, int ypos)
 	platform_mouse_global_position_set(xpos, ypos);
 }
 
-void input_on_key(int key, int scancode, int state, int repeat, int mod_ctrl, int mod_shift)
+void input_on_key(int key, int scancode, int state, int repeat, int mod_ctrl, int mod_shift, int mod_alt)
 {
-	if(repeat)
-	{
-		return;			/* Ignore key repeat */
-	}
+	/* if(repeat) */
+	/* { */
+	/* 	return;			/\* Ignore key repeat *\/ */
+	/* } */
+
+	int mods = KMD_NONE;
+	if(mod_ctrl)  mods |= KMD_CTRL;
+	if(mod_shift) mods |= KMD_SHIFT;
+	if(mod_alt)   mods |= KMD_ALT;
 	
 	for(int i = 0; i < array_len(input_map_list); i++)
 	{
 		struct Input_Map* map = &input_map_list[i];
 		for(int j = 0; j < array_len(map->keys); j++)
 		{
-			if(map->keys[j] == key)
+			if(map->state == KS_PRESSED && state == KS_RELEASED && map->keys[j].mods == mods)
+			{
+				map->state = state;
+			}
+			if(map->keys[j].key == key && (map->keys[j].mods == mods))
 			{
 				map->state = state;
 				break;
@@ -93,7 +99,7 @@ void input_on_key(int key, int scancode, int state, int repeat, int mod_ctrl, in
 
 void input_on_mousebutton(int button, int state, int x, int y, int8 num_clicks)
 {
-	/* Probably add 'mouse maps', same as input maps for keyvboard but with buttons
+	/* Probably add 'mouse maps', same as input maps for keyboard but with buttons
 	   Do we even need that?
 	*/
 	/* TODO: This is temporary. After proper event loop is added this code should not be here */
@@ -137,18 +143,21 @@ int input_mousebutton_state_get(uint button, int state_type)
 	return state_type == current_state ? 1 : 0;
 }
 
-void input_map_create(const char* name, int* keys, size_t num_keys)
+void input_map_create(const char* name, struct Key_Combination* keys, size_t num_keys)
 {
 	assert(name && keys && num_keys > 0);
 
 	struct Input_Map* new_map = array_grow(input_map_list, struct Input_Map);
 	new_map->name  = name;
-	new_map->keys  = array_new(int);
+	new_map->keys  = array_new_cap(struct Key_Combination, num_keys);
 	new_map->state = KS_INACTIVE;
 	for(size_t i = 0; i < num_keys; i++)
-	{
-		array_push(new_map->keys, keys[i], int);
-	}
+		new_map->keys[i] = keys[i];
+	log_message("Created Input Map : %s", name);
+	/* { */
+	/* 	new_map->keys[i].key  = keys[i].key; */
+	/* 	new_map->keys[i].mods = keys[i].mods; */
+	/* } */
 }
 
 void input_update(void)
@@ -176,7 +185,7 @@ int input_map_remove(const char* name)
 	return success;
 }
 
-int input_map_keys_set(const char* name, int* keys, int num_keys)
+int input_map_keys_set(const char* name, struct Key_Combination* keys, int num_keys)
 {
 	assert(name && keys && num_keys > 0);
 	int success = 0;
@@ -184,10 +193,13 @@ int input_map_keys_set(const char* name, int* keys, int num_keys)
 	if(index > -1)
 	{
 		struct Input_Map* map = &input_map_list[index];
-		array_reset(map->keys, num_keys);
+		if(array_len(map->keys) != num_keys)
+			array_reset(map->keys, num_keys);
 		for(int i = 0; i < num_keys; i++)
 			map->keys[i] = keys[i];
-		success = 1;
+		
+		map->state = KS_INACTIVE;
+		success    = 1;
 	}
 	if(!success)
 		log_error("input:map_keys_set", "Map %s not found", name);	

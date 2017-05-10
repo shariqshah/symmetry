@@ -1,11 +1,13 @@
 #include "light.h"
+#include "log.h"
 #include "array.h"
 #include <stdio.h>
+#include <string.h>
 
 static struct Light* light_list;
 static int* empty_indices;
 static int* valid_light_indices;
-static int max_lights;
+static int  max_lights;
 
 struct Light* light_get(int index)
 {
@@ -25,8 +27,9 @@ void light_init(void)
 	max_lights = 128;
 	light_list = array_new_cap(struct Light, max_lights);
 	for(int i = 0; i < max_lights; i++) light_list[i].valid = 0;
-	empty_indices = array_new_cap(int, max_lights);
+	empty_indices = array_new(int);
 	valid_light_indices = array_new_cap(int, max_lights);
+	memset(valid_light_indices, -1, max_lights);
 }
 
 void light_cleanup(void)
@@ -59,8 +62,20 @@ int light_create(int node, int light_type)
 	}
 	else
 	{
-		new_light = array_grow(light_list, struct Light);
-		index = array_len(light_list) - 1;
+		for(index = 0; index < max_lights; index++)
+		{
+			if(!light_list[index].valid)
+				break;
+		}
+		
+		if(index == max_lights - 1)
+		{
+			index = -1;
+			log_warning("Max light limit(%d) reached, cannot add light", max_lights);
+			return index;
+		}
+
+		new_light = &light_list[index];
 	}
 	new_light->node = node;
 	new_light->valid = 1;

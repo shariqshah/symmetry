@@ -39,10 +39,19 @@ msaa_levels: 8
 # All keys are parsed by comparing the output of SDL_GetKeyname
 # Each line represents a keybinding
 Move_Forward: W
+
 # Multiple keys to a single binding are specified with commas
 Move_Backward: S,Down
+
 # Combinations are specified with a hyphen/dash
+# When specifing combinations, modifiers(shift, alt, ctrl) always come before
+# the hyphen and the actual key comes afterwards
 Quit: Left Ctrl-Q
+
+# Single modifier keys are allowed but multiple modifier keys without corresponding
+# non-modifier key are not allowed
+Sprint: Left Shift
+
 *** Level/Scene
 *** Materials
 *** Mesh/Geometry
@@ -219,6 +228,7 @@ x Configuration files and "cvars" load/reload
 ** DONE Compile and test on windows
 - State "DONE"       from "TODO"       [2017-03-14 Tue 00:32]
 ** TODO Array based string type comptible with cstring(char*)
+** TODO Separate game, engine and assets into different repositories. Combine as sub-repositories
 ** DONE Fix mouse bugs
 - State "DONE"       from "TODO"       [2017-03-01 Wed 00:45]
 ** DONE Fix

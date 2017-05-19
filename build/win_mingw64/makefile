@@ -28,7 +28,7 @@ pre_build:
 	-@mkdir .debug .release
 
 post_build:
-	-@ln -fs /mnt/Dev/Projects/symmetry/assets /mnt/Dev/Projects/symmetry/build/win_mingw64
+	-@ln -fs /mnt/Dev/Projects/symmetry/assets assets
 	-@cp $(LIB_BINARY_DIR)/SDL2.dll /mnt/Dev/Projects/symmetry/build/win_mingw64
 	-@cp $(LIB_BINARY_DIR)/OpenAL32.dll /mnt/Dev/Projects/symmetry/build/win_mingw64
 

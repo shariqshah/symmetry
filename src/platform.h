@@ -49,5 +49,6 @@ uint32 platform_ticks_get(void);
 char*  platform_base_path_get(void);
 void   platform_clipboard_text_set(const char* text);
 char*  platform_clipboard_text_get(void);
+int    platform_key_from_name(const char* key_name);
 
 #endif

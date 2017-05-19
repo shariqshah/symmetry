@@ -31,6 +31,7 @@ void input_init(void)
 	platform_mousewheel_callback_set(&input_on_mousewheel);
 	
 	input_map_list = array_new(struct Input_Map);
+	input_keybinds_load("keybindings.cfg");
 }
 
 void input_cleanup(void)
@@ -43,63 +44,122 @@ void input_cleanup(void)
 	array_free(input_map_list);
 }
 
-int input_load(const char* filename)
+int input_keybinds_load(const char* filename)
 {
 	int success = 0;
-	/* const int MAX_KEYBIND_LEN = 128; */
-	/* const int MAX_LINE_LEN    = 512; */
-	/* FILE* config_file = io_file_open(filename, "r"); */
-	/* if(!config_file) */
-	/* { */
-	/* 	log_error("input:vars_load", "Could not open %s", filename); */
-	/* 	return success; */
-	/* } */
+	const int MAX_KEYBIND_LEN = 128;
+	const int MAX_LINE_LEN    = 512;
+	FILE* config_file = io_file_open(filename, "r");
+	if(!config_file)
+	{
+		log_error("input:load", "Could not open %s", filename);
+		return success;
+	}
 
-	/* /\* Read line by line, ignore comments *\/ */
-	/* char key_str[MAX_KEYBIND_LEN]; */
-	/* char line_buffer[MAX_LINE_LEN]; */
-	/* memset(key_str, '\0', MAX_KEYBIND_LEN); */
-	/* memset(line_buffer, '\0', MAX_LINE_LEN); */
-	/* int current_line = 0; */
-	/* while(fgets(line_buffer, MAX_LINE_LEN - 1, config_file)) */
-	/* { */
-	/* 	current_line++; */
-	/* 	line_buffer[strcspn(line_buffer, "\r\n")] = '\0'; */
+	/* Read line by line, ignore comments */
+	char key_str[MAX_KEYBIND_LEN];
+	char line_buffer[MAX_LINE_LEN];
+	memset(key_str, '\0', MAX_KEYBIND_LEN);
+	memset(line_buffer, '\0', MAX_LINE_LEN);
+	int current_line = 0;
+	while(fgets(line_buffer, MAX_LINE_LEN - 1, config_file))
+	{
+		current_line++;
+		line_buffer[strcspn(line_buffer, "\r\n")] = '\0';
 		
-	/* 	if(line_buffer[0] == '#' || strlen(line_buffer) == 0) */
-	/* 		continue; */
+		if(line_buffer[0] == '#' || strlen(line_buffer) == 0)
+			continue;
 
-	/* 	log_message("Line : %s", line_buffer); */
-	/* 	memset(key_str, '\0', MAX_KEYBIND_LEN); */
-	/* 	char* value_str = strstr(line_buffer, ":"); */
-	/* 	if(!value_str) */
-	/* 	{ */
-	/* 		log_warning("Malformed value in config file %s, line %d", filename, current_line); */
-	/* 		continue; */
-	/* 	} */
-	/* 	int key_str_len = value_str - line_buffer; */
-	/* 	strncpy(key_str, line_buffer, key_str_len); */
-	/* 	if(key_str_len >= MAX_KEYBIND_LEN) */
-	/* 		key_str[MAX_KEYBIND_LEN - 1] = '\0'; */
-	/* 	else */
-	/* 		key_str[key_str_len] = '\0'; */
-	/* 	value_str++; /\* Ignore the colon(:) *\/ */
+		log_message("Line : %s", line_buffer);
+		memset(key_str, '\0', MAX_KEYBIND_LEN);
+		char* value_str = strstr(line_buffer, ":");
+		if(!value_str)
+		{
+			log_warning("Malformed value in config file %s, line %d", filename, current_line);
+			continue;
+		}
 		
-	/* 	struct Variant* value = hashmap_value_get(cvars, key_str); */
-	/* 	if(!value) */
-	/* 	{ */
-	/* 		log_warning("Unknown value in config file %s, line %d", filename, current_line); */
-	/* 		continue; */
-	/* 	} */
-	/* 	variant_from_str(value, value_str, value->type); */
-	/* } */
+		value_str++; /* Ignore the colon(:) and set the pointer after it */
+		
+		if(sscanf(line_buffer, " %1024[^: ] : %*s", key_str) != 1)
+		{
+			log_warning("Unable to read key in keybindings file %s, line %d", filename, current_line);
+			continue;
+		}
+
+		char* val = strtok(value_str, ",");
+		if(!val)
+		{
+			log_warning("Unable to parse keys for keybinding %s in file %s, line %d", key_str, filename, current_line);
+			continue;
+		}
+
+		while(val)
+		{
+			log_message("Key read : %s", val);
+
+			/* Check if there are any Modifiers */
+			int       modifiers        = KMD_NONE;
+			char*     keys             = strstr(val, "-");
+			char*     start_loc        = val;
+			const int max_key_str_len  = 20;
+			char      key_name[max_key_str_len];
+			int       skip_to_next     = 0;
+			while(keys)
+			{
+				memset(key_name, '\0', max_key_str_len);
+				strncpy(key_name, start_loc, (keys - start_loc));
+				log_message("key_name : %s", key_name);
+
+				int key_modifier = platform_key_from_name(key_name);
+
+				if(key_modifier == KEY_UNKNOWN)
+				{
+					log_warning("Unrecognized key %s in keybindings file %s, at line %d", key_name, filename, current_line);
+					skip_to_next = 1;
+					break;
+				}
+
+				switch(key_modifier)
+				{
+				case KEY_LSHIFT: case KEY_RSHIFT: modifiers |= KMD_SHIFT; break;
+				case KEY_LCTRL:  case KEY_RCTRL:  modifiers |= KMD_CTRL;  break;
+				case KEY_LALT:   case KEY_RALT:   modifiers |= KMD_ALT;   break;
+				};
+				
+				++keys;
+				start_loc = keys;
+				keys = strstr(keys, "-");
+			}
+			if(skip_to_next)
+			{
+				val = strtok(NULL, ",");
+				continue;
+			}
+			
+			/* Copy the last key after the hyphen */
+			strncpy(key_name, start_loc, max_key_str_len);
+			int key = platform_key_from_name(key_name);
+			if(key == KEY_UNKNOWN)
+			{
+				log_warning("Unrecognized key %s in keybindings file %s, at line %d", key_name, filename, current_line);
+				val = strtok(NULL, ",");
+				continue;
+			}
+
+			struct Key_Combination key_comb = { .key = key, .mods = modifiers};
+			input_map_create(key_str, &key_comb, 1);
+			
+			val = strtok(NULL, ",");
+		}
+	}
 	
-	/* success = 1; */
-	/* fclose(config_file); */
+	success = 1;
+	fclose(config_file);
 	return success;
 }
 
-int input_save(const char* filename)
+int input_keybinds_save(const char* filename)
 {
 	
 }
@@ -208,19 +268,26 @@ int input_mousebutton_state_get(uint button, int state_type)
 
 void input_map_create(const char* name, struct Key_Combination* keys, size_t num_keys)
 {
-	assert(name && keys && num_keys > 0);
-
-	struct Input_Map* new_map = array_grow(input_map_list, struct Input_Map);
-	new_map->name  = name;
-	new_map->keys  = array_new_cap(struct Key_Combination, num_keys);
-	new_map->state = KS_INACTIVE;
-	for(size_t i = 0; i < num_keys; i++)
-		new_map->keys[i] = keys[i];
-	log_message("Created Input Map : %s", name);
-	/* { */
-	/* 	new_map->keys[i].key  = keys[i].key; */
-	/* 	new_map->keys[i].mods = keys[i].mods; */
-	/* } */
+	assert(name && keys && num_keys > 0);	
+	int index = map_find(name);
+	if(index > -1)
+	{
+		struct Input_Map* map = &input_map_list[index];
+		struct Key_Combination* new_comb = array_grow(map->keys, struct Key_Combination);
+		*new_comb = *keys;
+		log_message("Added new Key combination to input map : %s", name);
+	}
+	else
+	{
+		struct Input_Map* new_map = array_grow(input_map_list, struct Input_Map);
+		new_map->name  = name;
+		new_map->keys  = array_new_cap(struct Key_Combination, num_keys);
+		new_map->state = KS_INACTIVE;
+		for(size_t i = 0; i < num_keys; i++)
+			new_map->keys[i] = keys[i];
+		log_message("Created Input Map : %s", name);
+	}
+	log_message("Map_index : %d", index);
 }
 
 void input_update(void)
@@ -284,12 +351,13 @@ int input_map_name_set(const char* name, const char* new_name)
 	return success;
 }
 
-static int map_find(const char* name)
+int map_find(const char* name)
 {
 	int index = -1;
 	for(int i = 0; i < array_len(input_map_list); i++)
 	{
 		struct Input_Map* map = &input_map_list[i];
+		log_message("Len : %d, Comparing %s and %s", array_len(input_map_list), name, map->name);
 		if(strcmp(name, map->name) == 0)
 		{
 			index = i;

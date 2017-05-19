@@ -383,3 +383,22 @@ char* platform_clipboard_text_get(void)
 	}
 	return text;
 }
+
+int platform_key_from_name(const char* key_name)
+{
+	if(!key_name || strlen(key_name) == 0) return SDLK_UNKNOWN;
+	
+	/* Remove leading/trailing spaces, preserve spaces in-between */
+	#define max_name_len  30
+	char trimmed_key_name[max_name_len] = {'\0'};
+
+	const char* start_ptr = &key_name[0];
+	while(isspace(start_ptr[0])) start_ptr++;
+		
+	const char* end_ptr = &key_name[strlen(key_name)];
+	while(isspace(end_ptr[0])) end_ptr--;
+ 
+	strncpy(trimmed_key_name, start_ptr, (end_ptr - start_ptr));
+	log_message("trimmed : %s", trimmed_key_name);
+	return SDL_GetKeyFromName(trimmed_key_name);
+}

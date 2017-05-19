@@ -156,7 +156,8 @@ enum Keyboard_Key
 	KEY_LCTRL        = SDLK_LCTRL,
 	KEY_RCTRL        = SDLK_RCTRL,
 	KEY_LALT         = SDLK_LALT,
-	KEY_RALT         = SDLK_RALT
+	KEY_RALT         = SDLK_RALT,
+	KEY_UNKNOWN      = SDLK_UNKNOWN
 };
 
 enum Keyboard_Scancode
@@ -409,8 +410,8 @@ enum Keyboard_Scancode
 };
 
 void input_init(void);
-int  input_load(const char* filename);
-int  input_save(const char* filename);
+int  input_keybinds_load(const char* filename);
+int  input_keybinds_save(const char* filename);
 void input_cleanup(void);
 int  input_mousebutton_state_get(uint button, int state_type);
 int  input_is_key_pressed(int key);

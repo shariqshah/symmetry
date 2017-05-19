@@ -40,7 +40,7 @@ pre_build:
 	-@mkdir .debug .release
 
 post_build:
-	-@ln -fs /mnt/Dev/Projects/symmetry/assets /mnt/Dev/Projects/symmetry/build/linux
+	-@ln -fs /mnt/Dev/Projects/symmetry/assets assets
 
 dist: release
 	-@echo Creating Distribution at $(DIST_DIR)/$(PROJECT_NAME)

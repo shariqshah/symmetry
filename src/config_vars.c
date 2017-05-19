@@ -72,7 +72,7 @@ int config_vars_load(const char* filename)
 			continue;
 		}
 		
-		value_str++; /* Ignore the colon(:) */
+		value_str++; /* Ignore the colon(:) and set the pointer after it */
 
 		if(sscanf(line_buffer, " %1024[^: ] : %*s", key_str) != 1)
 		{

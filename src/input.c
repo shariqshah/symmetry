@@ -22,7 +22,7 @@ static void input_on_mousemotion(int x, int y, int xrel, int yrel);
 static void input_on_mousewheel(int x, int y);
 static int  map_find(const char* name);
 
-static struct Input_Map* input_map_list;
+static struct Input_Map* input_map_list = NULL;
 
 void input_init(void)
 {
@@ -37,6 +37,7 @@ void input_init(void)
 
 void input_cleanup(void)
 {
+	input_keybinds_save("keybindings_save_test.cfg");
 	for(int i = 0; i < array_len(input_map_list); i++)
 	{
 		struct Input_Map* map = &input_map_list[i];
@@ -55,7 +56,7 @@ int input_keybinds_load(const char* filename)
 	FILE* config_file = io_file_open(filename, "r");
 	if(!config_file)
 	{
-		log_error("input:load", "Could not open %s", filename);
+		log_error("input:keybinds_load", "Could not open %s", filename);
 		return success;
 	}
 
@@ -164,7 +165,35 @@ int input_keybinds_load(const char* filename)
 
 int input_keybinds_save(const char* filename)
 {
-	
+	int success = 0;
+
+	FILE* config_file = io_file_open(filename, "w");
+	if(!config_file)
+	{
+		log_error("input:keybinds_save", "Could not open %s", filename);
+		return success;
+	}
+
+	for(int i = 0; i < array_len(input_map_list); i++)
+	{
+		struct Input_Map* map = &input_map_list[i];
+		fprintf(config_file, "%s : ", map->name);
+		for(int j = 0; j < array_len(map->keys); j++)
+		{
+			if(j != 0) fprintf(config_file, ", ");
+			struct Key_Combination* key_comb = &map->keys[j];
+			if((key_comb->mods & KMD_ALT)   == KMD_ALT)   fprintf(config_file, "%s-", platform_key_name_get(KEY_LALT));
+			if((key_comb->mods & KMD_SHIFT) == KMD_SHIFT) fprintf(config_file, "%s-", platform_key_name_get(KEY_LSHIFT));
+			if((key_comb->mods & KMD_CTRL)  == KMD_CTRL)  fprintf(config_file, "%s-", platform_key_name_get(KEY_LCTRL));
+			fprintf(config_file, "%s", platform_key_name_get(key_comb->key));
+		}
+		fprintf(config_file, "\n");
+	}
+
+	fclose(config_file);
+	log_message("Keybindings saved to %s", filename);
+	success = 1;
+	return success;
 }
 
 void input_on_mousemotion(int x, int y, int xrel, int yrel)
@@ -269,16 +298,19 @@ int input_mousebutton_state_get(uint button, int state_type)
 	return state_type == current_state ? 1 : 0;
 }
 
-void input_map_create(const char* name, struct Key_Combination* keys, size_t num_keys)
+void input_map_create(const char* name, struct Key_Combination* keys, int num_keys)
 {
 	assert(name && keys && num_keys > 0);	
 	int index = map_find(name);
 	if(index > -1)
 	{
 		struct Input_Map* map = &input_map_list[index];
-		struct Key_Combination* new_comb = array_grow(map->keys, struct Key_Combination);
-		*new_comb = *keys;
-		log_message("Added new Key combination to input map : %s", name);
+		for(int i = 0; i < num_keys; i++)
+		{
+			struct Key_Combination* new_comb = array_grow(map->keys, struct Key_Combination);
+			*new_comb = keys[i];
+			log_message("Added new Key combination to input map : %s", name);
+		}
 	}
 	else
 	{

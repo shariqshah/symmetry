@@ -229,7 +229,7 @@ void platform_poll_events(int* out_quit)
 			int mod_shift = (event.key.keysym.mod & KMOD_SHIFT) ? 1 : 0;
 			int mod_alt   = (event.key.keysym.mod & KMOD_ALT)   ? 1 : 0;
 			platform_state->on_keyboard_func(key, scancode, state, repeat, mod_ctrl, mod_shift, mod_alt);
-			//log_message("Key name : %s", SDL_GetKeyName(key));
+			log_message("Key name : %s", SDL_GetKeyName(key));
 			break;
 		}
 		case SDL_MOUSEBUTTONDOWN: case SDL_MOUSEBUTTONUP:
@@ -401,4 +401,10 @@ int platform_key_from_name(const char* key_name)
 	strncpy(trimmed_key_name, start_ptr, (end_ptr - start_ptr));
 	log_message("trimmed : %s", trimmed_key_name);
 	return SDL_GetKeyFromName(trimmed_key_name);
+}
+
+const char* platform_key_name_get(int key)
+{
+	if(key < 0) return "SDLK_UNKNOWN";
+	return SDL_GetKeyName(key);
 }

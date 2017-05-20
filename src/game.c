@@ -89,8 +89,8 @@ int game_init(struct Window* window)
 
 void scene_setup(void)
 {
-	struct Key_Combination forward_keys[2]      = {{KEY_W, KMD_NONE}, {KEY_UP, KMD_ALT | KMD_SHIFT}};
-	struct Key_Combination backward_keys[2]     = {{KEY_S, KMD_NONE}, {KEY_DOWN, KMD_NONE}};
+	/* struct Key_Combination forward_keys[2]      = {{KEY_W, KMD_NONE}, {KEY_UP, KMD_ALT | KMD_SHIFT}}; */
+	/* struct Key_Combination backward_keys[2]     = {{KEY_S, KMD_NONE}, {KEY_DOWN, KMD_NONE}}; */
 	/* struct Key_Combination up_keys[2]           = {KEY_Q}; */
 	/* struct Key_Combination down_keys[2]         = {KEY_E}; */
 	/* struct Key_Combination left_keys[2]         = {KEY_A, KEY_LEFT}; */
@@ -104,8 +104,8 @@ void scene_setup(void)
 	/* struct Key_Combination ed_toggle_keys[1]    = {KEY_F1}; */
 	/* struct Key_Combination win_fullscr_keys[1]  = {KEY_F11}; */
 	/* struct Key_Combination win_max_keys[1]      = {KEY_F12}; */
-	input_map_create("Move_Forward",      forward_keys,     2);
-	input_map_create("Move_Backward",     backward_keys,    2);
+	/* input_map_create("Move_Forward",      forward_keys,     2); */
+	/* input_map_create("Move_Backward",     backward_keys,    2); */
 	/* input_map_create("Move_Up",           up_keys,          1); */
 	/* input_map_create("Move_Down",         down_keys,        1); */
 	/* input_map_create("Move_Left",         left_keys,        2); */

@@ -28,27 +28,28 @@ void           window_swap_buffers(struct Window* window);
 int            window_fullscreen_set(struct Window* window, int fullscreen);
 
 // Platform functions
-int    platform_init(void);
-void   platform_cleanup(void);
-void   platform_poll_events(int* out_quit);
-void   platform_keyboard_callback_set(Keyboard_Event_Func func);
-void   platform_mousebutton_callback_set(Mousebutton_Event_Func func);
-void   platform_mousemotion_callback_set(Mousemotion_Event_Func func);
-void   platform_mousewheel_callback_set(Mousewheel_Event_Func func);
-void   platform_windowresize_callback_set(Windowresize_Event_Func func);
-void   platform_textinput_callback_set(Textinput_Event_Func func);
-int    platform_is_key_pressed(int key);
-int    platform_mousebutton_state_get(uint button);
-void   platform_mouse_position_get(int* x, int* y);
-void   platform_mouse_delta_get(int* x, int* y); // Use with relative mouse mode
-void   platform_mouse_position_set(struct Window* window, int x, int y);
-void   platform_mouse_global_position_set(int x, int y);
-void   platform_mouse_relative_mode_set(int relative_mode);
-int    platform_mouse_relative_mode_get(void);
-uint32 platform_ticks_get(void);
-char*  platform_base_path_get(void);
-void   platform_clipboard_text_set(const char* text);
-char*  platform_clipboard_text_get(void);
-int    platform_key_from_name(const char* key_name);
+int         platform_init(void);
+void        platform_cleanup(void);
+void        platform_poll_events(int* out_quit);
+void        platform_keyboard_callback_set(Keyboard_Event_Func func);
+void        platform_mousebutton_callback_set(Mousebutton_Event_Func func);
+void        platform_mousemotion_callback_set(Mousemotion_Event_Func func);
+void        platform_mousewheel_callback_set(Mousewheel_Event_Func func);
+void        platform_windowresize_callback_set(Windowresize_Event_Func func);
+void        platform_textinput_callback_set(Textinput_Event_Func func);
+int         platform_is_key_pressed(int key);
+int         platform_mousebutton_state_get(uint button);
+void        platform_mouse_position_get(int* x, int* y);
+void        platform_mouse_delta_get(int* x, int* y); // Use with relative mouse mode
+void        platform_mouse_position_set(struct Window* window, int x, int y);
+void        platform_mouse_global_position_set(int x, int y);
+void        platform_mouse_relative_mode_set(int relative_mode);
+int         platform_mouse_relative_mode_get(void);
+uint32      platform_ticks_get(void);
+char*       platform_base_path_get(void);
+void        platform_clipboard_text_set(const char* text);
+char*       platform_clipboard_text_get(void);
+int         platform_key_from_name(const char* key_name);
+const char* platform_key_name_get(int key);
 
 #endif

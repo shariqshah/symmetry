@@ -45,7 +45,8 @@ Move_Backward: S,Down
 
 # Combinations are specified with a hyphen/dash
 # When specifing combinations, modifiers(shift, alt, ctrl) always come before
-# the hyphen and the actual key comes afterwards
+# the hyphen and the actual key comes afterwards. At the moment modifier keys are
+# forced to be on the left side i.e. Left Control, Left Shift and Left Alt.
 Quit: Left Ctrl-Q
 
 # Single modifier keys are allowed but multiple modifier keys without corresponding
@@ -112,7 +113,8 @@ Sprint: Left Shift
 - State "DONE"       from "TODO"       [2015-10-13 Tue 19:38]
 ** DONE Mesh/Model
 - State "DONE"       from "TODO"       [2015-10-13 Tue 19:38]
-** TODO Add modifiers to input maps to enable combinations for example, c-x, m-k etc
+** DONE Add modifiers to input maps to enable combinations for example, c-x, m-k etc
+- State "DONE"       from "TODO"       [2017-05-20 Sat 21:54]
 ** TODO Only allocate hashmap bucket when required
 ** TODO Mapping actions to keybindings, for example map action "Jump" to Space key etc
 ** DONE Heirarchical Transforms
@@ -139,11 +141,14 @@ Sprint: Left Shift
   Sticking with forward rendering for now and focusing on tools etc.
 ** DONE Fix mouse bugs on windows
 - State "DONE"       from "TODO"       [2017-03-25 Sat 17:27]
-** TODO Configuration/Settings load/save handling
+** DONE Configuration/Settings load/save handling
+- State "DONE"       from "TODO"       [2017-05-20 Sat 21:54]
 ** DONE Fix mousewheel bugs and gui not responding to mousewheel input
 - State "DONE"       from "TODO"       [2017-03-19 Sun 01:31]
 ** TODO Ability to mark meshes for debug rendering with possibility of different color for each?
-** TODO Setup cross compilation with mingw or stick to msvc?
+** DONE Setup cross compilation with mingw or stick to msvc?
+- State "DONE"       from "TODO"       [2017-05-20 Sat 21:55]
+- Done, going with mingw for now.
 ** TODO Add marking or queuing up custom meshes for debug render with particular transform and color for rendering bounding spheres for example
 ** DONE Toggleable debug drawing for meshes
 - State "DONE"       from "TODO"       [2017-03-18 Sat 16:18]
@@ -193,14 +198,20 @@ x Font atlas proper cleanup
 - Release platforms: Windows and Linux
 - Makefile additions. Try to compile game as a dynamically loaded library with ability to reload on recompile
 - Separation between game and engine base
-- Game .so with init, update and cleanup functions
+? Game .so with init, update and cleanup functions
 x Configuration files and "cvars" load/reload
-- Keybindings in config
+x Keybindings in config
 - Log output on every run.
+- Implement entity load/save to file
+? Prefab load/save to file
 ** TODO Do input maps really need to be queried by their string names?
 ** TODO Reloading all the things! (textures/shaders/models/settings/entities etc)
 ** TODO Separate Debug/Editor camera from the active camera in the scene that can be switched to at any time
-** TODO Use hashmaps for debugvar slots in editor
+** TODO Add option to specify where to read/write files from instead of being hard-coded assets dir
+** TODO Add default keybindings
+** TODO Write default config/keybindings etc to file if none are found in preferences dir
+** TODO Use hashmap for debugvar slots in editor
+** TODO Use hashmap to store input maps
 ** DONE Live data views in editor
 - State "DONE"       from "TODO"       [2017-03-22 Wed 02:14]
 ** DONE Camera resize on window reisze

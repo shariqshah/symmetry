@@ -37,7 +37,7 @@ void input_init(void)
 
 void input_cleanup(void)
 {
-	input_keybinds_save("keybindings_save_test.cfg");
+	input_keybinds_save("keybindings.cfg");
 	for(int i = 0; i < array_len(input_map_list); i++)
 	{
 		struct Input_Map* map = &input_map_list[i];

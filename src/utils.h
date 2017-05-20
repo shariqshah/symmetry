@@ -1,5 +1,5 @@
-#ifndef utils_H
-#define utils_H
+#ifndef UTILS_H
+#define UTILS_H
 
 #include "linmath.h"
 

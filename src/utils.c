@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define BUFF_SIZE 64
+#define BUFF_SIZE 128
 static char str_buff[BUFF_SIZE];
 
 const char* tostr_vec3(vec3* v)

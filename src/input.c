@@ -7,10 +7,11 @@
 #include "log.h"
 #include "gui.h"
 #include "file_io.h"
+#include "string_utils.h"
 
 struct Input_Map
 {
-	const char*             name;
+	char*                   name;
 	struct Key_Combination* keys;
 	int                     state;
 };
@@ -39,6 +40,8 @@ void input_cleanup(void)
 	for(int i = 0; i < array_len(input_map_list); i++)
 	{
 		struct Input_Map* map = &input_map_list[i];
+		log_message("Map : %s, Num keys : %d", map->name, array_len(map->keys));
+		if(map->name) free(map->name);
 		array_free(map->keys);
 	}
 	array_free(input_map_list);
@@ -70,7 +73,7 @@ int input_keybinds_load(const char* filename)
 		if(line_buffer[0] == '#' || strlen(line_buffer) == 0)
 			continue;
 
-		log_message("Line : %s", line_buffer);
+		//log_message("Line : %s", line_buffer);
 		memset(key_str, '\0', MAX_KEYBIND_LEN);
 		char* value_str = strstr(line_buffer, ":");
 		if(!value_str)
@@ -96,7 +99,7 @@ int input_keybinds_load(const char* filename)
 
 		while(val)
 		{
-			log_message("Key read : %s", val);
+			//log_message("Key read : %s", val);
 
 			/* Check if there are any Modifiers */
 			int       modifiers        = KMD_NONE;
@@ -109,7 +112,7 @@ int input_keybinds_load(const char* filename)
 			{
 				memset(key_name, '\0', max_key_str_len);
 				strncpy(key_name, start_loc, (keys - start_loc));
-				log_message("key_name : %s", key_name);
+				//log_message("key_name : %s", key_name);
 
 				int key_modifier = platform_key_from_name(key_name);
 
@@ -280,7 +283,7 @@ void input_map_create(const char* name, struct Key_Combination* keys, size_t num
 	else
 	{
 		struct Input_Map* new_map = array_grow(input_map_list, struct Input_Map);
-		new_map->name  = name;
+		new_map->name  = str_new(name);
 		new_map->keys  = array_new_cap(struct Key_Combination, num_keys);
 		new_map->state = KS_INACTIVE;
 		for(size_t i = 0; i < num_keys; i++)

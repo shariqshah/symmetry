@@ -160,7 +160,7 @@ void scene_setup(void)
 	}
 
 	int parent_node = new_ent->node;
-	int num_suz = 200;
+	int num_suz = 2;
 	srand(time(NULL));
 	for(int i = 0; i < num_suz; i++)
 	{

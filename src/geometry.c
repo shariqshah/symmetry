@@ -236,7 +236,7 @@ static int load_from_file(struct Geometry* geometry, const char* filename)
 	int success = 1;
 	char* full_path = str_new("models/%s", filename);
 			
-	FILE* file = io_file_open(full_path, "rb");
+	FILE* file = io_file_open(DT_INSTALL, full_path, "rb");
 	free(full_path);
 	if(file)
 	{				

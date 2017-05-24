@@ -207,9 +207,11 @@ x Keybindings in config
 ** TODO Do input maps really need to be queried by their string names?
 ** TODO Reloading all the things! (textures/shaders/models/settings/entities etc)
 ** TODO Separate Debug/Editor camera from the active camera in the scene that can be switched to at any time
-** TODO Add option to specify where to read/write files from instead of being hard-coded assets dir
+** DONE Add option to specify where to read/write files from instead of being hard-coded assets dir
+- State "DONE"       from "TODO"       [2017-05-24 Wed 17:12]
 ** TODO Add default keybindings
 ** TODO Write default config/keybindings etc to file if none are found in preferences dir
+** TODO Fix input map bugs
 ** TODO Use hashmap for debugvar slots in editor
 ** TODO Use hashmap to store input maps
 ** DONE Live data views in editor

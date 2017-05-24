@@ -68,7 +68,7 @@ int texture_create_from_file(const char* filename, int texture_unit)
 	}
 	/* If texture not already loaded then try to load it */
 	char* full_path = str_new("textures/%s", filename);
-	FILE* file = io_file_open(full_path, "rb");
+	FILE* file = io_file_open(DT_INSTALL, full_path, "rb");
 	int img_load_success = -1;
 	
 	if(file)

@@ -219,7 +219,7 @@ void editor_update(float dt)
 				nk_slider_float(context, 0.f, &render_settings->fog.density, 1.f, 0.005);
 				if(nk_input_is_mouse_hovering_rect(&context->input, bounds))
 				{
-					static char float_str[7];
+					static char float_str[10] = {'\0'};
 					snprintf(float_str, 6, "%.4f", render_settings->fog.density);
 					float_str[6] = '\0';
 					nk_tooltip(context, float_str);

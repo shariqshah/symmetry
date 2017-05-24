@@ -244,7 +244,7 @@ void sound_source_load_wav(struct Sound_Source* source, const char* file_name)
 	}
 	
 	char* full_path = str_new("sounds/%s", file_name);
-	FILE* wav_file = io_file_open(full_path, "rb");
+	FILE* wav_file = io_file_open(DT_INSTALL, full_path, "rb");
 	free(full_path);
 	if(!wav_file)
 	{

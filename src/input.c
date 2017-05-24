@@ -32,12 +32,44 @@ void input_init(void)
 	platform_mousewheel_callback_set(&input_on_mousewheel);
 	
 	input_map_list = array_new(struct Input_Map);
-	input_keybinds_load("keybindings.cfg");
+	if(!input_keybinds_load("keybindings.cfg"))
+		log_error("input:init", "Failed to load keybindings");
+
+	/* struct Key_Combination forward_keys[2]      = {{KEY_W, KMD_NONE}, {KEY_UP, KMD_ALT | KMD_SHIFT}}; */
+	/* struct Key_Combination backward_keys[2]     = {{KEY_S, KMD_NONE}, {KEY_DOWN, KMD_NONE}}; */
+	/* struct Key_Combination up_keys[2]           = {KEY_Q}; */
+	/* struct Key_Combination down_keys[2]         = {KEY_E}; */
+	/* struct Key_Combination left_keys[2]         = {KEY_A, KEY_LEFT}; */
+	/* struct Key_Combination right_keys[2]        = {KEY_D, KEY_RIGHT}; */
+	/* struct Key_Combination turn_right_keys[1]   = {KEY_L}; */
+	/* struct Key_Combination turn_left_keys[1]    = {KEY_J}; */
+	/* struct Key_Combination turn_up_keys[1]      = {KEY_I}; */
+	/* struct Key_Combination turn_down_keys[1]    = {KEY_K}; */
+	/* struct Key_Combination sprint_keys[2]       = {KEY_LSHIFT, KEY_RSHIFT}; */
+	/* struct Key_Combination recompute_keys[2]    = {KEY_F5, KEY_H}; */
+	/* struct Key_Combination ed_toggle_keys[1]    = {KEY_F1}; */
+	/* struct Key_Combination win_fullscr_keys[1]  = {KEY_F11}; */
+	/* struct Key_Combination win_max_keys[1]      = {KEY_F12}; */
+	/* input_map_create("Move_Forward",      forward_keys,     2); */
+	/* input_map_create("Move_Backward",     backward_keys,    2); */
+	/* input_map_create("Move_Up",           up_keys,          1); */
+	/* input_map_create("Move_Down",         down_keys,        1); */
+	/* input_map_create("Move_Left",         left_keys,        2); */
+	/* input_map_create("Move_Right",        right_keys,       2); */
+	/* input_map_create("Turn_Right",        turn_right_keys,  1); */
+	/* input_map_create("Turn_Left",         turn_left_keys,   1); */
+	/* input_map_create("Turn_Up",           turn_up_keys,     1); */
+	/* input_map_create("Turn_Down",         turn_down_keys,   1); */
+	/* input_map_create("Sprint",            sprint_keys,      2); */
+	/* input_map_create("Recompute",         recompute_keys,   2); */
+	/* input_map_create("Editor_Toggle",     ed_toggle_keys,   1); */
+	/* input_map_create("Window_Fullscreen", win_fullscr_keys, 1); */
+	/* input_map_create("Window_Maximize",   win_max_keys,     1); */
 }
 
 void input_cleanup(void)
 {
-	input_keybinds_save("keybindings.cfg");
+	//input_keybinds_save("keybindings.cfg");
 	for(int i = 0; i < array_len(input_map_list); i++)
 	{
 		struct Input_Map* map = &input_map_list[i];
@@ -53,7 +85,7 @@ int input_keybinds_load(const char* filename)
 	int success = 0;
 	const int MAX_KEYBIND_LEN = 128;
 	const int MAX_LINE_LEN    = 512;
-	FILE* config_file = io_file_open(filename, "r");
+	FILE* config_file = io_file_open(DT_USER, filename, "r");
 	if(!config_file)
 	{
 		log_error("input:keybinds_load", "Could not open %s", filename);
@@ -167,7 +199,7 @@ int input_keybinds_save(const char* filename)
 {
 	int success = 0;
 
-	FILE* config_file = io_file_open(filename, "w");
+	FILE* config_file = io_file_open(DT_USER, filename, "w");
 	if(!config_file)
 	{
 		log_error("input:keybinds_save", "Could not open %s", filename);
@@ -379,7 +411,7 @@ int input_map_name_set(const char* name, const char* new_name)
 	if(index > -1)
 	{
 		struct Input_Map* map = &input_map_list[index];
-		map->name = new_name;
+		map->name = str_new(new_name);
 		success = 1;
 	}
 	if(!success) log_error("input:map_name_set", "Map %s not found", name);
@@ -392,7 +424,6 @@ int map_find(const char* name)
 	for(int i = 0; i < array_len(input_map_list); i++)
 	{
 		struct Input_Map* map = &input_map_list[i];
-		log_message("Len : %d, Comparing %s and %s", array_len(input_map_list), name, map->name);
 		if(strcmp(name, map->name) == 0)
 		{
 			index = i;
@@ -409,7 +440,6 @@ int input_mouse_mode_get(void)
 	return mouse_mode;
 }
 
-	
 void input_mouse_delta_get(int* xpos, int* ypos)
 {
 	platform_mouse_delta_get(xpos, ypos);

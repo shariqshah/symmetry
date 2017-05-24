@@ -5,21 +5,24 @@
 #include "log.h"
 #include "string_utils.h"
 
-static char* base_assets_path;
+static char* install_directory = NULL;
+static char* user_directory    = NULL;
 
-void io_file_init(const char* assets_path)
+void io_file_init(const char* install_dir, const char* user_dir)
 {
-	base_assets_path = str_new("%s/assets/", assets_path);
+	install_directory = str_new("%s/assets/", install_dir);
+	user_directory    = str_new("%s/", user_dir);
 }
 
 void io_file_cleanup(void)
 {
-	if(base_assets_path) free(base_assets_path);
+	if(install_directory) free(install_directory);
+	if(user_directory)    free(user_directory);
 }
 
-char* io_file_read(const char* path, const char* mode, long* file_size)
+char* io_file_read(const int directory_type, const char* path, const char* mode, long* file_size)
 {
-	FILE* file = io_file_open(path, mode);
+	FILE* file = io_file_open(directory_type, path, mode);
 	char* data = NULL;
 	if(!file) return data;
 	int rc = fseek(file, 0, SEEK_END);
@@ -54,9 +57,11 @@ char* io_file_read(const char* path, const char* mode, long* file_size)
 	return data;
 }
 
-FILE* io_file_open(const char* path, const char* mode)
+FILE* io_file_open(int directory_type, const char* path, const char* mode)
 {
-	char* relative_path = str_new(base_assets_path);
+	assert(directory_type >= 0 && directory_type <= DT_INSTALL);
+	
+	char* relative_path = str_new(directory_type == DT_INSTALL ? install_directory : user_directory);
 	relative_path = str_concat(relative_path, path);
 	FILE* file = fopen(relative_path, mode);
 	if(!file) log_error("io:file", "Failed to open file '%s'", relative_path);

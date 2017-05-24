@@ -44,11 +44,16 @@ int init(void)
 			}
             else
             {
-				char* base_path = platform_base_path_get();
-				io_file_init(base_path);
-				free(base_path);
+				char* install_path = platform_install_directory_get();
+				char* user_path    = platform_user_directory_get("SS_Games", "Symmetry");
+				io_file_init(install_path, user_path);
+				free(install_path);
+				free(user_path);
 				if(!config_vars_load("config.cfg"))
+				{
 					log_error("main:init", "Could not load config, reverting to defaults");
+					config_vars_save("config.cfg");
+				}
 				
 				struct Hashmap* cvars = config_vars_get();
 				int width       = hashmap_int_get(cvars,  "render_width");

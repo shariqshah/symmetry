@@ -44,7 +44,7 @@ struct Hashmap* config_vars_get(void)
 int config_vars_load(const char* filename)
 {
 	int success = 0;
-	FILE* config_file = io_file_open(filename, "r");
+	FILE* config_file = io_file_open(DT_USER, filename, "r");
 	if(!config_file)
 	{
 		log_error("config:vars_load", "Could not open %s", filename);
@@ -97,7 +97,7 @@ int config_vars_load(const char* filename)
 int config_vars_save(const char* filename)
 {
 	int success = 0;
-	FILE* config_file = io_file_open(filename, "w");
+	FILE* config_file = io_file_open(DT_USER, filename, "w");
 	if(!config_file)
 	{
 		log_error("config:vars_save", "Failed to open config file %s for writing");

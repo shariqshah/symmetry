@@ -88,38 +88,7 @@ int game_init(struct Window* window)
 }
 
 void scene_setup(void)
-{
-	/* struct Key_Combination forward_keys[2]      = {{KEY_W, KMD_NONE}, {KEY_UP, KMD_ALT | KMD_SHIFT}}; */
-	/* struct Key_Combination backward_keys[2]     = {{KEY_S, KMD_NONE}, {KEY_DOWN, KMD_NONE}}; */
-	/* struct Key_Combination up_keys[2]           = {KEY_Q}; */
-	/* struct Key_Combination down_keys[2]         = {KEY_E}; */
-	/* struct Key_Combination left_keys[2]         = {KEY_A, KEY_LEFT}; */
-	/* struct Key_Combination right_keys[2]        = {KEY_D, KEY_RIGHT}; */
-	/* struct Key_Combination turn_right_keys[1]   = {KEY_L}; */
-	/* struct Key_Combination turn_left_keys[1]    = {KEY_J}; */
-	/* struct Key_Combination turn_up_keys[1]      = {KEY_I}; */
-	/* struct Key_Combination turn_down_keys[1]    = {KEY_K}; */
-	/* struct Key_Combination sprint_keys[2]       = {KEY_LSHIFT, KEY_RSHIFT}; */
-	/* struct Key_Combination recompute_keys[2]    = {KEY_F5, KEY_H}; */
-	/* struct Key_Combination ed_toggle_keys[1]    = {KEY_F1}; */
-	/* struct Key_Combination win_fullscr_keys[1]  = {KEY_F11}; */
-	/* struct Key_Combination win_max_keys[1]      = {KEY_F12}; */
-	/* input_map_create("Move_Forward",      forward_keys,     2); */
-	/* input_map_create("Move_Backward",     backward_keys,    2); */
-	/* input_map_create("Move_Up",           up_keys,          1); */
-	/* input_map_create("Move_Down",         down_keys,        1); */
-	/* input_map_create("Move_Left",         left_keys,        2); */
-	/* input_map_create("Move_Right",        right_keys,       2); */
-	/* input_map_create("Turn_Right",        turn_right_keys,  1); */
-	/* input_map_create("Turn_Left",         turn_left_keys,   1); */
-	/* input_map_create("Turn_Up",           turn_up_keys,     1); */
-	/* input_map_create("Turn_Down",         turn_down_keys,   1); */
-	/* input_map_create("Sprint",            sprint_keys,      2); */
-	/* input_map_create("Recompute",         recompute_keys,   2); */
-	/* input_map_create("Editor_Toggle",     ed_toggle_keys,   1); */
-	/* input_map_create("Window_Fullscreen", win_fullscr_keys, 1); */
-	/* input_map_create("Window_Maximize",   win_max_keys,     1); */
-	
+{	
 	struct Entity* player = scene_add_new("player", "None");
 	game_state->player_node = player->node;
 	vec3 viewer_pos = {10, 5, 100};
@@ -225,34 +194,6 @@ void scene_setup(void)
 	/* struct Entity* sun = scene_add_new("Sun", NULL); */
 	/* struct Light* sun_light = entity_component_add(sun, C_LIGHT, LT_DIR); */
 	/* sun_light->intensity = 0.8f; */
-
-	/* struct Hashmap* cvars = config_vars_get(); */
-    /* hashmap_int_set(cvars, "My_Int", 20); */
-	/* hashmap_str_set(cvars, "My_String", "This is my string"); */
-	/* hashmap_float_set(cvars, "Some_FLOAT", 42.222f); */
-	/* hashmap_double_set(cvars, "Some_Double", 99.999); */
-	/* hashmap_bool_set(cvars, "The_Truth", 0); */
-
-	/* char* key = NULL; */
-	/* struct Variant* value = NULL; */
-	/* char variant_str[256]; */
-	/* HASHMAP_FOREACH(cvars, key, value) */
-	/* { */
-	/* 	variant_to_str(value, variant_str, 256); */
-	/* 	log_message("VAL :(%s) : (%s)", key, variant_str); */
-	/* 	memset(variant_str, '\0', 256); */
-	/* } */
-	
-/* 	hashmap_float_set(cvars, "Some_FLOAT", 99.3f); */
-	/* hashmap_debug_print(cvars); */
-/* 	log_message("The value of Some_FLOAT is : %f", hashmap_float_get(cvars, "Some_FLOAT")); */
-/* } */
-
-	/* struct Variant variant; */
-	/* variant_from_str(&variant, "3.333333333333333333333", VT_DOUBLE); */
-	/* log_message("Variant val : %lf", variant.val_double); */
-	/* log_message("Variant type : %s", variant.type == VT_DOUBLE ? "expected" : "not what's expected"); */
-	
 }
 
 void debug(float dt)
@@ -272,18 +213,10 @@ void debug(float dt)
 	vec3 rot_axis_left_right = {0, 1, 0};
 
 	/* Look around */
-	/* if(input_map_state_get("Turn_Up",    KS_PRESSED)) turn_up_down += turn_speed; */
-	/* if(input_map_state_get("Turn_Down",  KS_PRESSED)) turn_up_down -= turn_speed; */
-	/* if(input_map_state_get("Turn_Right", KS_PRESSED)) turn_left_right += turn_speed; */
-	/* if(input_map_state_get("Turn_Left",  KS_PRESSED)) turn_left_right -= turn_speed; */
-
-	/* if(input_map_state_get("Recompute", KS_PRESSED)) */
-	/* { */
-	/* 	log_message("Regenerating Bounding Volumes"); */
-	/* 	geom_bounding_volume_generate_all(); */
-	/* } */
-	/* if(input_is_key_pressed(KEY_TAB, KS_PRESSED))  */
-	/* if(input_is_key_pressed(KEY_TAB, KS_PRESSED) && input_is_key_pressed(KEY_LSHIFT, KS_PRESSED)) input_mouse_mode_set(MM_NORMAL); */
+	if(input_map_state_get("Turn_Up",    KS_PRESSED)) turn_up_down += turn_speed;
+	if(input_map_state_get("Turn_Down",  KS_PRESSED)) turn_up_down -= turn_speed;
+	if(input_map_state_get("Turn_Right", KS_PRESSED)) turn_left_right += turn_speed;
+	if(input_map_state_get("Turn_Left",  KS_PRESSED)) turn_left_right -= turn_speed;
 	
 	if(input_mousebutton_state_get(MSB_RIGHT, KS_PRESSED))
 	{
@@ -340,13 +273,13 @@ void debug(float dt)
 	}
 	
 	/* Movement */
-	/* if(input_map_state_get("Sprint",        KS_PRESSED)) move_speed *= move_scale; */
+	if(input_map_state_get("Sprint",        KS_PRESSED)) move_speed *= move_scale;
 	if(input_map_state_get("Move_Forward",  KS_PRESSED)) offset.z   -= move_speed;
 	if(input_map_state_get("Move_Backward", KS_PRESSED)) offset.z   += move_speed;
-	/* if(input_map_state_get("Move_Left",     KS_PRESSED)) offset.x   -= move_speed; */
-	/* if(input_map_state_get("Move_Right",    KS_PRESSED)) offset.x   += move_speed; */
-	/* if(input_map_state_get("Move_Up",       KS_PRESSED)) offset.y   += move_speed; */
-	/* if(input_map_state_get("Move_Down",     KS_PRESSED)) offset.y   -= move_speed; */
+	if(input_map_state_get("Move_Left",     KS_PRESSED)) offset.x   -= move_speed;
+	if(input_map_state_get("Move_Right",    KS_PRESSED)) offset.x   += move_speed;
+	if(input_map_state_get("Move_Up",       KS_PRESSED)) offset.y   += move_speed;
+	if(input_map_state_get("Move_Down",     KS_PRESSED)) offset.y   -= move_speed;
 
 	vec3_scale(&offset, &offset, dt);
 	if(offset.x != 0 || offset.y != 0 || offset.z != 0)
@@ -381,20 +314,7 @@ void debug(float dt)
 		/* transform_rotate(mod_tran, &y_axis, 25.f * dt, TS_WORLD); */
 		vec3 amount = {0, 0, 5 * dt};
 		transform_translate(mod_tran, &amount, TS_LOCAL);
-	}	
-
-	/* if(input_is_key_pressed(GLFW_KEY_C, KS_PRESSED)) */
-	/* { */
-	/* 	struct Entity* cam_ent = scene_find("Screen_Camera"); */
-	/* 	struct Camera* cam = entity_component_get(cam_ent, C_CAMERA); */
-	/* 	camera_set_primary_viewer(cam); */
-	/* } */
-
-	/* if(input_is_key_pressed(GLFW_KEY_V, KS_PRESSED)) */
-	/* { */
-	/* 	struct Camera* cam = entity_component_get(entity, C_CAMERA); */
-	/* 	camera_set_priimary_viewer(cam); */
-	/* } */
+	}
 }
 
 int run(void)
@@ -422,12 +342,12 @@ int run(void)
 void update(float dt, int* window_should_close)
 {	
 	if(input_is_key_pressed(KEY_ESCAPE))                      *window_should_close = 1;
-	/* if(input_map_state_get("Editor_Toggle", KS_RELEASED))     editor_toggle(); */
-	/* if(input_map_state_get("Window_Fullscreen", KS_RELEASED)) window_fullscreen_set(game_state->window, 1); */
-	/* if(input_map_state_get("Window_Maximize", KS_RELEASED))   window_fullscreen_set(game_state->window, 0); */
+	if(input_map_state_get("Editor_Toggle", KS_RELEASED))     editor_toggle();
+	if(input_map_state_get("Window_Fullscreen", KS_RELEASED)) window_fullscreen_set(game_state->window, 1);
+	if(input_map_state_get("Window_Maximize", KS_RELEASED))   window_fullscreen_set(game_state->window, 0);
 	
 	debug(dt);
-	debug_gui(dt);
+	//debug_gui(dt);
 	editor_update(dt);
 	input_update();	/* This should always be the last thing. Probably
 					 * put this in post update? */

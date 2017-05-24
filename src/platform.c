@@ -355,7 +355,7 @@ void platform_mouse_delta_get(int* x, int* y)
 	SDL_GetRelativeMouseState(x, y);
 }
 
-char* platform_base_path_get(void)
+char* platform_install_directory_get(void)
 {
 	char* returned_path = SDL_GetBasePath();
 	char* path = NULL;
@@ -399,7 +399,6 @@ int platform_key_from_name(const char* key_name)
 	while(isspace(end_ptr[0])) end_ptr--;
  
 	strncpy(trimmed_key_name, start_ptr, (end_ptr - start_ptr));
-	log_message("trimmed : %s", trimmed_key_name);
 	return SDL_GetKeyFromName(trimmed_key_name);
 }
 
@@ -407,4 +406,20 @@ const char* platform_key_name_get(int key)
 {
 	if(key < 0) return "SDLK_UNKNOWN";
 	return SDL_GetKeyName(key);
+}
+
+char* platform_user_directory_get(const char* organization, const char* application)
+{
+	char* user_directory = NULL;
+	char* temp_path      = SDL_GetPrefPath(organization, application);
+	if(temp_path)
+	{
+		user_directory = str_new(temp_path);
+		SDL_free(temp_path);
+	}
+	else
+	{
+		log_error("platform:user_directory_get", "Error getting user directory, %s", SDL_GetError());
+	}
+	return user_directory;
 }

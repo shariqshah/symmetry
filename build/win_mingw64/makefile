@@ -16,12 +16,12 @@ all: release
 release: BUILD_TYPE  = release
 release: CFLAGS     += $(CFLAGS_RELEASE)
 release: pre_build $(OBJS_RELEASE) post_build
-	-@echo LINKING...
+	-@echo -e "\e[34mLINKING\e[0m Release build"
 	-@$(CC) $(OBJS_RELEASE) $(LFLAGS) -o $(PROJECT_NAME)
-	-@echo DONE building $(PROJECT_NAME)
+	-@echo -e "\e[32mDONE\e[0m building $(PROJECT_NAME)"
 
 .release/%.o: $(SRC_DIR)/%.c
-	-@echo Compiling $<
+	-@echo -e "\e[96mCompiling $<\e[0m"
 	-@$(CC) $(CFLAGS) -c $< -o $@
 
 pre_build:
@@ -33,7 +33,7 @@ post_build:
 	-@cp $(LIB_BINARY_DIR)/OpenAL32.dll /mnt/Dev/Projects/symmetry/build/win_mingw64
 
 dist: release
-	-@echo Creating Distribution at $(DIST_DIR)/$(PROJECT_DIST_NAME)
+	-@echo -e "\e[34mCreating Distribution at $(DIST_DIR)/$(PROJECT_NAME)\e[0m"
 	-@mingw-strip $(PROJECT_NAME)
 	-@rm -rf $(DIST_DIR)/$(PROJECT_DIST_NAME)
 	-@mkdir -p $(DIST_DIR)/$(PROJECT_DIST_NAME)
@@ -41,9 +41,11 @@ dist: release
 	-@cp $(PROJECT_NAME) $(DIST_DIR)/$(PROJECT_DIST_NAME)
 	-@cp SDL2.dll $(DIST_DIR)/$(PROJECT_DIST_NAME)
 	-@cp OpenAL32.dll $(DIST_DIR)/$(PROJECT_DIST_NAME)
-	-@echo DONE creating distribution
+	-@echo -e "\e[32mDONE creating distribution\e[0m"
 
 clean:
+	-@echo -e "\e[31m"
 	-rm -f  $(PROJECT_NAME)
 	-rm -rf .release
 	-rm -rf .debug
+	-@echo -e "\e[0m"

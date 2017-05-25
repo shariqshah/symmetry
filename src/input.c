@@ -73,7 +73,7 @@ void input_cleanup(void)
 	for(int i = 0; i < array_len(input_map_list); i++)
 	{
 		struct Input_Map* map = &input_map_list[i];
-		log_message("Map : %s, Num keys : %d", map->name, array_len(map->keys));
+		//log_message("Map : %s, Num keys : %d", map->name, array_len(map->keys));
 		if(map->name) free(map->name);
 		array_free(map->keys);
 	}
@@ -354,7 +354,6 @@ void input_map_create(const char* name, struct Key_Combination* keys, int num_ke
 			new_map->keys[i] = keys[i];
 		log_message("Created Input Map : %s", name);
 	}
-	log_message("Map_index : %d", index);
 }
 
 void input_update(void)

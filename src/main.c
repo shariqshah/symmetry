@@ -17,7 +17,7 @@ void cleanup();
 int main(int argc, char** args)
 {
     if(!init())
-		log_error("Main:main", "Could not initialize");
+		log_to_stdout("ERR:(Main) Could not initialize");
     else
 		game_init(window);
 	
@@ -30,13 +30,14 @@ int init(void)
 	if(atexit(cleanup) != 0)
 	{
 		success = 0;
-		log_error("main:init", "Could not register cleanup func with atexit");
+		log_to_stdout("ERR: (main:init) Could not register cleanup func with atexit");
 	}
 	else
 	{
 		config_vars_init();
         if(platform_init())
 		{
+			log_init("Log.txt");
             success = gl_load_library();
             if(!success)
 			{
@@ -87,4 +88,5 @@ void cleanup()
     platform_cleanup();
 	config_vars_cleanup();
 	log_message("Program exiting!");
+	log_cleanup();
 }

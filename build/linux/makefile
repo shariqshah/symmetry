@@ -17,23 +17,23 @@ all: release
 release: BUILD_TYPE  = release
 release: CFLAGS     += $(CFLAGS_RELEASE)
 release: pre_build $(OBJS_RELEASE) post_build
-	-@echo LINKING Release build
+	-@echo -e "\e[34mLINKING\e[0m Release build"
 	-@$(CC) $(OBJS_RELEASE) $(LFLAGS) -o $(PROJECT_NAME)
-	-@echo DONE building $(PROJECT_NAME)
+	-@echo -e "\e[32mDONE\e[0m building $(PROJECT_NAME)"
 
 debug: BUILD_TYPE  = debug
 debug: CFLAGS     += $(CFLAGS_DEBUG)
 debug: pre_build $(OBJS_DEBUG) post_build
-	-@echo LINKING Debug build
+	-@echo -e "\e[34mLINKING\e[0m Debug build"
 	-@$(CC) $(OBJS_DEBUG) $(LFLAGS) -o $(PROJECT_NAME)
-	-@echo DONE building $(PROJECT_NAME)
+	-@echo -e "\e[32mDONE\e[0m building $(PROJECT_NAME)"
 
 .release/%.o: $(SRC_DIR)/%.c
-	-@echo Compiling $<
+	-@echo -e "\e[96mCompiling $<\e[0m"
 	-@$(CC) $(CFLAGS) -c $< -o $@
 
 .debug/%.o: $(SRC_DIR)/%.c
-	-@echo Compiling $<
+	-@echo -e "\e[96mCompiling $<\e[0m"
 	-@$(CC) $(CFLAGS) -c $< -o $@
 
 pre_build:
@@ -43,7 +43,7 @@ post_build:
 	-@ln -fs /mnt/Dev/Projects/symmetry/assets assets
 
 dist: release
-	-@echo Creating Distribution at $(DIST_DIR)/$(PROJECT_NAME)
+	-@echo -e "\e[34mCreating Distribution at $(DIST_DIR)/$(PROJECT_NAME)\e[0m"
 	-@strip $(PROJECT_NAME)
 	-@rm -rf $(DIST_DIR)/$(PROJECT_NAME)
 	-@mkdir -p $(DIST_DIR)/$(PROJECT_NAME)
@@ -57,9 +57,11 @@ dist: release
 	-@chmod +x $(DIST_DIR)/$(PROJECT_NAME)/Launch.sh
 	-@cp $(PROJECT_NAME) $(DIST_DIR)/$(PROJECT_NAME)
 	-@chmod +x $(DIST_DIR)/$(PROJECT_NAME)/$(PROJECT_NAME)
-	-@echo DONE creating distribution
+	-@echo -e "\e[32mDONE creating distribution\e[0m"
 
 clean:
+	-@echo -e "\e[31m"
 	-rm -f  $(PROJECT_NAME)
 	-rm -rf .release
 	-rm -rf .debug
+	-@echo -e "\e[0m"

@@ -180,14 +180,16 @@ int platform_init(void)
 	if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_TIMER) != 0)
 	{
 		success = 0;
-		log_error("platform_init", "SDL Init failed : %s", SDL_GetError());
+		if(SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "SDL Init failed", SDL_GetError(), NULL) != 0)
+			log_to_stdout("platform_init", "SDL Init failed : %s", SDL_GetError());
 	}
 	else
 	{
 		platform_state = malloc(sizeof(*platform_state));
 		if(!platform_state)
 		{
-			log_error("platform_init", "Could not create platform state, out of memory");
+			if(SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Allocation Failure", "Memory allocation failed, out of memory!", NULL) != 0)
+				log_to_stdout("platform_init", "Could not create platform state, out of memory");
 			success = 0;
 		}
 		else

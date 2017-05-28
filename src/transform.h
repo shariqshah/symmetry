@@ -1,24 +1,14 @@
-#ifndef _transform_H
-#define _transform_H
+#ifndef TRANSFORM_H
+#define TRANSFORM_H
 
 #include "linmath.h"
 
 enum Transform_Space { TS_LOCAL, TS_PARENT, TS_WORLD};
 
-struct Transform
-{
-	int  node;
-	vec3 position;
-	vec3 scale;
-	quat rotation;
-	mat4 trans_mat;
-};
+struct Transform;
 
-struct Transform* transform_get(int index);
-void transform_remove(int index);
-void transform_init(void);
-void transform_cleanup(void);
-int  transform_create(int node);
+void transform_create(struct Transform* transform, int parent_entity);
+void transform_destroy(struct Transform* transform);
 void transform_translate(struct Transform* transform, vec3* amount, enum Transform_Space space);
 void transform_rotate(struct Transform*    transform,
 					  vec3*                axis,

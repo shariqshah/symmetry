@@ -380,7 +380,7 @@ int texture_create(const char* name,
 				   int   	   type,
 				   const void* data)
 {
-	assert(name && texture_unit > -1 && texture_unit <= TU_SHADOWMAP4);
+	assert(texture_unit > -1 && texture_unit <= TU_SHADOWMAP4);
 	int index   = -1;
 	uint handle = 0;
 	int success = create_gl_texture(&handle, width, height, format, internal_format, type, data);
@@ -398,7 +398,7 @@ int texture_create(const char* name,
 			new_tex = array_grow(texture_list, struct Texture);
 			index   = array_len(texture_list) - 1;
 		}
-		new_tex->name            = str_new(name);
+		new_tex->name            = name ? str_new(name) : str_new("texture_%d", index);
 		new_tex->handle          = handle;
 		new_tex->ref_count       = 1;
 		new_tex->texture_unit    = texture_unit;

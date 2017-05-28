@@ -72,9 +72,7 @@ int game_init(struct Window* window)
 	framebuffer_init();
 	geom_init();
 	renderer_init();
-	transform_init();
 	light_init();
-	camera_init();
 	material_init();
 	editor_init();
 	model_init();
@@ -89,10 +87,10 @@ int game_init(struct Window* window)
 
 void scene_setup(void)
 {	
-	struct Entity* player = scene_add_new("player", "None");
-	game_state->player_node = player->node;
+	struct Entity* player = scene_add_new("player", ET_CAMERA);
+	game_state->player_node = player->id;
 	vec3 viewer_pos = {10, 5, 100};
-	struct Transform* viewer_tran = entity_component_get(player, C_TRANSFORM);
+	struct Transform* viewer_tran = &player->transform;
 	/* struct Model* player_model = entity_component_add(player, C_MODEL, "sphere.pamesh", NULL); */
 	/* model_set_material_param(player_model, "diffuse_color", &color); */
 	/* vec4_fill(&color, 1.f, 1.f, 1.f, 1.f); */
@@ -100,25 +98,28 @@ void scene_setup(void)
 	int render_width, render_height;
 	render_width = 1024;
 	render_height = 768;
-	struct Camera* camera = entity_component_add(player, C_CAMERA, render_width, render_height);
+	struct Camera* camera = &player->camera;
+	camera_create(camera, &player->transform, render_width, render_height);
 	camera_attach_fbo(camera, render_width, render_height, 1, 1, 1);
 	vec4_fill(&camera->clear_color, 0.3f, 0.6f, 0.9f, 1.0f);
-	camera_set_primary_viewer(camera);
-	sound_listener_set(player->node);
+	sound_listener_set(player->id);
 
 	vec4 color = {0.f, 1.f, 1.f, 1.f };
-	struct Entity* new_ent = scene_add_new("Model_Entity", NULL);
-	struct Transform* tran = entity_component_get(new_ent, C_TRANSFORM);
+	struct Entity* new_ent = scene_add_new("Model_Entity", ET_STATIC_MESH);
+	struct Transform* tran = &new_ent->transform;
 	vec3 position = {0, 0, -5};
 	transform_translate(tran, &position, TS_WORLD);
-	struct Model* box_model = entity_component_add(new_ent, C_MODEL, "default.pamesh", "Blinn_Phong");
+	struct Model* box_model = &new_ent->model;
+	model_create(box_model, new_ent->id, "default.pamesh", "Blinn_Phong");
 	model_set_material_param(box_model, "diffuse_color", &color);
 	int tex = texture_create_from_file("white.tga", TU_DIFFUSE);
 	model_set_material_param(box_model, "diffuse_texture", &tex);
-	struct Transform* model_tran = entity_component_get(new_ent, C_TRANSFORM);
 	vec3 scale = {1, 1, 1};
-	transform_scale(model_tran, &scale);
-	struct Sound_Source* source = entity_component_add(new_ent, C_SOUND_SOURCE);
+	transform_scale(tran, &scale);
+
+	struct Entity* sound_ent = scene_add_as_child("Sound_ENT", ET_SOUND_SOURCE, new_ent->id);
+	struct Sound_Source* source = &sound_ent->sound_source;
+	sound_source_create(source, &new_ent->transform);
 	if(source)
 	{
 		sound_source_load_wav(source, "BigExplosion.wav");
@@ -128,7 +129,7 @@ void scene_setup(void)
 		sound_source_play(source);
 	}
 
-	int parent_node = new_ent->node;
+	int parent_node = new_ent->id;
 	int num_suz = 2;
 	srand(time(NULL));
 	for(int i = 0; i < num_suz; i++)
@@ -137,30 +138,29 @@ void scene_setup(void)
 		int y = rand() % num_suz;
 		int z = rand() % num_suz;
 		x++; y++; z++;
-		struct Entity* suz = scene_add_as_child("Suzanne", NULL, parent_node);
-		//struct Entity* suz = scene_add_new("Suzanne", NULL);
-		struct Model* suz_model = entity_component_add(suz, C_MODEL, "suzanne.pamesh", "Blinn_Phong");
+		struct Entity* suz = scene_add_as_child("Suzanne", ET_STATIC_MESH, parent_node);
+		struct Model* suz_model = &suz->model;
+		model_create(suz_model, suz->id, "suzanne.pamesh", "Blinn_Phong");
 		model_set_material_param(suz_model, "diffuse_color", &color);
 		float spec_str = 80.f;
 		model_set_material_param(suz_model, "specular_strength", &spec_str);
-		struct Transform* s_tran = entity_component_get(suz, C_TRANSFORM);
 		vec3 s_pos = {x, 5, z};
-		transform_translate(s_tran, &s_pos, TS_WORLD);
+		transform_translate(&suz->transform, &s_pos, TS_WORLD);
 	}
 	
 
-	struct Entity* ground = scene_add_new("Ground", NULL);
-	struct Model* ground_model = entity_component_add(ground, C_MODEL, "plane.pamesh", "Blinn_Phong");
+	struct Entity* ground = scene_add_new("Ground", ET_STATIC_MESH);
+	struct Model* ground_model = &ground->model;
+	model_create(ground_model, ground->id, "plane.pamesh", "Blinn_Phong");
 	model_set_material_param(ground_model, "diffuse_color", &color);
 	int white_tex = texture_create_from_file("white.tga", TU_DIFFUSE);
 	model_set_material_param(ground_model, "diffuse_texture", &white_tex);
 	float spec_str = 80.f;
 	model_set_material_param(ground_model, "specular_strength", &spec_str);
-	struct Transform* ground_tran = entity_component_get(ground, C_TRANSFORM);
 	vec3 pos = {0, -15, 0};
-	vec3 scale_ground = {200.f, 200.f, 200.f};
-	transform_set_position(ground_tran, &pos);
-	transform_scale(ground_tran, &scale_ground);
+	vec3 scale_ground = {200.f, 1.f, 200.f};
+	transform_set_position(&ground->transform, &pos);
+	transform_scale(&ground->transform, &scale_ground);
 
 	/* struct Entity* screen = scene_add_new("Screen", NULL); */
 	/* struct Model* screen_model = entity_component_add(screen, C_MODEL, NULL, NULL); */
@@ -182,11 +182,11 @@ void scene_setup(void)
 		int x = rand() % MAX_LIGHTS;
 		int z = rand() % MAX_LIGHTS;
 		x++; z++;
-		struct Entity* light_ent = scene_add_new("Light_Ent", NULL);
-		struct Transform* light_tran = entity_component_get(light_ent, C_TRANSFORM);
+		struct Entity* light_ent = scene_add_new("Light_Ent", ET_LIGHT);
 		vec3 lt_pos = {x * 20, 0, z * 20};
-		transform_set_position(light_tran, &lt_pos);
-		struct Light* light_comp = entity_component_add(light_ent, C_LIGHT, LT_POINT);
+		transform_set_position(&light_ent->transform, &lt_pos);
+		struct Light* light_comp = &light_ent->light;
+		light_create(&light_ent->light, light_ent->id, LT_POINT);
 		vec3_fill(&light_comp->color, 1.f / (float)x, 1.f / ((rand() % 10) + 1.f), 1.f / (float)z);
 		light_comp->intensity = 1.f;
 	}
@@ -200,9 +200,8 @@ void debug(float dt)
 {
 	//struct Entity* entity = entity_get(player_node);
 	struct Entity* entity =  entity_get(game_state->player_node);
-	struct Camera* cam = entity_component_get(entity, C_CAMERA);
-	camera_set_primary_viewer(cam);
-	struct Transform* transform = entity_component_get(entity, C_TRANSFORM);
+	struct Camera* cam = &entity->camera;
+	struct Transform* transform = &entity->transform;
 	float move_speed = 5.f, move_scale = 3.f, turn_speed = 50.f;
 	vec3 offset = {0, 0, 0};
 	float turn_up_down = 0.f;
@@ -291,29 +290,26 @@ void debug(float dt)
 	if(input_is_key_pressed(KEY_SPACE))
 	{
 		struct Entity* model = scene_find("Model_Entity");
-		struct Transform* mod_tran = entity_component_get(model, C_TRANSFORM);
 		vec3 x_axis = {1, 0, 0};
-		transform_rotate(mod_tran, &x_axis, 25.f * dt, TS_WORLD);
+		transform_rotate(&model->transform, &x_axis, 25.f * dt, TS_WORLD);
 	}
 
 	if(input_is_key_pressed(KEY_M))
 	{
 		struct Entity* model = scene_find("Model_Entity");
-		struct Transform* mod_tran = entity_component_get(model, C_TRANSFORM);
 		//vec3 y_axis = {0, 0, 1};
 		//transform_rotate(mod_tran, &y_axis, 25.f * dt, TS_LOCAL);
 		vec3 amount = {0, 0, -5 * dt};
-		transform_translate(mod_tran, &amount, TS_LOCAL);
+		transform_translate(&model->transform, &amount, TS_LOCAL);
 	}
 
 	if(input_is_key_pressed(KEY_N))
 	{
 		struct Entity* model = scene_find("Model_Entity");
-		struct Transform* mod_tran = entity_component_get(model, C_TRANSFORM);
 		/* vec3 y_axis = {0, 0, 1}; */
 		/* transform_rotate(mod_tran, &y_axis, 25.f * dt, TS_WORLD); */
 		vec3 amount = {0, 0, 5 * dt};
-		transform_translate(mod_tran, &amount, TS_LOCAL);
+		transform_translate(&model->transform, &amount, TS_LOCAL);
 	}
 }
 
@@ -335,6 +331,7 @@ int run(void)
 		update(delta_time, &should_window_close);
 		render();
 		window_swap_buffers(game_state->window);
+		entity_post_update();
 	}
 	return 1;
 }
@@ -1559,7 +1556,8 @@ void debug_gui(float dt)
 
 void render(void)
 {
-	renderer_draw();
+	struct Entity* viewer = entity_get(game_state->player_node);
+	renderer_draw(viewer);
 }
 
 void game_cleanup(void)
@@ -1575,8 +1573,6 @@ void game_cleanup(void)
 			material_cleanup();
 			geom_cleanup();
 			light_cleanup();
-			transform_cleanup();
-			camera_cleanup();
 			input_cleanup();
 			renderer_cleanup();
 			io_file_cleanup();

@@ -22,14 +22,10 @@ struct Sound_State
 };
 
 static struct Sound_State   sound_state;
-static struct Sound_Source* sound_sources_list = NULL;
-static int*                 empty_indices = NULL;
 
-int sound_init(void)
+bool sound_init(void)
 {
-	int success        = 0;
-	sound_sources_list = array_new(struct Sound_Source);
-	empty_indices      = array_new(int);
+	bool success = false;
 	
 	sound_state.device = alcOpenDevice(NULL);
 	if(!sound_state.device)
@@ -61,7 +57,7 @@ int sound_init(void)
     al_check(alListener3f(AL_POSITION, 0.f, 0.f, 0.f))
 	al_check(alListenerfv(AL_ORIENTATION, orientation))
 	
-	success = 1;
+	success = true;
 	return success;
 }
 
@@ -71,27 +67,26 @@ void sound_listener_set(int listener_entity)
 	if(sound_state.listener_entity != -1)
 	{
 		struct Entity* current_listener = entity_get(sound_state.listener_entity);
-		current_listener->is_listener   = 0;
+		current_listener->is_listener   = false;
 	}
 	
 	sound_state.listener_entity = listener_entity;
 	struct Entity* entity = entity_get(listener_entity);
-	entity->is_listener = 1;
+	entity->is_listener = true;
 	sound_listener_update();
 }
 
 void sound_listener_update(void)
 {
 	if(sound_state.listener_entity == -1) return;
-	struct Entity*    entity    = entity_get(sound_state.listener_entity);
-	struct Transform* transform = entity_component_get(entity, C_TRANSFORM);
+	struct Entity* entity = entity_get(sound_state.listener_entity);
 	vec3 abs_pos     = {0.f, 0.f,  0.f};
 	vec3 abs_up      = {0.f, 1.f,  0.f};
 	vec3 abs_forward = {0.f, 0.f, -1.f};
 	
-	transform_get_absolute_pos(transform, &abs_pos);
-	transform_get_absolute_up(transform, &abs_up);
-	transform_get_absolute_forward(transform, &abs_forward);
+	transform_get_absolute_pos(&entity->transform, &abs_pos);
+	transform_get_absolute_up(&entity->transform, &abs_up);
+	transform_get_absolute_forward(&entity->transform, &abs_forward);
 	float orientation[] =
 	{
 		abs_forward.x, abs_forward.y, abs_forward.z,
@@ -112,10 +107,9 @@ void sound_volume_set(float volume)
 	al_check(alListenerf(AL_GAIN, volume))
 }
 
-void sound_source_remove(int index)
+void sound_source_destroy(struct Sound_Source* source)
 {
-	assert(index > -1 && index < array_len(sound_sources_list));
-	struct Sound_Source* source = &sound_sources_list[index];
+	assert(source);
 	if(!source->active) return;
 	if(alIsBuffer(source->al_buffer_handle) == AL_TRUE)
 	{
@@ -124,21 +118,13 @@ void sound_source_remove(int index)
 		al_check(alDeleteBuffers(1, &source->al_buffer_handle))
 	}
 	if(alIsSource(source->al_source_handle) == AL_TRUE) al_check(alDeleteSources(1, &source->al_source_handle))
-	source->entity           = -1;
 	source->al_buffer_handle =  0;
 	source->al_source_handle =  0;
-	source->active           =  0;
-	array_push(empty_indices, index, int);
+	source->active           =  false;
 }
 
 void sound_cleanup(void)
-{
-	for(int i = 0; i < array_len(sound_sources_list); i++)
-		sound_source_remove(i);
-
-	array_free(sound_sources_list);
-	array_free(empty_indices);
-	
+{	
 	alcMakeContextCurrent(NULL);
 	alcDestroyContext(sound_state.context);
 	alcCloseDevice(sound_state.device);
@@ -162,39 +148,21 @@ void sound_error_check(const char* file, unsigned int line, const char* expressi
 	}
 }
 
-int sound_source_create(int entity)
+void sound_source_create(struct Sound_Source* source, struct Transform* transform)
 {
-	int index = -1;
-	struct Sound_Source* new_source = NULL;
-	if(array_len(empty_indices) > 0)
-	{
-		index = *array_get_last(empty_indices, int);
-		array_pop(empty_indices);
-		new_source = &sound_sources_list[index];
-	}
+	assert(source);
+	source->active = true;
+	al_check(alGenSources(1, &source->al_source_handle))
+	al_check(alGenBuffers(1, &source->al_buffer_handle))
+	sound_source_volume_set(source, 1.f);
+	if(transform)
+		sound_source_update(source, transform);
 	else
-	{
-		new_source = array_grow(sound_sources_list, struct Sound_Source);
-		index = array_len(sound_sources_list) - 1;
-	}
-	
-	new_source->entity = entity;
-	new_source->active = 1;
-	al_check(alGenSources(1, &new_source->al_source_handle))
-	al_check(alGenBuffers(1, &new_source->al_buffer_handle))
-	sound_source_volume_set(new_source, 1.f);
-	if(entity > -1)
-		sound_source_update(new_source);
-	else
-		sound_source_relative_set(new_source, 1);
-	return index;
+		sound_source_relative_set(source, 1);
 }
 
-void sound_source_update(struct Sound_Source* source)
+void sound_source_update(struct Sound_Source* source, struct Transform* transform)
 {
-	if(source->entity < 0) return;
-	struct Entity*    entity    = entity_get(source->entity);
-	struct Transform* transform = entity_component_get(entity, C_TRANSFORM);
 	vec3 abs_pos     = {0.f, 0.f,  0.f};
 	vec3 abs_up      = {0.f, 1.f,  0.f};
 	vec3 abs_forward = {0.f, 0.f, -1.f};
@@ -223,13 +191,13 @@ void sound_source_pitch_set(struct Sound_Source* source, float pitch)
 	al_check(alSourcef(source->al_source_handle, AL_PITCH, pitch))
 }
 
-void sound_source_loop_set(struct Sound_Source* source, int loop)
+void sound_source_loop_set(struct Sound_Source* source, bool loop)
 {
 	loop = loop ? AL_TRUE : AL_FALSE;
 	al_check(alSourcei(source->al_source_handle, AL_LOOPING, loop))
 }
 
-void sound_source_relative_set(struct Sound_Source* source, int relative)
+void sound_source_relative_set(struct Sound_Source* source, bool relative)
 {
 	relative = relative ? AL_TRUE : AL_FALSE;
 	al_check(alSourcei(source->al_source_handle, AL_SOURCE_RELATIVE, relative));
@@ -263,7 +231,7 @@ void sound_source_load_wav(struct Sound_Source* source, const char* file_name)
 		return;
 	}
 
-	int mono   = wav_spec.channels == 1 ? 1 : 0;
+	bool mono   = wav_spec.channels == 1 ? true : false;
 	int format = -1;
 	if(mono)
 	{
@@ -277,10 +245,12 @@ void sound_source_load_wav(struct Sound_Source* source, const char* file_name)
 	else
 	{
 		/* TODO: FIX THIS!!!! This should resemble the if condition  */
-		if(wav_spec.format == AUDIO_U8)
+		if(wav_spec.format == AUDIO_U8 || wav_spec.format == AUDIO_S8)
 			format = AL_FORMAT_STEREO8;
-		else if(wav_spec.format == AUDIO_S16)
+		else if(wav_spec.format == AUDIO_S16 || wav_spec.format == AUDIO_S16LSB || wav_spec.format == AUDIO_S16MSB || wav_spec.format == AUDIO_S16SYS)
 			format = AL_FORMAT_STEREO16;
+		else if(wav_spec.format == AUDIO_F32 || wav_spec.format == AUDIO_F32LSB || wav_spec.format == AUDIO_F32MSB || wav_spec.format == AUDIO_F32SYS || wav_spec.format == AUDIO_S32 || wav_spec.format == AUDIO_S32LSB)
+			format = AL_FORMAT_STEREO_FLOAT32;
 	}
 
 	if(format == -1)
@@ -293,12 +263,6 @@ void sound_source_load_wav(struct Sound_Source* source, const char* file_name)
 	al_check(alBufferData(source->al_buffer_handle, format, wav_data, wav_data_len, wav_spec.freq))
 	al_check(alSourcei(source->al_source_handle, AL_BUFFER, source->al_buffer_handle))
 	SDL_FreeWAV(wav_data);
-}
-
-struct Sound_Source* sound_source_get(int index)
-{
-	assert(index > -1 && index < array_len(sound_sources_list));
-	return &sound_sources_list[index];
 }
 
 void sound_source_play(struct Sound_Source* source)   { al_check(alSourcePlay(source->al_source_handle))   }

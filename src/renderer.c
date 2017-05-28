@@ -16,6 +16,7 @@
 #include "gui.h"
 #include "config_vars.h"
 #include "hashmap.h"
+#include "geometry.h"
 
 static int def_fbo            = -1;
 static int def_albedo_tex     = -1;
@@ -122,14 +123,14 @@ void renderer_init(void)
 	debug_shader       = shader_create("debug.vert", "debug.frag");
 }
 
-void renderer_draw(void)
+void renderer_draw(struct Entity* active_viewer)
 {
-	struct Camera* camera_list = camera_get_all();
-	for(int i = 0; i < array_len(camera_list); i++)
+	struct Entity* entity_list = entity_get_all();
+	for(int i = 0; i < array_len(entity_list); i++)
 	{
-		struct Camera* camera = &camera_list[i];
-		if(camera->node < 0)
-			continue;
+		struct Entity* viewer = &entity_list[i];
+		if(entity_list[i].type != ET_CAMERA) continue;
+		struct Camera* camera = &viewer->camera;
 
 		/* if(camera->fbo == -1) continue; */
 		int fbo = camera->fbo == -1 ? def_fbo : camera->fbo;
@@ -145,7 +146,7 @@ void renderer_draw(void)
 			glEnable(GL_CULL_FACE );
 			glCullFace(GL_BACK);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			model_render_all(camera, GDM_TRIANGLES);
+			model_render_all(viewer, GDM_TRIANGLES);
 		}
 		framebuffer_unbind();
 		glDisable(GL_DEPTH_TEST);
@@ -176,7 +177,7 @@ void renderer_draw(void)
 	glViewport(0, 0, width, height);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	shader_bind(composition_shader);
-	struct Camera* active_camera = camera_get_primary();
+	struct Camera* active_camera = &active_viewer->camera;
 	int final_render_tex = active_camera->render_tex == -1 ? def_albedo_tex : active_camera->render_tex;
 	texture_bind(final_render_tex);
 	geom_render(quad_geo, GDM_TRIANGLES);
@@ -186,7 +187,7 @@ void renderer_draw(void)
 	if(settings.debug_draw_enabled)
 	{
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		model_render_all_debug(active_camera, debug_shader, settings.debug_draw_mode, &settings.debug_draw_color);
+		model_render_all_debug(active_viewer, debug_shader, settings.debug_draw_mode, &settings.debug_draw_color);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 	
@@ -204,7 +205,17 @@ void renderer_cleanup(void)
 
 void on_framebuffer_size_change(int width, int height)
 {
-	camera_resize_all(width, height);
+	struct Entity* entity_list = entity_get_all();
+	float aspect = (float)width / (float)height;
+	for(int i = 0; i < array_len(entity_list); i++)
+	{
+		struct Entity* viewer = &entity_list[i];
+		if(viewer->type != ET_CAMERA) continue;
+
+		viewer->camera.aspect_ratio = aspect > 0.f ? aspect : 4.f / 3.f;
+		camera_update_proj(&viewer->camera);
+	}
+	
 	framebuffer_resize_all(width, height);
 }
 

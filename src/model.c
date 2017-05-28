@@ -1,7 +1,6 @@
 #include "model.h"
 #include "array.h"
 #include "log.h"
-#include "camera.h"
 #include "entity.h"
 #include "shader.h"
 #include "transform.h"
@@ -10,6 +9,7 @@
 #include "material.h"
 #include "light.h"
 #include "editor.h"
+#include "geometry.h"
 #include "variant.h"
 #include "bounding_volumes.h"
 #include "gl_load.h"
@@ -21,100 +21,50 @@
 
 #define MAX_NAME_LEN 64
 
-static struct Model* model_list;
-static        int*   empty_indices;
-static        int    num_culled = 0, num_rendered = 0, num_indices = 0;
-static        int    num_culled_slot = -1, num_rendered_slot = -1, num_indices_slot = -1;
-
-struct Model* model_get(int index)
-{
-	struct Model* model = NULL;
-	if(index > -1 && index < array_len(model_list))
-		model = &model_list[index];
-	else
-		log_error("model:get", "Invalid index");
-	return model;
-}
+static int num_culled = 0, num_rendered = 0, num_indices = 0;
+static int num_culled_slot = -1, num_rendered_slot = -1, num_indices_slot = -1;
 
 void model_init(void)
 {
-	model_list        = array_new(struct Model);
-	empty_indices     = array_new(int);
 	num_culled_slot   = editor_debugvar_slot_create("Culled Geom",   VT_INT);
 	num_rendered_slot = editor_debugvar_slot_create("Rendered Geom", VT_INT);
 	num_indices_slot  = editor_debugvar_slot_create("Total Indices", VT_INT);
 }
 
-int model_create(int node, const char* geo_name, const char* material_name)
+void model_create(struct Model* model, int entity_id, const char* geo_name, const char* material_name)
 {
+	assert(model);
 	/* if no name is given for geometry, use default */
 	if(!geo_name) geo_name = "default.pamesh";
 	int geo_index = geom_create_from_file(geo_name);
-	int index = -1;
-	struct Model* new_model = NULL;
-	if(geo_index > -1)
+
+	model->geometry_index = geo_index;
+	if(!material_register_model(model, entity_id, material_name ? material_name : "Unshaded"))
 	{
-		if(array_len(empty_indices) > 0)
-		{
-			index = *array_get_last(empty_indices, int);
-			array_pop(empty_indices);
-			new_model = &model_list[index];
-		}
-		else
-		{
-			 new_model = array_grow(model_list, struct Model);
-			 index = array_len(model_list) - 1;
-		}
-		new_model->node = node;
-		new_model->geometry_index = geo_index;
-		if(!material_register_model(new_model, index, material_name ? material_name : "Unshaded"))
-		{
-			log_error("model:create", "Unable to register model with Unshaded material, component not added");
-			model_remove(index);
-			index = -1;
-		}
+		log_error("model:create", "Unable to register model with Unshaded material, component not added");
+		model_destroy(model, entity_id);
 	}
-	else
-	{
-		log_error("model:create", "Geometry '%s' not found.", geo_name);
-	}
-	return index;
 }
 
-void model_remove(int index)
+void model_destroy(struct Model* model, int entity_id)
 {
-	if(index > -1 && index < array_len(model_list))
-	{
-		struct Model* model = &model_list[index];
-		model->node = -1;
-		geom_remove(model->geometry_index);
-		model->geometry_index = -1;
-		material_unregister_model(model, index);
-		/* deallocate all params */
-		for(int i = 0; i < array_len(model->material_params); i++)
-			free(model->material_params[i].value);
+	assert(model);
+	geom_remove(model->geometry_index);
+	model->geometry_index = -1;
+	material_unregister_model(model, entity_id);
+	/* deallocate all params */
+	for(int i = 0; i < array_len(model->material_params); i++)
+		free(model->material_params[i].value);
 
-		array_free(model->material_params);
-		array_push(empty_indices, index, int);
-	}
-	else
-	{
-		log_error("model:remove", "Invalid index");
-	}
+	array_free(model->material_params);
 }
 
 void model_cleanup(void)
 {
-	for(int i = 0; i < array_len(model_list); i++)
-	{
-		if(model_list[i].node != -1)
-			model_remove(i);
-	}
-	array_free(model_list);
-	array_free(empty_indices);
+
 }
 
-void model_render_all(struct Camera* camera, enum Geometry_Draw_Mode draw_mode)
+void model_render_all(struct Entity* camera_entity, int draw_mode)
 {
 	static mat4 mvp;
 	struct Material* material_list = material_get_all_materials();
@@ -130,9 +80,9 @@ void model_render_all(struct Camera* camera, enum Geometry_Draw_Mode draw_mode)
 		for(int j = 0; j < array_len(material->registered_models); j++)
 		{
 			/* for each registered model, set up uniforms and render */
-			struct Model* model = &model_list[material->registered_models[j]];
-			struct Entity* entity = entity_get(model->node);
-			struct Transform* transform = entity_component_get(entity, C_TRANSFORM);
+			struct Entity*    entity    = entity_get(material->registered_models[i]);
+			struct Model*     model     = &entity->model;
+			struct Transform* transform = &entity->transform;
 
 			/* set material params for the model */
 			for(int k = 0; k < array_len(model->material_params); k++)
@@ -152,7 +102,7 @@ void model_render_all(struct Camera* camera, enum Geometry_Draw_Mode draw_mode)
 				if(strcmp(uniform->name, "mvp") == 0)
 				{
 					mat4_identity(&mvp);
-					mat4_mul(&mvp, &camera->view_proj_mat, &transform->trans_mat);
+					mat4_mul(&mvp, &camera_entity->camera.view_proj_mat, &transform->trans_mat);
 					shader_set_uniform(uniform->type, uniform->location, &mvp);
 					renderer_check_glerror("model:render_all:material_pipeline");
 				}
@@ -163,7 +113,7 @@ void model_render_all(struct Camera* camera, enum Geometry_Draw_Mode draw_mode)
 				}
 				else if(strcmp(uniform->name, "view_mat") == 0)
 				{
-					shader_set_uniform(uniform->type, uniform->location, &camera->view_mat);
+					shader_set_uniform(uniform->type, uniform->location, &camera_entity->camera.view_mat);
 					renderer_check_glerror("model:render_all:material_pipeline");
 				}
 				else if(strcmp(uniform->name, "inv_model_mat") == 0)
@@ -214,16 +164,16 @@ void model_render_all(struct Camera* camera, enum Geometry_Draw_Mode draw_mode)
 				memset(uniform_name, '\0', MAX_NAME_LEN);
 				for(int i = 0; i < valid_light_count; i++)
 				{
-					struct Light* light = light_get(light_index_list[i]); /* TODO: Cull lights according to camera frustum */
-					struct Entity* light_entity = entity_get(light->node);
-					struct Transform* transform = entity_component_get(light_entity, C_TRANSFORM);
+					struct Entity*    light_entity = entity_get(light_index_list[i]);
+					struct Light*     light        = &light_entity->light; /* TODO: Cull lights according to camera frustum */
+					struct Transform* light_transform    = &light_entity->transform;
 					vec3 light_pos = {0, 0, 0};
-					transform_get_absolute_pos(transform, &light_pos);
+					transform_get_absolute_pos(light_transform, &light_pos);
 
 					if(light->type != LT_POINT)
 					{
 						snprintf(uniform_name, MAX_NAME_LEN, "lights[%d].direction", i);
-						transform_get_absolute_lookat(transform, &light_pos);
+						transform_get_absolute_lookat(light_transform, &light_pos);
 						vec3_norm(&light_pos, &light_pos);
 						shader_set_uniform_vec3(material->shader, uniform_name, &light_pos);
 						memset(uniform_name, '\0', MAX_NAME_LEN);
@@ -267,15 +217,14 @@ void model_render_all(struct Camera* camera, enum Geometry_Draw_Mode draw_mode)
 				}
 
 				shader_set_uniform_int(material->shader, "total_active_lights", valid_light_count);
-				struct Entity* camera_entity = entity_get(camera->node);
-				struct Transform* camera_tran = entity_component_get(camera_entity, C_TRANSFORM);
+				struct Transform* camera_tran = &camera_entity->transform;
 				vec3 camera_pos = {0, 0, 0};
 				transform_get_absolute_pos(camera_tran, &camera_pos);
 				shader_set_uniform_vec3(material->shader, "camera_pos", &camera_pos);
 			}
 			
 			/* Render the geometry */
-			int indices = geom_render_in_frustum(model->geometry_index, &camera->frustum[0], transform, draw_mode);
+			int indices = geom_render_in_frustum(model->geometry_index, &camera_entity->camera.frustum[0], transform, draw_mode);
 			if(indices > 0)
 			{
 				num_rendered++;
@@ -322,27 +271,13 @@ int model_set_material_param(struct Model* model, const char* name, void* value)
 			success = 1;
 			switch(uniform->type)
 			{
-			case UT_INT:
-				*((int*)param->value) = *((int*)value);
-				break;
-			case UT_FLOAT:
-				*((float*)param->value) = *((float*)value);
-				break;
-			case UT_VEC2:
-				vec2_assign((vec2*)param->value, (vec2*)value);
-				break;
-			case UT_VEC3:
-				vec3_assign((vec3*)param->value, (vec3*)value);
-				break;
-			case UT_VEC4:
-				vec4_assign((vec4*)param->value, (vec4*)value);
-				break;
-			case UT_MAT4:
-				mat4_assign((mat4*)param->value, (mat4*)value);
-				break;
-			case UT_TEX:
-				*((int*)param->value) = *((int*)value);
-				break;
+			case UT_INT:   *((int*)param->value)   = *((int*)value);       break;
+			case UT_FLOAT: *((float*)param->value) = *((float*)value);     break;
+			case UT_VEC2:  vec2_assign((vec2*)param->value, (vec2*)value); break;
+			case UT_VEC3:  vec3_assign((vec3*)param->value, (vec3*)value); break;
+			case UT_VEC4:  vec4_assign((vec4*)param->value, (vec4*)value); break;
+			case UT_MAT4:  mat4_assign((mat4*)param->value, (mat4*)value); break;
+			case UT_TEX:   *((int*)param->value) = *((int*)value);		   break;
 			default:
 				log_error("model:set_material_param", "Invalid parameter type");
 				success = 0;
@@ -374,36 +309,32 @@ int model_get_material_param(struct Model* model, const char* name, void* value_
 			case UT_VEC4:  vec4_assign((vec4*)value_out, (vec4*)param->value); break;
 			case UT_MAT4:  mat4_assign((mat4*)value_out, (mat4*)param->value); break;
 			}
-			break; /* break for */
 			success = 1;
+			break;
 		}
 	}
 	return success;
 }
 
-struct Model* model_get_all(void)
-{
-	return model_list;
-}
-
-void model_render_all_debug(struct Camera*          camera,
-							int                     debug_shader,
-							enum Geometry_Draw_Mode draw_mode,
-							const vec4*             debug_color)
+void model_render_all_debug(struct Entity* camera_entity,
+							int            debug_shader,
+							int            draw_mode,
+							const vec4*    debug_color)
 {
 	assert(debug_shader > -1);
 	shader_bind(debug_shader);
 	{
 		static mat4 mvp;
 		shader_set_uniform_vec4(debug_shader, "debug_color", debug_color);
-		for(int i = 0; i < array_len(model_list); i++)
+		struct Entity* entity_list = entity_get_all();
+		for(int i = 0; i < array_len(entity_list); i++)
 		{
-			struct Model*     model     = &model_list[i];
-			struct Entity*    entity    = entity_get(model->node);
-			struct Transform* transform = entity_component_get(entity, C_TRANSFORM);
+			if(!entity_list[i].renderable) continue;
+			struct Model*     model     = &entity_list[i].model;
+			struct Transform* transform = &entity_list[i].transform;
 			int               geometry  = model->geometry_index;
 			mat4_identity(&mvp);
-			mat4_mul(&mvp, &camera->view_proj_mat, &transform->trans_mat);
+			mat4_mul(&mvp, &camera_entity->camera.view_proj_mat, &transform->trans_mat);
 			shader_set_uniform_mat4(debug_shader, "mvp", &mvp);
 			geom_render(geometry, draw_mode);
 		}

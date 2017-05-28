@@ -1,6 +1,7 @@
 #include "material.h"
 #include "array.h"
 #include "shader.h"
+#include "entity.h"
 #include "string_utils.h"
 #include "log.h"
 #include "model.h"

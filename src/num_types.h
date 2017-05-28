@@ -2,6 +2,7 @@
 #define num_types_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 typedef int8_t       int8;
 typedef int32_t      int32;

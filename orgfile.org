@@ -56,6 +56,50 @@ Sprint: Left Shift
 *** Level/Scene
 *** Materials
 *** Mesh/Geometry
+** Notes on entity Systems
+- Fat entites with all related properties, i.e. position, mesh etc in them. Easy to serialize, memory friendly, simple to implement
+  but would require significant changes to the current codebase. e.g.
+  struct Entity
+  {
+      int   type;
+      char* name;
+      struct Transform {....};
+      struct Camera {....};
+      
+      // Separate properties unique to entity types by using unions
+      struct Renderable
+      {
+          struct Model {....};
+          union
+          {
+              struct Player
+              {
+                  int score;
+                  int bullets;
+              };
+  
+              struct Enemy
+              {
+                  int target;
+              };
+          }
+      }
+  };
+- Change component implementation by using anonymous unions to simulate interfaces. e.g
+  struct Component
+  {
+      int type;
+      union
+      {
+          struct Transform {....};
+          struct Model {....};
+          struct Camera {....};
+      }
+  }
+- Use handles for assets
+- Use something similar to Variant to use as entity, not sure what or how
+- Don't forget to think of the actual use-case and usage when coming up with a solution, don't build castles in the air!
+
 * Things TODO
 ** DONE Input
    - State "DONE"       from "TODO"       [2015-07-02 Thu 01:24]
@@ -161,7 +205,11 @@ x Font atlas proper cleanup
 - Decoupled event handling of gui and input if possible
 - Custom rendering for gui
 ** TODO Allow passsing base path as commandline argument?
-** TODO Show SDL dialogbox if we cannot launch at all?
+** TODO Remove components and switch to "Fat Entities" i.e. one entity struct contains all combinations
+** TODO Use variants for material params
+** TODO In second refactor pass, use entities everywhere, no need to pass in transform and model separately for example since they're both part of the same entity anyway
+** DONE Show SDL dialogbox if we cannot launch at all?
+- State "DONE"       from "TODO"       [2017-05-26 Fri 00:41]
 ** DONE Writing back to config file
 - State "DONE"       from "TODO"       [2017-05-08 Mon 00:57]
 ** DONE Reading from config file
@@ -191,7 +239,8 @@ x Font atlas proper cleanup
 ** TODO Ray picking
 ** TODO Remove reduntant "settings" structures and move all configuration stuff to config variables
 ** TODO Shadow maps
-** TODO Log output to file on every run
+** DONE Log output to file on every run
+- State "DONE"       from "TODO"       [2017-05-26 Fri 00:41]
 ** TODO Print processor stats and machine capabilites RAM etc on every run to log.
 ** TODO Milestone: Pong!
 - In order to put things into perspective and get a feel for what really needs to be prioritized, a very small but actual game release is necessary.
@@ -201,17 +250,19 @@ x Font atlas proper cleanup
 ? Game .so with init, update and cleanup functions
 x Configuration files and "cvars" load/reload
 x Keybindings in config
-- Log output on every run.
+x Log output on every run.
 - Implement entity load/save to file
 ? Prefab load/save to file
 ** TODO Do input maps really need to be queried by their string names?
 ** TODO Reloading all the things! (textures/shaders/models/settings/entities etc)
 ** TODO Separate Debug/Editor camera from the active camera in the scene that can be switched to at any time
+** TODO Make logging to file and console toggleable at complie-time or run-time
 ** DONE Add option to specify where to read/write files from instead of being hard-coded assets dir
 - State "DONE"       from "TODO"       [2017-05-24 Wed 17:12]
 ** TODO Add default keybindings
 ** TODO Write default config/keybindings etc to file if none are found in preferences dir
 ** TODO Fix input map bugs
+** TODO Flatpak packaging for linux releases
 ** TODO Use hashmap for debugvar slots in editor
 ** TODO Use hashmap to store input maps
 ** DONE Live data views in editor

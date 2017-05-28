@@ -1,4 +1,5 @@
 #include "bounding_volumes.h"
+#include "entity.h"
 #include "transform.h"
 
 #include <math.h>

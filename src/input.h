@@ -1,5 +1,5 @@
-#ifndef input_H
-#define input_H
+#ifndef INPUT_H
+#define INPUT_H
 
 #include <stdlib.h>
 #include "num_types.h"
@@ -410,21 +410,21 @@ enum Keyboard_Scancode
 };
 
 void input_init(void);
-int  input_keybinds_load(const char* filename);
-int  input_keybinds_save(const char* filename);
+bool input_keybinds_load(const char* filename, int directory_type);
+bool input_keybinds_save(const char* filename);
 void input_cleanup(void);
-int  input_mousebutton_state_get(uint button, int state_type);
-int  input_is_key_pressed(int key);
+bool input_mousebutton_state_get(uint button, int state_type);
+bool input_is_key_pressed(int key);
 void input_mouse_pos_get(int* xpos, int* ypos);
 void input_mouse_delta_get(int* xpos, int* ypos); // Use with relative mouse mode
 void input_mouse_pos_set(int xpos, int ypos);
 void input_mouse_mode_set(enum Mouse_Mode mode);
 int  input_mouse_mode_get(void);
 void input_update(void);
-int  input_map_state_get(const char* map_name, int state);
+bool input_map_state_get(const char* map_name, int state);
 void input_map_create(const char* name, struct Key_Combination* keys, int num_keys);
-int  input_map_keys_set(const char* name, struct Key_Combination* keys, int num_keys);
-int  input_map_remove(const char* name);
-int  input_map_name_set(const char* name, const char* new_name);
+bool input_map_keys_set(const char* name, struct Key_Combination* keys, int num_keys);
+bool input_map_remove(const char* name);
+bool input_map_name_set(const char* name, const char* new_name);
 
 #endif

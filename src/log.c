@@ -7,6 +7,10 @@
 #include "platform.h"
 
 #ifdef __linux__
+#define COLOURED_STDOUT
+#endif
+
+#ifdef COLOURED_STDOUT
 
 #define COL_RED     "\e[31m"
 #define COL_GREEN   "\e[32m"

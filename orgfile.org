@@ -262,6 +262,7 @@ x Log output on every run.
 ** TODO Add default keybindings
 ** TODO Write default config/keybindings etc to file if none are found in preferences dir
 ** TODO Fix input map bugs
+** TODO Wrap malloc and free calls in custom functions to track usage
 ** TODO Flatpak packaging for linux releases
 ** TODO Use hashmap for debugvar slots in editor
 ** TODO Use hashmap to store input maps

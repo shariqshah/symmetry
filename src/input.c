@@ -32,8 +32,19 @@ void input_init(void)
 	platform_mousewheel_callback_set(&input_on_mousewheel);
 	
 	input_map_list = array_new(struct Input_Map);
-	if(!input_keybinds_load("keybindings.cfg"))
+	if(!input_keybinds_load("keybindings.cfg", DT_USER))
+	{
 		log_error("input:init", "Failed to load keybindings");
+		log_message("Reverting to default keybindings");
+		if(!input_keybinds_load("keybindings.cfg", DT_INSTALL))
+		{
+			log_error("input:init", "Failed to load default keybindings");
+		}
+		else
+		{
+			input_keybinds_save("keybindings.cfg");
+		}
+	}
 
 	/* struct Key_Combination forward_keys[2]      = {{KEY_W, KMD_NONE}, {KEY_UP, KMD_ALT | KMD_SHIFT}}; */
 	/* struct Key_Combination backward_keys[2]     = {{KEY_S, KMD_NONE}, {KEY_DOWN, KMD_NONE}}; */
@@ -80,12 +91,12 @@ void input_cleanup(void)
 	array_free(input_map_list);
 }
 
-int input_keybinds_load(const char* filename)
+bool input_keybinds_load(const char* filename, int directory_type)
 {
-	int success = 0;
+	bool success = false;
 	const int MAX_KEYBIND_LEN = 128;
 	const int MAX_LINE_LEN    = 512;
-	FILE* config_file = io_file_open(DT_USER, filename, "r");
+	FILE* config_file = io_file_open(directory_type, filename, "r");
 	if(!config_file)
 	{
 		log_error("input:keybinds_load", "Could not open %s", filename);
@@ -190,14 +201,14 @@ int input_keybinds_load(const char* filename)
 		}
 	}
 	
-	success = 1;
+	success = true;
 	fclose(config_file);
 	return success;
 }
 
-int input_keybinds_save(const char* filename)
+bool input_keybinds_save(const char* filename)
 {
-	int success = 0;
+	bool success = false;
 
 	FILE* config_file = io_file_open(DT_USER, filename, "w");
 	if(!config_file)
@@ -224,7 +235,7 @@ int input_keybinds_save(const char* filename)
 
 	fclose(config_file);
 	log_message("Keybindings saved to %s", filename);
-	success = 1;
+	success = true;
 	return success;
 }
 
@@ -298,7 +309,7 @@ void input_mouse_mode_set(enum Mouse_Mode mode)
 	platform_mouse_relative_mode_set(mode == MM_NORMAL ? 0 : 1);
 }
 
-int input_map_state_get(const char* map_name, int state)
+bool input_map_state_get(const char* map_name, int state)
 {
 	int current_state = KS_INACTIVE;
 	for(int i = 0; i < array_len(input_map_list); i++)
@@ -311,23 +322,23 @@ int input_map_state_get(const char* map_name, int state)
 		}
 	}
 
-	int result = 0;
+	bool result = false;
 	if(current_state == state)
 	{
-		result = 1;
+		result = true;
 	}
 	return result;
 }
 
-int input_is_key_pressed(int key)
+bool input_is_key_pressed(int key)
 {
 	return platform_is_key_pressed(key);
 }
 
-int input_mousebutton_state_get(uint button, int state_type)
+bool input_mousebutton_state_get(uint button, int state_type)
 {
 	int current_state = platform_mousebutton_state_get(button);
-	return state_type == current_state ? 1 : 0;
+	return state_type == current_state ? true : false;
 }
 
 void input_map_create(const char* name, struct Key_Combination* keys, int num_keys)
@@ -350,7 +361,7 @@ void input_map_create(const char* name, struct Key_Combination* keys, int num_ke
 		new_map->name  = str_new(name);
 		new_map->keys  = array_new_cap(struct Key_Combination, num_keys);
 		new_map->state = KS_INACTIVE;
-		for(size_t i = 0; i < num_keys; i++)
+		for(int i = 0; i < num_keys; i++)
 			new_map->keys[i] = keys[i];
 		log_message("Created Input Map : %s", name);
 	}
@@ -366,25 +377,25 @@ void input_update(void)
 	}
 }
 
-int input_map_remove(const char* name)
+bool input_map_remove(const char* name)
 {
 	assert(name);
-	int success = 0;
+	bool success = false;
     int index = map_find(name);
 	if(index > -1)
 	{
 		array_remove_at(input_map_list, (int)index);
-		success = 1;
+		success = true;
 	}	
 	if(!success) log_error("input:map_remove", "Map %s not found", name);
 	
 	return success;
 }
 
-int input_map_keys_set(const char* name, struct Key_Combination* keys, int num_keys)
+bool input_map_keys_set(const char* name, struct Key_Combination* keys, int num_keys)
 {
 	assert(name && keys && num_keys > 0);
-	int success = 0;
+	bool success = false;
 	int index = map_find(name);
 	if(index > -1)
 	{
@@ -395,23 +406,23 @@ int input_map_keys_set(const char* name, struct Key_Combination* keys, int num_k
 			map->keys[i] = keys[i];
 		
 		map->state = KS_INACTIVE;
-		success    = 1;
+		success    = true;
 	}
 	if(!success)
 		log_error("input:map_keys_set", "Map %s not found", name);	
 	return success;
 }
 
-int input_map_name_set(const char* name, const char* new_name)
+bool input_map_name_set(const char* name, const char* new_name)
 {
 	assert(name && new_name);
-	int success = 0;
+	bool success = false;
 	int index = map_find(name);
 	if(index > -1)
 	{
 		struct Input_Map* map = &input_map_list[index];
 		map->name = str_new(new_name);
-		success = 1;
+		success = true;
 	}
 	if(!success) log_error("input:map_name_set", "Map %s not found", name);
 	return success;

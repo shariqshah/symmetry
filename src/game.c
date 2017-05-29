@@ -110,6 +110,7 @@ void scene_setup(void)
 	vec3 position = {0, 0, -5};
 	transform_translate(tran, &position, TS_WORLD);
 	struct Model* box_model = &new_ent->model;
+	new_ent->renderable = true;
 	model_create(box_model, new_ent->id, "default.pamesh", "Blinn_Phong");
 	model_set_material_param(box_model, "diffuse_color", &color);
 	int tex = texture_create_from_file("white.tga", TU_DIFFUSE);
@@ -130,7 +131,7 @@ void scene_setup(void)
 	}
 
 	int parent_node = new_ent->id;
-	int num_suz = 2;
+	int num_suz = 20;
 	srand(time(NULL));
 	for(int i = 0; i < num_suz; i++)
 	{
@@ -138,7 +139,9 @@ void scene_setup(void)
 		int y = rand() % num_suz;
 		int z = rand() % num_suz;
 		x++; y++; z++;
-		struct Entity* suz = scene_add_as_child("Suzanne", ET_STATIC_MESH, parent_node);
+		//struct Entity* suz = scene_add_as_child("Suzanne", ET_STATIC_MESH, parent_node);
+		struct Entity* suz = scene_add_new("Suzanne", ET_STATIC_MESH);
+		suz->renderable = true;
 		struct Model* suz_model = &suz->model;
 		model_create(suz_model, suz->id, "suzanne.pamesh", "Blinn_Phong");
 		model_set_material_param(suz_model, "diffuse_color", &color);
@@ -150,15 +153,16 @@ void scene_setup(void)
 	
 
 	struct Entity* ground = scene_add_new("Ground", ET_STATIC_MESH);
+	ground->renderable = true;
 	struct Model* ground_model = &ground->model;
-	model_create(ground_model, ground->id, "plane.pamesh", "Blinn_Phong");
+	model_create(ground_model, ground->id, "default.pamesh", "Blinn_Phong");
 	model_set_material_param(ground_model, "diffuse_color", &color);
 	int white_tex = texture_create_from_file("white.tga", TU_DIFFUSE);
 	model_set_material_param(ground_model, "diffuse_texture", &white_tex);
 	float spec_str = 80.f;
 	model_set_material_param(ground_model, "specular_strength", &spec_str);
 	vec3 pos = {0, -15, 0};
-	vec3 scale_ground = {200.f, 1.f, 200.f};
+	vec3 scale_ground = {100.f, 2.f, 100.f};
 	transform_set_position(&ground->transform, &pos);
 	transform_scale(&ground->transform, &scale_ground);
 

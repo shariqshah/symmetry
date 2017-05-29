@@ -6,7 +6,7 @@ PROJECT_DIST_NAME = $(patsubst %.exe,%, $(PROJECT_NAME))
 BUILD_TYPE        = release
 SRCS              = $(patsubst $(SRC_DIR)/%.c, %.c, $(wildcard ../../src/*.c))
 OBJS_RELEASE      = $(patsubst %.c,.release/%.o,$(SRCS))
-CFLAGS            = -Wall -I$(INCLUDE_DIR) -DUSE_GLAD -std=c99
+CFLAGS            = -Wall -I$(INCLUDE_DIR) -DUSE_GLAD -std=c99 -DCOLOURED_STDOUT
 CFLAGS_RELEASE    = -O3 -ffast-math
 LFLAGS            = $(shell mingw64-pkg-config --libs --static sdl2 openal)
 LIB_BINARY_DIR    = $(patsubst -L%/lib,%/bin, $(shell mingw64-pkg-config --libs-only-L sdl2))

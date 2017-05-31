@@ -31,27 +31,27 @@ void model_init(void)
 	num_indices_slot  = editor_debugvar_slot_create("Total Indices", VT_INT);
 }
 
-void model_create(struct Model* model, int entity_id, const char* geo_name, const char* material_name)
+void model_create(struct Entity* entity, const char* geo_name, const char* material_name)
 {
-	assert(model);
+	struct Model* model = &entity->model;
 	/* if no name is given for geometry, use default */
 	if(!geo_name) geo_name = "default.pamesh";
 	int geo_index = geom_create_from_file(geo_name);
 
 	model->geometry_index = geo_index;
-	if(!material_register_model(model, entity_id, material_name ? material_name : "Unshaded"))
+	if(!material_register_model(model, entity->id, material_name ? material_name : "Unshaded"))
 	{
 		log_error("model:create", "Unable to register model with Unshaded material, component not added");
-		model_destroy(model, entity_id);
+		model_destroy(entity);
 	}
 }
 
-void model_destroy(struct Model* model, int entity_id)
+void model_destroy(struct Entity* entity)
 {
-	assert(model);
+	struct Model* model = &entity->model;
 	geom_remove(model->geometry_index);
 	model->geometry_index = -1;
-	material_unregister_model(model, entity_id);
+	material_unregister_model(model, entity->id);
 	/* deallocate all params */
 	for(int i = 0; i < array_len(model->material_params); i++)
 		free(model->material_params[i].value);
@@ -164,21 +164,19 @@ void model_render_all(struct Entity* camera_entity, int draw_mode)
 				memset(uniform_name, '\0', MAX_NAME_LEN);
 				for(int i = 0; i < valid_light_count; i++)
 				{
-					struct Entity*    light_entity = entity_get(light_index_list[i]);
-					struct Light*     light        = &light_entity->light; /* TODO: Cull lights according to camera frustum */
-					struct Transform* light_transform    = &light_entity->transform;
+					struct Entity* light_entity = entity_get(light_index_list[i]);
+					struct Light*  light        = &light_entity->light; /* TODO: Cull lights according to camera frustum */
 					vec3 light_pos = {0, 0, 0};
-					transform_get_absolute_pos(light_transform, &light_pos);
+					transform_get_absolute_pos(light_entity, &light_pos);
 
 					if(light->type != LT_POINT)
 					{
 						snprintf(uniform_name, MAX_NAME_LEN, "lights[%d].direction", i);
-						transform_get_absolute_lookat(light_transform, &light_pos);
+						transform_get_absolute_lookat(light_entity, &light_pos);
 						vec3_norm(&light_pos, &light_pos);
 						shader_set_uniform_vec3(material->shader, uniform_name, &light_pos);
 						memset(uniform_name, '\0', MAX_NAME_LEN);
 					}
-
 
 					if(light->type != LT_DIR)
 					{
@@ -217,9 +215,8 @@ void model_render_all(struct Entity* camera_entity, int draw_mode)
 				}
 
 				shader_set_uniform_int(material->shader, "total_active_lights", valid_light_count);
-				struct Transform* camera_tran = &camera_entity->transform;
 				vec3 camera_pos = {0, 0, 0};
-				transform_get_absolute_pos(camera_tran, &camera_pos);
+				transform_get_absolute_pos(camera_entity, &camera_pos);
 				shader_set_uniform_vec3(material->shader, "camera_pos", &camera_pos);
 			}
 			
@@ -257,9 +254,10 @@ void model_render_all(struct Entity* camera_entity, int draw_mode)
 	num_culled = num_rendered = num_indices = 0;
 }
 
-int model_set_material_param(struct Model* model, const char* name, void* value)
+int model_set_material_param(struct Entity* entity, const char* name, void* value)
 {
-	assert(model && name && value);
+	assert(name && value);
+	struct Model* model = &entity->model;
 	int success = 0;
 	struct Material* material = material_get(model->material);
 	for(int i = 0; i < array_len(model->material_params); i++)
@@ -289,9 +287,10 @@ int model_set_material_param(struct Model* model, const char* name, void* value)
 	return success;
 }
 
-int model_get_material_param(struct Model* model, const char* name, void* value_out)
+int model_get_material_param(struct Entity* entity, const char* name, void* value_out)
 {
-	assert(model && name && value_out);
+	assert(name && value_out);
+	struct Model* model = &entity->model;
 	int success = 0;
 	struct Material* material = material_get(model->material);
 	for(int i = 0; i < array_len(model->material_params); i++)

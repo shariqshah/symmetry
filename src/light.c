@@ -17,10 +17,9 @@ void light_cleanup(void)
 }
 
 
-void light_create(struct Light* light, int entity_id, int light_type)
+void light_create(struct Entity* entity, int light_type)
 {
-	assert(light && entity_id > -1);
-	
+	struct Light* light = &entity->light;
 	light->valid       = true;
 	light->cast_shadow = 0;
 	light->depth_bias  = 0.0005f;
@@ -33,17 +32,17 @@ void light_create(struct Light* light, int entity_id, int light_type)
 	light->radius      = 20;
 	vec3_fill(&light->color, 1.f, 1.f, 1.f);
 	int* new_index = array_grow(light_list, int);
-	*new_index = entity_id;
+	*new_index = entity->id;
 }
 
-void light_destroy(struct Light* light, int entity_id)
+void light_destroy(struct Entity* entity)
 {
-	assert(light && entity_id > -1);
-	
+	assert(entity && entity->type == ET_LIGHT);
+	struct Light* light = &entity->light;
 	int index_to_remove = -1;
 	for(int i = 0; i < array_len(light_list); i++)
 	{
-		if(light_list[i] == entity_id)
+		if(light_list[i] == entity->id)
 		{
 			index_to_remove = i;
 			break;

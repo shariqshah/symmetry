@@ -46,9 +46,10 @@ struct Model
 
 struct Sound_Source
 {
+	bool active;
+	bool relative;
 	uint al_source_handle;
 	uint al_buffer_handle;
-	bool active;
 };
 
 struct Camera

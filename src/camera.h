@@ -1,15 +1,14 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-struct Camera;
-struct Transform;
+struct Entity;
 
-void camera_destroy(struct Camera* camera);
-void camera_create(struct Camera* camera, struct Transform* transform, int width, int height);
-void camera_update_view_proj(struct Camera* camera);
-void camera_update_view(struct Camera* camera, struct Transform* transform);
-void camera_update_proj(struct Camera* camera);
-void camera_attach_fbo(struct Camera* camera,
+void camera_destroy(struct Entity* entity);
+void camera_create(struct Entity* entity, int width, int height);
+void camera_update_view_proj(struct Entity* entity);
+void camera_update_view(struct Entity* entity);
+void camera_update_proj(struct Entity* entity);
+void camera_attach_fbo(struct Entity* entity,
 					   int            width,
 					   int            height,
 					   int            has_depth,

@@ -18,9 +18,9 @@
 
 static void update_frustum(struct Camera* camera);
 
-void camera_destroy(struct Camera* camera)
+void camera_destroy(struct Entity* entity)
 {
-    assert(camera);
+	struct Camera* camera = &entity->camera;
 	if(camera->fbo != -1)        framebuffer_remove(camera->fbo);
 	if(camera->render_tex != -1) texture_remove(camera->render_tex);
 	if(camera->depth_tex != -1)  texture_remove(camera->depth_tex);
@@ -35,8 +35,9 @@ void camera_destroy(struct Camera* camera)
 	vec4_fill(&camera->clear_color, 0.f, 1.f, 0.f, 1.0);
 }
 
-void camera_create(struct Camera* camera, struct Transform* transform, int width, int height)
+void camera_create(struct Entity* entity, int width, int height)
 {
+	struct Camera* camera = &entity->camera;
 	camera->fbo        = -1;
 	camera->render_tex = -1;
 	camera->depth_tex  = -1;
@@ -52,32 +53,35 @@ void camera_create(struct Camera* camera, struct Transform* transform, int width
 	mat4_identity(&camera->view_proj_mat);
 	for(int i = 0; i < FP_NUM_PLANES; i++)
 		vec4_fill(&camera->frustum[i], 0.f, 0.f, 0.f, 0.f);
-	camera_update_view(camera, transform);
-	camera_update_proj(camera);
+	camera_update_view(entity);
+	camera_update_proj(entity);
 	vec4_fill(&camera->clear_color, 1.f, 1.f, 1.f, 1.f);
 }
 
-void camera_update_view_proj(struct Camera* camera)
+void camera_update_view_proj(struct Entity* entity)
 {
+	struct Camera* camera = &entity->camera;
 	mat4_identity(&camera->view_proj_mat);
 	mat4_mul(&camera->view_proj_mat, &camera->proj_mat, &camera->view_mat);
 	update_frustum(camera);
 }
 
-void camera_update_view(struct Camera* camera, struct Transform* transform)
+void camera_update_view(struct Entity* entity)
 {
+	struct Camera* camera = &entity->camera;
 	vec3 lookat   = {0.f, 0.f, 0.f};
 	vec3 up       = {0.f, 0.f, 0.f};
 	vec3 position = {0.f, 0.f, 0.f};
-	transform_get_absolute_lookat(transform, &lookat);
-	transform_get_absolute_up(transform, &up);
-	transform_get_absolute_pos(transform, &position);
+	transform_get_absolute_lookat(entity, &lookat);
+	transform_get_absolute_up(entity, &up);
+	transform_get_absolute_pos(entity, &position);
 	mat4_lookat(&camera->view_mat, &position, &lookat, &up);
-	camera_update_view_proj(camera);
+	camera_update_view_proj(entity);
 }
 
-void camera_update_proj(struct Camera* camera)
+void camera_update_proj(struct Entity* entity)
 {
+	struct Camera* camera = &entity->camera;
 	if(!camera->ortho)
 	{
 		mat4_perspective(&camera->proj_mat,
@@ -90,17 +94,18 @@ void camera_update_proj(struct Camera* camera)
 	{
 		mat4_ortho(&camera->proj_mat, -1, 1, -1, 1, camera->nearz, camera->farz);
 	}
-	camera_update_view_proj(camera);
+	camera_update_view_proj(entity);
 }
 
-void camera_attach_fbo(struct Camera* camera,
+void camera_attach_fbo(struct Entity* entity,
 					   int            width,
 					   int            height,
 					   int            has_depth,
 					   int            has_color,
 					   int            resizeable)
 {
-	assert(width > 0 && height > 0 && camera);
+	assert(width > 0 && height > 0);
+	struct Camera* camera = &entity->camera;
 	if(camera->fbo != -1)
 	{
 		log_error("camera:attach_fbo", "Camera already has fbo attached!");

@@ -213,7 +213,7 @@ void on_framebuffer_size_change(int width, int height)
 		if(viewer->type != ET_CAMERA) continue;
 
 		viewer->camera.aspect_ratio = aspect > 0.f ? aspect : 4.f / 3.f;
-		camera_update_proj(&viewer->camera);
+		camera_update_proj(viewer);
 	}
 	
 	framebuffer_resize_all(width, height);

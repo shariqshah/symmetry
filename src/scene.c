@@ -28,7 +28,7 @@ struct Entity* scene_add_as_child(const char* name, const int type, int parent_i
 	new_entity = entity_create(name, type, parent_id);
 	struct Entity* parent = entity_get(parent_id);
 	new_entity->transform.parent = parent->id;
-	transform_update_transmat(&new_entity->transform);
+	transform_update_transmat(new_entity);
 	return new_entity;
 }
 
@@ -67,7 +67,7 @@ void scene_reset_parent(struct Entity* entity, struct Entity* new_parent)
 			array_remove_at(curr_parent->transform.children, index);
 			entity->transform.parent = new_parent->id;
 			array_push(new_parent, entity->id, int);
-			transform_update_transmat(&entity->transform);
+			transform_update_transmat(entity);
 		}
 		else
 		{

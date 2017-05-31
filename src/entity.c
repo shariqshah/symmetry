@@ -35,15 +35,15 @@ void entity_remove(int index)
 {
 	struct Entity* entity = &entity_list[index];
 
-	transform_destroy(&entity->transform);
+	transform_destroy(entity);
 	switch(entity->type)
 	{
-	case ET_CAMERA:       camera_destroy(&entity->camera);             break;
-	case ET_LIGHT:        light_destroy(&entity->light, entity->id);   break;
-	case ET_SOUND_SOURCE: sound_source_destroy(&entity->sound_source); break;
-	case ET_STATIC_MESH:  model_destroy(&entity->model, entity->id);   break;
+	case ET_CAMERA:       camera_destroy(entity);       break;
+	case ET_LIGHT:        light_destroy(entity);        break;
+	case ET_SOUND_SOURCE: sound_source_destroy(entity); break;
+	case ET_STATIC_MESH:  model_destroy(entity);        break;
 	case ET_ROOT: break;
-	default: log_error("entity:remove", "Invalid entity type");        break;
+	default: log_error("entity:remove", "Invalid entity type"); break;
 	};
 	entity->id                  = -1;
 	entity->is_listener         = false;
@@ -79,7 +79,7 @@ struct Entity* entity_create(const char* name, const int type, int parent_id)
 	new_entity->type                = type;
 	new_entity->marked_for_deletion = false;
 	new_entity->renderable          = false;
-	transform_create(&new_entity->transform, parent_id);
+	transform_create(new_entity, parent_id);
 	return new_entity;	   
 }
 
@@ -131,9 +131,9 @@ void entity_post_update(void)
 		if(entity->transform.is_modified)
 		{
 			if(entity->type == ET_CAMERA)
-				camera_update_view(&entity->camera, &entity->transform);
+				camera_update_view(entity);
 			else if(entity->type == ET_SOUND_SOURCE)
-				sound_source_update(&entity->sound_source, &entity->transform);
+				sound_source_update(entity);
 
 			if(entity->is_listener) sound_listener_update();
 		}	

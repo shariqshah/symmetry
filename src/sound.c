@@ -21,7 +21,13 @@ struct Sound_State
 	float       volume;
 };
 
-static struct Sound_State   sound_state;
+static struct Sound_State sound_state =
+{
+	.listener_entity = -1,
+	.device          = NULL,
+	.context         = NULL,
+	.volume          = 0.f
+};
 
 bool sound_init(void)
 {
@@ -84,9 +90,9 @@ void sound_listener_update(void)
 	vec3 abs_up      = {0.f, 1.f,  0.f};
 	vec3 abs_forward = {0.f, 0.f, -1.f};
 	
-	transform_get_absolute_pos(&entity->transform, &abs_pos);
-	transform_get_absolute_up(&entity->transform, &abs_up);
-	transform_get_absolute_forward(&entity->transform, &abs_forward);
+	transform_get_absolute_pos(entity, &abs_pos);
+	transform_get_absolute_up(entity, &abs_up);
+	transform_get_absolute_forward(entity, &abs_forward);
 	float orientation[] =
 	{
 		abs_forward.x, abs_forward.y, abs_forward.z,
@@ -107,13 +113,14 @@ void sound_volume_set(float volume)
 	al_check(alListenerf(AL_GAIN, volume))
 }
 
-void sound_source_destroy(struct Sound_Source* source)
+void sound_source_destroy(struct Entity* entity)
 {
-	assert(source);
+	assert(entity && entity->type == ET_SOUND_SOURCE);
+	struct Sound_Source* source = &entity->sound_source;
 	if(!source->active) return;
 	if(alIsBuffer(source->al_buffer_handle) == AL_TRUE)
 	{
-		sound_source_stop(source);
+		sound_source_stop(entity);
 		al_check(alSourcei(source->al_source_handle, AL_BUFFER, 0))
 		al_check(alDeleteBuffers(1, &source->al_buffer_handle))
 	}
@@ -148,63 +155,71 @@ void sound_error_check(const char* file, unsigned int line, const char* expressi
 	}
 }
 
-void sound_source_create(struct Sound_Source* source, struct Transform* transform)
+void sound_source_create(struct Entity* entity, bool relative)
 {
-	assert(source);
+	assert(entity && entity->type == ET_SOUND_SOURCE);
+	struct Sound_Source* source = &entity->sound_source;
 	source->active = true;
 	al_check(alGenSources(1, &source->al_source_handle))
 	al_check(alGenBuffers(1, &source->al_buffer_handle))
-	sound_source_volume_set(source, 1.f);
-	if(transform)
-		sound_source_update(source, transform);
+	sound_source_volume_set(entity, 1.f);
+	if(relative)
+		sound_source_relative_set(entity, true);
 	else
-		sound_source_relative_set(source, 1);
+		sound_source_update(entity);
 }
 
-void sound_source_update(struct Sound_Source* source, struct Transform* transform)
+void sound_source_update(struct Entity* entity)
 {
+	assert(entity && entity->type == ET_SOUND_SOURCE);
 	vec3 abs_pos     = {0.f, 0.f,  0.f};
 	vec3 abs_up      = {0.f, 1.f,  0.f};
 	vec3 abs_forward = {0.f, 0.f, -1.f};
 	
-	transform_get_absolute_pos(transform, &abs_pos);
-	transform_get_absolute_up(transform, &abs_up);
-	transform_get_absolute_forward(transform, &abs_forward);
+	transform_get_absolute_pos(entity, &abs_pos);
+	transform_get_absolute_up(entity, &abs_up);
+	transform_get_absolute_forward(entity, &abs_forward);
 	float orientation[] =
 	{
 		abs_forward.x, abs_forward.y, abs_forward.z,
 		abs_up.x,      abs_up.y,      abs_up.z
 	};
-	al_check(alSource3f(source->al_source_handle, AL_POSITION, abs_pos.x, abs_pos.y, abs_pos.z))
-	al_check(alSourcefv(source->al_source_handle, AL_ORIENTATION, orientation))
+	al_check(alSource3f(entity->sound_source.al_source_handle, AL_POSITION, abs_pos.x, abs_pos.y, abs_pos.z))
+	al_check(alSourcefv(entity->sound_source.al_source_handle, AL_ORIENTATION, orientation))
 }
 
-void sound_source_volume_set(struct Sound_Source* source, float volume)
+void sound_source_volume_set(struct Entity* entity, float volume)
 {
+	assert(entity && entity->type == ET_SOUND_SOURCE);
 	if(volume < 0.f) volume = 0.f;
-	al_check(alSourcef(source->al_source_handle, AL_GAIN, volume))
+	al_check(alSourcef(entity->sound_source.al_source_handle, AL_GAIN, volume))
 }
 
-void sound_source_pitch_set(struct Sound_Source* source, float pitch)
+void sound_source_pitch_set(struct Entity* entity, float pitch)
 {
+	assert(entity && entity->type == ET_SOUND_SOURCE);
 	if(pitch < 0.f) pitch = 0.f;
-	al_check(alSourcef(source->al_source_handle, AL_PITCH, pitch))
+	al_check(alSourcef(entity->sound_source.al_source_handle, AL_PITCH, pitch))
 }
 
-void sound_source_loop_set(struct Sound_Source* source, bool loop)
+void sound_source_loop_set(struct Entity* entity, bool loop)
 {
+	assert(entity && entity->type == ET_SOUND_SOURCE);
 	loop = loop ? AL_TRUE : AL_FALSE;
-	al_check(alSourcei(source->al_source_handle, AL_LOOPING, loop))
+	al_check(alSourcei(entity->sound_source.al_source_handle, AL_LOOPING, loop))
 }
 
-void sound_source_relative_set(struct Sound_Source* source, bool relative)
+void sound_source_relative_set(struct Entity* entity, bool relative)
 {
+	assert(entity && entity->type == ET_SOUND_SOURCE);
 	relative = relative ? AL_TRUE : AL_FALSE;
-	al_check(alSourcei(source->al_source_handle, AL_SOURCE_RELATIVE, relative));
+	al_check(alSourcei(entity->sound_source.al_source_handle, AL_SOURCE_RELATIVE, relative));
+	entity->sound_source.relative = relative;
 }
 
-void sound_source_load_wav(struct Sound_Source* source, const char* file_name)
+void sound_source_load_wav(struct Entity* entity, const char* file_name)
 {
+	assert(entity && entity->type == ET_SOUND_SOURCE);
 	if(!file_name)
 	{
 		log_error("sound_source:load_wav", "No file name given");
@@ -232,7 +247,7 @@ void sound_source_load_wav(struct Sound_Source* source, const char* file_name)
 	}
 
 	bool mono   = wav_spec.channels == 1 ? true : false;
-	int format = -1;
+	int  format = -1;
 	if(mono)
 	{
 		if(wav_spec.format == AUDIO_U8 || wav_spec.format == AUDIO_S8)
@@ -259,13 +274,33 @@ void sound_source_load_wav(struct Sound_Source* source, const char* file_name)
 		SDL_FreeWAV(wav_data);
 		return;
 	}
-	
+
+	struct Sound_Source* source = &entity->sound_source;
 	al_check(alBufferData(source->al_buffer_handle, format, wav_data, wav_data_len, wav_spec.freq))
 	al_check(alSourcei(source->al_source_handle, AL_BUFFER, source->al_buffer_handle))
 	SDL_FreeWAV(wav_data);
 }
 
-void sound_source_play(struct Sound_Source* source)   { al_check(alSourcePlay(source->al_source_handle))   }
-void sound_source_pause(struct Sound_Source* source)  { al_check(alSourcePause(source->al_source_handle))  }
-void sound_source_rewind(struct Sound_Source* source) { al_check(alSourceRewind(source->al_source_handle)) }
-void sound_source_stop(struct Sound_Source* source)   { al_check(alSourceStop(source->al_source_handle))   }
+void sound_source_play(struct Entity* entity)
+{
+	assert(entity && entity->type == ET_SOUND_SOURCE);
+	al_check(alSourcePlay(entity->sound_source.al_source_handle))
+}
+
+void sound_source_pause(struct Entity* entity)
+{
+	assert(entity && entity->type == ET_SOUND_SOURCE);
+	al_check(alSourcePause(entity->sound_source.al_source_handle))
+}
+
+void sound_source_rewind(struct Entity* entity)
+{
+	assert(entity && entity->type == ET_SOUND_SOURCE);
+	al_check(alSourceRewind(entity->sound_source.al_source_handle))
+}
+
+void sound_source_stop(struct Entity* entity)
+{
+	assert(entity && entity->type == ET_SOUND_SOURCE);
+	al_check(alSourceStop(entity->sound_source.al_source_handle))
+}

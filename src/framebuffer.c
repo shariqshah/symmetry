@@ -34,6 +34,8 @@ void framebuffer_cleanup(void)
 
 	array_free(fbo_list);
 	array_free(empty_indices);
+	fbo_list      = NULL;
+	empty_indices = NULL;
 }
 
 int framebuffer_create(int width, int height, int has_depth, int has_color, int resizeable)

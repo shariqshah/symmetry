@@ -149,11 +149,6 @@ void window_destroy(struct Window* window)
 	SDL_DestroyWindow((SDL_Window*)window->sdl_window);
 }
 
-void window_cleanup(void)
-{
-	
-}
-
 void window_set_size(struct Window* window, int width, int height)
 {
 	SDL_SetWindowSize((SDL_Window*)window->sdl_window, width, height);
@@ -208,6 +203,7 @@ int platform_init(void)
 void platform_cleanup(void)
 {
 	if(platform_state) free(platform_state);
+	platform_state = NULL;
 	SDL_Quit();
 }
 

@@ -14,6 +14,7 @@ void light_init(void)
 void light_cleanup(void)
 {
 	array_free(light_list);
+	light_list = NULL;
 }
 
 

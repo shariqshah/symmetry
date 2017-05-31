@@ -80,15 +80,14 @@ void input_init(void)
 
 void input_cleanup(void)
 {
-	//input_keybinds_save("keybindings.cfg");
 	for(int i = 0; i < array_len(input_map_list); i++)
 	{
 		struct Input_Map* map = &input_map_list[i];
-		//log_message("Map : %s, Num keys : %d", map->name, array_len(map->keys));
 		if(map->name) free(map->name);
 		array_free(map->keys);
 	}
 	array_free(input_map_list);
+	input_map_list = NULL;
 }
 
 bool input_keybinds_load(const char* filename, int directory_type)

@@ -57,12 +57,10 @@ void model_destroy(struct Entity* entity)
 		free(model->material_params[i].value);
 
 	array_free(model->material_params);
+	model->material_params = NULL;
+	model->material        = -1;
 }
 
-void model_cleanup(void)
-{
-
-}
 
 void model_render_all(struct Entity* camera_entity, int draw_mode)
 {

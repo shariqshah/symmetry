@@ -1,5 +1,5 @@
-#ifndef game_H
-#define game_H
+#ifndef GAME_H
+#define GAME_H
 
 #include "platform.h"
 
@@ -8,7 +8,7 @@ struct Game_State
 	struct Window* window;
 	int            player_node;
 	int            player_pitch_node;
-	int            is_initialized;
+	bool           is_initialized;
 };
 
 

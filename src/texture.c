@@ -152,6 +152,8 @@ void texture_cleanup(void)
 
 	array_free(texture_list);
 	array_free(empty_indices);
+	texture_list  = NULL;
+	empty_indices = NULL;
 }
 
 void texture_bind(int index)

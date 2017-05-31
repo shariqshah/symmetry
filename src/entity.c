@@ -24,8 +24,11 @@ void entity_init(void)
 
 void entity_cleanup(void)
 {
-	for(int i = 0; i < array_len(entity_list); i++)
-		entity_remove(i);
+	if(array_len(empty_indices) < array_len(entity_list))
+	{
+		for(int i = 0; i < array_len(entity_list); i++)
+			entity_remove(i); 
+	}
 
 	array_free(entity_list);
 	array_free(empty_indices);

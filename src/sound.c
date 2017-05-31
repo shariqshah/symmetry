@@ -135,6 +135,10 @@ void sound_cleanup(void)
 	alcMakeContextCurrent(NULL);
 	alcDestroyContext(sound_state.context);
 	alcCloseDevice(sound_state.device);
+	sound_state.context         = NULL;
+	sound_state.device          = NULL;
+	sound_state.volume          = 0.f;
+	sound_state.listener_entity = -1;
 }
 
 void sound_error_check(const char* file, unsigned int line, const char* expression)

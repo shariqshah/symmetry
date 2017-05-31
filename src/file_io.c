@@ -18,6 +18,8 @@ void io_file_cleanup(void)
 {
 	if(install_directory) free(install_directory);
 	if(user_directory)    free(user_directory);
+	install_directory = NULL;
+	user_directory    = NULL;
 }
 
 char* io_file_read(const int directory_type, const char* path, const char* mode, long* file_size)

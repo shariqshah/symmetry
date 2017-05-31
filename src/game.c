@@ -60,7 +60,7 @@ int game_init(struct Window* window)
 		game_state->window = window;
 		game_state->player_node = -1;
 		game_state->player_pitch_node = -1;
-		game_state->is_initialized = 0;
+		game_state->is_initialized = false;
 	}
 
 	/* TODO: Decouple systems' init/cleanup from game, they should exist and run even if there's no "game" */
@@ -81,7 +81,7 @@ int game_init(struct Window* window)
 	
 	/* Debug scene setup */
 	scene_setup();
-	game_state->is_initialized = 1;
+	game_state->is_initialized = true;
 	return run();
 }
 
@@ -1558,7 +1558,6 @@ void game_cleanup(void)
 			editor_cleanup();
 			scene_cleanup();
 			entity_cleanup();
-			model_cleanup();
 			material_cleanup();
 			geom_cleanup();
 			light_cleanup();
@@ -1571,9 +1570,9 @@ void game_cleanup(void)
 			sound_cleanup();
 			window_destroy(game_state->window);
 			gl_cleanup();
-			window_cleanup();
 		}
 		free(game_state);
+		game_state = NULL;
 	}
 }
 

@@ -299,6 +299,8 @@ void shader_cleanup(void)
 
 	array_free(shader_list);
 	array_free(empty_indices);
+	shader_list = NULL;
+	empty_indices = NULL;
 }
 
 void shader_set_uniform(const int uniform_type, const int uniform_loc, void* value)

@@ -20,7 +20,6 @@ void           window_show(struct Window* window);
 void           window_hide(struct Window* window);
 void           window_raise(struct Window* window);
 void           window_make_context_current(struct Window* window);
-void           window_cleanup(void);
 void           window_set_size(struct Window* window, int width, int height);
 void           window_get_size(struct Window* window, int* out_width, int* out_height);
 void           window_get_drawable_size(struct Window* window, int* out_width, int* out_height);

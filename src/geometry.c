@@ -381,12 +381,12 @@ int geom_render_in_frustum(int                      index,
 	{
 		geom_render(index, draw_mode);
 		rendered = array_len(geometry->indices);
-		/* intersection = bv_intersect_frustum_box(frustum, &geometry->bounding_box, transform); */
-		/* if(intersection == IT_INTERSECT || intersection == IT_INSIDE) */
-		/* { */
-		/* 	geom_render(index, draw_mode); */
-		/* 	rendered = array_len(geometry->indices); */
-		/* } */
+		intersection = bv_intersect_frustum_box(frustum, &geometry->bounding_box, transform);
+		if(intersection == IT_INTERSECT || intersection == IT_INSIDE)
+		{
+			geom_render(index, draw_mode);
+			rendered = array_len(geometry->indices);
+		}
 	}
 	return rendered;
 }

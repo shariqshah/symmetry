@@ -238,6 +238,8 @@ x Font atlas proper cleanup
 ** DONE Array-based Hashmaps
 - State "DONE"       from "TODO"       [2017-05-07 Sun 18:42]
 ** TODO Sprite sheet animations
+** DONE Fix bugs with heirarchical transformations
+- State "DONE"       from "TODO"       [2017-06-01 Thu 00:20]
 ** TODO Replace orgfile with simple text readme and reduce duplication?
 ** TODO Ray picking
 ** TODO Remove reduntant "settings" structures and move all configuration stuff to config variables

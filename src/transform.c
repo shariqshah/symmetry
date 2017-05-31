@@ -12,9 +12,58 @@ void transform_create(struct Entity* entity, int parent_entity)
 	vec3_fill(&transform->scale, 1.f, 1.f, 1.f);
 	quat_identity(&transform->rotation);
 	mat4_identity(&transform->trans_mat);
-	transform->parent   = parent_entity;
 	transform->children = array_new(int);
+	transform->parent   = -1;
+	if(parent_entity != -1)
+		transform_parent_set(entity, entity_get(parent_entity), false);
 	transform_update_transmat(entity);
+}
+
+void transform_child_add(struct Entity* parent, struct Entity* child, bool update_transmat)
+{
+	struct Transform* parent_transform = &parent->transform;
+	struct Transform* child_transform  = &child->transform;
+
+    /* Check if already added */
+	for(int i = 0; i < array_len(parent_transform->children); i++)
+		if(parent_transform->children[i] == child->id) return;
+	
+	int* new_child_loc = array_grow(parent_transform->children, int);
+	*new_child_loc = child->id;
+	child_transform->parent = parent->id;
+	if(update_transmat) transform_update_transmat(child);
+}
+
+bool transform_child_remove(struct Entity* parent, struct Entity* child)
+{
+	bool success = false;
+	struct Transform* parent_transform = &parent->transform;
+	for(int i = 0; i < array_len(parent_transform->children); i++)
+	{
+		if(parent_transform->children[i] == child->id)
+		{
+			array_remove_at(parent_transform, i);
+			child->transform.parent = -1;
+			success = true;
+			return success;
+		};
+	}
+	return success;
+}
+
+void transform_parent_set(struct Entity* child, struct Entity* parent, bool update_transmat)
+{
+	if(child->transform.parent == -1)
+	{
+		transform_child_add(parent, child, false);
+	}
+	else
+	{
+		transform_child_remove(parent, child);
+		transform_child_add(parent, child, false);
+	}
+
+	if(update_transmat) transform_update_transmat(child);
 }
 
 void transform_translate(struct Entity* entity, vec3* amount, enum Transform_Space space)

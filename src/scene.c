@@ -24,12 +24,7 @@ struct Entity* scene_add_new(const char* name, const int type)
 struct Entity* scene_add_as_child(const char* name, const int type, int parent_id)
 {
 	assert(parent_id > -1);
-	struct Entity* new_entity = NULL;
-	new_entity = entity_create(name, type, parent_id);
-	struct Entity* parent = entity_get(parent_id);
-	new_entity->transform.parent = parent->id;
-	transform_update_transmat(new_entity);
-	return new_entity;
+	return entity_create(name, type, parent_id);
 }
 
 void scene_remove(struct Entity* entity)

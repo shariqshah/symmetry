@@ -1,5 +1,5 @@
-#ifndef geometry_H
-#define geometry_H
+#ifndef GEOMETRY_H
+#define GEOMETRY_H
 
 #include "num_types.h"
 #include "linmath.h"

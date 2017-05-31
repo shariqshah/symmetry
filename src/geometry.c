@@ -300,7 +300,7 @@ static void create_vao(struct Geometry* geometry)
 				 array_len(geometry->vertices) * sizeof(vec3),
 				 geometry->vertices,
 				 GL_STATIC_DRAW);
-	renderer_check_glerror("Geometry::create_vbo::vertex");
+	renderer_check_glerror("geometry:create_vbo:vertex");
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
@@ -312,7 +312,7 @@ static void create_vao(struct Geometry* geometry)
 					 array_len(geometry->normals) * sizeof(vec3),
 					 geometry->normals,
 					 GL_STATIC_DRAW);
-		renderer_check_glerror("Geometry::create_vbo::normal");
+		renderer_check_glerror("geometry:create_vbo:normal");
 		glEnableVertexAttribArray(1);
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, 0, 0);
 	}
@@ -325,7 +325,7 @@ static void create_vao(struct Geometry* geometry)
 					 array_len(geometry->uvs) * sizeof(vec2),
 					 geometry->uvs,
 					 GL_STATIC_DRAW);
-		renderer_check_glerror("Geometry::create_vbo::uv");
+		renderer_check_glerror("geometry:create_vbo:uv");
 		glEnableVertexAttribArray(2);
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
 	}
@@ -338,7 +338,7 @@ static void create_vao(struct Geometry* geometry)
 					 array_len(geometry->vertex_colors) * sizeof(vec3),
 					 geometry->vertex_colors,
 					 GL_STATIC_DRAW);
-		renderer_check_glerror("Geometry::create_vbo::color");
+		renderer_check_glerror("geometry:create_vbo:color");
 		glEnableVertexAttribArray(3);
 		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	}

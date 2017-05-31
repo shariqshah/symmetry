@@ -80,7 +80,7 @@ void model_render_all(struct Entity* camera_entity, int draw_mode)
 		for(int j = 0; j < array_len(material->registered_models); j++)
 		{
 			/* for each registered model, set up uniforms and render */
-			struct Entity*    entity    = entity_get(material->registered_models[i]);
+			struct Entity*    entity    = entity_get(material->registered_models[j]);
 			struct Model*     model     = &entity->model;
 			struct Transform* transform = &entity->transform;
 

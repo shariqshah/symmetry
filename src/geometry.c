@@ -371,24 +371,24 @@ void geom_render(int index, enum Geometry_Draw_Mode draw_mode)
 
 int geom_render_in_frustum(int                      index,
 							vec4*                   frustum,
-							struct Transform*       transform,
+							struct Entity*          entity,
 							enum Geometry_Draw_Mode draw_mode)
 {
-	int rendered = 0;
-	struct Geometry* geometry = &geometry_list[index];
-	int intersection = bv_intersect_frustum_sphere(frustum, &geometry->bounding_sphere, transform);
+	struct Geometry* geometry         = &geometry_list[index];
+	int              indices_rendered = 0;
+	int              intersection     = bv_intersect_frustum_sphere(frustum, &geometry->bounding_sphere, entity);
 	if(intersection == IT_INTERSECT || intersection == IT_INSIDE)
 	{
 		geom_render(index, draw_mode);
-		rendered = array_len(geometry->indices);
-		intersection = bv_intersect_frustum_box(frustum, &geometry->bounding_box, transform);
-		if(intersection == IT_INTERSECT || intersection == IT_INSIDE)
-		{
-			geom_render(index, draw_mode);
-			rendered = array_len(geometry->indices);
-		}
+		indices_rendered = array_len(geometry->indices);
+		/* intersection = bv_intersect_frustum_box(frustum, &geometry->bounding_box, entity); */
+		/* if(intersection == IT_INTERSECT || intersection == IT_INSIDE) */
+		/* { */
+		/* 	geom_render(index, draw_mode); */
+		/* 	rendered = array_len(geometry->indices); */
+		/* } */
 	}
-	return rendered;
+	return indices_rendered;
 }
 
 struct Bounding_Sphere* geom_bounding_sphere_get(int index)

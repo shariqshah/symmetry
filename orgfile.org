@@ -233,7 +233,8 @@ x Font atlas proper cleanup
 ** TODO Ingame console and console commands etc
 ** TODO Allow binding/unbinding input maps to functions at runtime, for example if input map "Recompute" is triggered, it would call some function that can recompute bounding spheres.
 ** TODO Better handling of wav format checking at load time
-** TODO Fix frustum culling bugs
+** DONE Fix frustum culling bugs
+- State "DONE"       from "TODO"       [2017-05-31 Wed 23:38]
 ** DONE Array-based Hashmaps
 - State "DONE"       from "TODO"       [2017-05-07 Sun 18:42]
 ** TODO Sprite sheet animations

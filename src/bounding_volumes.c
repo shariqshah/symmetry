@@ -4,8 +4,9 @@
 
 #include <math.h>
 
-int bv_intersect_frustum_box(vec4* frustum, struct Bounding_Box* box, struct Transform* transform)
+int bv_intersect_frustum_box(vec4* frustum, struct Bounding_Box* box, struct Entity* entity)
 {
+	struct Transform* transform = &entity->transform;
 	vec3 min, max, size, center, half_ext, half_size;
 	vec3_fill(&min, 0.f, 0.f, 0.f);
 	vec3_fill(&max, 0.f, 0.f, 0.f);
@@ -36,7 +37,7 @@ int bv_intersect_frustum_box(vec4* frustum, struct Bounding_Box* box, struct Tra
 	return IT_INSIDE;
 }
 
-int bv_intersect_frustum_sphere(vec4* frustum, struct Bounding_Sphere* sphere, struct Transform* transform)
+int bv_intersect_frustum_sphere(vec4* frustum, struct Bounding_Sphere* sphere, struct Entity* entity)
 {
 	int   intersect_type = IT_INSIDE;
 	vec3  center, abs_pos, abs_scale;
@@ -45,8 +46,8 @@ int bv_intersect_frustum_sphere(vec4* frustum, struct Bounding_Sphere* sphere, s
 	vec3_fill(&abs_pos, 0.f, 0.f, 0.f);
 	vec3_fill(&abs_scale, 0.f, 0.f, 0.f);
 	
-	transform_get_absolute_pos(transform, &abs_pos);
-	transform_get_absolute_scale(transform, &abs_scale);
+	transform_get_absolute_pos(entity, &abs_pos);
+	transform_get_absolute_scale(entity, &abs_scale);
 	float max_scale_dimension = fabsf(abs_scale.x);
 	if(fabsf(abs_scale.y) > max_scale_dimension) max_scale_dimension = fabsf(abs_scale.y);
 	if(fabsf(abs_scale.z) > max_scale_dimension) max_scale_dimension = fabsf(abs_scale.z);
@@ -74,16 +75,16 @@ int bv_intersect_frustum_sphere(vec4* frustum, struct Bounding_Sphere* sphere, s
 	return intersect_type;
 }
 
-int bv_intersect_frustum_point(vec4* frustum, const vec3* point)
+bool bv_intersect_frustum_point(vec4* frustum, const vec3* point)
 {
-	int success = 1;
+	bool success = true;
 	for(int i = 0; i < 6; i++)
 	{
 		if((frustum[i].x * point->x +
 			frustum[i].y * point->y +
 			frustum[i].z * point->z +
 			frustum[i].w) < 0 )
-			success = 0;
+			success = false;
 	}
 	return success;
 }

@@ -1,9 +1,10 @@
-#ifndef bounding_volumes_H
-#define bounding_volumes_H
+#ifndef BOUNDING_VOLUMES_H
+#define BOUNDING_VOLUMES_H
 
 #include "linmath.h"
+#include "num_types.h"
 
-struct Transform;
+struct Entity;
 
 struct Bounding_Box
 {
@@ -35,8 +36,8 @@ enum Frustum_Planes
 	FP_NUM_PLANES
 };
 
-int  bv_intersect_frustum_box(vec4* frustum, struct Bounding_Box* box, struct Transform* transform);
-int  bv_intersect_frustum_sphere(vec4* frustum, struct Bounding_Sphere* sphere, struct Transform* transform);
-int  bv_intersect_frustum_point(vec4* frustum, const vec3* point);
+int  bv_intersect_frustum_box(vec4* frustum, struct Bounding_Box* box, struct Entity* entity);
+int  bv_intersect_frustum_sphere(vec4* frustum, struct Bounding_Sphere* sphere, struct Entity* entity);
+bool bv_intersect_frustum_point(vec4* frustum, const vec3* point);
 
 #endif

@@ -219,7 +219,7 @@ void model_render_all(struct Entity* camera_entity, int draw_mode)
 			}
 			
 			/* Render the geometry */
-			int indices = geom_render_in_frustum(model->geometry_index, &camera_entity->camera.frustum[0], transform, draw_mode);
+			int indices = geom_render_in_frustum(model->geometry_index, &camera_entity->camera.frustum[0], entity, draw_mode);
 			if(indices > 0)
 			{
 				num_rendered++;

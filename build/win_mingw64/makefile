@@ -10,6 +10,7 @@ CFLAGS            = -Wall -I$(INCLUDE_DIR) -DUSE_GLAD -std=c99 -DCOLOURED_STDOUT
 CFLAGS_RELEASE    = -O3 -ffast-math
 LFLAGS            = $(shell mingw64-pkg-config --libs --static sdl2 openal)
 LIB_BINARY_DIR    = $(patsubst -L%/lib,%/bin, $(shell mingw64-pkg-config --libs-only-L sdl2))
+ITCH_BUTLER     = ~/.config/itch/bin/butler
 
 all: release
 
@@ -42,6 +43,11 @@ dist: release
 	-@cp SDL2.dll $(DIST_DIR)/$(PROJECT_DIST_NAME)
 	-@cp OpenAL32.dll $(DIST_DIR)/$(PROJECT_DIST_NAME)
 	-@echo -e "\e[32mDONE creating distribution\e[0m"
+
+upload_itch: dist
+	-@echo -e "\e[34mUploading Windows build to Itch\e[0m"
+	-@${ITCH_BUTLER} push ${DIST_DIR}/${PROJECT_DIST_NAME}/ bluerriq/symmetry:windows-prealpha
+	-@echo -e "\e[32mDONE uploading to Itch\e[0m"
 
 clean:
 	-@echo -e "\e[31m"

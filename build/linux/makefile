@@ -11,6 +11,7 @@ CFLAGS          = -Wall -I$(INCLUDE_DIR) -DUSE_GLAD -std=c99 $(shell pkg-config 
 CFLAGS_DEBUG    = -g -DGL_DEBUG_CONTEXT -DAL_DEBUG
 CFLAGS_RELEASE  = -O3 -ffast-math
 LFLAGS          = $(shell pkg-config --libs sdl2 openal) -lm
+ITCH_BUTLER     = ~/.config/itch/bin/butler
 
 all: release
 
@@ -58,6 +59,11 @@ dist: release
 	-@cp $(PROJECT_NAME) $(DIST_DIR)/$(PROJECT_NAME)
 	-@chmod +x $(DIST_DIR)/$(PROJECT_NAME)/$(PROJECT_NAME)
 	-@echo -e "\e[32mDONE creating distribution\e[0m"
+
+upload_itch: dist
+	-@echo -e "\e[34mUploading Linux build to Itch\e[0m"
+	-@${ITCH_BUTLER} push ${DIST_DIR}/${PROJECT_NAME}/ bluerriq/symmetry:linux-prealpha
+	-@echo -e "\e[32mDONE uploading to Itch\e[0m"
 
 clean:
 	-@echo -e "\e[31m"

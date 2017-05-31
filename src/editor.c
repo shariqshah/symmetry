@@ -16,6 +16,8 @@
 #include "gui.h"
 #include "array.h"
 #include "variant.h"
+#include "num_types.h"
+#include "file_io.h"
 #include "config_vars.h"
 #include "string_utils.h"
 
@@ -26,10 +28,10 @@
 
 struct Editor_State
 {
-	int enabled;
-	int renderer_settings_window;
-	int debug_vars_window;
-	int top_panel_height;
+	bool enabled;
+	int  renderer_settings_window;
+	int  debug_vars_window;
+	int  top_panel_height;
 };
 
 struct Debug_Variable
@@ -46,7 +48,7 @@ static void editor_color_combo(struct nk_context* context, vec4* color, int widt
 
 void editor_init(void)
 {
-	editor_state.enabled                  = 1;
+	editor_state.enabled                  = true;
 	editor_state.renderer_settings_window = 0;
 	editor_state.debug_vars_window        = 1;
 	editor_state.top_panel_height         = 30;
@@ -166,7 +168,7 @@ void editor_update(float dt)
 		if(nk_button_label(context, "Debug Variables"))
 			editor_state.debug_vars_window = !editor_state.debug_vars_window;
 		if(nk_button_label(context, "Save config"))
-			config_vars_save("config.cfg");
+			config_vars_save("config.cfg", DT_USER);
 		nk_spacing(context, 1);
 		nk_labelf(context, NK_TEXT_ALIGN_RIGHT | NK_TEXT_ALIGN_MIDDLE, "FPS : %.d", fps);
 	}

@@ -120,7 +120,7 @@ void scene_setup(void)
 	sound_source_play(sound_ent);
 
 	int parent_node = new_ent->id;
-	int num_suz = 20;
+	int num_suz = 200;
 	srand(time(NULL));
 	for(int i = 0; i < num_suz; i++)
 	{
@@ -128,14 +128,14 @@ void scene_setup(void)
 		int y = rand() % num_suz;
 		int z = rand() % num_suz;
 		x++; y++; z++;
-		//struct Entity* suz = scene_add_as_child("Suzanne", ET_STATIC_MESH, parent_node);
-		struct Entity* suz = scene_add_new("Suzanne", ET_STATIC_MESH);
+		struct Entity* suz = scene_add_as_child("Suzanne", ET_STATIC_MESH, parent_node);
+		//struct Entity* suz = scene_add_new("Suzanne", ET_STATIC_MESH);
 		suz->renderable = true;
 		model_create(suz, "suzanne.pamesh", "Blinn_Phong");
 		model_set_material_param(suz, "diffuse_color", &color);
 		float spec_str = 80.f;
 		model_set_material_param(suz, "specular_strength", &spec_str);
-		vec3 s_pos = {x, 5, z};
+		vec3 s_pos = {x, 0, z};
 		transform_translate(suz, &s_pos, TS_WORLD);
 	}
 	
@@ -148,8 +148,8 @@ void scene_setup(void)
 	model_set_material_param(ground, "diffuse_texture", &white_tex);
 	float spec_str = 80.f;
 	model_set_material_param(ground, "specular_strength", &spec_str);
-	vec3 pos = {0, -15, 0};
-	vec3 scale_ground = {100.f, 2.f, 100.f};
+	vec3 pos = {0, -5, 0};
+	vec3 scale_ground = {400.f, 2.f, 400.f};
 	transform_set_position(ground, &pos);
 	transform_scale(ground, &scale_ground);
 
@@ -181,6 +181,7 @@ void scene_setup(void)
 		light_ent->light.intensity = 1.f;
 	}
 
+	log_message("Sizeof Entity : %d", sizeof(struct Entity));
 	/* struct Entity* sun = scene_add_new("Sun", NULL); */
 	/* struct Light* sun_light = entity_component_add(sun, C_LIGHT, LT_DIR); */
 	/* sun_light->intensity = 0.8f; */

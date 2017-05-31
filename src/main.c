@@ -50,10 +50,10 @@ int init(void)
 				io_file_init(install_path, user_path);
 				free(install_path);
 				free(user_path);
-				if(!config_vars_load("config.cfg"))
+				if(!config_vars_load("config.cfg", DT_USER))
 				{
 					log_error("main:init", "Could not load config, reverting to defaults");
-					config_vars_save("config.cfg");
+					config_vars_save("config.cfg", DT_USER);
 				}
 				
 				struct Hashmap* cvars = config_vars_get();

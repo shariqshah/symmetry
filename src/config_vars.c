@@ -41,10 +41,10 @@ struct Hashmap* config_vars_get(void)
 	return cvars;
 }
 
-int config_vars_load(const char* filename)
+bool config_vars_load(const char* filename, int directory_type)
 {
-	int success = 0;
-	FILE* config_file = io_file_open(DT_USER, filename, "r");
+	bool success = false;
+	FILE* config_file = io_file_open(directory_type, filename, "r");
 	if(!config_file)
 	{
 		log_error("config:vars_load", "Could not open %s", filename);
@@ -89,15 +89,15 @@ int config_vars_load(const char* filename)
 		variant_from_str(value, value_str, value->type);
 	}
 	
-	success = 1;
+	success = true;
 	fclose(config_file);
 	return success;
 }
 
-int config_vars_save(const char* filename)
+bool config_vars_save(const char* filename, int directory_type)
 {
-	int success = 0;
-	FILE* config_file = io_file_open(DT_USER, filename, "w");
+	bool success = false;
+	FILE* config_file = io_file_open(directory_type, filename, "w");
 	if(!config_file)
 	{
 		log_error("config:vars_save", "Failed to open config file %s for writing");
@@ -114,7 +114,7 @@ int config_vars_save(const char* filename)
 		fprintf(config_file, "%s: %s\n", key, variant_str);
 	}
 	log_message("Config file %s written.", filename);
-	success = 1;
+	success = true;
 	fclose(config_file);
 	return success;
 }

@@ -264,11 +264,6 @@ void input_mouse_pos_set(int xpos, int ypos)
 
 void input_on_key(int key, int scancode, int state, int repeat, int mod_ctrl, int mod_shift, int mod_alt)
 {
-	/* if(repeat) */
-	/* { */
-	/* 	return;			/\* Ignore key repeat *\/ */
-	/* } */
-
 	int mods = KMD_NONE;
 	if(mod_ctrl)  mods |= KMD_CTRL;
 	if(mod_shift) mods |= KMD_SHIFT;
@@ -278,12 +273,12 @@ void input_on_key(int key, int scancode, int state, int repeat, int mod_ctrl, in
 		struct Input_Map* map = &input_map_list[i];
 		for(int j = 0; j < array_len(map->keys); j++)
 		{
-			if(map->state == KS_PRESSED &&
-			   state == KS_RELEASED     &&
-			   ((map->keys[j].mods & mods) == map->keys[j].mods))
-			{
-				map->state = state;
-			}
+			/* if(map->state == KS_PRESSED && */
+			/*    state == KS_RELEASED     && */
+			/*    ((map->keys[j].mods & mods) == map->keys[j].mods)) */
+			/* { */
+			/* 	map->state = state; */
+			/* } */
 			if(map->keys[j].key == key && ((map->keys[j].mods & mods) == map->keys[j].mods))
 			{
 				map->state = state;

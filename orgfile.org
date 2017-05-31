@@ -207,7 +207,8 @@ x Font atlas proper cleanup
 ** TODO Allow passsing base path as commandline argument?
 ** TODO Remove components and switch to "Fat Entities" i.e. one entity struct contains all combinations
 ** TODO Use variants for material params
-** TODO In second refactor pass, use entities everywhere, no need to pass in transform and model separately for example since they're both part of the same entity anyway
+** DONE In second refactor pass, use entities everywhere, no need to pass in transform and model separately for example since they're both part of the same entity anyway
+- State "DONE"       from "TODO"       [2017-05-31 Wed 21:44]
 ** DONE Show SDL dialogbox if we cannot launch at all?
 - State "DONE"       from "TODO"       [2017-05-26 Fri 00:41]
 ** DONE Writing back to config file
@@ -232,6 +233,7 @@ x Font atlas proper cleanup
 ** TODO Ingame console and console commands etc
 ** TODO Allow binding/unbinding input maps to functions at runtime, for example if input map "Recompute" is triggered, it would call some function that can recompute bounding spheres.
 ** TODO Better handling of wav format checking at load time
+** TODO Fix frustum culling bugs
 ** DONE Array-based Hashmaps
 - State "DONE"       from "TODO"       [2017-05-07 Sun 18:42]
 ** TODO Sprite sheet animations

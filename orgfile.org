@@ -207,6 +207,7 @@ x Font atlas proper cleanup
 ** TODO Allow passsing base path as commandline argument?
 ** TODO Remove components and switch to "Fat Entities" i.e. one entity struct contains all combinations
 ** TODO Use variants for material params
+** TODO Improve Material Parameters/Pipeline Uniforms/Instance Uniforms are handled
 ** DONE In second refactor pass, use entities everywhere, no need to pass in transform and model separately for example since they're both part of the same entity anyway
 - State "DONE"       from "TODO"       [2017-05-31 Wed 21:44]
 ** DONE Show SDL dialogbox if we cannot launch at all?
@@ -242,7 +243,8 @@ x Font atlas proper cleanup
 - State "DONE"       from "TODO"       [2017-06-01 Thu 00:20]
 ** TODO Replace orgfile with simple text readme and reduce duplication?
 ** TODO Ray picking
-** TODO Remove reduntant "settings" structures and move all configuration stuff to config variables
+** DONE Remove reduntant "settings" structures and move all configuration stuff to config variables
+- State "DONE"       from "TODO"       [2017-06-05 Mon 02:25]
 ** TODO Shadow maps
 ** DONE Log output to file on every run
 - State "DONE"       from "TODO"       [2017-05-26 Fri 00:41]

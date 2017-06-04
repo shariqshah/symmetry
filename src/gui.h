@@ -43,7 +43,7 @@ enum Gui_Theme
 
 int  			  gui_init(void);
 void 			  gui_cleanup(void);
-void 			  gui_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_buffer);
+void 			  gui_render(enum nk_anti_aliasing AA);
 void 			  gui_handle_mousewheel_event(int x, int y);
 void 			  gui_handle_mousemotion_event(int x, int y, int xrel, int yrel);
 void 			  gui_handle_mousebutton_event(int button, int state, int x, int y);

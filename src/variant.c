@@ -36,7 +36,7 @@ void variant_assign_double(struct Variant* variant, double value)
 	variant->val_double = value;
 }
 
-void variant_assign_bool(struct Variant* variant, int value)
+void variant_assign_bool(struct Variant* variant, bool value)
 {
 	if(variant->type != VT_BOOL) variant_free(variant);
 	variant->type     = VT_BOOL;
@@ -157,8 +157,8 @@ void variant_copy(struct Variant* to, const struct Variant* from)
 	to->type = from->type;
 	switch(from->type)
 	{
-	case VT_BOOL:   variant_assign_bool(to, from->val_int);      break;
-	case VT_INT:    variant_assign_int(to, from->val_bool);      break;
+	case VT_BOOL:   variant_assign_bool(to, from->val_bool);     break;
+	case VT_INT:    variant_assign_int(to, from->val_int);       break;
 	case VT_FLOAT:  variant_assign_float(to, from->val_float);   break;
 	case VT_DOUBLE: variant_assign_double(to, from->val_double); break;
 	case VT_VEC2:   variant_assign_vec2(to, &from->val_vec2);    break;
@@ -199,17 +199,16 @@ void variant_from_str(struct Variant* variant, const char* str, int variant_type
 	{
 	case VT_BOOL:
 	{
-		int boolean = -1;
+		bool boolean = false;
 		memset(str_val, '\0', MAX_VARIANT_STR_LEN);
 		if(sscanf(str, "%1024s", str_val) == 1)
 		{
 			if(strncmp("true", str_val, 5) == 0)
-				boolean = 1;
+				boolean = true;
 			else if(strncmp("false", str_val, 5) == 0)
-				boolean = 0;
+				boolean = false;
 
-			if(boolean != -1)
-				variant_assign_bool(variant, boolean);
+			variant_assign_bool(variant, boolean);
 		}
 	}
 	break;

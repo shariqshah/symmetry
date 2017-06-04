@@ -136,7 +136,6 @@ void editor_update(float dt)
 	struct Game_State* 		game_state 		= game_state_get();
 	struct Gui_State*  		gui_state  		= gui_state_get();
 	struct nk_context* 		context    		= &gui_state->context;
-	struct Render_Settings* render_settings = renderer_settings_get();
 	int win_width = 0, win_height = 0;
 	window_get_drawable_size(game_state->window, &win_width, &win_height);
 	int half_width = win_width / 2, half_height = win_height / 2;
@@ -179,20 +178,22 @@ void editor_update(float dt)
 	{
 		if(nk_begin_titled(context, "Renderer_Settings_Window", "Renderer Settings", nk_rect(half_width, half_height, 300, 350), default_window_flags))
 		{
+			static struct Render_Settings render_settings;
+			renderer_settings_get(&render_settings);
 			if(nk_tree_push(context, NK_TREE_TAB, "Debug", NK_MAXIMIZED))
 			{
 				static const char* draw_modes[] = {"Triangles", "Lines", "Points"};
 				nk_layout_row_dynamic(context, 25, 2);
 				nk_label(context, "Debug Draw", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
-				nk_checkbox_label(context, "", &render_settings->debug_draw_enabled);
+				nk_checkbox_label(context, "", &render_settings.debug_draw_enabled);
 				
 				nk_layout_row_dynamic(context, 25, 2);
 				nk_label(context, "Debug Draw Mode", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
-				render_settings->debug_draw_mode = nk_combo(context, draw_modes, 3, render_settings->debug_draw_mode, 20, nk_vec2(180, 100));
+				render_settings.debug_draw_mode = nk_combo(context, draw_modes, 3, render_settings.debug_draw_mode, 20, nk_vec2(180, 100));
 				
 				nk_layout_row_dynamic(context, 25, 2);
 				nk_label(context, "Debug Color", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
-				editor_color_combo(context, &render_settings->debug_draw_color, 200, 400);
+				editor_color_combo(context, &render_settings.debug_draw_color, 200, 400);
 				nk_tree_pop(context);
 			}
 
@@ -202,27 +203,27 @@ void editor_update(float dt)
 				nk_layout_row_dynamic(context, 25, 2);
 				nk_label(context, "Color", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
 				static vec4 fog_color;
-				vec4_fill_vec3(&fog_color, &render_settings->fog.color, 1.f);
+				vec4_fill_vec3(&fog_color, &render_settings.fog.color, 1.f);
 				editor_color_combo(context, &fog_color, 200, 400);
-				vec3_fill(&render_settings->fog.color, fog_color.x, fog_color.y, fog_color.z);
+				vec3_fill(&render_settings.fog.color, fog_color.x, fog_color.y, fog_color.z);
 				
 				nk_layout_row_dynamic(context, 25, 2);
 				nk_label(context, "Fog Mode", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
-				render_settings->fog.mode = nk_combo(context,
+				render_settings.fog.mode = nk_combo(context,
 													 fog_modes,
 													 4,
-													 render_settings->fog.mode,
+													 render_settings.fog.mode,
 													 20,
 													 nk_vec2(180, 100));
 
 				nk_layout_row_dynamic(context, 25, 2);
 				nk_label(context, "Density", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
 				struct nk_rect bounds = nk_widget_bounds(context);
-				nk_slider_float(context, 0.f, &render_settings->fog.density, 1.f, 0.005);
+				nk_slider_float(context, 0.f, &render_settings.fog.density, 1.f, 0.005);
 				if(nk_input_is_mouse_hovering_rect(&context->input, bounds))
 				{
 					static char float_str[10] = {'\0'};
-					snprintf(float_str, 6, "%.4f", render_settings->fog.density);
+					snprintf(float_str, 6, "%.4f", render_settings.fog.density);
 					float_str[6] = '\0';
 					nk_tooltip(context, float_str);
 				}
@@ -231,20 +232,21 @@ void editor_update(float dt)
 				nk_property_float(context,
 								  "Start Distance",
 								  0.f,
-								  &render_settings->fog.start_dist,
-								  render_settings->fog.max_dist,
+								  &render_settings.fog.start_dist,
+								  render_settings.fog.max_dist,
 								  5.f, 10.f);
 
 				nk_layout_row_dynamic(context, 25, 1);
 				nk_property_float(context,
 								  "Max Distance",
-								  render_settings->fog.start_dist,
-								  &render_settings->fog.max_dist,
+								  render_settings.fog.start_dist,
+								  &render_settings.fog.max_dist,
 								  10000.f,
 								  5.f, 10.f);
 
 				nk_tree_pop(context);
-			}			
+			}
+			renderer_settings_set(&render_settings);
 		}
 		else
 		{

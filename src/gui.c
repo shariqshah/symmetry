@@ -20,6 +20,9 @@ struct Gui_Vertex
     nk_byte col[4];
 };
 
+#define MAX_GUI_VERTEX_MEMORY  512 * 1024
+#define MAX_GUI_ELEMENT_MEMORY 128 * 1024
+
 static void gui_handle_clipbard_copy(nk_handle usr, const char *text, int len);
 static void gui_handle_clipbard_paste(nk_handle usr, struct nk_text_edit *edit);
 static void gui_handle_textinput_event(const char* text);
@@ -119,7 +122,7 @@ void gui_cleanup(void)
     free(gui_state);
 }
 
-void gui_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_buffer)
+void gui_render(enum nk_anti_aliasing AA)
 {
     int width, height;
     int display_width, display_height;
@@ -134,7 +137,6 @@ void gui_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element
 
     scale.x = (float)display_width/(float)width;
     scale.y = (float)display_height/(float)height;
-	
 
     /* setup global state */
     glViewport(0,0,display_width,display_height);
@@ -160,8 +162,8 @@ void gui_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element
         glBindBuffer(GL_ARRAY_BUFFER, gui_state->vbo);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gui_state->ebo);
 
-        glBufferData(GL_ARRAY_BUFFER, max_vertex_buffer, NULL, GL_STREAM_DRAW);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, max_element_buffer, NULL, GL_STREAM_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, MAX_GUI_VERTEX_MEMORY, NULL, GL_STREAM_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_GUI_ELEMENT_MEMORY, NULL, GL_STREAM_DRAW);
 
         /* load vertices/elements directly into vertex/element buffer */
         vertices = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
@@ -190,8 +192,8 @@ void gui_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element
 
             /* setup buffers to load vertices and elements */
             struct nk_buffer vbuf, ebuf;
-            nk_buffer_init_fixed(&vbuf, vertices, (nk_size)max_vertex_buffer);
-            nk_buffer_init_fixed(&ebuf, elements, (nk_size)max_element_buffer);
+            nk_buffer_init_fixed(&vbuf, vertices, (nk_size)MAX_GUI_VERTEX_MEMORY);
+            nk_buffer_init_fixed(&ebuf, elements, (nk_size)MAX_GUI_ELEMENT_MEMORY);
             nk_convert(&gui_state->context, &gui_state->cmds, &vbuf, &ebuf, &config);
         }
         glUnmapBuffer(GL_ARRAY_BUFFER);

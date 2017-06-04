@@ -2,6 +2,7 @@
 #define VARIANT_H
 
 #include "linmath.h"
+#include "num_types.h"
 
 #define MAX_VARIANT_STR_LEN 1024
 
@@ -28,7 +29,7 @@ struct Variant
 	union
 	{
 		int    val_int;
-		int    val_bool;
+		bool   val_bool;
 		float  val_float;
 		double val_double;
 		char*  val_str;
@@ -45,7 +46,7 @@ void variant_init_empty(struct Variant* variant);
 void variant_assign_float(struct Variant* variant, float value);
 void variant_assign_int(struct Variant* variant, int value);
 void variant_assign_double(struct Variant* variant, double value);
-void variant_assign_bool(struct Variant* variant, int value);
+void variant_assign_bool(struct Variant* variant, bool value);
 void variant_assign_str(struct Variant* variant, const char* value);
 void variant_assign_vec2(struct Variant* variant, const vec2* value);
 void variant_assign_vec3(struct Variant* variant, const vec3* value);

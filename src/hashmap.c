@@ -145,7 +145,7 @@ void hashmap_double_set(struct Hashmap* hashmap, const char* key, double value)
 	variant_assign_double(&new_entry->value, value);
 }
 
-void hashmap_bool_set(struct Hashmap* hashmap, const char* key, int value)
+void hashmap_bool_set(struct Hashmap* hashmap, const char* key, const bool value)
 {
 	struct Hashmap_Entry* new_entry = hashmap_entry_new(hashmap, key);
 	variant_assign_bool(&new_entry->value, value);
@@ -235,7 +235,7 @@ double hashmap_double_get(const struct Hashmap* hashmap, const char* key)
 	return variant->val_double;
 }
 
-int hashmap_bool_get(const struct Hashmap* hashmap, const char* key)
+bool hashmap_bool_get(const struct Hashmap* hashmap, const char* key)
 {
 	const struct Variant* variant = hashmap_value_get(hashmap, key);
 	return variant->val_bool;

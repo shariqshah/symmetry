@@ -70,7 +70,7 @@ void model_render_all(struct Entity* camera_entity, int draw_mode)
 	{
 		/* for each material, get all the registered models and render them */
 		struct Material* material = &material_list[i];
-		if(!material->active)
+		if(!material->active || array_len(material->registered_models) == 0)
 			continue;
 
 		shader_bind(material->shader);
@@ -139,6 +139,49 @@ void model_render_all(struct Entity* camera_entity, int draw_mode)
 			transform_get_absolute_pos(camera_entity, &camera_pos);
 			shader_set_uniform_vec3(material->shader, "camera_pos", &camera_pos);
 		}
+
+		/* Set material pipeline uniforms */
+		static struct Render_Settings render_settings;
+		renderer_settings_get(&render_settings);
+		for(int k = 0; k < array_len(material->pipeline_params); k++)
+		{
+			struct Uniform* uniform = &material->pipeline_params[k];
+			if(strcmp(uniform->name, "view_mat") == 0)
+			{
+				shader_set_uniform(uniform->type, uniform->location, &camera_entity->camera.view_mat);
+				renderer_check_glerror("model:render_all:material_pipeline");
+			}
+			else if(strcmp(uniform->name, "fog.mode") == 0)
+			{
+				shader_set_uniform(uniform->type, uniform->location, &render_settings.fog.mode);
+				renderer_check_glerror("model:render_all:material_pipeline");
+			}
+			else if(strcmp(uniform->name, "fog.density") == 0)
+			{
+				shader_set_uniform(uniform->type, uniform->location, &render_settings.fog.density);
+				renderer_check_glerror("model:render_all:material_pipeline");
+			}
+			else if(strcmp(uniform->name, "fog.start_dist") == 0)
+			{
+				shader_set_uniform(uniform->type, uniform->location, &render_settings.fog.start_dist);
+				renderer_check_glerror("model:render_all:material_pipeline");
+			}
+			else if(strcmp(uniform->name, "fog.max_dist") == 0)
+			{
+				shader_set_uniform(uniform->type, uniform->location, &render_settings.fog.max_dist);
+				renderer_check_glerror("model:render_all:material_pipeline");
+			}
+			else if(strcmp(uniform->name, "fog.color") == 0)
+			{
+				shader_set_uniform(uniform->type, uniform->location, &render_settings.fog.color);
+				renderer_check_glerror("model:render_all:material_pipeline");
+			}
+			else if(strcmp(uniform->name, "ambient_light") == 0)
+			{
+				shader_set_uniform(uniform->type, uniform->location, &render_settings.ambient_light);
+				renderer_check_glerror("model:render_all:material_pipeline");
+			}
+		}
 		
 		for(int j = 0; j < array_len(material->registered_models); j++)
 		{
@@ -171,8 +214,7 @@ void model_render_all(struct Entity* camera_entity, int draw_mode)
 				renderer_check_glerror("model:render_all:material_param");
 			}
 
-			/* Set pipeline uniforms */
-			struct Render_Settings* render_settings = renderer_settings_get();
+			/* Set pipeline uniforms that are derived per model */
 			for(int k = 0; k < array_len(material->pipeline_params); k++)
 			{
 				/* TODO: change this into something better */
@@ -189,47 +231,12 @@ void model_render_all(struct Entity* camera_entity, int draw_mode)
 					shader_set_uniform(uniform->type, uniform->location, &transform->trans_mat);
 					renderer_check_glerror("model:render_all:material_pipeline");
 				}
-				else if(strcmp(uniform->name, "view_mat") == 0)
-				{
-					shader_set_uniform(uniform->type, uniform->location, &camera_entity->camera.view_mat);
-					renderer_check_glerror("model:render_all:material_pipeline");
-				}
 				else if(strcmp(uniform->name, "inv_model_mat") == 0)
 				{
 					mat4 inv_mat;
 					mat4_identity(&inv_mat);
 					mat4_inverse(&inv_mat, &transform->trans_mat);
 					shader_set_uniform(uniform->type, uniform->location, &inv_mat);
-					renderer_check_glerror("model:render_all:material_pipeline");
-				}
-				else if(strcmp(uniform->name, "fog.mode") == 0)
-				{
-					shader_set_uniform(uniform->type, uniform->location, &render_settings->fog.mode);
-					renderer_check_glerror("model:render_all:material_pipeline");
-				}
-				else if(strcmp(uniform->name, "fog.density") == 0)
-				{
-					shader_set_uniform(uniform->type, uniform->location, &render_settings->fog.density);
-					renderer_check_glerror("model:render_all:material_pipeline");
-				}
-				else if(strcmp(uniform->name, "fog.start_dist") == 0)
-				{
-					shader_set_uniform(uniform->type, uniform->location, &render_settings->fog.start_dist);
-					renderer_check_glerror("model:render_all:material_pipeline");
-				}
-				else if(strcmp(uniform->name, "fog.max_dist") == 0)
-				{
-					shader_set_uniform(uniform->type, uniform->location, &render_settings->fog.max_dist);
-					renderer_check_glerror("model:render_all:material_pipeline");
-				}
-				else if(strcmp(uniform->name, "fog.color") == 0)
-				{
-					shader_set_uniform(uniform->type, uniform->location, &render_settings->fog.color);
-					renderer_check_glerror("model:render_all:material_pipeline");
-				}
-				else if(strcmp(uniform->name, "ambient_light") == 0)
-				{
-					shader_set_uniform(uniform->type, uniform->location, &render_settings->ambient_light);
 					renderer_check_glerror("model:render_all:material_pipeline");
 				}
 			}

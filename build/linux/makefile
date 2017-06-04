@@ -9,7 +9,7 @@ OBJS_RELEASE    = $(patsubst %.c,.release/%.o,$(SRCS))
 OBJS_DEBUG      = $(patsubst %.c,.debug/%.o,$(SRCS))
 CFLAGS          = -Wall -I$(INCLUDE_DIR) -DUSE_GLAD -std=c99 $(shell pkg-config --cflags-only-other sdl2 openal)
 CFLAGS_DEBUG    = -g -DGL_DEBUG_CONTEXT -DAL_DEBUG
-CFLAGS_RELEASE  = -O3 -ffast-math
+CFLAGS_RELEASE  = -O3 -ffast-math -g
 LFLAGS          = $(shell pkg-config --libs sdl2 openal) -lm
 ITCH_BUTLER     = ~/.config/itch/bin/butler
 

@@ -2,6 +2,7 @@
 #define RENDERER_H
 
 #include "linmath.h"
+#include "num_types.h"
 
 enum Fog_Mode
 {
@@ -25,8 +26,6 @@ struct Render_Settings
 {
 	struct Fog fog;
 	vec3       ambient_light;
-	int        max_gui_vertex_memory;
-	int        max_gui_element_memory;
 	int        debug_draw_enabled;
 	vec4       debug_draw_color;
 	int        debug_draw_mode;
@@ -34,12 +33,13 @@ struct Render_Settings
 
 struct Entity;
 
-struct Render_Settings* renderer_settings_get(void);
-void 					renderer_init(void);
-void 					renderer_draw(struct Entity* active_viewer);
-void 					renderer_cleanup(void);
-void 					renderer_clearcolor_set(float r, float g, float b, float a);
-void 					renderer_debug_draw_enabled(int enabled);
-int  					renderer_check_glerror(const char* context);
+void renderer_settings_get(struct Render_Settings* settings);
+void renderer_settings_set(const struct Render_Settings* settings);
+void renderer_init(void);
+void renderer_draw(struct Entity* active_viewer);
+void renderer_cleanup(void);
+void renderer_clearcolor_set(float r, float g, float b, float a);
+void renderer_debug_draw_enabled(bool enabled);
+int  renderer_check_glerror(const char* context);
 
 #endif

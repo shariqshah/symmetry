@@ -24,10 +24,6 @@ static int def_depth_tex      = -1;
 static int quad_geo           = -1;
 static int composition_shader = -1;
 static int debug_shader       = -1;
-static struct Render_Settings settings;
-
-#define MAX_GUI_VERTEX_MEMORY  512 * 1024
-#define MAX_GUI_ELEMENT_MEMORY 128 * 1024
 
 void on_framebuffer_size_change(int width, int height);
 
@@ -38,23 +34,6 @@ void renderer_init(void)
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 	platform_windowresize_callback_set(on_framebuffer_size_change);
-
-	struct Hashmap* cvars = config_vars_get();
-	settings.fog.mode               = hashmap_int_get(cvars,   "fog_mode");
-	settings.fog.density            = hashmap_float_get(cvars, "fog_density");
-	settings.fog.start_dist         = hashmap_float_get(cvars, "fog_start_dist");
-	settings.fog.max_dist           = hashmap_float_get(cvars, "fog_max_dist");
-	settings.fog.color              = hashmap_vec3_get(cvars,  "fog_color");
-	settings.debug_draw_enabled     = hashmap_bool_get(cvars,  "debug_draw_enabled");
-	settings.debug_draw_mode        = hashmap_int_get(cvars,   "debug_draw_mode");
-	settings.debug_draw_color       = hashmap_vec4_get(cvars,  "debug_draw_color");
-	settings.ambient_light          = hashmap_vec3_get(cvars,  "ambient_light");
-	settings.max_gui_vertex_memory  = MAX_GUI_VERTEX_MEMORY;
-	settings.max_gui_element_memory = MAX_GUI_ELEMENT_MEMORY;
-	/* vec3_fill(&settings.fog.color, 60.f/255.f, 60.f/255.f, 75.f/255.f); */
-	/* vec3_fill(&settings.ambient_light, 0.1f, 0.1f, 0.12f); */
-	/* vec4_fill(&settings.debug_draw_color, 0.f, 1.f, 0.f, 1.f); */
-
 	gui_init();
 	
 	/* Quad geometry for final render */
@@ -184,14 +163,18 @@ void renderer_draw(struct Entity* active_viewer)
 	texture_unbind(final_render_tex);
 	shader_unbind();
 
-	if(settings.debug_draw_enabled)
+	struct Hashmap* cvars = config_vars_get();
+	//if(settings.debug_draw_enabled)
+	if(hashmap_bool_get(cvars, "debug_draw_enabled"))
 	{
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		model_render_all_debug(active_viewer, debug_shader, settings.debug_draw_mode, &settings.debug_draw_color);
+		//model_render_all_debug(active_viewer, debug_shader, settings.debug_draw_mode, &settings.debug_draw_color);
+		vec4 debug_draw_color = hashmap_vec4_get(cvars, "debug_draw_color");
+		model_render_all_debug(active_viewer, debug_shader, hashmap_int_get(cvars, "debug_draw_mode"), &debug_draw_color);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 	
-	gui_render(NK_ANTI_ALIASING_ON, settings.max_gui_vertex_memory, settings.max_gui_element_memory);
+	gui_render(NK_ANTI_ALIASING_ON);
 }
 
 void renderer_cleanup(void)
@@ -247,12 +230,35 @@ int renderer_check_glerror(const char* context)
 	return error;
 }
 
-struct Render_Settings* renderer_settings_get(void)
+void renderer_debug_draw_enabled(bool enabled)
 {
-	return &settings;
+	struct Hashmap* cvars = config_vars_get();
+	hashmap_bool_set(cvars,  "debug_draw_enabled", enabled);
 }
 
-void renderer_debug_draw_enabled(int enabled)
+void renderer_settings_get(struct Render_Settings* settings)
 {
-	settings.debug_draw_enabled = enabled;
+	struct Hashmap* cvars = config_vars_get();
+	settings->fog.mode               = hashmap_int_get(cvars,   "fog_mode");
+	settings->fog.density            = hashmap_float_get(cvars, "fog_density");
+	settings->fog.start_dist         = hashmap_float_get(cvars, "fog_start_dist");
+	settings->fog.max_dist           = hashmap_float_get(cvars, "fog_max_dist");
+	settings->fog.color              = hashmap_vec3_get(cvars,  "fog_color");
+	settings->debug_draw_enabled     = hashmap_bool_get(cvars,  "debug_draw_enabled");
+	settings->debug_draw_mode        = hashmap_int_get(cvars,   "debug_draw_mode");
+	settings->debug_draw_color       = hashmap_vec4_get(cvars,  "debug_draw_color");
+	settings->ambient_light          = hashmap_vec3_get(cvars,  "ambient_light");
+}
+
+void renderer_settings_set(const struct Render_Settings* settings)
+{
+	struct Hashmap* cvars = config_vars_get();
+	hashmap_int_set(cvars,   "fog_mode",           settings->fog.mode);
+	hashmap_float_set(cvars, "fog_density",        settings->fog.density);
+	hashmap_float_set(cvars, "fog_start_dist",     settings->fog.start_dist);
+	hashmap_float_set(cvars, "fog_max_dist",       settings->fog.max_dist);
+	hashmap_bool_set(cvars,  "debug_draw_enabled", settings->debug_draw_enabled);
+	hashmap_int_set(cvars,   "debug_draw_mode",    settings->debug_draw_mode);
+	hashmap_vec4_set(cvars,  "debug_draw_color",   &settings->debug_draw_color);
+	hashmap_vec3_set(cvars,  "ambient_light",      &settings->ambient_light);
 }

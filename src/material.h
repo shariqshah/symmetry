@@ -1,7 +1,8 @@
-#ifndef material_H
-#define material_H
+#ifndef MATERIAL_H
+#define MATERIAL_H
 
 #include "linmath.h"
+#include "num_types.h"
 
 struct Model;
 
@@ -28,11 +29,11 @@ struct Material_Param
 
 struct Material
 {
-	char* name;
-	int   shader;
-	int*  registered_models;
-	int   active;
-	int   lit;					  /* If material uses light information */
+	char*           name;
+	int             shader;
+	int*            registered_models;
+	bool            active;
+	bool            lit;					  /* If material uses light information */
 	struct Uniform* model_params; /* uniforms related to models */
 	struct Uniform* pipeline_params; /* general uniforms like matrices etc */
 };

@@ -300,6 +300,12 @@ void debug(float dt)
 		vec3 amount = {0, 0, 5 * dt};
 		transform_translate(model, &amount, TS_LOCAL);
 	}
+
+	struct Entity* model = scene_find("Model_Entity");
+	vec3 x_axis = {1, 0, 0};
+	transform_rotate(model, &x_axis, 25.f * dt, TS_WORLD);
+	vec3 amount = {0, 0, -5 * dt};
+	transform_translate(model, &amount, TS_LOCAL);
 }
 
 int run(void)

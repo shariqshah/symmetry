@@ -75,13 +75,93 @@ void model_render_all(struct Entity* camera_entity, int draw_mode)
 
 		shader_bind(material->shader);
 		renderer_check_glerror("model:render_all:shader_bind");
+
+		if(material->lit)	/* Set light information */
+		{
+			int valid_light_count = 0;
+			int* light_index_list = light_get_valid_indices(&valid_light_count);
+			char uniform_name[MAX_NAME_LEN];
+			memset(uniform_name, '\0', MAX_NAME_LEN);
+			for(int i = 0; i < valid_light_count; i++)
+			{
+				struct Entity* light_entity = entity_get(light_index_list[i]);
+				struct Light*  light        = &light_entity->light; /* TODO: Cull lights according to camera frustum */
+				vec3 light_pos = {0, 0, 0};
+				transform_get_absolute_pos(light_entity, &light_pos);
+
+				if(light->type != LT_POINT)
+				{
+					snprintf(uniform_name, MAX_NAME_LEN, "lights[%d].direction", i);
+					transform_get_absolute_lookat(light_entity, &light_pos);
+					vec3_norm(&light_pos, &light_pos);
+					shader_set_uniform_vec3(material->shader, uniform_name, &light_pos);
+					memset(uniform_name, '\0', MAX_NAME_LEN);
+				}
+
+				if(light->type != LT_DIR)
+				{
+					snprintf(uniform_name, MAX_NAME_LEN, "lights[%d].position", i);
+					shader_set_uniform_vec3(material->shader,  uniform_name, &light_pos);
+					memset(uniform_name, '\0', MAX_NAME_LEN);
+
+					snprintf(uniform_name, MAX_NAME_LEN, "lights[%d].outer_angle", i);
+					shader_set_uniform_float(material->shader, uniform_name, light->outer_angle);
+					memset(uniform_name, '\0', MAX_NAME_LEN);
+					
+					snprintf(uniform_name, MAX_NAME_LEN, "lights[%d].inner_angle", i);
+					shader_set_uniform_float(material->shader, uniform_name, light->inner_angle);
+					memset(uniform_name, '\0', MAX_NAME_LEN);
+					
+					snprintf(uniform_name, MAX_NAME_LEN, "lights[%d].falloff", i);
+					shader_set_uniform_float(material->shader, uniform_name, light->falloff);
+					memset(uniform_name, '\0', MAX_NAME_LEN);
+
+					snprintf(uniform_name, MAX_NAME_LEN, "lights[%d].radius", i);
+					shader_set_uniform_int(material->shader, uniform_name, light->radius);
+					memset(uniform_name, '\0', MAX_NAME_LEN);
+				}
+					
+				snprintf(uniform_name, MAX_NAME_LEN, "lights[%d].color", i);
+				shader_set_uniform_vec3(material->shader,  uniform_name, &light->color);
+				memset(uniform_name, '\0', MAX_NAME_LEN);
+					
+				snprintf(uniform_name, MAX_NAME_LEN, "lights[%d].intensity", i);
+				shader_set_uniform_float(material->shader, uniform_name, light->intensity);
+				memset(uniform_name, '\0', MAX_NAME_LEN);
+					
+				snprintf(uniform_name, MAX_NAME_LEN, "lights[%d].type", i);
+				shader_set_uniform_int(material->shader, uniform_name, light->type);
+				memset(uniform_name, '\0', MAX_NAME_LEN);
+			}
+
+			shader_set_uniform_int(material->shader, "total_active_lights", valid_light_count);
+			vec3 camera_pos = {0, 0, 0};
+			transform_get_absolute_pos(camera_entity, &camera_pos);
+			shader_set_uniform_vec3(material->shader, "camera_pos", &camera_pos);
+		}
+		
 		for(int j = 0; j < array_len(material->registered_models); j++)
 		{
 			/* for each registered model, set up uniforms and render */
 			struct Entity*    entity    = entity_get(material->registered_models[j]);
 			struct Model*     model     = &entity->model;
 			struct Transform* transform = &entity->transform;
+			struct Geometry*  geometry  = geom_get(model->geometry_index);
 
+			/* Check if model is in frustum */
+			int intersection = bv_intersect_frustum_sphere(camera_entity->camera.frustum, &geometry->bounding_sphere, entity);
+			if(intersection == IT_OUTSIDE)
+			{
+				num_culled++;
+				continue;
+			}
+			else
+			{
+				num_indices += array_len(geometry->indices);
+				num_rendered++;
+			}
+
+			
 			/* set material params for the model */
 			for(int k = 0; k < array_len(model->material_params); k++)
 			{
@@ -153,83 +233,10 @@ void model_render_all(struct Entity* camera_entity, int draw_mode)
 					renderer_check_glerror("model:render_all:material_pipeline");
 				}
 			}
-
-			if(material->lit)	/* Set light information */
-			{
-				int valid_light_count = 0;
-				int* light_index_list = light_get_valid_indices(&valid_light_count);
-				char uniform_name[MAX_NAME_LEN];
-				memset(uniform_name, '\0', MAX_NAME_LEN);
-				for(int i = 0; i < valid_light_count; i++)
-				{
-					struct Entity* light_entity = entity_get(light_index_list[i]);
-					struct Light*  light        = &light_entity->light; /* TODO: Cull lights according to camera frustum */
-					vec3 light_pos = {0, 0, 0};
-					transform_get_absolute_pos(light_entity, &light_pos);
-
-					if(light->type != LT_POINT)
-					{
-						snprintf(uniform_name, MAX_NAME_LEN, "lights[%d].direction", i);
-						transform_get_absolute_lookat(light_entity, &light_pos);
-						vec3_norm(&light_pos, &light_pos);
-						shader_set_uniform_vec3(material->shader, uniform_name, &light_pos);
-						memset(uniform_name, '\0', MAX_NAME_LEN);
-					}
-
-					if(light->type != LT_DIR)
-					{
-						snprintf(uniform_name, MAX_NAME_LEN, "lights[%d].position", i);
-						shader_set_uniform_vec3(material->shader,  uniform_name, &light_pos);
-						memset(uniform_name, '\0', MAX_NAME_LEN);
-
-						snprintf(uniform_name, MAX_NAME_LEN, "lights[%d].outer_angle", i);
-						shader_set_uniform_float(material->shader, uniform_name, light->outer_angle);
-						memset(uniform_name, '\0', MAX_NAME_LEN);
-					
-						snprintf(uniform_name, MAX_NAME_LEN, "lights[%d].inner_angle", i);
-						shader_set_uniform_float(material->shader, uniform_name, light->inner_angle);
-						memset(uniform_name, '\0', MAX_NAME_LEN);
-					
-						snprintf(uniform_name, MAX_NAME_LEN, "lights[%d].falloff", i);
-						shader_set_uniform_float(material->shader, uniform_name, light->falloff);
-						memset(uniform_name, '\0', MAX_NAME_LEN);
-
-						snprintf(uniform_name, MAX_NAME_LEN, "lights[%d].radius", i);
-						shader_set_uniform_int(material->shader, uniform_name, light->radius);
-						memset(uniform_name, '\0', MAX_NAME_LEN);
-					}
-					
-					snprintf(uniform_name, MAX_NAME_LEN, "lights[%d].color", i);
-					shader_set_uniform_vec3(material->shader,  uniform_name, &light->color);
-					memset(uniform_name, '\0', MAX_NAME_LEN);
-					
-					snprintf(uniform_name, MAX_NAME_LEN, "lights[%d].intensity", i);
-					shader_set_uniform_float(material->shader, uniform_name, light->intensity);
-					memset(uniform_name, '\0', MAX_NAME_LEN);
-					
-					snprintf(uniform_name, MAX_NAME_LEN, "lights[%d].type", i);
-					shader_set_uniform_int(material->shader, uniform_name, light->type);
-					memset(uniform_name, '\0', MAX_NAME_LEN);
-				}
-
-				shader_set_uniform_int(material->shader, "total_active_lights", valid_light_count);
-				vec3 camera_pos = {0, 0, 0};
-				transform_get_absolute_pos(camera_entity, &camera_pos);
-				shader_set_uniform_vec3(material->shader, "camera_pos", &camera_pos);
-			}
 			
 			/* Render the geometry */
-			int indices = geom_render_in_frustum(model->geometry_index, &camera_entity->camera.frustum[0], entity, draw_mode);
-			if(indices > 0)
-			{
-				num_rendered++;
-				num_indices += indices;
-			}
-			else
-			{
-				num_culled++;
-			}
-			//geom_render(model->geometry_index, draw_mode);
+			//int indices = geom_render_in_frustum(model->geometry_index, &camera_entity->camera.frustum[0], entity, draw_mode);
+			geom_render(model->geometry_index, draw_mode);
 
 			for(int k = 0; k < array_len(model->material_params); k++)
 			{

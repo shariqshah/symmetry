@@ -4,7 +4,6 @@
 #include "file_io.h"
 #include "log.h"
 #include "renderer.h"
-#include "bounding_volumes.h"
 #include "transform.h"
 #include "gl_load.h"
 
@@ -14,27 +13,6 @@
 #include <assert.h>
 #include <math.h>
 #include <float.h>
-
-struct Geometry 
-{
-	char* 		  		   filename;
-	int   		  		   draw_indexed;
-	uint  		  		   vao;
-	uint  		  		   vertex_vbo;
-	uint  		  		   uv_vbo;
-	uint  		  		   normal_vbo;
-	uint  		  		   color_vbo;
-	uint  		  		   index_vbo;
-	int   		  		   ref_count;
-	vec3* 		  		   vertices;
-	vec3* 		  		   vertex_colors;
-	vec3* 		  		   normals;
-	vec2* 		  		   uvs;
-	uint* 		  		   indices;
-	struct Bounding_Box    bounding_box;
-	struct Bounding_Sphere bounding_sphere;
-};
-
 
 /* Data */
 static struct Geometry* geometry_list;
@@ -391,8 +369,8 @@ int geom_render_in_frustum(int                      index,
 	return indices_rendered;
 }
 
-struct Bounding_Sphere* geom_bounding_sphere_get(int index)
+struct Geometry* geom_get(int index)
 {
 	assert(index > -1 && index < array_len(geometry_list));
-	return &geometry_list[index].bounding_sphere;
+	return &geometry_list[index];
 }

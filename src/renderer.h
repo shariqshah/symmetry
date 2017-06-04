@@ -1,5 +1,5 @@
-#ifndef renderer_H
-#define renderer_H
+#ifndef RENDERER_H
+#define RENDERER_H
 
 #include "linmath.h"
 

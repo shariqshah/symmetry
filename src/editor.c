@@ -257,7 +257,7 @@ void editor_update(float dt)
 	if(editor_state.debug_vars_window)
 	{
 		static char variant_str[MAX_VARIANT_STR_LEN] = {'\0'};
-		if(nk_begin_titled(context, "Debug_Variables_Window", "Debug Variables", nk_rect(20, 20, 300, 300), default_window_flags))
+		if(nk_begin_titled(context, "Debug_Variables_Window", "Debug Variables", nk_rect(725, 30, 300, 300), default_window_flags))
 		{
 			nk_layout_row_static(context, 250, 250, 2);
 			if(nk_group_begin(context, "Name", NK_WINDOW_BORDER | NK_WINDOW_SCROLL_AUTO_HIDE))

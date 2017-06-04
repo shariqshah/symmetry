@@ -167,7 +167,7 @@ void scene_setup(void)
 	/* model_set_material_param(screen_model, "diffuse_color", &color); */
 	/* model_set_material_param(screen_model, "diffuse_texture", &cam->render_tex); */
 
-	const int MAX_LIGHTS = 3;
+	const int MAX_LIGHTS = 6;
 	for(int i = 0; i < MAX_LIGHTS; i++)
 	{
 		int x = rand() % MAX_LIGHTS;

@@ -71,11 +71,10 @@ int game_init(struct Window* window)
 	texture_init();
 	framebuffer_init();
 	geom_init();
+	editor_init();
 	renderer_init();
 	light_init();
 	material_init();
-	editor_init();
-	model_init();
 	entity_init();
 	scene_init();
 	

@@ -120,5 +120,6 @@ struct Entity* entity_get(int index);
 struct Entity* entity_find(const char* name);
 struct Entity* entity_get_all(void);
 struct Entity* entity_get_parent(int node);
+bool           entity_save(struct Entity* entity, const char* filename, int directory_type);
 
 #endif

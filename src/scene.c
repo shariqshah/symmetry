@@ -120,3 +120,15 @@ struct Entity* scene_get_parent(struct Entity* entity)
 		parent = entity_get(entity->transform.parent);
 	return parent;
 }
+
+bool scene_load(const char* filename)
+{
+	bool success = false;
+	return success;
+}
+
+bool scene_save(const char* filename)
+{
+	bool success = false;
+	return success;
+}

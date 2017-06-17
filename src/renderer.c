@@ -121,6 +121,7 @@ void renderer_init(void)
 
 void renderer_draw(struct Entity* active_viewer)
 {
+	/* Render each camera output into it's framebuffer or to the default framebuffer */
 	struct Entity* entity_list = entity_get_all();
 	for(int i = 0; i < array_len(entity_list); i++)
 	{
@@ -128,7 +129,6 @@ void renderer_draw(struct Entity* active_viewer)
 		if(entity_list[i].type != ET_CAMERA) continue;
 		struct Camera* camera = &viewer->camera;
 
-		/* if(camera->fbo == -1) continue; */
 		int fbo = camera->fbo == -1 ? def_fbo : camera->fbo;
 		framebuffer_bind(fbo);
 		{

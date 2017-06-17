@@ -23,6 +23,8 @@ diffuse_color: 1 0 0 1
 diffuse_texture: "checkered.tga"
 specular: 0.55
 
+- Add to_string functions for major structs like transform, model etc to ease in conversion?
+
 *** Configuration Variables a.k.a cfg-vars
 # Comment
 render_width: 1024
@@ -54,6 +56,20 @@ Quit: Left Ctrl-Q
 Sprint: Left Shift
 
 *** Level/Scene
+- Binary format with header attached at the top
+- Save child entities first
+- Copy paste all entites in the file one by one. Since the entites all look 
+  the same in memory and are made up of tagged unions, a simple memcpy approach
+  should suffice. The problem is entity heirarchies. There are multiple approaches to 
+  solve this problem.
+  -- Save a sorted list of entites to file i.e. before saving create a new list that does
+     not have the empty array slots in the entity list and then just copy and paste. This 
+     is the simplest way to solve the problem as we don't have to worry about indexes of 
+     parent/child entites in heirarchy. We can take the whole array and paste it to the
+     file but creating a copy of entity list for this purpose only would be slow and consume a lot of memory.
+  -- Instead of creating a copy of the entity list for sorting and saving, sort the actual entity list
+     and update all references as necessary then save the array to file.
+  -- Just write the name of the parent entity as parent. Make sure that all entity names are unique.
 *** Materials
 *** Mesh/Geometry
 ** Notes on entity Systems
@@ -223,6 +239,7 @@ x Font atlas proper cleanup
 ** DONE Fix Key release not being reported
 - State "DONE"       from "TODO"       [2017-03-26 Sun 01:16]
 ** TODO Better handling incase assets folder is not found?
+** TODO Write entity to/from file
 ** DONE OpenAL not working in releasebuilds
 - State "DONE"       from "TODO"       [2017-03-25 Sat 02:06]
 ** DONE 3d sound using OpenAL

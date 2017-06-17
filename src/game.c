@@ -181,9 +181,9 @@ void scene_setup(void)
 	}
 
 	log_message("Sizeof Entity : %d", sizeof(struct Entity));
-	/* struct Entity* sun = scene_add_new("Sun", NULL); */
-	/* struct Light* sun_light = entity_component_add(sun, C_LIGHT, LT_DIR); */
-	/* sun_light->intensity = 0.8f; */
+
+	struct Entity* light_ent = entity_find("Light_Ent");
+	entity_save(light_ent, "light.ent", DT_INSTALL);
 }
 
 void debug(float dt)

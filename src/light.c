@@ -32,6 +32,12 @@ void light_create(struct Entity* entity, int light_type)
 	light->inner_angle = TO_RADIANS(20.f);
 	light->radius      = 20;
 	vec3_fill(&light->color, 1.f, 1.f, 1.f);
+	light_add(entity);
+}
+
+void light_add(struct Entity* entity)
+{
+	assert(entity->type == ET_LIGHT);
 	int* new_index = array_grow(light_list, int);
 	*new_index = entity->id;
 }

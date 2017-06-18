@@ -43,10 +43,10 @@ struct Variant
 };
 
 void variant_init_empty(struct Variant* variant);
-void variant_assign_float(struct Variant* variant, float value);
-void variant_assign_int(struct Variant* variant, int value);
-void variant_assign_double(struct Variant* variant, double value);
-void variant_assign_bool(struct Variant* variant, bool value);
+void variant_assign_float(struct Variant* variant, const float value);
+void variant_assign_int(struct Variant* variant, const int value);
+void variant_assign_double(struct Variant* variant, const double value);
+void variant_assign_bool(struct Variant* variant, const bool value);
 void variant_assign_str(struct Variant* variant, const char* value);
 void variant_assign_vec2(struct Variant* variant, const vec2* value);
 void variant_assign_vec3(struct Variant* variant, const vec3* value);
@@ -59,6 +59,7 @@ void variant_assign_quatf(struct Variant* variant, const float x, const float y,
 void variant_assign_mat4(struct Variant* variant, const mat4* source);
 void variant_assign_ptr(struct Variant* variant, void* source);
 void variant_copy(struct Variant* to, const struct Variant* from);
+void variant_copy_out(void* to, const struct Variant* from); /* In case of VT_STR the to variable must already be preallocated otherwise this will crash in glorious ways */
 void variant_free(struct Variant* variant);
 void variant_to_str(const struct Variant* variant, char* str, int len);
 void variant_from_str(struct Variant* variant, const char* str, int variant_type);

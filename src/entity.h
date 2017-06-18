@@ -8,6 +8,7 @@ struct Material_Param;
 
 enum Entity_Type
 {
+	ET_NONE,
 	ET_PLAYER,
 	ET_ROOT,
 	ET_CAMERA,
@@ -121,5 +122,6 @@ struct Entity* entity_find(const char* name);
 struct Entity* entity_get_all(void);
 struct Entity* entity_get_parent(int node);
 bool           entity_save(struct Entity* entity, const char* filename, int directory_type);
+struct Entity* entity_load(const char* filename, int directory_type);
 
 #endif

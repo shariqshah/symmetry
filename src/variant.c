@@ -15,28 +15,28 @@ void variant_init_empty(struct Variant* variant)
 	variant->val_str     = NULL;
 }
 
-void variant_assign_float(struct Variant* variant, float value)
+void variant_assign_float(struct Variant* variant, const float value)
 {
 	if(variant->type != VT_FLOAT) variant_free(variant);
 	variant->type      = VT_FLOAT;
 	variant->val_float = value;
 }
 
-void variant_assign_int(struct Variant* variant, int value)
+void variant_assign_int(struct Variant* variant, const int value)
 {
 	if(variant->type != VT_INT) variant_free(variant);
 	variant->type    = VT_INT;
 	variant->val_int = value;
 }
 
-void variant_assign_double(struct Variant* variant, double value)
+void variant_assign_double(struct Variant* variant, const double value)
 {
 	if(variant->type != VT_DOUBLE) variant_free(variant);
 	variant->type       = VT_DOUBLE;
 	variant->val_double = value;
 }
 
-void variant_assign_bool(struct Variant* variant, bool value)
+void variant_assign_bool(struct Variant* variant, const bool value)
 {
 	if(variant->type != VT_BOOL) variant_free(variant);
 	variant->type     = VT_BOOL;
@@ -269,5 +269,24 @@ void variant_from_str(struct Variant* variant, const char* str, int variant_type
 	}
 	break;
 	default: /* Other types not supported, quietly return */ break;
+	}
+}
+
+void variant_copy_out(void* to, const struct Variant* from)
+{
+	switch(from->type)
+	{
+	case VT_BOOL:   *(bool*)to   = from->val_bool;                     break;
+	case VT_INT:    *(int*)to    = from->val_int;                      break;
+	case VT_FLOAT:  *(float*)to  = from->val_float;                    break;
+	case VT_DOUBLE: *(double*)to = from->val_double;                   break;
+	case VT_VEC2:   vec2_assign((vec2*)to, &from->val_vec2);           break;
+	case VT_VEC3:   vec3_assign((vec3*)to, &from->val_vec3);           break;
+	case VT_VEC4:   vec4_assign((vec4*)to, &from->val_vec4);           break;
+	case VT_QUAT:   quat_assign((quat*)to, &from->val_quat);           break;
+	case VT_MAT4:   mat4_assign((mat4*)to, from->val_mat4);            break;
+	case VT_STR:    strncpy(to, from->val_str, strlen(from->val_str)); break;
+	default: /* Nothing to be done for the rest*/
+		break;
 	}
 }

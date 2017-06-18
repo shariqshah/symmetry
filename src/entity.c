@@ -9,12 +9,17 @@
 #include "sound.h"
 #include "material.h"
 #include "geometry.h"
+#include "variant.h"
 #include "file_io.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include <stdarg.h>
+
+#define MAX_ENTITY_PROP_NAME_LEN 128
+#define MAX_ENTITY_PROP_LEN      256
+#define MAX_LINE_LEN             512
 
 static struct Entity* entity_list;
 static int* empty_indices;
@@ -172,8 +177,8 @@ bool entity_save(struct Entity* entity, const char* filename, int directory_type
 	/* First write all properties common to all entity types */
 	fprintf(entity_file, "name: %s\n", entity->name);
 	fprintf(entity_file, "type: %d\n", entity->type);
-	fprintf(entity_file, "is_listener: %d\n", entity->is_listener);
-	fprintf(entity_file, "renderable: %d\n", entity->renderable);
+	fprintf(entity_file, "is_listener: %s\n", entity->is_listener ? "true" : "false");
+	fprintf(entity_file, "renderable: %s\n", entity->renderable ? "true" : "false");
 
 	struct Entity* parent = entity_get_parent(entity->id);
 	fprintf(entity_file, "parent: %s\n", parent->name);
@@ -197,12 +202,12 @@ bool entity_save(struct Entity* entity, const char* filename, int directory_type
 	{
 	case ET_CAMERA:
 	{
-		fprintf(entity_file, "ortho: %d\n", entity->camera.ortho);
-		fprintf(entity_file, "resizeable: %d\n", entity->camera.resizeable);
+		fprintf(entity_file, "ortho: %s\n", entity->camera.ortho ? "true" : "false");
+		fprintf(entity_file, "resizeable: %s\n", entity->camera.resizeable ? "true" : "false");
 		fprintf(entity_file, "fov: %.5f\n", entity->camera.fov);
 		fprintf(entity_file, "nearz: %.5f\n", entity->camera.nearz);
 		fprintf(entity_file, "farz: %.5f\n", entity->camera.farz);
-		fprintf(entity_file, "render_texture: %d\n", entity->camera.render_tex == -1 ? 0 : 1);
+		fprintf(entity_file, "render_texture: %s\n", entity->camera.render_tex == -1 ? "false" : "true");
 		break;
 	}
 	case ET_STATIC_MESH:
@@ -216,16 +221,16 @@ bool entity_save(struct Entity* entity, const char* filename, int directory_type
 	}
 	case ET_LIGHT:
 	{
-		fprintf(entity_file, "type: %df\n", entity->light.valid);
+		fprintf(entity_file, "light_type: %d\n", entity->light.valid);
 		fprintf(entity_file, "outer_angle: %.5f\n", entity->light.outer_angle);
 		fprintf(entity_file, "inner_angle: %.5f\n", entity->light.inner_angle);
 		fprintf(entity_file, "falloff: %.5f\n", entity->light.falloff);
 		fprintf(entity_file, "radius: %d\n", entity->light.radius);
 		fprintf(entity_file, "intensity: %.5f\n", entity->light.intensity);
 		fprintf(entity_file, "depth_bias: %.5f\n", entity->light.depth_bias);
-		fprintf(entity_file, "valid: %df\n", entity->light.valid);
-		fprintf(entity_file, "cast_shadow: %df\n", entity->light.cast_shadow);
-		fprintf(entity_file, "pcf_enabled: %df\n", entity->light.pcf_enabled);
+		fprintf(entity_file, "valid: %s\n", entity->light.valid ? "true" : "false");
+		fprintf(entity_file, "cast_shadow: %s\n", entity->light.cast_shadow ? "true" : "false");
+		fprintf(entity_file, "pcf_enabled: %s\n", entity->light.pcf_enabled ? "true" : "false");
 		fprintf(entity_file, "color: %.5f %.5f %.5f",
 				entity->light.color.x,
 				entity->light.color.y,
@@ -234,8 +239,8 @@ bool entity_save(struct Entity* entity, const char* filename, int directory_type
 	}
 	case ET_SOUND_SOURCE:
 	{
-		fprintf(entity_file, "active: %df\n", entity->sound_source.active);
-		fprintf(entity_file, "relative: %df\n", entity->sound_source.relative);
+		fprintf(entity_file, "active: %s\n", entity->sound_source.active ? "true" : "false");
+		fprintf(entity_file, "relative: %s\n", entity->sound_source.relative ? "true" : "false");
 		break;
 	}
 	};
@@ -245,4 +250,255 @@ bool entity_save(struct Entity* entity, const char* filename, int directory_type
 	success = true;
 	fclose(entity_file);
 	return success;
+}
+
+struct Entity* entity_load(const char* filename, int directory_type)
+{
+	FILE* entity_file = io_file_open(directory_type, filename, "r");
+	if(!entity_file)
+	{
+		log_error("entity:load", "Failed to open entity file %s for writing");
+		return NULL;
+	}
+
+	struct Entity entity =
+		{
+			.id                  = -1,
+			.type                = ET_NONE,
+			.is_listener         = false,
+			.renderable          = false,
+			.marked_for_deletion = false,
+			.name                = NULL
+		};
+	
+	char* material_name = NULL;
+	char* entity_name   = NULL;
+	char* geometry_name = NULL;
+	char* parent_name   = NULL;
+	static struct Variant var_value = { .type = VT_NONE};
+	char prop_str[MAX_ENTITY_PROP_NAME_LEN];
+	char line_buffer[MAX_LINE_LEN];
+	memset(prop_str, '\0', MAX_ENTITY_PROP_NAME_LEN);
+	memset(line_buffer, '\0', MAX_LINE_LEN);
+	int current_line = 0;
+	variant_free(&var_value);
+	while(fgets(line_buffer, MAX_LINE_LEN -1, entity_file))
+	{
+		current_line++;
+		memset(prop_str, '\0', MAX_ENTITY_PROP_NAME_LEN);
+
+		if(line_buffer[0] == '#') continue;
+		if(strlen(line_buffer) == 0) break;
+
+		char* value_str = strstr(line_buffer, ":");
+		if(!value_str)
+		{
+			log_warning("Malformed value in entity file %s, line %d", filename, current_line);
+			continue;
+		}
+
+		value_str++; /* Ignore the colon(:) and set the pointer after it */
+		
+		if(sscanf(line_buffer, " %1024[^: ] : %*s", prop_str) != 1)
+		{
+			log_warning("Unable to read property name in entity file %s, line %d", filename, current_line);
+			continue;
+		}
+
+		/* Common entity properties */
+		if(strncmp("name", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_STR);
+			entity_name = str_new(var_value.val_str);
+			//variant_copy_out(&entity.name, &var_value);
+		}
+		if(strncmp("parent", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_STR);
+			parent_name = str_new(var_value.val_str);
+			//variant_copy_out(&entity.name, &var_value);
+		}
+		else if(strncmp("type", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_INT);
+			variant_copy_out(&entity.type, &var_value);
+		}
+		else if(strncmp("is_listener", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_BOOL);
+			variant_copy_out(&entity.is_listener, &var_value);
+		}
+		else if(strncmp("renderable", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_BOOL);
+			variant_copy_out(&entity.renderable, &var_value);
+		}
+		
+		/* Transform */
+		else if(strncmp("position", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_VEC3);
+			variant_copy_out(&entity.transform.position, &var_value);
+		}
+		else if(strncmp("scale", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_VEC3);
+			variant_copy_out(&entity.transform.scale, &var_value);
+		}
+		else if(strncmp("rotation", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_QUAT);
+			variant_copy_out(&entity.transform.rotation, &var_value);
+		}
+
+		/* Camera */
+		else if(strncmp("ortho", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_BOOL);
+			variant_copy_out(&entity.camera.ortho, &var_value);
+		}
+		else if(strncmp("resizeable", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_BOOL);
+			variant_copy_out(&entity.camera.resizeable, &var_value);
+		}
+		else if(strncmp("fov", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_FLOAT);
+			variant_copy_out(&entity.camera.fov, &var_value);
+		}
+		else if(strncmp("nearz", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_FLOAT);
+			variant_copy_out(&entity.camera.nearz, &var_value);
+		}
+		else if(strncmp("farz", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_FLOAT);
+			variant_copy_out(&entity.camera.farz, &var_value);
+		}
+		else if(strncmp("render_texture", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_BOOL);
+			variant_copy_out(&entity.camera.fbo, &var_value);
+		}
+
+		/* Light */
+		else if(strncmp("light_type", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_INT);
+			variant_copy_out(&entity.light.type, &var_value);
+		}
+		else if(strncmp("outer_angle", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_FLOAT);
+			variant_copy_out(&entity.light.outer_angle, &var_value);
+		}
+		else if(strncmp("inner_angle", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_FLOAT);
+			variant_copy_out(&entity.light.inner_angle, &var_value);
+		}
+		else if(strncmp("falloff", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_FLOAT);
+			variant_copy_out(&entity.light.falloff, &var_value);
+		}
+		else if(strncmp("radius", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_INT);
+			variant_copy_out(&entity.light.radius, &var_value);
+		}
+		else if(strncmp("intensity", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_FLOAT);
+			variant_copy_out(&entity.light.intensity, &var_value);
+		}
+		else if(strncmp("depth_bias", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_FLOAT);
+			variant_copy_out(&entity.light.depth_bias, &var_value);
+		}
+		else if(strncmp("valid", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_BOOL);
+			variant_copy_out(&entity.light.valid, &var_value);
+		}
+		else if(strncmp("cast_shadow", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_BOOL);
+			variant_copy_out(&entity.light.cast_shadow, &var_value);
+		}
+		else if(strncmp("pcf_enabled", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_BOOL);
+			variant_copy_out(&entity.light.pcf_enabled, &var_value);
+		}
+		else if(strncmp("color", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_VEC3);
+			variant_copy_out(&entity.light.color, &var_value);
+		}
+
+		/* Model */
+		else if(strncmp("material", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_STR);
+			material_name = str_new(var_value.val_str);
+		}
+		else if(strncmp("geometry", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_STR);
+			geometry_name = str_new(var_value.val_str);
+		}
+
+		/* Sound Source */
+		else if(strncmp("active", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_BOOL);
+			variant_copy_out(&entity.sound_source.active, &var_value);
+		}
+		else if(strncmp("relative", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_BOOL);
+			variant_copy_out(&entity.sound_source.relative, &var_value);
+		}
+
+		variant_free(&var_value);
+	}
+
+	/* Do the things after assignment */
+	struct Entity* parent_entity = entity_find(parent_name);
+	struct Entity* new_entity = entity_create(entity_name, entity.type, parent_entity ? parent_entity->id : -1);
+	free(entity_name);
+	transform_translate(new_entity, &entity.transform.position, TS_PARENT);
+	quat_assign(&new_entity->transform.rotation, &entity.transform.rotation);
+	transform_scale(new_entity, &entity.transform.scale);
+	
+	if(entity.is_listener) sound_listener_set(new_entity->id);
+	if(entity.renderable)  new_entity->renderable = true;
+	
+	switch(new_entity->type)
+	{
+	case ET_CAMERA:
+		camera_update_view(new_entity);
+		camera_update_proj(new_entity);
+		break;
+	case ET_STATIC_MESH:
+		model_create(new_entity, geometry_name, material_name);
+		free(geometry_name);
+		free(material_name);
+		break;
+	case ET_LIGHT:
+		memcpy(&new_entity->light, &entity.light, sizeof(struct Light));
+		light_add(new_entity);
+		break;
+	case ET_SOUND_SOURCE:
+		sound_source_create(new_entity, new_entity->sound_source.relative);
+		break;
+	};
+	
+	log_message("Entity %s loaded from %s", new_entity->name, filename);
+	fclose(entity_file);
+	return new_entity;
 }

@@ -4,7 +4,7 @@
 #include "linmath.h"
 #include "num_types.h"
 
-struct Model;
+struct Entity;
 
 struct Uniform
 {
@@ -44,8 +44,8 @@ struct Material* material_get(int index);
 int 			 material_get_index(const char* material_name);
 void			 material_init(void);
 void			 material_cleanup(void);
-int 			 material_register_model(struct Model* model, int model_index, const char* material_name);
-void			 material_unregister_model(struct Model* model, int model_index);
+bool 			 material_register_model(struct Entity* entity, const char* material_name);
+void			 material_unregister_model(struct Entity* entity);
 void			 material_remove(int index);
 
 #endif

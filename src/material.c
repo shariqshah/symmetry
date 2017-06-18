@@ -185,17 +185,18 @@ void material_cleanup(void)
 	array_free(empty_indices);
 }
 
-int material_register_model(struct Model* model, int model_index, const char* material_name)
+bool material_register_model(struct Entity* entity, const char* material_name)
 {
-	assert(material_name && model);
-	int success = 0;
+	assert(material_name && entity);
+	bool success = false;
 	int index = material_get_index(material_name);
 	if(index < -1)
 	{
 		log_error("material:register_model", "Material '%s' not found", material_name);
 		return success;
 	}
-	
+
+	struct Model* model = &entity->model;
 	struct Material* material = &material_list[index];
 	model->material = index;
 	model->material_params = array_new(struct Material_Param);
@@ -237,14 +238,16 @@ int material_register_model(struct Model* model, int model_index, const char* ma
 			break;
 		}
 	}
-	array_push(material->registered_models, model_index, int);
-	success = 1;	
+	
+	array_push(material->registered_models, entity->id, int);
+	success = true;
 	return success;
 }
 
-void material_unregister_model(struct Model* model, int model_index)
+void material_unregister_model(struct Entity* entity)
 {
-	assert(model);
+	assert(entity);
+	struct Model* model = &entity->model;
 	struct Material* material = &material_list[model->material];
 	/* Remove textures, if any */
 	for(int i = 0; i < array_len(model->material_params); i++)
@@ -257,7 +260,7 @@ void material_unregister_model(struct Model* model, int model_index)
 	/* Remove model index from material registry*/
 	for(int i = 0; i < array_len(material->registered_models); i++)
 	{
-		if(material->registered_models[i] == model_index)
+		if(material->registered_models[i] == entity->id)
 		{
 			array_remove_at(material->registered_models, i);
 			break;

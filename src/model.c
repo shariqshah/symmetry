@@ -19,7 +19,7 @@ void model_create(struct Entity* entity, const char* geo_name, const char* mater
 	int geo_index = geom_create_from_file(geo_name);
 
 	model->geometry_index = geo_index;
-	if(!material_register_model(model, entity->id, material_name ? material_name : "Unshaded"))
+	if(!material_register_model(entity, material_name ? material_name : "Unshaded"))
 	{
 		log_error("model:create", "Unable to register model with Unshaded material, component not added");
 		model_destroy(entity);
@@ -31,7 +31,7 @@ void model_destroy(struct Entity* entity)
 	struct Model* model = &entity->model;
 	geom_remove(model->geometry_index);
 	model->geometry_index = -1;
-	material_unregister_model(model, entity->id);
+	material_unregister_model(entity);
 	/* deallocate all params */
 	for(int i = 0; i < array_len(model->material_params); i++)
 		free(model->material_params[i].value);

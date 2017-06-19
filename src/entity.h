@@ -95,6 +95,7 @@ struct Entity
 	bool             is_listener; /* TODO: Replace all booleans with flags */
 	bool             marked_for_deletion;
 	bool             renderable;
+	int              editor_selected;
 	struct Transform transform;
 
 	union

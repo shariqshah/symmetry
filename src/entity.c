@@ -59,6 +59,7 @@ void entity_remove(int index)
 	entity->id                  = -1;
 	entity->is_listener         = false;
 	entity->marked_for_deletion = false;
+	entity->editor_selected     = 0;
 	entity->renderable          = false;
 	entity->name                = NULL;
 	free(entity->name);
@@ -90,6 +91,7 @@ struct Entity* entity_create(const char* name, const int type, int parent_id)
 	new_entity->type                = type;
 	new_entity->marked_for_deletion = false;
 	new_entity->renderable          = false;
+	new_entity->editor_selected     = 0;
 	transform_create(new_entity, parent_id);
 	return new_entity;	   
 }
@@ -268,7 +270,8 @@ struct Entity* entity_load(const char* filename, int directory_type)
 			.is_listener         = false,
 			.renderable          = false,
 			.marked_for_deletion = false,
-			.name                = NULL
+			.name                = NULL,
+			.editor_selected     = 0
 		};
 	
 	char* material_name = NULL;

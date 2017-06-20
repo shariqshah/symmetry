@@ -30,9 +30,6 @@ struct Editor_State
 {
 	bool enabled;
 	bool renderer_settings_window;
-	bool debug_vars_window;
-	bool entity_list_window;
-	bool entity_inspector_window;
 	int  selected_entity_id;
 	int  top_panel_height;
 };
@@ -53,11 +50,8 @@ void editor_init(void)
 {
 	editor_state.enabled                  = true;
 	editor_state.renderer_settings_window = false;
-	editor_state.debug_vars_window        = true;
-	editor_state.entity_list_window       = true;
-	editor_state.entity_inspector_window  = false;
 	editor_state.selected_entity_id       = -1;
-	editor_state.top_panel_height         = 30;
+	editor_state.top_panel_height         = 20;
 	debug_vars_list                       = array_new(struct Debug_Variable);
 	empty_indices                         = array_new(int);
 }
@@ -145,46 +139,150 @@ void editor_update(float dt)
 	int win_width = 0, win_height = 0;
 	window_get_drawable_size(game_state->window, &win_width, &win_height);
 	int half_width = win_width / 2, half_height = win_height / 2;
-	static int default_window_flags = NK_WINDOW_BORDER |
-		                              NK_WINDOW_CLOSABLE |
-		                              NK_WINDOW_MOVABLE |
-		                              NK_WINDOW_SCROLL_AUTO_HIDE |
-		                              NK_WINDOW_SCALABLE;
+	static int window_flags = NK_WINDOW_BORDER |
+		NK_WINDOW_CLOSABLE |
+		NK_WINDOW_MOVABLE |
+		NK_WINDOW_SCROLL_AUTO_HIDE |
+		NK_WINDOW_SCALABLE;
 
-	/* Top Panel */
-	if(nk_begin(context, "Top_Panel", nk_recti(0, 0, win_width, win_height - (win_height - editor_state.top_panel_height)),
-				NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
+	/* Main enacapsulating window */
+	struct nk_style_item default_background = context->style.window.fixed_background;
+	struct nk_vec2 default_padding = context->style.window.padding;
+	context->style.window.padding = nk_vec2(0.f, 0.f);
+	context->style.window.fixed_background = nk_style_item_hide();
+	if(nk_begin(context, "Editor", nk_recti(0, 0, win_width, win_height),  NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BACKGROUND))
 	{
-		float ratios[] = {0.1f, 0.1f, 0.1f, 0.1f, 0.5f, 0.1f};
-		static int   frames  = 0;
-		static int   fps     = 0;
-		static float seconds = 0.f;
-		seconds += dt;
-		frames++;
-		if(seconds >= 1.f)
+		context->style.window.fixed_background = default_background;
+		/* Top Panel */
+		nk_layout_row_dynamic(context, editor_state.top_panel_height + 10, 1);
+		nk_group_begin(context, "Menubar", NK_WINDOW_NO_SCROLLBAR);
 		{
-			fps     = frames;
-			seconds = 0.f;
-			frames  = 0;
+			static float top_panel_ratios[] = {0.1f, 0.1f, 0.7f, 0.1f};
+			static int   frames  = 0;
+			static int   fps     = 0;
+			static float seconds = 0.f;
+			seconds += dt;
+			frames++;
+			if(seconds >= 1.f)
+			{
+				fps     = frames;
+				seconds = 0.f;
+				frames  = 0;
+			}
+
+			nk_layout_row(context, NK_DYNAMIC, editor_state.top_panel_height, sizeof(top_panel_ratios) / sizeof(float), top_panel_ratios);
+			if(nk_button_label(context, "Render Settings"))
+				editor_state.renderer_settings_window = !editor_state.renderer_settings_window;
+			if(nk_button_label(context, "Save config"))
+				config_vars_save("config.cfg", DT_USER);
+			nk_spacing(context, 1);
+			nk_labelf(context, NK_TEXT_ALIGN_RIGHT | NK_TEXT_ALIGN_MIDDLE, "FPS : %.d", fps);
+			nk_group_end(context);
 		}
-		nk_layout_row(context, NK_DYNAMIC, 22, sizeof(ratios), ratios);
-		if(nk_button_label(context, "Render Settings"))
-			editor_state.renderer_settings_window = !editor_state.renderer_settings_window;
-		if(nk_button_label(context, "Debug Variables"))
-			editor_state.debug_vars_window = !editor_state.debug_vars_window;
-		if(nk_button_label(context, "Entities List"))
-			editor_state.entity_list_window = !editor_state.entity_list_window;
-		if(nk_button_label(context, "Save config"))
-			config_vars_save("config.cfg", DT_USER);
+		
+
+		static float main_editor_ratios[] = {0.2f, 0.6f, 0.2f};
+		nk_layout_row(context, NK_DYNAMIC, win_height - editor_state.top_panel_height, sizeof(main_editor_ratios) / sizeof(float), main_editor_ratios);
+
+		/* Left */
+		if(nk_group_begin(context, "Editor Left", NK_WINDOW_SCROLL_AUTO_HIDE))
+		{
+			/* Entities List */
+			if(nk_tree_push(context, NK_TREE_TAB, "Entities", NK_MAXIMIZED))
+			{
+				nk_layout_row_dynamic(context, 250, 1);
+				if(nk_group_begin(context, "Entity Name", NK_WINDOW_SCROLL_AUTO_HIDE))
+				{
+					struct Entity* entity_list = entity_get_all();
+					for(int i = 0; i < array_len(entity_list); i++)
+					{
+						struct Entity* entity = &entity_list[i];
+						nk_layout_row_dynamic(context, 20, 1);
+						if(nk_selectable_label(context, entity->name, NK_TEXT_ALIGN_LEFT, &entity->editor_selected))
+						{
+							log_message(entity->editor_selected ? "selected" : "deselected");
+							if(editor_state.selected_entity_id != -1)
+							{
+								struct Entity* currently_selected = entity_get(editor_state.selected_entity_id);
+								currently_selected->editor_selected = false;
+							}
+							
+							if(entity->editor_selected)
+							{
+								editor_state.selected_entity_id = entity->id;
+							}
+							else
+							{
+								editor_state.selected_entity_id = -1;
+							}
+						}
+					}
+					nk_group_end(context);
+				}
+				nk_tree_pop(context);
+			}
+
+			/* Debug Variables */
+			if(nk_tree_push(context, NK_TREE_TAB, "Debug Variables", NK_MAXIMIZED))
+			{
+				static char variant_str[MAX_VARIANT_STR_LEN] = {'\0'};
+				nk_layout_row_dynamic(context, 250, 1);
+				if(nk_group_begin(context, "Name", NK_WINDOW_SCROLL_AUTO_HIDE))
+				{
+					for(int i = 0; i < array_len(debug_vars_list); i++)
+					{
+						struct Debug_Variable* debug_var = &debug_vars_list[i];
+						if(debug_var->data.type == VT_NONE) continue;
+						nk_layout_row_dynamic(context, 20, 2);
+						nk_label(context, debug_var->name, NK_TEXT_ALIGN_LEFT);
+						variant_to_str(&debug_var->data, variant_str, MAX_VARIANT_STR_LEN);
+						nk_label(context, variant_str, NK_TEXT_ALIGN_RIGHT);
+						memset(variant_str, '\0', MAX_VARIANT_STR_LEN);
+					}
+					nk_group_end(context);
+				}
+				nk_tree_pop(context);
+			}
+			
+			nk_group_end(context);
+		}
+
+		/* Empty Space in the center */
 		nk_spacing(context, 1);
-		nk_labelf(context, NK_TEXT_ALIGN_RIGHT | NK_TEXT_ALIGN_MIDDLE, "FPS : %.d", fps);
+
+		/* Right */
+		if(nk_group_begin(context, "Editor Right", NK_WINDOW_NO_SCROLLBAR))
+		{
+			/* Entity Inspector */
+			if(nk_tree_push(context, NK_TREE_TAB, "Inspector", NK_MAXIMIZED))
+			{
+				if(editor_state.selected_entity_id != -1)
+				{
+					struct Entity* entity = entity_get(editor_state.selected_entity_id);
+					static const int row_height = 15;
+					nk_layout_row_dynamic(context, row_height, 2);
+					nk_label(context, "Name", NK_TEXT_ALIGN_LEFT); nk_label(context, entity->name, NK_TEXT_ALIGN_RIGHT);
+					nk_layout_row_dynamic(context, row_height, 2);
+					nk_label(context, "ID", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%d", entity->id);
+				}
+				else
+				{
+					nk_label(context, "No Entity Selected", NK_TEXT_ALIGN_CENTERED);
+				}
+				nk_tree_pop(context);
+			}
+			
+			nk_group_end(context);
+		}
+			
 	}
 	nk_end(context);
+	context->style.window.padding = default_padding;
 
 	/* Render Settings Window */
 	if(editor_state.renderer_settings_window)
 	{
-		if(nk_begin_titled(context, "Renderer_Settings_Window", "Renderer Settings", nk_rect(half_width, half_height, 300, 350), default_window_flags))
+		if(nk_begin_titled(context, "Renderer_Settings_Window", "Renderer Settings", nk_rect(half_width, half_height, 300, 350), window_flags))
 		{
 			static struct Render_Settings render_settings;
 			renderer_settings_get(&render_settings);
@@ -218,11 +316,11 @@ void editor_update(float dt)
 				nk_layout_row_dynamic(context, 25, 2);
 				nk_label(context, "Fog Mode", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
 				render_settings.fog.mode = nk_combo(context,
-													 fog_modes,
-													 4,
-													 render_settings.fog.mode,
-													 20,
-													 nk_vec2(180, 100));
+													fog_modes,
+													4,
+													render_settings.fog.mode,
+													20,
+													nk_vec2(180, 100));
 
 				nk_layout_row_dynamic(context, 25, 2);
 				nk_label(context, "Density", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
@@ -259,90 +357,6 @@ void editor_update(float dt)
 		else
 		{
 			editor_state.renderer_settings_window = 0;
-		}
-		nk_end(context);
-	}
-
-	/* Debug Vars Window */
-	if(editor_state.debug_vars_window)
-	{
-		static char variant_str[MAX_VARIANT_STR_LEN] = {'\0'};
-		if(nk_begin_titled(context, "Debug_Variables_Window", "Debug Variables", nk_rect(723, 30, 300, 300), default_window_flags))
-		{
-			nk_layout_row_dynamic(context, 245, 1);
-			if(nk_group_begin(context, "Name", NK_WINDOW_BORDER | NK_WINDOW_SCROLL_AUTO_HIDE))
-			{
-				for(int i = 0; i < array_len(debug_vars_list); i++)
-				{
-					struct Debug_Variable* debug_var = &debug_vars_list[i];
-					if(debug_var->data.type == VT_NONE) continue;
-					nk_layout_row_dynamic(context, 20, 2);
-					nk_label(context, debug_var->name, NK_TEXT_ALIGN_LEFT);
-					variant_to_str(&debug_var->data, variant_str, MAX_VARIANT_STR_LEN);
-					nk_label(context, variant_str, NK_TEXT_ALIGN_RIGHT);
-					memset(variant_str, '\0', MAX_VARIANT_STR_LEN);
-				}
-				nk_group_end(context);
-			}
-		}
-		else
-		{
-			editor_state.debug_vars_window = false;
-		}
-		nk_end(context);
-	}
-
-	/* Entity List */
-	if(editor_state.entity_list_window)
-	{
-		if(nk_begin_titled(context, "Entites_List_Window", "Entities", nk_rect(0, 30, 250, 300), default_window_flags))
-		{
-			nk_layout_row_dynamic(context, 245, 1);
-			if(nk_group_begin(context, "Entity Name", NK_WINDOW_BORDER | NK_WINDOW_SCROLL_AUTO_HIDE))
-			{
-				struct Entity* entity_list = entity_get_all();
-				for(int i = 0; i < array_len(entity_list); i++)
-				{
-					struct Entity* entity = &entity_list[i];
-					nk_layout_row_dynamic(context, 20, 1);
-					if(nk_selectable_label(context, entity->name, NK_TEXT_ALIGN_LEFT, &entity->editor_selected))
-					{
-						log_message("selected");
-						if(editor_state.selected_entity_id != -1)
-						{
-							struct Entity* currently_selected = entity_get(editor_state.selected_entity_id);
-							currently_selected->editor_selected = false;
-						}
-						editor_state.entity_inspector_window = true;
-						editor_state.selected_entity_id      = entity->id;
-					}
-				}
-				nk_group_end(context);
-			}
-		}
-		else
-		{
-			editor_state.entity_list_window = false;
-		}
-		nk_end(context);
-	}
-
-	/* Entity Inspector */
-	if(editor_state.entity_inspector_window && editor_state.selected_entity_id != -1)
-	{
-	    struct Entity* entity = entity_get(editor_state.selected_entity_id);
-		if(nk_begin_titled(context, "Entity_Inspector_Window", "Inspector", nk_rect(300, 30, 300, 600), default_window_flags))
-		{
-			static const int row_height = 15;
-			nk_layout_row_dynamic(context, row_height, 2);
-			nk_label(context, "Name", NK_TEXT_ALIGN_LEFT); nk_label(context, entity->name, NK_TEXT_ALIGN_RIGHT);
-			nk_layout_row_dynamic(context, row_height, 2);
-			nk_label(context, "ID", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%d", entity->id);
-		}
-		else
-		{
-			editor_state.entity_inspector_window = false;
-			editor_state.selected_entity_id = -1;
 		}
 		nk_end(context);
 	}

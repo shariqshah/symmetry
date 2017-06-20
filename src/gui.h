@@ -12,6 +12,7 @@
 
 #include <nuklear.h>
 #include "gl_load.h"
+#include "num_types.h"
 
 struct Gui_State
 {
@@ -41,7 +42,7 @@ enum Gui_Theme
 	GT_DARK
 };
 
-int  			  gui_init(void);
+bool  			  gui_init(void);
 void 			  gui_cleanup(void);
 void 			  gui_render(enum nk_anti_aliasing AA);
 void 			  gui_handle_mousewheel_event(int x, int y);

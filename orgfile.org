@@ -307,7 +307,9 @@ x Log output on every run.
 ** DONE Variant type
 - State "DONE"       from "TODO"       [2017-03-22 Wed 02:14]
 ** TODO Log and debug/stats output in gui
-** TODO Editor
+** TODO Editor automatic window layout adjusting to the current window resolution
+** DONE Editor
+- State "DONE"       from "TODO"       [2017-06-20 Tue 01:12]
 ** TODO Event Subsystem
 ** TODO Keybindings for gui?
 ** TODO Textual/Binary format for data serialization and persistance 

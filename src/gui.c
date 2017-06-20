@@ -31,9 +31,9 @@ static void gui_font_set_default(void);
 
 static struct Gui_State* gui_state = NULL;
 
-int gui_init(void)
+bool gui_init(void)
 {
-	int success = 0;
+	bool success = false;
 	gui_state = malloc(sizeof(*gui_state));
 	if(!gui_state)
 	{
@@ -90,10 +90,11 @@ int gui_init(void)
     glBindVertexArray(0);
 
 	platform_textinput_callback_set(&gui_handle_textinput_event);
-	gui_font_set("Ubuntu-R.ttf", 14);
-	/* gui_font_set("FiraSans-Regular.ttf", 14); */
+	//gui_font_set("Ubuntu-R.ttf", 14);
+	//gui_font_set("FiraSans-Regular.ttf", 14);
+	gui_font_set("RobotoCondensed-Regular.ttf", 18);
 	gui_theme_set(GT_RED);
-	success = 1;
+	success = true;
 	return success;
 }
 
@@ -347,7 +348,7 @@ void gui_handle_textinput_event(const char* text)
 void gui_handle_mousewheel_event(int x, int y)
 {
 	struct nk_context *ctx = &gui_state->context;
-	nk_input_scroll(ctx,(float)y);
+	nk_input_scroll(ctx, nk_vec2(x, y));
 }
 
 struct Gui_State* gui_state_get(void)

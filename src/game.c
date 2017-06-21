@@ -186,7 +186,6 @@ void scene_setup(void)
 	/* entity_save(light_ent, "ground.ent", DT_INSTALL); */
 
 	struct Entity* light = entity_load("light.ent", DT_INSTALL);
-	log_message("asdas;");
 }
 
 void debug(float dt)
@@ -280,8 +279,8 @@ void debug(float dt)
 
 	if(input_is_key_pressed(KEY_SPACE))
 	{
-		struct Entity* model = scene_find("Model_Entity");
-		vec3 x_axis = {1, 0, 0};
+		struct Entity* model = scene_find("Light_Ent");
+		vec3 x_axis = {0, 1, 0};
 		transform_rotate(model, &x_axis, 25.f * dt, TS_WORLD);
 	}
 
@@ -303,11 +302,11 @@ void debug(float dt)
 		transform_translate(model, &amount, TS_LOCAL);
 	}
 
-	struct Entity* model = scene_find("Model_Entity");
-	vec3 x_axis = {1, 0, 0};
-	transform_rotate(model, &x_axis, 25.f * dt, TS_WORLD);
-	vec3 amount = {0, 0, -5 * dt};
-	transform_translate(model, &amount, TS_LOCAL);
+	/* struct Entity* model = scene_find("Light_Ent"); */
+	/* vec3 x_axis = {0, 1, 0}; */
+	/* transform_rotate(model, &x_axis, 25.f * dt, TS_WORLD); */
+	/* vec3 amount = {0, 0, -5 * dt}; */
+	/* transform_translate(model, &amount, TS_LOCAL); */
 }
 
 int run(void)

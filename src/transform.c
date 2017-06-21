@@ -241,27 +241,53 @@ void transform_set_position(struct Entity* entity, vec3* new_position)
 
 void transform_get_absolute_pos(struct Entity* entity, vec3* res)
 {
-	struct Transform* transform = &entity->transform;
-	struct Entity*    parent    = entity_get(transform->parent);
-	if(parent)
-		transform_get_absolute_pos(parent, res);
-	vec3_add(res, res, &transform->position);
+	vec3_assign(res, &entity->transform.position);
+	bool done = false;
+	struct Entity* parent = entity_get(entity->transform.parent);
+	while(!done)
+	{
+		if(!parent)
+		{
+			done = true;
+			break;
+		}
+		vec3_add(res, res, &parent->transform.position);
+		parent = entity_get(parent->transform.parent);
+	}
 }
 
 void transform_get_absolute_scale(struct Entity* entity, vec3* res)
 {
 	struct Transform* transform = &entity->transform;
-	struct Entity*    parent    = entity_get(transform->parent);
-	if(parent)
-		transform_get_absolute_scale(parent, res);
-	vec3_add(res, res, &transform->scale);
+	vec3_assign(res, &transform->scale);
+	bool done = false;
+	struct Entity* parent = entity_get(transform->parent);
+	while(!done)
+	{
+		if(!parent)
+		{
+			done = true;
+			break;
+		}
+		vec3_mul(res, res, &parent->transform.scale);
+		parent = entity_get(parent->transform.parent);
+	}
+	
 }
 
 void transform_get_absolute_rot(struct Entity* entity, quat* res)
 {
-	struct Transform* transform = &entity->transform;
-	struct Entity*    parent    = entity_get(transform->parent);
-	if(parent)
-		transform_get_absolute_rot(parent, res);
-	quat_mul(res, res, &transform->rotation);
+	quat_assign(res, &entity->transform.rotation);
+	bool done = false;
+	struct Entity* parent = entity_get(entity->transform.parent);
+	while(!done)
+	{
+		if(!parent)
+		{
+			done = true;
+			break;
+		}
+		quat_mul(res, res, &parent->transform.rotation);
+		parent = entity_get(parent->transform.parent);
+	}
 }

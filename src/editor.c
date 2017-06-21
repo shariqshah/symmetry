@@ -25,6 +25,8 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <float.h>
+#include <math.h>
 
 struct Editor_State
 {
@@ -45,6 +47,16 @@ static struct Debug_Variable* debug_vars_list = NULL;
 static int*                   empty_indices   = NULL;
 
 static void editor_color_combo(struct nk_context* context, vec4* color, int width, int height);
+static bool editor_widget_vec3(struct nk_context* context,
+							   vec3*              value,
+							   const char*        name_x,
+							   const char*        name_y,
+							   const char*        name_z,
+							   float              min,
+							   float              max,
+							   float              step,
+							   float              inc_per_pixel,
+							   int                row_height);
 
 void editor_init(void)
 {
@@ -200,7 +212,6 @@ void editor_update(float dt)
 						nk_layout_row_dynamic(context, 20, 1);
 						if(nk_selectable_label(context, entity->name, NK_TEXT_ALIGN_LEFT, &entity->editor_selected))
 						{
-							log_message(entity->editor_selected ? "selected" : "deselected");
 							if(editor_state.selected_entity_id != -1)
 							{
 								struct Entity* currently_selected = entity_get(editor_state.selected_entity_id);
@@ -264,6 +275,47 @@ void editor_update(float dt)
 					nk_label(context, "Name", NK_TEXT_ALIGN_LEFT); nk_label(context, entity->name, NK_TEXT_ALIGN_RIGHT);
 					nk_layout_row_dynamic(context, row_height, 2);
 					nk_label(context, "ID", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%d", entity->id);
+
+					/* Transform */
+					nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Position", NK_TEXT_ALIGN_CENTERED);
+					vec3 abs_pos = {0.f, 0.f, 0.f};
+					transform_get_absolute_pos(entity, &abs_pos);
+					if(editor_widget_vec3(context, &abs_pos, "Px", "Py", "Pz", -FLT_MAX, FLT_MAX, 5.f, 1.f, row_height)) transform_set_position(entity, &abs_pos);
+
+					nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Rotation", NK_TEXT_ALIGN_CENTERED);
+					quat abs_rot = {0.f, 0.f, 0.f, 1.f};
+					transform_get_absolute_rot(entity, &abs_rot);
+					vec3 rot_angles = {0.f, 0.f, 0.f};
+					rot_angles.x = TO_DEGREES(quat_get_pitch(&abs_rot));
+					rot_angles.y = TO_DEGREES(quat_get_yaw(&abs_rot));
+					rot_angles.z = TO_DEGREES(quat_get_roll(&abs_rot));
+					vec3 curr_rot = {rot_angles.x, rot_angles.y, rot_angles.z};
+
+					nk_layout_row_dynamic(context, row_height, 1); nk_property_float(context, "Rx", -FLT_MAX, &curr_rot.x, FLT_MAX, 5.f, 1.f);
+					nk_layout_row_dynamic(context, row_height, 1); nk_property_float(context, "Ry", -FLT_MAX, &curr_rot.y, FLT_MAX, 5.f, 1.f);
+					nk_layout_row_dynamic(context, row_height, 1); nk_property_float(context, "Rz", -FLT_MAX, &curr_rot.z, FLT_MAX, 5.f, 1.f);
+
+					vec3 delta = {0.f, 0.f, 0.f};
+					vec3_sub(&delta, &rot_angles, &curr_rot);
+
+					vec3 AXIS_X = {1.f, 0.f, 0.f};
+					vec3 AXIS_Y = {0.f, 1.f, 0.f};
+					vec3 AXIS_Z = {0.f, 0.f, 1.f};
+
+					const float epsilon = 0.0001f;
+					if(fabsf(delta.x) > epsilon) transform_rotate(entity, &AXIS_X, delta.x, TS_WORLD);
+					if(fabsf(delta.y) > epsilon) transform_rotate(entity, &AXIS_Y, delta.y, TS_WORLD);
+					if(fabsf(delta.z) > epsilon) transform_rotate(entity, &AXIS_Z, delta.z, TS_WORLD);
+
+					nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Scale", NK_TEXT_ALIGN_CENTERED);
+					vec3 abs_scale = {0.f, 0.f, 0.f};
+					transform_get_absolute_scale(entity, &abs_scale);
+					if(editor_widget_vec3(context, &abs_scale, "SX", "SY", "SZ", 0.1f, FLT_MAX, 1.f, 0.1f, row_height))
+					{
+						entity->transform.scale = abs_scale;
+						transform_update_transmat(entity);
+					}
+					
 				}
 				else
 				{
@@ -408,4 +460,17 @@ void editor_cleanup(void)
 		editor_debugvar_slot_remove(i);
 	array_free(debug_vars_list);
 	array_free(empty_indices);
+}
+
+
+bool editor_widget_vec3(struct nk_context* context, vec3* value, const char* name_x, const char* name_y, const char* name_z, float min, float max, float step, float inc_per_pixel, int row_height)
+{
+	bool changed = false;
+	vec3 val_copy = {0.f, 0.f, 0.f};
+	vec3_assign(&val_copy, value);
+	nk_layout_row_dynamic(context, row_height, 1); nk_property_float(context, name_x, min, &value->x, max, step, inc_per_pixel);
+	nk_layout_row_dynamic(context, row_height, 1); nk_property_float(context, name_y, min, &value->y, max, step, inc_per_pixel);
+	nk_layout_row_dynamic(context, row_height, 1); nk_property_float(context, name_z, min, &value->z, max, step, inc_per_pixel);
+	if(!vec3_equals(&val_copy, value)) changed = true;
+	return changed;
 }

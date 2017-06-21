@@ -170,9 +170,10 @@ void renderer_draw(struct Entity* active_viewer)
 						if(light->type != LT_POINT)
 						{
 							snprintf(uniform_name, MAX_UNIFORM_NAME_LEN, "lights[%d].direction", i);
-							transform_get_absolute_lookat(light_entity, &light_pos);
-							vec3_norm(&light_pos, &light_pos);
-							shader_set_uniform_vec3(material->shader, uniform_name, &light_pos);
+							vec3 light_dir = {0.f, 0.f, 0.f};
+							transform_get_absolute_lookat(light_entity, &light_dir);
+							vec3_norm(&light_dir, &light_dir);
+							shader_set_uniform_vec3(material->shader, uniform_name, &light_dir);
 							memset(uniform_name, '\0', MAX_UNIFORM_NAME_LEN);
 						}
 

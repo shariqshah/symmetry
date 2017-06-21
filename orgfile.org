@@ -224,6 +224,7 @@ x Font atlas proper cleanup
 ** TODO Remove components and switch to "Fat Entities" i.e. one entity struct contains all combinations
 ** TODO Use variants for material params
 ** TODO Improve Material Parameters/Pipeline Uniforms/Instance Uniforms are handled
+** TODO Fix light rotation/direction bugs
 ** DONE In second refactor pass, use entities everywhere, no need to pass in transform and model separately for example since they're both part of the same entity anyway
 - State "DONE"       from "TODO"       [2017-05-31 Wed 21:44]
 ** DONE Show SDL dialogbox if we cannot launch at all?

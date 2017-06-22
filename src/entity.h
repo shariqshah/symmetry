@@ -4,6 +4,8 @@
 #include "linmath.h"
 #include "num_types.h"
 
+#define MAX_ENTITY_NAME_LEN 128
+
 struct Material_Param;
 
 enum Entity_Type
@@ -91,7 +93,7 @@ struct Entity
 {
 	int              id;
 	int              type;
-	char*            name;
+	char             name[MAX_ENTITY_NAME_LEN];
 	bool             is_listener; /* TODO: Replace all booleans with flags */
 	bool             marked_for_deletion;
 	bool             renderable;
@@ -124,5 +126,7 @@ struct Entity* entity_get_all(void);
 struct Entity* entity_get_parent(int node);
 bool           entity_save(struct Entity* entity, const char* filename, int directory_type);
 struct Entity* entity_load(const char* filename, int directory_type);
+const char*    entity_type_name_get(struct Entity* entity);
+
 
 #endif

@@ -98,7 +98,7 @@ void scene_setup(void)
 	vec4_fill(&player->camera.clear_color, 0.3f, 0.6f, 0.9f, 1.0f);
 	sound_listener_set(player->id);
 
-	vec4 color = {0.f, 1.f, 1.f, 1.f };
+	vec4 color = {1.f, 1.f, 1.f, 1.f };
 	struct Entity* new_ent = scene_add_new("Model_Entity", ET_STATIC_MESH);
 	vec3 position = {0, 0, -5};
 	transform_translate(new_ent, &position, TS_WORLD);
@@ -119,7 +119,7 @@ void scene_setup(void)
 	sound_source_play(sound_ent);
 
 	int parent_node = new_ent->id;
-	int num_suz = 200;
+	int num_suz = 2;
 	srand(time(NULL));
 	for(int i = 0; i < num_suz; i++)
 	{
@@ -166,26 +166,26 @@ void scene_setup(void)
 	/* model_set_material_param(screen_model, "diffuse_color", &color); */
 	/* model_set_material_param(screen_model, "diffuse_texture", &cam->render_tex); */
 
-	/* const int MAX_LIGHTS = 6; */
-	/* for(int i = 0; i < MAX_LIGHTS; i++) */
-	/* { */
-	/* 	int x = rand() % MAX_LIGHTS; */
-	/* 	int z = rand() % MAX_LIGHTS; */
-	/* 	x++; z++; */
-	/* 	struct Entity* light_ent = scene_add_new("Light_Ent", ET_LIGHT); */
-	/* 	vec3 lt_pos = {x * 20, 0, z * 20}; */
-	/* 	transform_set_position(light_ent, &lt_pos); */
-	/* 	light_create(light_ent, LT_POINT); */
-	/* 	vec3_fill(&light_ent->light.color, 1.f / (float)x, 1.f / ((rand() % 10) + 1.f), 1.f / (float)z); */
-	/* 	light_ent->light.intensity = 1.f; */
-	/* } */
+	const int MAX_LIGHTS = 6;
+	for(int i = 0; i < MAX_LIGHTS; i++)
+	{
+		int x = rand() % MAX_LIGHTS;
+		int z = rand() % MAX_LIGHTS;
+		x++; z++;
+		struct Entity* light_ent = scene_add_new("Light_Ent", ET_LIGHT);
+		vec3 lt_pos = {x * 20, 0, z * 20};
+		transform_set_position(light_ent, &lt_pos);
+		light_create(light_ent, LT_POINT);
+		vec3_fill(&light_ent->light.color, 1.f / (float)x, 1.f / ((rand() % 10) + 1.f), 1.f / (float)z);
+		light_ent->light.intensity = 1.f;
+	}
 
 	/* log_message("Sizeof Entity : %d", sizeof(struct Entity)); */
 
 	/* struct Entity* light_ent = entity_find("Ground"); */
 	/* entity_save(light_ent, "ground.ent", DT_INSTALL); */
 
-	struct Entity* light = entity_load("light.ent", DT_INSTALL);
+	//struct Entity* light = entity_load("light.ent", DT_INSTALL);
 }
 
 void debug(float dt)

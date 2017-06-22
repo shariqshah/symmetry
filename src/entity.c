@@ -61,8 +61,7 @@ void entity_remove(int index)
 	entity->marked_for_deletion = false;
 	entity->editor_selected     = 0;
 	entity->renderable          = false;
-	entity->name                = NULL;
-	free(entity->name);
+	memset(entity->name, '\0', MAX_ENTITY_NAME_LEN);
 	array_push(empty_indices, index, int);
 }
 
@@ -80,12 +79,11 @@ struct Entity* entity_create(const char* name, const int type, int parent_id)
 	else
 	{
 		new_entity = array_grow(entity_list, struct Entity);
-		new_entity->name = NULL;
 		index = array_len(entity_list) - 1;
 	}
 	
-	if(new_entity->name) free(new_entity->name);
-	new_entity->name                = name ? str_new(name) : str_new("DEFAULT_NAME");
+	strncpy(new_entity->name, name ? name : "DEFAULT_ENTITY_NAME", MAX_ENTITY_NAME_LEN);
+	new_entity->name[MAX_ENTITY_NAME_LEN - 1] = '\0';
 	new_entity->id                  = index;
 	new_entity->is_listener         = false;
 	new_entity->type                = type;
@@ -111,7 +109,7 @@ struct Entity* entity_find(const char* name)
 	for(int i = 0; i < array_len(entity_list); i++)
 	{
 		struct Entity* curr_ent = &entity_list[i];
-		if(!curr_ent->name)
+		if(curr_ent->id == -1)
 			continue;
 		if(strcmp(curr_ent->name, name) == 0)
 		{
@@ -270,7 +268,7 @@ struct Entity* entity_load(const char* filename, int directory_type)
 			.is_listener         = false,
 			.renderable          = false,
 			.marked_for_deletion = false,
-			.name                = NULL,
+			.name                = "DEFAULT_ENTITY_NAME",
 			.editor_selected     = 0
 		};
 	
@@ -504,4 +502,21 @@ struct Entity* entity_load(const char* filename, int directory_type)
 	log_message("Entity %s loaded from %s", new_entity->name, filename);
 	fclose(entity_file);
 	return new_entity;
+}
+
+const char* entity_type_name_get(struct Entity* entity)
+{
+	const char* typename = "NONE";
+	switch(entity->type)
+	{
+	case ET_NONE:         typename = "None";         break;
+	case ET_CAMERA:       typename = "Camera";       break;
+	case ET_LIGHT:        typename = "Light";        break;
+	case ET_PLAYER:       typename = "Player";       break;
+	case ET_ROOT:         typename = "Root";         break;
+	case ET_SOUND_SOURCE: typename = "Sound Source"; break;
+	case ET_STATIC_MESH:  typename = "Static Mesh";  break;
+	default:              typename = "Unknown";      break;
+	};
+	return typename;
 }

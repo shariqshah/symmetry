@@ -19,7 +19,7 @@ void config_vars_init(void)
 	hashmap_int_set(cvars,   "render_width",       1024);
 	hashmap_int_set(cvars,   "render_height",      768);
 	hashmap_int_set(cvars,   "fog_mode",           0);
-	hashmap_vec3_setf(cvars, "fog_color",          0.5f, 0.2f, 0.2f);
+	hashmap_vec3_setf(cvars, "fog_color",          0.9f, 0.2f, 0.2f);
 	hashmap_float_set(cvars, "fog_density",        0.1);
 	hashmap_float_set(cvars, "fog_start_dist",     10.f);
 	hashmap_float_set(cvars, "fog_max_dist",       50.f);
@@ -88,7 +88,7 @@ bool config_vars_load(const char* filename, int directory_type)
 		}
 		variant_from_str(value, value_str, value->type);
 	}
-	
+
 	success = true;
 	fclose(config_file);
 	return success;

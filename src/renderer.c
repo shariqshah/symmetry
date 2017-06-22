@@ -474,6 +474,7 @@ void renderer_settings_set(const struct Render_Settings* settings)
 	hashmap_float_set(cvars, "fog_density",        settings->fog.density);
 	hashmap_float_set(cvars, "fog_start_dist",     settings->fog.start_dist);
 	hashmap_float_set(cvars, "fog_max_dist",       settings->fog.max_dist);
+	hashmap_vec3_set(cvars,  "fog_color",          &settings->fog.color);
 	hashmap_bool_set(cvars,  "debug_draw_enabled", settings->debug_draw_enabled);
 	hashmap_int_set(cvars,   "debug_draw_mode",    settings->debug_draw_mode);
 	hashmap_vec4_set(cvars,  "debug_draw_color",   &settings->debug_draw_color);

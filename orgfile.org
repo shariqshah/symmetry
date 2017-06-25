@@ -206,6 +206,7 @@ Sprint: Left Shift
 ** DONE Fix mousewheel bugs and gui not responding to mousewheel input
 - State "DONE"       from "TODO"       [2017-03-19 Sun 01:31]
 ** TODO Ability to mark meshes for debug rendering with possibility of different color for each?
+** TODO Switch to completely static allocation of entites i.e. have a static array of MAX_ENTITIES size. This way we can store pointers to entites and they'll still be in an array and fast to process.
 ** DONE Setup cross compilation with mingw or stick to msvc?
 - State "DONE"       from "TODO"       [2017-05-20 Sat 21:55]
 - Done, going with mingw for now.

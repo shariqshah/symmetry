@@ -1,0 +1,15 @@
+name: player
+type: 2
+is_listener: 1
+renderable: 0
+parent: ROOT
+position: 10.00000 5.00000 100.00000
+scale: 1.00000 1.00000 1.00000
+rotation: 0.00000 0.00000 0.00000 1.00000
+ortho: 0
+resizeable: 1
+fov: 60.00000
+nearz: 0.10000
+farz: 1000.00000
+render_texture: 1
+

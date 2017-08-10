@@ -46,8 +46,7 @@ bool sound_init(void)
 		if(!sound_state.context) alcDestroyContext(sound_state.context);
 		alcCloseDevice(sound_state.device);
 		log_error("sound:init", "Could not set sound context");
-		return success;
-			
+		return success;		
 	}
 	log_message("Opened %s", alcGetString(sound_state.device, ALC_DEVICE_SPECIFIER));
 	

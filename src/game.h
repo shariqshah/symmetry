@@ -1,7 +1,9 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include "platform.h"
+#include <stdbool.h>
+
+struct Window;
 
 struct Game_State
 {

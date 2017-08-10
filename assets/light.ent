@@ -1,0 +1,19 @@
+name: Light_Ent
+type: 4
+is_listener: false
+renderable: false
+parent: ROOT
+position: 7.00000 1.00000 82.00000
+scale: 1.00000 1.00000 1.00000
+rotation: 0.00000 0.00000 0.00000 1.00000
+light_type: 0
+outer_angle: 0.52360
+inner_angle: 0.34907
+falloff: 1.50000
+radius: 40
+intensity: 2.00000
+depth_bias: 0.00050
+valid: true
+cast_shadow: false
+pcf_enabled: false
+color: 0.00000 1.0000 0.000

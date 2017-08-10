@@ -20,6 +20,7 @@
 #include "file_io.h"
 #include "config_vars.h"
 #include "string_utils.h"
+#include "platform.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -193,11 +194,9 @@ void editor_update(float dt)
 			nk_labelf(context, NK_TEXT_ALIGN_RIGHT | NK_TEXT_ALIGN_MIDDLE, "FPS : %.d", fps);
 			nk_group_end(context);
 		}
-		
 
 		static float main_editor_ratios[] = {0.2f, 0.6f, 0.2f};
-		nk_layout_row(context, NK_DYNAMIC, win_height - editor_state.top_panel_height, sizeof(main_editor_ratios) / sizeof(float), main_editor_ratios);
-
+        nk_layout_row(context, NK_DYNAMIC, win_height - editor_state.top_panel_height, sizeof(main_editor_ratios) / sizeof(float), main_editor_ratios);
 		/* Left */
 		if(nk_group_begin(context, "Editor Left", NK_WINDOW_SCROLL_AUTO_HIDE))
 		{

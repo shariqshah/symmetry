@@ -10,8 +10,10 @@ i'll make my own additions like SIMD etc later on.
  */
 
 /* conversions */
+#ifndef M_PI
+    #define M_PI		        3.14159265358979323846
+#endif
 #define EPSILON             0.0001
-#define M_PI		        3.14159265358979323846 
 #define TO_RADIANS(degrees) ((degrees * M_PI) / 180.0)
 #define TO_DEGREES(radians) ((radians * 180.0) / M_PI)
 

@@ -39,7 +39,7 @@
 #define MAX_FRAME_TIME 0.5f
 
 static int  run(void);
-static void update(float dt, int* window_should_close);
+static void update(float dt, bool* window_should_close);
 static void render(void);
 static void debug(float dt);
 static void debug_gui(float dt);
@@ -312,7 +312,7 @@ void debug(float dt)
 int run(void)
 {
 	uint32 last_time = platform_ticks_get();
-	int    should_window_close = 0;
+	bool   should_window_close = 0;
 	while(!should_window_close)
 	{
 		uint32 curr_time = platform_ticks_get();
@@ -332,9 +332,9 @@ int run(void)
 	return 1;
 }
 
-void update(float dt, int* window_should_close)
+void update(float dt, bool* window_should_close)
 {	
-	if(input_is_key_pressed(KEY_ESCAPE))                      *window_should_close = 1;
+	if(input_is_key_pressed(KEY_ESCAPE))                      *window_should_close = true;
 	if(input_map_state_get("Editor_Toggle", KS_RELEASED))     editor_toggle();
 	if(input_map_state_get("Window_Fullscreen", KS_RELEASED)) window_fullscreen_set(game_state->window, 1);
 	if(input_map_state_get("Window_Maximize", KS_RELEASED))   window_fullscreen_set(game_state->window, 0);
@@ -369,12 +369,12 @@ void debug_gui(float dt)
     /* window flags */
     window_flags = 0;
     ctx->style.window.header.align = header_align;
-    if (border) window_flags |= NK_WINDOW_BORDER;
-    if (resize) window_flags |= NK_WINDOW_SCALABLE;
-    if (movable) window_flags |= NK_WINDOW_MOVABLE;
-    if (no_scrollbar) window_flags |= NK_WINDOW_NO_SCROLLBAR;
-    if (scale_left) window_flags |= NK_WINDOW_SCALE_LEFT;
-    if (minimizable) window_flags |= NK_WINDOW_MINIMIZABLE;
+    if(border) window_flags |= NK_WINDOW_BORDER;
+    if(resize) window_flags |= NK_WINDOW_SCALABLE;
+    if(movable) window_flags |= NK_WINDOW_MOVABLE;
+    if(no_scrollbar) window_flags |= NK_WINDOW_NO_SCROLLBAR;
+    if(scale_left) window_flags |= NK_WINDOW_SCALE_LEFT;
+    if(minimizable) window_flags |= NK_WINDOW_MINIMIZABLE;
 
     if (nk_begin(ctx, "Overview", nk_rect(70, 70, 400, 600), window_flags))
     {

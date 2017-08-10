@@ -29,7 +29,7 @@ int            window_fullscreen_set(struct Window* window, int fullscreen);
 // Platform functions
 int         platform_init(void);
 void        platform_cleanup(void);
-void        platform_poll_events(int* out_quit);
+void        platform_poll_events(bool *out_quit);
 void        platform_keyboard_callback_set(Keyboard_Event_Func func);
 void        platform_mousebutton_callback_set(Mousebutton_Event_Func func);
 void        platform_mousemotion_callback_set(Mousemotion_Event_Func func);

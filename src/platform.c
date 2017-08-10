@@ -207,7 +207,7 @@ void platform_cleanup(void)
 	SDL_Quit();
 }
 
-void platform_poll_events(int* out_quit)
+void platform_poll_events(bool* out_quit)
 {
 	static SDL_Event event;
 	while(SDL_PollEvent(&event) != 0)

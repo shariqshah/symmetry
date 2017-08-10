@@ -38,7 +38,7 @@ debug: pre_build $(OBJS_DEBUG) post_build
 	-@$(CC) $(CFLAGS) -c $< -o $@
 
 pre_build:
-	-@mkdir .debug .release
+	-@mkdir -p .debug .release
 
 post_build:
 	-@ln -fs /mnt/Dev/Projects/symmetry/assets assets

@@ -119,7 +119,7 @@ void scene_setup(void)
 	sound_source_play(sound_ent);
 
 	int parent_node = new_ent->id;
-	int num_suz = 2;
+	int num_suz = 50;
 	srand(time(NULL));
 	for(int i = 0; i < num_suz; i++)
 	{
@@ -166,7 +166,7 @@ void scene_setup(void)
 	/* model_set_material_param(screen_model, "diffuse_color", &color); */
 	/* model_set_material_param(screen_model, "diffuse_texture", &cam->render_tex); */
 
-	const int MAX_LIGHTS = 6;
+	const int MAX_LIGHTS = 3;
 	for(int i = 0; i < MAX_LIGHTS; i++)
 	{
 		int x = rand() % MAX_LIGHTS;
@@ -209,17 +209,23 @@ void debug(float dt)
 	
 	if(input_mousebutton_state_get(MSB_RIGHT, KS_PRESSED))
 	{
-		if(input_mouse_mode_get() != MM_RELATIVE) input_mouse_mode_set(MM_RELATIVE);
-		const double scale = 0.25;
-		int cursor_lr, cursor_ud;
-		input_mouse_delta_get(&cursor_lr, &cursor_ud);
+        const float scale = 0.1f;
+        int cursor_lr, cursor_ud;
+        input_mouse_delta_get(&cursor_lr, &cursor_ud);
+        if(input_mouse_mode_get() != MM_RELATIVE)
+        {
+            input_mouse_mode_set(MM_RELATIVE);
+            cursor_lr = cursor_ud = 0;
+        }
+
 		turn_up_down = -cursor_ud * turn_speed * dt * scale;
 		turn_left_right = cursor_lr * turn_speed * dt * scale;
-		input_mouse_pos_set(0.0, 0.0);
+        log_message("ud : %d, lr : %d", cursor_ud, cursor_lr);
 	}
 	else
 	{
 		input_mouse_mode_set(MM_NORMAL);
+        log_message("ud : %.3f, lr : %.3f", turn_up_down, turn_left_right);
 		turn_up_down *= dt;
 		turn_left_right *= dt;
 	}

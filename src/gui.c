@@ -93,7 +93,8 @@ bool gui_init(void)
 	//gui_font_set("Ubuntu-R.ttf", 14);
 	//gui_font_set("FiraSans-Regular.ttf", 14);
 	gui_font_set("RobotoCondensed-Regular.ttf", 18);
-	gui_theme_set(GT_RED);
+//	gui_theme_set(GT_RED);
+    gui_theme_set(GT_DEFAULT);
 	success = true;
 	return success;
 }

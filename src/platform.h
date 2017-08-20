@@ -3,6 +3,13 @@
 
 #include "num_types.h"
 
+enum Video_Drivers_Linux
+{
+    VD_X11 = 0,
+    VD_WAYLAND,
+    VD_DUMMY
+};
+
 // Function Pointer decls
 typedef void (*Keyboard_Event_Func)     (int key, int scancode, int state, int repeat, int mod_ctrl, int mod_shift, int mod_alt);
 typedef void (*Mousebutton_Event_Func)  (int button, int state, int x, int y, int8 num_clicks);
@@ -27,7 +34,8 @@ void           window_swap_buffers(struct Window* window);
 int            window_fullscreen_set(struct Window* window, int fullscreen);
 
 // Platform functions
-int         platform_init(void);
+bool        platform_init(void);
+bool        platform_init_video(void);
 void        platform_cleanup(void);
 void        platform_poll_events(bool *out_quit);
 void        platform_keyboard_callback_set(Keyboard_Event_Func func);

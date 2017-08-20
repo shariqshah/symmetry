@@ -9,8 +9,8 @@
 - ## File format specifications
 
    - ### Entity
+
 		```.conf
-		:::conf
 		# Comment, Sample entity definition in file, paremeters left out are set to defaults
 		# Empty line at the end specifies end of entity definition
 		entity:   "Something"
@@ -23,9 +23,10 @@
 		diffuse_texture: "checkered.tga"
 		specular: 0.55
 		```
-   - Add to_string functions for major structs like transform, model etc to ease in conversion?
 
+   - Add to_string functions for major structs like transform, model etc to ease in conversion?
    - ### Configuration Variables a.k.a cfg-vars
+
 		```.conf
 		# Comment
 		render_width: 1024
@@ -41,7 +42,8 @@
 		```
 
    - ### Keybindings
-		```.conf
+
+       ```.conf
        # All keys are parsed by comparing the output of SDL_GetKeyname
 	   # Each line represents a keybinding
 	   Move_Forward: W
@@ -58,28 +60,45 @@
        # Single modifier keys are allowed but multiple modifier keys without corresponding
 	   # non-modifier key are not allowed
 	   Sprint: Left Shift
-		```
+	   ```
+
    - ### Level/Scene
+
 	- Binary format with header attached at the top
 	- Save child entities first
 	- Copy paste all entites in the file one by one. Since the entites all look
-		the same in memory and are made up of tagged unions, a simple memcpy approach
-		should suffice. The problem is entity heirarchies. There are multiple approaches to
-		solve this problem.
-		- Save a sorted list of entites to file i.e. before saving create a new list that does
+	  the same in memory and are made up of tagged unions, a simple memcpy approach
+	  should suffice. The problem is entity heirarchies. There are multiple approaches to
+	  solve this problem.
+	  - Save a sorted list of entites to file i.e. before saving create a new list that does
 		not have the empty array slots in the entity list and then just copy and paste. This
 		is the simplest way to solve the problem as we don't have to worry about indexes of
 		parent/child entites in heirarchy. We can take the whole array and paste it to the
 		file but creating a copy of entity list for this purpose only would be slow and consume a   lot of memory.
-		- Instead of creating a copy of the entity list for sorting and saving, sort the actual   entity list
+	  - Instead of creating a copy of the entity list for sorting and saving, sort the actual   entity list
 		and update all references as necessary then save the array to file.
-		- Just write the name of the parent entity as parent. Make sure that all entity names are unique.
+	  - Just write the name of the parent entity as parent. Make sure that all entity names are unique.
+	- Use separate EntityDefinition file that serves as a blueprint/prefab for the entity
+	  to load/save. When the entity is saved in  a scene file, the scene file only needs to
+	  refer to the entity's EntityDefinition file/asset along with it's parent and children
+	  - This approach requires seperating a scene into mutable/immutable parts.
+	    Meaning, entities that can change their state during the duaration of the level are
+		mutable and those that remain the same as they were defined in their EntityDefinition
+		file are immutable.
+	  - In each level there going to be mutable entites i.e player and player's position/orientation, objectives
+	    cleared/remaining, doors opened and puzzles	solved etc. Instead of handling all of these in the
+		scene file, we save all the mutable	state in the savegame files. When restoring game's state from a save game we will need
+		to handle loading of a scene and then applying the mutable state to entites after loading.
+	  - Entities can have (a fixed number of?) properties. Each property has a name and a corresponding
+	    variant value like, health or ammo etc. But, how to save/load all of that?
+
   - ### Materials
   - ### Mesh/Geometry
 
 - ### Notes on entity Systems
 
-	- Fat entites with all related properties, i.e. position, mesh etc in them. Easy to   		serialize, memory friendly, simple to implement but would require significant changes to the	current codebase, for example:
+	- Fat entites with all related properties, i.e. position, mesh etc in them. Easy to serialize, memory friendly, simple to implement but would require significant changes to the current codebase, for example:
+
 	```.C
    	struct Entity
 	{
@@ -108,7 +127,9 @@
 		}
 	};
 	```
+
    - Change component implementation by using anonymous unions to simulate interfaces. e.g
+
 	```.C
      struct Component
 	 {
@@ -121,6 +142,7 @@
 		}
 	 }
 	 ```
+
    - Use handles for assets
    - Use something similar to Variant to use as entity, not sure what or how
    - Don't forget to think of the actual use-case and usage when coming up with a solution, don't build castles in the air!
@@ -134,6 +156,7 @@
 	  ? Minimal custom UI for in-game usage that can be rendered to a texture or modify nuklear for that?
 	- Bounding Boxes
 	  ? Recalculated bounding boxes for rotated meshes
+	- Wrap malloc and free calls in custom functions to track usage
 	- File extension checking for asset loading
 	- Only allocate hashmap bucket when required
 	- Mapping actions to keybindings, for example map action "Jump" to Space key etc
@@ -181,7 +204,6 @@
 	- Make logging to file and console toggleable at complie-time or run-time
 	- Add default keybindings
 	- Write default config/keybindings etc to file if none are found in preferences dir
-	- Wrap malloc and free calls in custom functions to track usage
 	- Flatpak packaging for linux releases
 	- Use hashmap for debugvar slots in editor
 	- Use hashmap to store input maps
@@ -273,3 +295,4 @@
 	* Replace orgfile with simple text readme and reduce duplication
 	* Fix camera acting all weird when right click is held
 	* Fix README to conform with markdown syntax
+	* Added video driver selection to make game launch under wayland or x11 on linux.

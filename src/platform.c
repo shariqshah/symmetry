@@ -6,6 +6,8 @@
 #include "string_utils.h"
 #include <SDL2/SDL.h>
 
+static int current_video_driver = VD_DUMMY;
+
 struct Window
 {
 	void*         sdl_window;
@@ -169,12 +171,12 @@ void window_swap_buffers(struct Window* window)
 	SDL_GL_SwapWindow(window->sdl_window);
 }
 
-int platform_init(void)
+bool platform_init(void)
 {
-	int success = 1;
-	if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_TIMER) != 0)
+    bool success = true;
+    if(SDL_Init(SDL_INIT_EVENTS | SDL_INIT_TIMER) != 0)
 	{
-		success = 0;
+        success = false;
 		if(SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "SDL Init failed", SDL_GetError(), NULL) != 0)
 			log_to_stdout("platform_init", "SDL Init failed : %s", SDL_GetError());
 	}
@@ -185,7 +187,7 @@ int platform_init(void)
 		{
 			if(SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Allocation Failure", "Memory allocation failed, out of memory!", NULL) != 0)
 				log_to_stdout("platform_init", "Could not create platform state, out of memory");
-			success = 0;
+            success = false;
 		}
 		else
 		{
@@ -200,10 +202,38 @@ int platform_init(void)
 	return success;
 }
 
+bool platform_init_video()
+{
+    bool success = true;
+    const char* video_driver_str = NULL;
+
+#ifdef __linux__
+    struct Hashmap* cvars = config_vars_get();
+    int driver_type = hashmap_bool_get(cvars, "video_driver_linux");
+    switch (driver_type)
+    {
+    case VD_WAYLAND: video_driver_str = "wayland"; break;
+    case VD_X11:     video_driver_str = "x11";     break;
+    };
+#endif
+
+    if(SDL_VideoInit(video_driver_str) != 0)
+    {
+        log_error("platform:init_video", "Failed to initialize video subsystem, SDL : (%s)", SDL_GetError());
+        success = false;
+    }
+    else
+    {
+        log_message("Video subsystem initialized with %s", SDL_GetCurrentVideoDriver());
+    }
+    return success;
+}
+
 void platform_cleanup(void)
 {
 	if(platform_state) free(platform_state);
 	platform_state = NULL;
+    SDL_VideoQuit();
 	SDL_Quit();
 }
 

@@ -257,32 +257,34 @@ struct Entity* entity_load(const char* filename, int directory_type)
 	FILE* entity_file = io_file_open(directory_type, filename, "r");
 	if(!entity_file)
 	{
-		log_error("entity:load", "Failed to open entity file %s for writing");
+		log_error("entity:load", "Failed to open entity file %s for writing", filename);
 		return NULL;
 	}
 
 	struct Entity entity =
-		{
-			.id                  = -1,
-			.type                = ET_NONE,
-			.is_listener         = false,
-			.renderable          = false,
-			.marked_for_deletion = false,
-			.name                = "DEFAULT_ENTITY_NAME",
-			.editor_selected     = 0
-		};
+    {
+		.id                  = -1,
+		.type                = ET_NONE,
+		.is_listener         = false,
+		.renderable          = false,
+		.marked_for_deletion = false,
+		.name                = "DEFAULT_ENTITY_NAME",
+		.editor_selected     = 0
+    };
 	
+    int   current_line  = 0;
 	char* material_name = NULL;
 	char* entity_name   = NULL;
 	char* geometry_name = NULL;
 	char* parent_name   = NULL;
+    char line_buffer[MAX_LINE_LEN];
+    char prop_str[MAX_ENTITY_PROP_NAME_LEN];
 	static struct Variant var_value = { .type = VT_NONE};
-	char prop_str[MAX_ENTITY_PROP_NAME_LEN];
-	char line_buffer[MAX_LINE_LEN];
+
+    variant_free(&var_value);
 	memset(prop_str, '\0', MAX_ENTITY_PROP_NAME_LEN);
 	memset(line_buffer, '\0', MAX_LINE_LEN);
-	int current_line = 0;
-	variant_free(&var_value);
+
 	while(fgets(line_buffer, MAX_LINE_LEN -1, entity_file))
 	{
 		current_line++;

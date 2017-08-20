@@ -3,6 +3,7 @@
 #include "entity.h"
 #include "log.h"
 #include "transform.h"
+#include "file_io.h"
 
 #include <assert.h>
 #include <string.h>
@@ -121,13 +122,22 @@ struct Entity* scene_get_parent(struct Entity* entity)
 	return parent;
 }
 
-bool scene_load(const char* filename)
+bool scene_load(const char* filename, int directory_type)
 {
 	bool success = false;
+    FILE* entity_file = io_file_open(directory_type, filename, "r");
+	if(!entity_file)
+	{
+		log_error("scene:load", "Failed to open scenefile %s for writing", filename);
+		return NULL;
+	}
+
+    struct Entity* root = entity_get(root_node);
+
 	return success;
 }
 
-bool scene_save(const char* filename)
+bool scene_save(const char* filename, int directory_type)
 {
 	bool success = false;
 	return success;

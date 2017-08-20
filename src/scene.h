@@ -15,8 +15,8 @@ struct Entity* scene_find(const char* name);
 struct Entity* scene_get_root(void);
 struct Entity* scene_get_child_by_name(struct Entity* parent, const char* name);
 struct Entity* scene_get_parent(struct Entity* entity);
-bool           scene_load(const char* filename);
-bool           scene_save(const char* filename);
+bool           scene_load(const char* filename, int directory_type);
+bool           scene_save(const char* filename, int directory_type);
 
 
 #endif

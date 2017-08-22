@@ -9,28 +9,29 @@
     #define al_check(expr) expr;
 #endif
 
-struct Entity;
-
 bool sound_init(void);
 void sound_cleanup(void);
 void sound_volume_set(float volume);
 void sound_error_check(const char* file, unsigned int line, const char* expression);
 
-void sound_listener_set(int entity);
-int  sound_listener_get(void);
-void sound_listener_update(void);
+void sound_listener_update(float apos_x, float apos_y, float apos_z,
+                           float afwd_x, float afwd_y, float afwd_z,
+                           float aup_x,  float aup_y,  float aup_z);
 
-void sound_source_create(struct Entity* entity, bool relative);
-void sound_source_destroy(struct Entity* entity);
-void sound_source_update(struct Entity* entity);
-void sound_source_volume_set(struct Entity* entity, float volume);
-void sound_source_pitch_set(struct Entity* entity, float pitch);
-void sound_source_load_wav(struct Entity* entity, const char* file_name);
-void sound_source_loop_set(struct Entity* entity, bool loop);
-void sound_source_relative_set(struct Entity* entity, bool relative);
-void sound_source_play(struct Entity* entity);
-void sound_source_pause(struct Entity* entity);
-void sound_source_rewind(struct Entity* entity);
-void sound_source_stop(struct Entity* entity);
+void sound_source_update(uint source_handle,
+                         float apos_x, float apos_y, float apos_z,
+                         float afwd_x, float afwd_y, float afwd_z,
+                         float aup_x,  float aup_y,  float aup_z);
+void sound_source_create(bool relative, uint num_buffers, uint* out_handle, uint* out_buffer_handles);
+void sound_source_destroy(uint source_handle, uint* attached_buffers, uint num_buffers);
+void sound_source_volume_set(uint source_handle, float volume);
+void sound_source_pitch_set(uint source_handle, float pitch);
+void sound_source_load_wav(uint source_handle, uint buffer_handle, const char* file_name);
+void sound_source_loop_set(uint source_handle, bool loop);
+void sound_source_relative_set(uint source_handle, bool relative);
+void sound_source_play(uint source_handle);
+void sound_source_pause(uint source_handle);
+void sound_source_rewind(uint source_handle);
+void sound_source_stop(uint source_handle);
 
 #endif

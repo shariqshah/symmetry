@@ -1,7 +1,7 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-#include "num_types.h"
+#include "common.h"
 
 enum Video_Drivers_Linux
 {
@@ -9,14 +9,6 @@ enum Video_Drivers_Linux
     VD_WAYLAND,
     VD_DUMMY
 };
-
-// Function Pointer decls
-typedef void (*Keyboard_Event_Func)     (int key, int scancode, int state, int repeat, int mod_ctrl, int mod_shift, int mod_alt);
-typedef void (*Mousebutton_Event_Func)  (int button, int state, int x, int y, int8 num_clicks);
-typedef void (*Mousemotion_Event_Func)  (int x, int y, int xrel, int yrel);
-typedef void (*Mousewheel_Event_Func)   (int x, int y);
-typedef void (*Windowresize_Event_Func) (int x, int y);
-typedef void (*Textinput_Event_Func)    (const char* text);
 
 // Window Related functions
 struct Window;
@@ -59,5 +51,11 @@ void        platform_clipboard_text_set(const char* text);
 char*       platform_clipboard_text_get(void);
 int         platform_key_from_name(const char* key_name);
 const char* platform_key_name_get(int key);
+void*       platform_load_library(const char* name);
+void        platform_unload_library(void* library_handle);
+void*       platform_load_function(void* library_handle, const char* func_name);
+bool        platform_load_gl(const char* name);
+void        platform_unload_gl(void);
+void*       platform_load_function_gl(const char* func_name);
 
 #endif

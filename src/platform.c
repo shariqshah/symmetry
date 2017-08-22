@@ -1,12 +1,13 @@
 #include "platform.h"
 #include "log.h"
-#include "input.h"
 #include "config_vars.h"
 #include "hashmap.h"
 #include "string_utils.h"
-#include <SDL2/SDL.h>
 
-static int current_video_driver = VD_DUMMY;
+#include <SDL2/SDL.h>
+#include <string.h>
+#include <stdlib.h>
+#include <assert.h>
 
 struct Window
 {
@@ -450,4 +451,60 @@ char* platform_user_directory_get(const char* organization, const char* applicat
 		log_error("platform:user_directory_get", "Error getting user directory, %s", SDL_GetError());
 	}
 	return user_directory;
+}
+
+void* platform_load_library(const char *name)
+{
+#define MAX_LIB_NAME_LEN 256
+    char lib_name[MAX_LIB_NAME_LEN];
+    memset(lib_name, '\0', MAX_LIB_NAME_LEN);
+#ifdef __linux__
+    snprintf(lib_name, MAX_LIB_NAME_LEN, "./lib%s.so", name);
+#else
+    snprintf(lib_name, MAX_LIB_NAME_LEN, "%s.dll", name);
+#endif
+    void* lib_handle = SDL_LoadObject(lib_name);
+    if(!lib_handle) log_error("platform:load_library", "Failed to load library '%s', SDL : (%s)", lib_name, SDL_GetError());
+    return lib_handle;
+}
+
+void* platform_load_function(void *library_handle, const char *func_name)
+{
+    assert(library_handle);
+    void* func_ptr = SDL_LoadFunction(library_handle, func_name);
+    if(!func_ptr) log_error("platform:load_function", "Failed to load function '%s' from library, SDL : (%s)", func_name, SDL_GetError());
+    return func_ptr;
+}
+
+void platform_unload_library(void* library_handle)
+{
+    assert(library_handle);
+    SDL_UnloadObject(library_handle);
+}
+
+bool platform_load_gl(const char* name)
+{
+    if(SDL_GL_LoadLibrary(name) != 0)
+    {
+        log_error("platform:load_gl", "Failed to load GL'%s', SDL : (%s)", name, SDL_GetError());
+        return false;
+    }
+    else
+    {
+        log_message("OpenGL loaded");
+    }
+    return true;
+}
+
+void platform_unload_gl(void)
+{
+    SDL_GL_UnloadLibrary();
+    log_message("OpenGL unloaded");
+}
+
+void* platform_load_function_gl(const char* func_name)
+{
+    void* func_ptr = SDL_GL_GetProcAddress(func_name);
+    if(!func_ptr) log_error("platform:load_function_gl", "Failed to load GL function '%s' from library, SDL : (%s)", func_name, SDL_GetError());
+    return func_ptr;
 }

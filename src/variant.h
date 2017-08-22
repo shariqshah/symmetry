@@ -11,6 +11,7 @@ enum Variant_Type
 	VT_NONE = 0,
 	VT_BOOL,
 	VT_INT,
+    VT_UINT,
 	VT_FLOAT,
 	VT_DOUBLE,
 	VT_STR,
@@ -29,6 +30,7 @@ struct Variant
 	union
 	{
 		int    val_int;
+        uint   val_uint;
 		bool   val_bool;
 		float  val_float;
 		double val_double;
@@ -45,6 +47,7 @@ struct Variant
 void variant_init_empty(struct Variant* variant);
 void variant_assign_float(struct Variant* variant, const float value);
 void variant_assign_int(struct Variant* variant, const int value);
+void variant_assign_uint(struct Variant* variant, const uint value);
 void variant_assign_double(struct Variant* variant, const double value);
 void variant_assign_bool(struct Variant* variant, const bool value);
 void variant_assign_str(struct Variant* variant, const char* value);

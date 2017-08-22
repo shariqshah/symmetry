@@ -6,11 +6,10 @@
 #include "camera.h"
 #include "light.h"
 #include "model.h"
-#include "sound.h"
 #include "material.h"
 #include "geometry.h"
 #include "variant.h"
-#include "file_io.h"
+#include "common.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -51,8 +50,14 @@ void entity_remove(int index)
 	{
 	case ET_CAMERA:       camera_destroy(entity);       break;
 	case ET_LIGHT:        light_destroy(entity);        break;
-	case ET_SOUND_SOURCE: sound_source_destroy(entity); break;
 	case ET_STATIC_MESH:  model_destroy(entity);        break;
+    case ET_SOUND_SOURCE:
+    {
+        platform->sound.source_destroy(entity->sound_source.source_handle,
+                                       &entity->sound_source.buffer_handles[0],
+                                       entity->sound_source.num_attached_buffers);
+    }
+    break;
 	case ET_ROOT: break;
 	default: log_error("entity:remove", "Invalid entity type"); break;
 	};
@@ -85,7 +90,7 @@ struct Entity* entity_create(const char* name, const int type, int parent_id)
 	strncpy(new_entity->name, name ? name : "DEFAULT_ENTITY_NAME", MAX_ENTITY_NAME_LEN);
 	new_entity->name[MAX_ENTITY_NAME_LEN - 1] = '\0';
 	new_entity->id                  = index;
-	new_entity->is_listener         = false;
+    new_entity->is_listener         = false;
 	new_entity->type                = type;
 	new_entity->marked_for_deletion = false;
 	new_entity->renderable          = false;
@@ -142,11 +147,37 @@ void entity_post_update(void)
 		if(entity->transform.is_modified)
 		{
 			if(entity->type == ET_CAMERA)
+            {
 				camera_update_view(entity);
+            }
 			else if(entity->type == ET_SOUND_SOURCE)
-				sound_source_update(entity);
+            {
+                vec3 abs_pos = {0.f, 0.f,  0.f};
+                vec3 abs_fwd = {0.f, 0.f, -1.f};
+                vec3 abs_up  = {0.f, 1.f, 0.f};
+                transform_get_absolute_pos(entity, &abs_pos);
+                transform_get_absolute_forward(entity, &abs_fwd);
+                transform_get_absolute_up(entity, &abs_up);
 
-			if(entity->is_listener) sound_listener_update();
+                platform->sound.source_update(entity->sound_source.source_handle,
+                                              abs_pos.x, abs_pos.y, abs_pos.z,
+                                              abs_fwd.x, abs_fwd.y, abs_fwd.z,
+                                              abs_up.x,  abs_up.y,  abs_up.z);
+            }
+
+            if(entity->is_listener)
+            {
+                vec3 abs_pos = {0.f, 0.f,  0.f};
+                vec3 abs_fwd = {0.f, 0.f, -1.f};
+                vec3 abs_up  = {0.f, 1.f, 0.f};
+                transform_get_absolute_pos(entity, &abs_pos);
+                transform_get_absolute_forward(entity, &abs_fwd);
+                transform_get_absolute_up(entity, &abs_up);
+
+                platform->sound.listener_update(abs_pos.x, abs_pos.y, abs_pos.z,
+                                                abs_fwd.x, abs_fwd.y, abs_fwd.z,
+                                                abs_up.x,  abs_up.y,  abs_up.z);
+            }
 		}	
 	}
 }
@@ -167,7 +198,7 @@ struct Entity* entity_get_parent(int node)
 bool entity_save(struct Entity* entity, const char* filename, int directory_type)
 {
 	bool success = false;
-	FILE* entity_file = io_file_open(directory_type, filename, "w");
+    FILE* entity_file = platform->file.open(directory_type, filename, "w");
 	if(!entity_file)
 	{
 		log_error("entity:save", "Failed to open entity file %s for writing");
@@ -254,7 +285,7 @@ bool entity_save(struct Entity* entity, const char* filename, int directory_type
 
 struct Entity* entity_load(const char* filename, int directory_type)
 {
-	FILE* entity_file = io_file_open(directory_type, filename, "r");
+    FILE* entity_file = platform->file.open(directory_type, filename, "r");
 	if(!entity_file)
 	{
 		log_error("entity:load", "Failed to open entity file %s for writing", filename);
@@ -466,6 +497,11 @@ struct Entity* entity_load(const char* filename, int directory_type)
 			variant_from_str(&var_value, value_str, VT_BOOL);
 			variant_copy_out(&entity.sound_source.relative, &var_value);
 		}
+        else if(strncmp("num_attached_buffers", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+        {
+            variant_from_str(&var_value, value_str, VT_INT);
+            variant_copy_out(&entity.sound_source.num_attached_buffers, &var_value);
+        }
 
 		variant_free(&var_value);
 	}
@@ -478,7 +514,6 @@ struct Entity* entity_load(const char* filename, int directory_type)
 	quat_assign(&new_entity->transform.rotation, &entity.transform.rotation);
 	transform_scale(new_entity, &entity.transform.scale);
 	
-	if(entity.is_listener) sound_listener_set(new_entity->id);
 	if(entity.renderable)  new_entity->renderable = true;
 	
 	switch(new_entity->type)
@@ -497,7 +532,10 @@ struct Entity* entity_load(const char* filename, int directory_type)
 		light_add(new_entity);
 		break;
 	case ET_SOUND_SOURCE:
-		sound_source_create(new_entity, new_entity->sound_source.relative);
+        platform->sound.source_create(new_entity->sound_source.relative,
+                                      new_entity->sound_source.num_attached_buffers,
+                                      &new_entity->sound_source.source_handle,
+                                      &new_entity->sound_source.buffer_handles[0]);
 		break;
 	};
 	

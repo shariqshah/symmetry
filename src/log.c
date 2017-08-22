@@ -4,7 +4,6 @@
 #include <time.h>
 
 #include "log.h"
-#include "platform.h"
 
 #ifdef __linux__
 #define COLOURED_STDOUT
@@ -32,15 +31,14 @@
 
 static FILE* log_file = NULL;
 
-void log_init(const char* log_file_name)
+void log_init(const char* log_file_name, const char* user_directory)
 {
-	char* dir = platform_user_directory_get("SS_Games", "Symmetry");
 	char log_file_path[512] = {'\0'};
-	snprintf(log_file_path, 512, "%s/%s", dir, log_file_name);
+    snprintf(log_file_path, 512, "%s/%s", user_directory, log_file_name);
 	log_file = fopen(log_file_path, "w");
 	if(!log_file)
 	{
-		log_to_stdout("ERR: (log:init): Failed to create log file at %s", dir);
+        log_to_stdout("ERR: (log:init): Failed to create log file at %s", user_directory);
 	}
 	else
 	{
@@ -49,7 +47,8 @@ void log_init(const char* log_file_name)
 		fprintf(log_file, "Log Initialized at %s\n", ctime(&current_time));
 		fflush(log_file);
 	}
-	if(dir) free(dir);
+    // Disable stdout buffering
+    setbuf(stdout, NULL);
 }
 
 void log_cleanup(void)
@@ -114,4 +113,14 @@ void log_error(const char* context, const char* error, ...)
 	printf("\n%s", COL_RESET);
 	fprintf(log_file, "\n");
 	fflush(log_file);
+}
+
+FILE* log_file_handle_get(void)
+{
+    return log_file;
+}
+
+void  log_file_handle_set(FILE* file)
+{
+    log_file = file;
 }

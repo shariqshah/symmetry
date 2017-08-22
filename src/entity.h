@@ -5,6 +5,7 @@
 #include "num_types.h"
 
 #define MAX_ENTITY_NAME_LEN 128
+#define MAX_SOUND_SOURCE_BUFFERS 5
 
 struct Material_Param;
 
@@ -51,8 +52,9 @@ struct Sound_Source
 {
 	bool active;
 	bool relative;
-	uint al_source_handle;
-	uint al_buffer_handle;
+    uint source_handle;
+    uint buffer_handles[MAX_SOUND_SOURCE_BUFFERS];
+    uint num_attached_buffers;
 };
 
 struct Camera

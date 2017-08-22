@@ -3,11 +3,10 @@
 #include <string.h>
 #include "input.h"
 #include "array.h"
-#include "platform.h"
 #include "log.h"
 #include "gui.h"
-#include "file_io.h"
 #include "string_utils.h"
+#include "common.h"
 
 struct Input_Map
 {
@@ -26,10 +25,10 @@ static struct Input_Map* input_map_list = NULL;
 
 void input_init(void)
 {
-	platform_keyboard_callback_set(&input_on_key);
-	platform_mousebutton_callback_set(&input_on_mousebutton);
-	platform_mousemotion_callback_set(&input_on_mousemotion);
-	platform_mousewheel_callback_set(&input_on_mousewheel);
+    platform->keyboard_callback_set(&input_on_key);
+    platform->mousebutton_callback_set(&input_on_mousebutton);
+    platform->mousemotion_callback_set(&input_on_mousemotion);
+    platform->mousewheel_callback_set(&input_on_mousewheel);
 	
 	input_map_list = array_new(struct Input_Map);
 	if(!input_keybinds_load("keybindings.cfg", DT_USER))
@@ -95,7 +94,7 @@ bool input_keybinds_load(const char* filename, int directory_type)
 	bool success = false;
 	const int MAX_KEYBIND_LEN = 128;
 	const int MAX_LINE_LEN    = 512;
-	FILE* config_file = io_file_open(directory_type, filename, "r");
+    FILE* config_file = platform->file.open(directory_type, filename, "r");
 	if(!config_file)
 	{
 		log_error("input:keybinds_load", "Could not open %s", filename);
@@ -157,7 +156,7 @@ bool input_keybinds_load(const char* filename, int directory_type)
 				strncpy(key_name, start_loc, (keys - start_loc));
 				//log_message("key_name : %s", key_name);
 
-				int key_modifier = platform_key_from_name(key_name);
+                int key_modifier = platform->key_from_name(key_name);
 
 				if(key_modifier == KEY_UNKNOWN)
 				{
@@ -185,7 +184,7 @@ bool input_keybinds_load(const char* filename, int directory_type)
 			
 			/* Copy the last key after the hyphen */
 			strncpy(key_name, start_loc, max_key_str_len);
-			int key = platform_key_from_name(key_name);
+            int key = platform->key_from_name(key_name);
 			if(key == KEY_UNKNOWN)
 			{
 				log_warning("Unrecognized key %s in keybindings file %s, at line %d", key_name, filename, current_line);
@@ -209,7 +208,7 @@ bool input_keybinds_save(const char* filename)
 {
 	bool success = false;
 
-	FILE* config_file = io_file_open(DT_USER, filename, "w");
+    FILE* config_file = platform->file.open(DT_USER, filename, "w");
 	if(!config_file)
 	{
 		log_error("input:keybinds_save", "Could not open %s", filename);
@@ -224,10 +223,10 @@ bool input_keybinds_save(const char* filename)
 		{
 			if(j != 0) fprintf(config_file, ", ");
 			struct Key_Combination* key_comb = &map->keys[j];
-			if((key_comb->mods & KMD_ALT)   == KMD_ALT)   fprintf(config_file, "%s-", platform_key_name_get(KEY_LALT));
-			if((key_comb->mods & KMD_SHIFT) == KMD_SHIFT) fprintf(config_file, "%s-", platform_key_name_get(KEY_LSHIFT));
-			if((key_comb->mods & KMD_CTRL)  == KMD_CTRL)  fprintf(config_file, "%s-", platform_key_name_get(KEY_LCTRL));
-			fprintf(config_file, "%s", platform_key_name_get(key_comb->key));
+            if((key_comb->mods & KMD_ALT)   == KMD_ALT)   fprintf(config_file, "%s-", platform->key_name_get(KEY_LALT));
+            if((key_comb->mods & KMD_SHIFT) == KMD_SHIFT) fprintf(config_file, "%s-", platform->key_name_get(KEY_LSHIFT));
+            if((key_comb->mods & KMD_CTRL)  == KMD_CTRL)  fprintf(config_file, "%s-", platform->key_name_get(KEY_LCTRL));
+            fprintf(config_file, "%s", platform->key_name_get(key_comb->key));
 		}
 		fprintf(config_file, "\n");
 	}
@@ -253,12 +252,12 @@ void input_on_mousewheel(int x, int y)
 void input_mouse_pos_get(int* xpos, int* ypos)
 {
 	assert(xpos && ypos);
-	platform_mouse_position_get(xpos, ypos);
+    platform->mouse_position_get(xpos, ypos);
 }
 
 void input_mouse_pos_set(int xpos, int ypos)
 {
-	platform_mouse_global_position_set(xpos, ypos);
+    platform->mouse_global_position_set(xpos, ypos);
 }
 
 void input_on_key(int key, int scancode, int state, int repeat, int mod_ctrl, int mod_shift, int mod_alt)
@@ -300,7 +299,7 @@ void input_on_mousebutton(int button, int state, int x, int y, int8 num_clicks)
 
 void input_mouse_mode_set(enum Mouse_Mode mode)
 {
-	platform_mouse_relative_mode_set(mode == MM_NORMAL ? 0 : 1);
+    platform->mouse_relative_mode_set(mode == MM_NORMAL ? 0 : 1);
 }
 
 bool input_map_state_get(const char* map_name, int state)
@@ -326,12 +325,12 @@ bool input_map_state_get(const char* map_name, int state)
 
 bool input_is_key_pressed(int key)
 {
-	return platform_is_key_pressed(key);
+    return platform->is_key_pressed(key);
 }
 
 bool input_mousebutton_state_get(uint button, int state_type)
 {
-	int current_state = platform_mousebutton_state_get(button);
+    int current_state = platform->mousebutton_state_get(button);
 	return state_type == current_state ? true : false;
 }
 
@@ -440,12 +439,12 @@ int map_find(const char* name)
 int input_mouse_mode_get(void)
 {
 	int mouse_mode = MM_NORMAL;
-	if(platform_mouse_relative_mode_get()) mouse_mode = MM_RELATIVE;
+    if(platform->mouse_relative_mode_get()) mouse_mode = MM_RELATIVE;
 	return mouse_mode;
 }
 
 void input_mouse_delta_get(int* xpos, int* ypos)
 {
-	platform_mouse_delta_get(xpos, ypos);
+    platform->mouse_delta_get(xpos, ypos);
 }
 

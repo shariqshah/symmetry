@@ -1,10 +1,10 @@
 #include "geometry.h"
 #include "array.h"
 #include "string_utils.h"
-#include "file_io.h"
 #include "log.h"
 #include "renderer.h"
 #include "transform.h"
+#include "common.h"
 #include "gl_load.h"
 
 #include <stdlib.h>
@@ -214,7 +214,7 @@ static int load_from_file(struct Geometry* geometry, const char* filename)
 	int success = 1;
 	char* full_path = str_new("models/%s", filename);
 			
-	FILE* file = io_file_open(DT_INSTALL, full_path, "rb");
+    FILE* file = platform->file.open(DT_INSTALL, full_path, "rb");
 	free(full_path);
 	if(file)
 	{				

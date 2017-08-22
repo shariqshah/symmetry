@@ -3,7 +3,7 @@
 #include "entity.h"
 #include "log.h"
 #include "transform.h"
-#include "file_io.h"
+#include "common.h"
 
 #include <assert.h>
 #include <string.h>
@@ -125,7 +125,7 @@ struct Entity* scene_get_parent(struct Entity* entity)
 bool scene_load(const char* filename, int directory_type)
 {
 	bool success = false;
-    FILE* entity_file = io_file_open(directory_type, filename, "r");
+    FILE* entity_file = platform->file.open(directory_type, filename, "r");
 	if(!entity_file)
 	{
 		log_error("scene:load", "Failed to open scenefile %s for writing", filename);

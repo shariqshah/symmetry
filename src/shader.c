@@ -1,5 +1,4 @@
 #include "shader.h"
-#include "file_io.h"
 #include "array.h"
 #include "num_types.h"
 #include "string_utils.h"
@@ -7,6 +6,7 @@
 #include "renderer.h"
 #include "texture.h"
 #include "gl_load.h"
+#include "common.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -56,7 +56,7 @@ char* run_preprocessor(char* shader_text)
 			{
 				char* path = str_new("shaders/");
 				path = str_concat(path, filename);
-				char* file = io_file_read(DT_INSTALL, path, "r", NULL);
+                char* file = platform->file.read(DT_INSTALL, path, "r", NULL);
 				char* shader_copy = str_new(shader_text);
 				char* temp = realloc(shader_text, (strlen(shader_text) + strlen(file) + 2));
 				if(temp)
@@ -96,8 +96,8 @@ int shader_create(const char* vert_shader_name, const char* frag_shader_name)
 	GLuint vert_shader = glCreateShader(GL_VERTEX_SHADER);
 	GLuint frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
 
-	char* vert_source = io_file_read(DT_INSTALL, vs_path, "r", NULL);
-	char* frag_source = io_file_read(DT_INSTALL, fs_path, "r", NULL);
+    char* vert_source = platform->file.read(DT_INSTALL, vs_path, "r", NULL);
+    char* frag_source = platform->file.read(DT_INSTALL, fs_path, "r", NULL);
 
 	assert(vert_source != NULL);
 	assert(frag_source != NULL);

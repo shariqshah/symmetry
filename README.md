@@ -149,6 +149,9 @@
 
 - ## TODO
 
+    - Move game, common and game library related code into separate folders.
+	- Replace OpenAL with soloud
+	- Remove hardcoded numerical values from sscanf and other format strings.
 	- Finish entity loading from file then move on to 2D rendering
 	- First class 2d rendering
 	  - Sprite batching (XNA like)
@@ -177,7 +180,6 @@
 	- Better handling incase assets folder is not found?
 	- Write entity to/from file
 	- Ogg format loading and playback
-	- Stick with OpenAL or switch to SoLoud + SDL for sound?
 	- Sound streaming
 	- Implment missing sound source properties (inner/outer cone, getting sound source data)
 	- Ingame console and console commands etc
@@ -296,3 +298,4 @@
 	* Fix camera acting all weird when right click is held
 	* Fix README to conform with markdown syntax
 	* Added video driver selection to make game launch under wayland or x11 on linux.
+	* Separate game code into a dynamical library that can be reloaded at runtime.

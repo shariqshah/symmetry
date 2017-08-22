@@ -29,6 +29,13 @@ void variant_assign_int(struct Variant* variant, const int value)
 	variant->val_int = value;
 }
 
+void variant_assign_uint(struct Variant* variant, const uint value)
+{
+    if(variant->type != VT_UINT) variant_free(variant);
+    variant->type     = VT_UINT;
+    variant->val_uint = value;
+}
+
 void variant_assign_double(struct Variant* variant, const double value)
 {
 	if(variant->type != VT_DOUBLE) variant_free(variant);
@@ -159,6 +166,7 @@ void variant_copy(struct Variant* to, const struct Variant* from)
 	{
 	case VT_BOOL:   variant_assign_bool(to, from->val_bool);     break;
 	case VT_INT:    variant_assign_int(to, from->val_int);       break;
+    case VT_UINT:   variant_assign_uint(to, from->val_uint);     break;
 	case VT_FLOAT:  variant_assign_float(to, from->val_float);   break;
 	case VT_DOUBLE: variant_assign_double(to, from->val_double); break;
 	case VT_VEC2:   variant_assign_vec2(to, &from->val_vec2);    break;
@@ -179,6 +187,7 @@ void variant_to_str(const struct Variant* variant, char* str, int len)
 	{
 	case VT_BOOL:   snprintf(str, len, "%s", variant->val_bool ? "true" : "false"); break;
 	case VT_INT:    snprintf(str, len, "%d", variant->val_int); break;
+    case VT_UINT:   snprintf(str, len, "%d", variant->val_uint); break;
 	case VT_FLOAT:  snprintf(str, len, "%.4f", variant->val_float); break;
 	case VT_DOUBLE: snprintf(str, len, "%.4f", variant->val_double); break;
 	case VT_VEC2:   snprintf(str, len, "%.3f %.3f", variant->val_vec2.x, variant->val_vec2.y); break;
@@ -219,6 +228,13 @@ void variant_from_str(struct Variant* variant, const char* str, int variant_type
 			variant_assign_int(variant, int_val);
 	}
 	break;
+    case VT_UINT:
+    {
+        uint uint_val = 0;
+        if(sscanf(str, "%d", &uint_val) == 1)
+            variant_assign_uint(variant, uint_val);
+    }
+    break;
 	case VT_FLOAT:
 	{
 		float float_val = -1;
@@ -278,6 +294,7 @@ void variant_copy_out(void* to, const struct Variant* from)
 	{
 	case VT_BOOL:   *(bool*)to   = from->val_bool;                     break;
 	case VT_INT:    *(int*)to    = from->val_int;                      break;
+    case VT_UINT:   *(uint*)to   = from->val_uint;                     break;
 	case VT_FLOAT:  *(float*)to  = from->val_float;                    break;
 	case VT_DOUBLE: *(double*)to = from->val_double;                   break;
 	case VT_VEC2:   vec2_assign((vec2*)to, &from->val_vec2);           break;

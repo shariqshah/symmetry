@@ -2,13 +2,12 @@
 #include <stddef.h>
 #include <time.h>
 #include <limits.h>
+#include <string.h>
 
 #include "game.h"
-#include "platform.h"
 #include "input.h"
 #include "renderer.h"
 #include "log.h"
-#include "file_io.h"
 #include "shader.h"
 #include "entity.h"
 #include "geometry.h"
@@ -24,11 +23,11 @@
 #include "light.h"
 #include "gl_load.h"
 #include "gui.h"
-#include "sound.h"
 #include "editor.h"
 #include "config_vars.h"
 #include "hashmap.h"
 #include "variant.h"
+#include "common.h"
 
 #define UNUSED(a) (void)a
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
@@ -38,7 +37,7 @@
 
 #define MAX_FRAME_TIME 0.5f
 
-static int  run(void);
+static bool run(void);
 static void update(float dt, bool* window_should_close);
 static void render(void);
 static void debug(float dt);
@@ -46,9 +45,18 @@ static void debug_gui(float dt);
 static void scene_setup(void);
 
 static struct Game_State* game_state = NULL;
+struct Platform_Api* platform = NULL;
 
-int game_init(struct Window* window)
+bool game_init(struct Window* window, struct Platform_Api* platform_api)
 {
+    if(!platform_api)
+    {
+        log_error("game:init", "Platform api not passed in!");
+        return false;
+    }
+
+    platform = malloc(sizeof(*platform));
+    memcpy(platform, platform_api, sizeof(*platform_api));
 	game_state = malloc(sizeof(*game_state));
 	if(!game_state)
 	{
@@ -65,8 +73,17 @@ int game_init(struct Window* window)
 
 	/* TODO: Decouple systems' init/cleanup from game, they should exist and run even if there's no "game" */
 	/* Init systems */
+    log_file_handle_set(platform->log.file_handle_get());
+    if(!gl_load_extentions())
+    {
+        log_error("game:init", "Failed to load GL extentions");
+        return false;
+    }
+    else
+    {
+        log_message("Loaded GL extentions");
+    }
 	input_init();
-	sound_init();
 	shader_init();
 	texture_init();
 	framebuffer_init();
@@ -96,7 +113,6 @@ void scene_setup(void)
 	camera_create(player, render_width, render_height);
 	camera_attach_fbo(player, render_width, render_height, 1, 1, 1);
 	vec4_fill(&player->camera.clear_color, 0.3f, 0.6f, 0.9f, 1.0f);
-	sound_listener_set(player->id);
 
 	vec4 color = {1.f, 1.f, 1.f, 1.f };
 	struct Entity* new_ent = scene_add_new("Model_Entity", ET_STATIC_MESH);
@@ -111,12 +127,15 @@ void scene_setup(void)
 	transform_scale(new_ent, &scale);
 
 	struct Entity* sound_ent = scene_add_as_child("Sound_ENT", ET_SOUND_SOURCE, new_ent->id);
-	sound_source_create(sound_ent, false);
-	sound_source_load_wav(sound_ent, "BigExplosion.wav");
+    struct Sound_Source* sound_source = &sound_ent->sound_source;
+    platform->sound.source_create(true, 1, &sound_source->source_handle, &sound_source->buffer_handles[0]);
+    platform->sound.source_load_wav(sound_source->source_handle,
+                                    sound_source->buffer_handles[0],
+                                    "BigExplosion.wav");
 	//sound_source_relative_set(source, true);
-	sound_source_volume_set(sound_ent, 1.f);
-	sound_source_loop_set(sound_ent, true);
-	sound_source_play(sound_ent);
+    platform->sound.source_volume_set(sound_source->source_handle, 1.f);
+    platform->sound.source_loop_set(sound_source->source_handle, true);
+    platform->sound.source_play(sound_source->source_handle);
 
 	int parent_node = new_ent->id;
 	int num_suz = 50;
@@ -220,12 +239,12 @@ void debug(float dt)
 
 		turn_up_down = -cursor_ud * turn_speed * dt * scale;
 		turn_left_right = cursor_lr * turn_speed * dt * scale;
-        log_message("ud : %d, lr : %d", cursor_ud, cursor_lr);
+//        log_message("ud : %d, lr : %d", cursor_ud, cursor_lr);
 	}
 	else
 	{
 		input_mouse_mode_set(MM_NORMAL);
-        log_message("ud : %.3f, lr : %.3f", turn_up_down, turn_left_right);
+//        log_message("ud : %.3f, lr : %.3f", turn_up_down, turn_left_right);
 		turn_up_down *= dt;
 		turn_left_right *= dt;
 	}
@@ -308,42 +327,43 @@ void debug(float dt)
 		transform_translate(model, &amount, TS_LOCAL);
 	}
 
-	/* struct Entity* model = scene_find("Light_Ent"); */
-	/* vec3 x_axis = {0, 1, 0}; */
-	/* transform_rotate(model, &x_axis, 25.f * dt, TS_WORLD); */
-	/* vec3 amount = {0, 0, -5 * dt}; */
-	/* transform_translate(model, &amount, TS_LOCAL); */
+	struct Entity* model = scene_find("Model_Entity");
+	vec3 x_axis = {0, 1, 0};
+    transform_rotate(model, &x_axis, 25.f * dt, TS_WORLD);
+	vec3 amount = {0, 0, -5 * dt};
+	transform_translate(model, &amount, TS_LOCAL);
 }
 
-int run(void)
+bool run(void)
 {
-	uint32 last_time = platform_ticks_get();
+    uint32 last_time = platform->ticks_get();
 	bool   should_window_close = 0;
 	while(!should_window_close)
 	{
-		uint32 curr_time = platform_ticks_get();
+        uint32 curr_time = platform->ticks_get();
 		float delta_time = (float)(curr_time - last_time) / 1000.f;
 		last_time = curr_time;
 		if(delta_time > MAX_FRAME_TIME) delta_time = (1.f / 60.f); /* To deal with resuming from breakpoint we artificially set delta time */
 
 		gui_input_begin();
-		platform_poll_events(&should_window_close);
+        platform->poll_events(&should_window_close);
 		gui_input_end();
 		
 		update(delta_time, &should_window_close);
 		render();
-		window_swap_buffers(game_state->window);
+        platform->window.swap_buffers(game_state->window);
 		entity_post_update();
 	}
-	return 1;
+    return true;
 }
 
 void update(float dt, bool* window_should_close)
 {	
 	if(input_is_key_pressed(KEY_ESCAPE))                      *window_should_close = true;
 	if(input_map_state_get("Editor_Toggle", KS_RELEASED))     editor_toggle();
-	if(input_map_state_get("Window_Fullscreen", KS_RELEASED)) window_fullscreen_set(game_state->window, 1);
-	if(input_map_state_get("Window_Maximize", KS_RELEASED))   window_fullscreen_set(game_state->window, 0);
+    if(input_map_state_get("Window_Fullscreen", KS_RELEASED)) platform->window.fullscreen_set(game_state->window, 1);
+    if(input_map_state_get("Window_Maximize", KS_RELEASED))   platform->window.fullscreen_set(game_state->window, 0);
+    if(input_map_state_get("Reload_Game_Lib", KS_RELEASED))   platform->reload_game_lib();
 	
 	debug(dt);
 	//debug_gui(dt);
@@ -1576,20 +1596,23 @@ void game_cleanup(void)
 			light_cleanup();
 			input_cleanup();
 			renderer_cleanup();
-			io_file_cleanup();
 			framebuffer_cleanup();
 			texture_cleanup();
 			shader_cleanup();
-			sound_cleanup();
-			window_destroy(game_state->window);
-			gl_cleanup();
 		}
 		free(game_state);
 		game_state = NULL;
 	}
+
+    if(platform) free(platform);
 }
 
 struct Game_State* game_state_get(void)
 {
 	return game_state;
+}
+
+void game_test(const char *str)
+{
+    log_message("Func called!");
 }

@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 struct Window;
+struct Platform_Api;
 
 struct Game_State
 {
@@ -15,7 +16,8 @@ struct Game_State
 
 
 struct Game_State* game_state_get(void);
-int                game_init(struct Window* window);
+bool               game_init(struct Window* window, struct Platform_Api* platform_api);
 void               game_cleanup(void);
+void               game_test(const char* str);
 
 #endif

@@ -2,7 +2,10 @@
 #define GL_LOAD_H
 
 #ifdef USE_GLAD
+
 #include <glad/glad.h>
+#include <stdbool.h>
+
 #else
 
 #include <SDL2/SDL_opengl.h>
@@ -60,7 +63,7 @@ SYMMETRY_GL_LIST
 #endif
 
 int  gl_load_library(void);
-int  gl_load_extentions(void);
+bool gl_load_extentions(void);
 void gl_cleanup(void);
 
 #endif

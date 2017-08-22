@@ -14,12 +14,12 @@
 #include "transform.h"
 #include "game.h"
 #include "gui.h"
-#include "config_vars.h"
 #include "hashmap.h"
 #include "geometry.h"
 #include "material.h"
 #include "editor.h"
 #include "variant.h"
+#include "common.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -46,7 +46,7 @@ void renderer_init(void)
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
-	platform_windowresize_callback_set(on_framebuffer_size_change);
+    platform->windowresize_callback_set(on_framebuffer_size_change);
 	gui_init();
 	
 	/* Quad geometry for final render */
@@ -81,7 +81,7 @@ void renderer_init(void)
 
 	int width = -1, height = -1;
 	struct Game_State* game_state = game_state_get();
-	window_get_size(game_state->window, &width, &height);
+    platform->window.get_size(game_state->window, &width, &height);
 	def_albedo_tex = texture_create("def_albedo_texture",
 									TU_DIFFUSE,
 									width, height,
@@ -353,7 +353,7 @@ void renderer_draw(struct Entity* active_viewer)
 	/* Final Render */
 	int width, height;
 	struct Game_State* game_state = game_state_get();
-	window_get_size(game_state->window, &width, &height);
+    platform->window.get_size(game_state->window, &width, &height);
 	glViewport(0, 0, width, height);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	shader_bind(composition_shader);
@@ -365,7 +365,7 @@ void renderer_draw(struct Entity* active_viewer)
 	shader_unbind();
 
 	/* Debug Render */
-	struct Hashmap* cvars = config_vars_get();
+    struct Hashmap* cvars = platform->config.get();
 	if(hashmap_bool_get(cvars, "debug_draw_enabled"))
 	{
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -449,13 +449,13 @@ int renderer_check_glerror(const char* context)
 
 void renderer_debug_draw_enabled(bool enabled)
 {
-	struct Hashmap* cvars = config_vars_get();
+    struct Hashmap* cvars = platform->config.get();
 	hashmap_bool_set(cvars,  "debug_draw_enabled", enabled);
 }
 
 void renderer_settings_get(struct Render_Settings* settings)
 {
-	struct Hashmap* cvars = config_vars_get();
+    struct Hashmap* cvars = platform->config.get();
 	settings->fog.mode               = hashmap_int_get(cvars,   "fog_mode");
 	settings->fog.density            = hashmap_float_get(cvars, "fog_density");
 	settings->fog.start_dist         = hashmap_float_get(cvars, "fog_start_dist");
@@ -469,7 +469,7 @@ void renderer_settings_get(struct Render_Settings* settings)
 
 void renderer_settings_set(const struct Render_Settings* settings)
 {
-	struct Hashmap* cvars = config_vars_get();
+    struct Hashmap* cvars = platform->config.get();
 	hashmap_int_set(cvars,   "fog_mode",           settings->fog.mode);
 	hashmap_float_set(cvars, "fog_density",        settings->fog.density);
 	hashmap_float_set(cvars, "fog_start_dist",     settings->fog.start_dist);

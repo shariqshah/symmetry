@@ -17,10 +17,8 @@
 #include "array.h"
 #include "variant.h"
 #include "num_types.h"
-#include "file_io.h"
-#include "config_vars.h"
 #include "string_utils.h"
-#include "platform.h"
+#include "common.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -152,7 +150,7 @@ void editor_update(float dt)
 	struct Gui_State*  gui_state  = gui_state_get();
 	struct nk_context* context    = &gui_state->context;
 	int win_width = 0, win_height = 0;
-	window_get_drawable_size(game_state->window, &win_width, &win_height);
+    platform->window.get_drawable_size(game_state->window, &win_width, &win_height);
 	int half_width = win_width / 2, half_height = win_height / 2;
 	static int window_flags = NK_WINDOW_BORDER |
 		NK_WINDOW_CLOSABLE |
@@ -189,7 +187,7 @@ void editor_update(float dt)
 			if(nk_button_label(context, "Render Settings"))
 				editor_state.renderer_settings_window = !editor_state.renderer_settings_window;
 			if(nk_button_label(context, "Save config"))
-				config_vars_save("config.cfg", DT_USER);
+                platform->config.save("config.cfg", DT_USER);
 			nk_spacing(context, 1);
 			nk_labelf(context, NK_TEXT_ALIGN_RIGHT | NK_TEXT_ALIGN_MIDDLE, "FPS : %.d", fps);
 			nk_group_end(context);

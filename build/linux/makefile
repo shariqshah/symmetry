@@ -9,7 +9,7 @@ CFLAGS_GAME     = $(CFLAGS) -DGAME $(shell pkg-config --cflags-only-other sdl2 o
 CFLAGS_GAME_LIB = $(CFLAGS) -DGAME_LIB
 CFLAGS_DEBUG    = -g -DGL_DEBUG_CONTEXT -DAL_DEBUG
 CFLAGS_RELEASE  = -O3 -ffast-math
-LFLAGS          = $(shell pkg-config --libs sdl2 openal) -lm -ldl
+LFLAGS          = $(shell pkg-config --libs sdl2 openal) -lm
 ITCH_BUTLER     = ~/.config/itch/bin/butler
 
 SRCS_GAME         = main.c platform.c log.c array.c utils.c config_vars.c file_io.c glad.c hashmap.c sound.c string_utils.c variant.c linmath.c

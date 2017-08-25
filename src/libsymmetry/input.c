@@ -92,8 +92,8 @@ void input_cleanup(void)
 bool input_keybinds_load(const char* filename, int directory_type)
 {
 	bool success = false;
-	const int MAX_KEYBIND_LEN = 128;
-	const int MAX_LINE_LEN    = 512;
+	#define MAX_KEYBIND_LEN 128
+	#define MAX_LINE_LEN    512
     FILE* config_file = platform->file.open(directory_type, filename, "r");
 	if(!config_file)
 	{
@@ -143,11 +143,11 @@ bool input_keybinds_load(const char* filename, int directory_type)
 		{
 			//log_message("Key read : %s", val);
 
+			#define max_key_str_len 20
 			/* Check if there are any Modifiers */
 			int       modifiers        = KMD_NONE;
 			char*     keys             = strstr(val, "-");
 			char*     start_loc        = val;
-			const int max_key_str_len  = 20;
 			char      key_name[max_key_str_len];
 			int       skip_to_next     = 0;
 			while(keys)

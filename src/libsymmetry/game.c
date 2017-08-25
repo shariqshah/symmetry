@@ -29,8 +29,8 @@
 #include "../common/common.h"
 
 #define UNUSED(a) (void)a
-#define MIN(a,b) ((a) < (b) ? (a) : (b))
-#define MAX(a,b) ((a) < (b) ? (b) : (a))
+//#define MIN(a,b) ((a) < (b) ? (a) : (b))
+//#define MAX(a,b) ((a) < (b) ? (b) : (a))
 #define LEN(a) (sizeof(a)/sizeof(a)[0])
 
 
@@ -137,7 +137,7 @@ void scene_setup(void)
     platform->sound.source_play(sound_source->source_handle);
 
 	int parent_node = new_ent->id;
-	int num_suz = 50;
+	int num_suz = 10;
 	srand(time(NULL));
 	for(int i = 0; i < num_suz; i++)
 	{
@@ -148,7 +148,7 @@ void scene_setup(void)
 		struct Entity* suz = scene_add_as_child("Suzanne", ET_STATIC_MESH, parent_node);
 		//struct Entity* suz = scene_add_new("Suzanne", ET_STATIC_MESH);
 		suz->renderable = true;
-		model_create(suz, "suzanne.pamesh", "Blinn_Phong");
+		model_create(suz, "default.pamesh", "Blinn_Phong");
 		model_set_material_param(suz, "diffuse_color", &color);
 		float spec_str = 80.f;
 		model_set_material_param(suz, "specular_strength", &spec_str);
@@ -362,7 +362,12 @@ void update(float dt, bool* window_should_close)
 	if(input_map_state_get("Editor_Toggle", KS_RELEASED))     editor_toggle();
     if(input_map_state_get("Window_Fullscreen", KS_RELEASED)) platform->window.fullscreen_set(game_state->window, 1);
     if(input_map_state_get("Window_Maximize", KS_RELEASED))   platform->window.fullscreen_set(game_state->window, 0);
-    if(input_map_state_get("Reload_Game_Lib", KS_RELEASED))   platform->reload_game_lib();
+    if(input_map_state_get("Reload_Game_Lib", KS_RELEASED))
+	{
+		*window_should_close = true;
+		platform->reload_game_lib();
+		return;
+	}
 	
 	debug(dt);
 	//debug_gui(dt);
@@ -1609,9 +1614,4 @@ void game_cleanup(void)
 struct Game_State* game_state_get(void)
 {
 	return game_state;
-}
-
-void game_test(const char *str)
-{
-    log_message("Func called!");
 }

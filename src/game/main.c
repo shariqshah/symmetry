@@ -9,15 +9,16 @@
 #include "../common/hashmap.h"
 #include "../common/common.h"
 
-static struct Window* window = NULL;
+static struct Window*      window = NULL;
 static struct Platform_Api platform_api;
-struct Game_Api game;
-void* game_lib_handle = NULL;
+static bool                reload_game = false;
+struct Game_Api            game;
+void*                      game_lib_handle = NULL;
 
 bool init(void);
 void cleanup(void);
 bool game_lib_load(void);
-bool game_lib_reload(void);
+void game_lib_reload(void);
 
 int main(int argc, char** args)
 {
@@ -102,7 +103,40 @@ int main(int argc, char** args)
         if(!game_lib_load())
             log_error("main", "Failed to load  game library");
         else
-            game.init(window, &platform_api);
+		{
+			bool done = false;
+			while(!done)
+			{
+				bool game_init_status = game.init(window, &platform_api);
+				if(!game_init_status)
+				{
+					log_error("main", "Game init failed");
+				}
+
+				if(reload_game)
+				{
+					reload_game = false;
+					if(game_lib_handle)
+					{
+						if(game.cleanup) game.cleanup();
+						platform_unload_library(game_lib_handle);
+						game_lib_handle = NULL;
+						game.cleanup    = NULL;
+						game.init       = NULL; 
+					}
+					
+					if(!game_lib_load())
+					{
+						log_error("main", "Failed to load  game library");
+						done = true;
+					}
+				}
+				else
+				{
+					done = true;
+				}
+			}
+		}
     }
 	
     exit(EXIT_SUCCESS);
@@ -151,12 +185,6 @@ bool init(void)
         return false;
     }
 
-//    if(!gl_load_extentions())
-//    {
-//        log_error("main:init", "Failed to load opengl extentions");
-//        return false;
-//    }
-
     if(!sound_init())
     {
         log_error("main:init", "Failed to initialize sound");
@@ -168,9 +196,9 @@ bool init(void)
 
 void cleanup()
 {
-    if(game.cleanup) game.cleanup();
+	if(game.cleanup) game.cleanup();
+	if(game_lib_handle) platform_unload_library(game_lib_handle);
     if(window) window_destroy(window);
-    if(game_lib_handle) platform_unload_library(game_lib_handle);
     sound_cleanup();
     platform_unload_gl();
     platform_cleanup();
@@ -180,25 +208,14 @@ void cleanup()
 	log_cleanup();
 }
 
-bool game_lib_reload(void)
+void game_lib_reload(void)
 {
-    if(game_lib_handle)
-    {
-        if(game.cleanup) game.cleanup();
-        platform_unload_library(game_lib_handle);
-    }
-    if(!game_lib_load())
-    {
-        log_error("main:game_lib_reload", "Failed to reload game library");
-        return false;
-    }
-
-    return game.init(window, &platform_api);
+	reload_game = true;
 }
 
 bool game_lib_load(void)
 {
-    game_lib_handle = platform_load_library("Symmetry");
+    game_lib_handle = platform_load_library("libSymmetry");
     if(!game_lib_handle)
     {
         log_error("main:game_lib_load", "Failed to load game library");

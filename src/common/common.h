@@ -112,7 +112,7 @@ struct Platform_Api
     int         (*key_from_name)(const char* key_name);
     const char* (*key_name_get)(int key);
     void*       (*load_function_gl)(const char* name);
-    bool        (*reload_game_lib)(void);
+    void        (*reload_game_lib)(void);
 
     struct Window_Api window;
     struct Sound_Api  sound;

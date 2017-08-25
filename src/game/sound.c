@@ -9,7 +9,12 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <AL/alext.h>
-#include <SDL2/SDL.h>
+
+#if defined(_MSC_VER)
+	#include <SDL.h>
+#else
+	#include <SDL2/SDL.h>
+#endif
 
 struct Sound_State
 {

@@ -3,9 +3,12 @@
 
 #include <stdlib.h>
 #include "../common/num_types.h"
-#include <SDL2/SDL_keycode.h>
-#include <SDL2/SDL_mouse.h>
-#include <SDL2/SDL_events.h>
+
+#if defined(_MSC_VER)
+	#include <SDL.h>
+#else
+	#include <SDL2/SDL.h>
+#endif
 
 struct Key_Combination
 {

@@ -99,7 +99,7 @@
 
 	- Fat entites with all related properties, i.e. position, mesh etc in them. Easy to serialize, memory friendly, simple to implement but would require significant changes to the current codebase, for example:
 
-	```.C
+	```
    	struct Entity
 	{
 		int    type;
@@ -130,7 +130,7 @@
 
    - Change component implementation by using anonymous unions to simulate interfaces. e.g
 
-	```.C
+	```
      struct Component
 	 {
 		int type;
@@ -149,8 +149,8 @@
 
 - ## TODO
 
-    - Move game, common and game library related code into separate folders.
 	- Replace OpenAL with soloud
+	- Add creating distributable build and uploading to itch.io account support to GENie under windows and linux.
 	- Remove hardcoded numerical values from sscanf and other format strings.
 	- Finish entity loading from file then move on to 2D rendering
 	- First class 2d rendering
@@ -164,16 +164,16 @@
 	- Only allocate hashmap bucket when required
 	- Mapping actions to keybindings, for example map action "Jump" to Space key etc
 	- Ability to mark meshes for debug rendering with possibility of different color for each?
-	- Switch to completely static allocation of entites i.e. have a static array of MAX_ENTITIES 	size. This way we can store pointers to entites and they'll still be in an array and fast to 	process.
-	- Add marking or queuing up custom meshes for debug render with particular transform and color 	for rendering bounding spheres for example
+	- Switch to completely static allocation of entites i.e. have a static array of MAX_ENTITIES size. This way we can store pointers to entites and they'll still be in an array and fast to process.
+	- Add marking or queuing up custom meshes for debug render with particular transform and color for rendering bounding spheres for example
 	- Interleaved vbos for meshes and changes to blender exporter accordingly
-	- Enumerate and save all the uniform and attribute positions in shader when it is added and 	cache them in shader object?
+	- Enumerate and save all the uniform and attribute positions in shader when it is added and	cache them in shader object?
 	- Physics/Collision detection in 2d
 	- Complete gui integration
 	- Decoupled event handling of gui and input if possible
 	- Custom rendering for gui
 	- Allow passsing base path as commandline argument?
-	- Remove components and switch to "Fat Entities" i.e. one entity struct contains all 	combinations
+	- Remove components and switch to "Fat Entities" i.e. one entity struct contains all combinations
 	- Use variants for material params
 	- Improve Material Parameters/Pipeline Uniforms/Instance Uniforms are handled
 	- Fix light rotation/direction bugs
@@ -183,7 +183,7 @@
 	- Sound streaming
 	- Implment missing sound source properties (inner/outer cone, getting sound source data)
 	- Ingame console and console commands etc
-	- Allow binding/unbinding input maps to functions at runtime, for example if input map 	"Recompute" is triggered, it would call some function that can recompute bounding spheres.
+	- Allow binding/unbinding input maps to functions at runtime, for example if input map "Recompute" is triggered, it would call some function that can recompute bounding spheres.
 	- Better handling of wav format checking at load time
 	- Sprite sheet animations
 	- Ray picking
@@ -299,3 +299,6 @@
 	* Fix README to conform with markdown syntax
 	* Added video driver selection to make game launch under wayland or x11 on linux.
 	* Separate game code into a dynamical library that can be reloaded at runtime.
+	* Move game, common and game library related code into separate folders.
+	* Fixed game crashing on exit after game library has been reloaded more than once.
+	* Made game compile and run under windows with visual studio 2017 using GENie

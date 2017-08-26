@@ -149,7 +149,7 @@
 
 - ## TODO
 
-	- Replace OpenAL with soloud
+	- Fix bugs with sound sources not updating
 	- Add creating distributable build and uploading to itch.io account support to GENie under windows and linux.
 	- Remove hardcoded numerical values from sscanf and other format strings.
 	- Finish entity loading from file then move on to 2D rendering
@@ -190,9 +190,9 @@
 	- Shadow maps
 	- Print processor stats and machine capabilites RAM etc on every run to log.
 	- Milestone: Pong!
-	  - In order to put things into perspective and get a feel for what really needs to be 	prioritized, a very small but actual game release is necessary.
+	  - In order to put things into perspective and get a feel for what really needs to be prioritized, a very small but actual game release is necessary.
 	  - Release platforms: Windows and Linux
-	  - Makefile additions. Try to compile game as a dynamically loaded library with ability to 	reload on recompile
+	  - Makefile additions. Try to compile game as a dynamically loaded library with ability to	reload on recompile
 	  - Separation between game and engine base
 	  ? Game .so with init, update and cleanup functions
 	  x Configuration files and "cvars" load/reload

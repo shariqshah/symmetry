@@ -127,19 +127,19 @@ void hashmap_value_remove(struct Hashmap* hashmap, const char* key)
 }
 
 
-void hashmap_float_set(struct Hashmap* hashmap, const char* key, float value)
+void hashmap_float_set(struct Hashmap* hashmap, const char* key, const float value)
 {
 	struct Hashmap_Entry* new_entry = hashmap_entry_new(hashmap, key);
 	variant_assign_float(&new_entry->value, value);
 }
 
-void hashmap_int_set(struct Hashmap* hashmap, const char* key, int value)
+void hashmap_int_set(struct Hashmap* hashmap, const char* key, const int value)
 {
 	struct Hashmap_Entry* new_entry = hashmap_entry_new(hashmap, key);
 	variant_assign_int(&new_entry->value, value);
 }
 
-void hashmap_double_set(struct Hashmap* hashmap, const char* key, double value)
+void hashmap_double_set(struct Hashmap* hashmap, const char* key, const double value)
 {
 	struct Hashmap_Entry* new_entry = hashmap_entry_new(hashmap, key);
 	variant_assign_double(&new_entry->value, value);

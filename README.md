@@ -149,6 +149,10 @@
 
 - ## TODO
 
+	- Implement file copy and file delete on windows and linux.
+	- Implement a work-around for dll locking on windows by creating a copy of the game lib at launch and when reloading,
+	  unload the current dll, delete it and create new copy of the updated dll and load that. 
+	- Find a solution for the asset import/export situation by either updating the blender exporter or adding assimp as dependancy
 	- Fix bugs with sound sources not updating
 	- Add creating distributable build and uploading to itch.io account support to GENie under windows and linux.
 	- Remove hardcoded numerical values from sscanf and other format strings.

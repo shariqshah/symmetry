@@ -59,7 +59,7 @@ char* io_file_read(const int directory_type, const char* path, const char* mode,
 	return data;
 }
 
-FILE* io_file_open(int directory_type, const char* path, const char* mode)
+FILE* io_file_open(const int directory_type, const char* path, const char* mode)
 {
 	assert(directory_type >= 0 && directory_type <= DT_INSTALL);
 	

@@ -128,8 +128,8 @@ bool scene_load(const char* filename, int directory_type)
     FILE* entity_file = platform->file.open(directory_type, filename, "r");
 	if(!entity_file)
 	{
-		log_error("scene:load", "Failed to open scenefile %s for writing", filename);
-		return NULL;
+        log_error("scene:load", "Failed to open scenefile %s for reading", filename);
+        return false;
 	}
 
     struct Entity* root = entity_get(root_node);

@@ -181,7 +181,7 @@ void sound_source_load_wav(uint source_handle, uint buffer_handle, const char* f
 	}
 	
 	char* full_path = str_new("sounds/%s", file_name);
-	FILE* wav_file = io_file_open(DT_INSTALL, full_path, "rb");
+	FILE* wav_file = io_file_open(DIRT_INSTALL, full_path, "rb");
 	free(full_path);
 	if(!wav_file)
 	{

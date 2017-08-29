@@ -26,8 +26,10 @@ typedef void (*Textinput_Event_Func)    (const char* text);
 
 enum Directory_Type
 {
-    DT_USER,					/* User directory or preferences directory */
-    DT_INSTALL					/* Directory where the game's executable is, usually where the game is installed */
+    DIRT_USER,					/* User directory or preferences directory */
+    DIRT_INSTALL,					/* Directory where the game's assets are, usually alongside the game's executable where the game is installed */
+	DIRT_EXECUTABLE,				/* Directory where the game's executable is located */
+	DIRT_COUNT
 };
 
 struct Sound_Api

@@ -187,7 +187,7 @@ void editor_update(float dt)
 			if(nk_button_label(context, "Render Settings"))
 				editor_state.renderer_settings_window = !editor_state.renderer_settings_window;
 			if(nk_button_label(context, "Save config"))
-                platform->config.save("config.cfg", DT_USER);
+                platform->config.save("config.cfg", DIRT_USER);
 			nk_spacing(context, 1);
 			nk_labelf(context, NK_TEXT_ALIGN_RIGHT | NK_TEXT_ALIGN_MIDDLE, "FPS : %.d", fps);
 			nk_group_end(context);

@@ -149,9 +149,8 @@
 
 - ## TODO
 
-	- Implement file copy and file delete on windows and linux.
-	- Implement a work-around for dll locking on windows by creating a copy of the game lib at launch and when reloading,
-	  unload the current dll, delete it and create new copy of the updated dll and load that. 
+	- Add file copy and delete to platform api
+	- Make dll reloading workaround compatilble on linux
 	- Find a solution for the asset import/export situation by either updating the blender exporter or adding assimp as dependancy
 	- Fix bugs with sound sources not updating
 	- Add creating distributable build and uploading to itch.io account support to GENie under windows and linux.
@@ -306,3 +305,6 @@
 	* Move game, common and game library related code into separate folders.
 	* Fixed game crashing on exit after game library has been reloaded more than once.
 	* Made game compile and run under windows with visual studio 2017 using GENie
+	* Implemented file copy and file delete on windows and linux.
+	* Implemented a work-around for dll locking on windows by creating a copy of the game lib at launch and when reloading,
+	  unloading the current dll, deleting it and creating new copy of the updated dll and loading that

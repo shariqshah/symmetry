@@ -31,11 +31,11 @@ void input_init(void)
     platform->mousewheel_callback_set(&input_on_mousewheel);
 	
 	input_map_list = array_new(struct Input_Map);
-	if(!input_keybinds_load("keybindings.cfg", DT_USER))
+	if(!input_keybinds_load("keybindings.cfg", DIRT_USER))
 	{
 		log_error("input:init", "Failed to load keybindings");
 		log_message("Reverting to default keybindings");
-		if(!input_keybinds_load("keybindings.cfg", DT_INSTALL))
+		if(!input_keybinds_load("keybindings.cfg", DIRT_INSTALL))
 		{
 			log_error("input:init", "Failed to load default keybindings");
 		}
@@ -208,7 +208,7 @@ bool input_keybinds_save(const char* filename)
 {
 	bool success = false;
 
-    FILE* config_file = platform->file.open(DT_USER, filename, "w");
+    FILE* config_file = platform->file.open(DIRT_USER, filename, "w");
 	if(!config_file)
 	{
 		log_error("input:keybinds_save", "Could not open %s", filename);

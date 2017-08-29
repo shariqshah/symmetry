@@ -372,7 +372,7 @@ void gui_font_set(const char* font_name, float font_size)
 	struct nk_font_atlas* atlas = &gui_state->atlas;
 	long size = 0;
 	char* font_file_name = str_new("fonts/%s", font_name);
-    char* font_data = platform->file.read(DT_INSTALL, font_file_name, "rb", &size);
+    char* font_data = platform->file.read(DIRT_INSTALL, font_file_name, "rb", &size);
 	free(font_file_name);
 	if(!font_data)
 	{

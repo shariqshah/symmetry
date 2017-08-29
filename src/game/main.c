@@ -9,11 +9,14 @@
 #include "../common/hashmap.h"
 #include "../common/common.h"
 
-static struct Window*      window = NULL;
 static struct Platform_Api platform_api;
-static bool                reload_game = false;
-struct Game_Api            game;
-void*                      game_lib_handle = NULL;
+static struct Window*      window        = NULL;
+static bool                reload_game   = false;
+static const char*         lib_name      = "libSymmetry.dll";
+static const char*         lib_copy_name = "libSymmetry.copy.dll";
+
+void*           game_lib_handle = NULL;
+struct Game_Api game;
 
 bool init(void);
 void cleanup(void);
@@ -122,7 +125,12 @@ int main(int argc, char** args)
 						platform_unload_library(game_lib_handle);
 						game_lib_handle = NULL;
 						game.cleanup    = NULL;
-						game.init       = NULL; 
+						game.init       = NULL;
+						if(!io_file_delete(DIRT_EXECUTABLE, lib_copy_name))
+						{
+							done = true;
+							continue;
+						}
 					}
 					
 					if(!game_lib_load())
@@ -159,10 +167,10 @@ bool init(void)
     io_file_init(install_path, user_path);
     free(install_path);
     free(user_path);
-    if(!config_vars_load("config.cfg", DT_USER))
+    if(!config_vars_load("config.cfg", DIRT_USER))
     {
         log_error("main:init", "Could not load config, reverting to defaults");
-        config_vars_save("config.cfg", DT_USER);
+        config_vars_save("config.cfg", DIRT_USER);
     }
 
     if(!platform_init_video()) return false;
@@ -215,7 +223,13 @@ void game_lib_reload(void)
 
 bool game_lib_load(void)
 {
-    game_lib_handle = platform_load_library("libSymmetry");
+	if(!io_file_copy(DIRT_EXECUTABLE, lib_name, lib_copy_name))
+	{
+		log_error("main:game_lib_load", "Failed to copy dll");
+		return false;
+	}
+	
+    game_lib_handle = platform_load_library("libSymmetry.copy");
     if(!game_lib_handle)
     {
         log_error("main:game_lib_load", "Failed to load game library");

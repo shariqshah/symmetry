@@ -89,8 +89,10 @@ int main(int argc, char** args)
             },
             .file =
             {
-                .read = &io_file_read,
-                .open = &io_file_open
+                .read  	= &io_file_read,
+                .open  	= &io_file_open,
+				.copy  	= &io_file_copy,
+				.delete = &io_file_delete
             },
             .config =
             {

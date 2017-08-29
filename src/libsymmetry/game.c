@@ -29,8 +29,10 @@
 #include "../common/common.h"
 
 #define UNUSED(a) (void)a
-//#define MIN(a,b) ((a) < (b) ? (a) : (b))
-//#define MAX(a,b) ((a) < (b) ? (b) : (a))
+#ifndef _MSC_VER
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
+#define MAX(a,b) ((a) < (b) ? (b) : (a))
+#endif
 #define LEN(a) (sizeof(a)/sizeof(a)[0])
 
 
@@ -125,16 +127,16 @@ void scene_setup(void)
 	vec3 scale = {1, 1, 1};
 	transform_scale(new_ent, &scale);
 
-	struct Entity* sound_ent = scene_add_as_child("Sound_ENT", ET_SOUND_SOURCE, new_ent->id);
-    struct Sound_Source* sound_source = &sound_ent->sound_source;
-    platform->sound.source_create(true, 1, &sound_source->source_handle, &sound_source->buffer_handles[0]);
-    platform->sound.source_load_wav(sound_source->source_handle,
-                                    sound_source->buffer_handles[0],
-                                    "BigExplosion.wav");
-	//sound_source_relative_set(source, true);
-    platform->sound.source_volume_set(sound_source->source_handle, 1.f);
-    platform->sound.source_loop_set(sound_source->source_handle, true);
-    platform->sound.source_play(sound_source->source_handle);
+	/* struct Entity* sound_ent = scene_add_as_child("Sound_ENT", ET_SOUND_SOURCE, new_ent->id); */
+    /* struct Sound_Source* sound_source = &sound_ent->sound_source; */
+    /* platform->sound.source_create(true, 1, &sound_source->source_handle, &sound_source->buffer_handles[0]); */
+    /* platform->sound.source_load_wav(sound_source->source_handle, */
+    /*                                 sound_source->buffer_handles[0], */
+    /*                                 "BigExplosion.wav"); */
+	/* //sound_source_relative_set(source, true); */
+    /* platform->sound.source_volume_set(sound_source->source_handle, 1.f); */
+    /* platform->sound.source_loop_set(sound_source->source_handle, true); */
+    /* platform->sound.source_play(sound_source->source_handle); */
 
 	int parent_node = new_ent->id;
 	int num_suz = 10;

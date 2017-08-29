@@ -74,6 +74,8 @@ struct File_Api
 {
     char* (*read)(const int directory_type, const char* path, const char* mode, long* file_size);
     FILE* (*open)(const int directory_type, const char* path, const char* mode);
+	bool  (*copy)(const int directory_type, const char* source, const char* destination);
+	bool  (*delete)(const int directory_type, const char* filename);
 };
 
 struct Config_Api

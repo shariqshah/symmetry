@@ -6,16 +6,18 @@ solution "Symmetry"
 	includedirs {"../include/"}
 
 	configuration {"linux"}
-	    postbuildcommands {"ln -fs /mnt/Dev/Projects/symmetry/assets debug/"}
-		postbuildcommands {"ln -fs /mnt/Dev/Projects/symmetry/assets release/"}
+	    postbuildcommands {"ln -fs " .. os.getcwd()  .. "/../assets debug/assets"}
+	    postbuildcommands {"ln -fs " .. os.getcwd()  .. "/../assets release/assets"}
+		buildoptions {"-Wall", "-std=c99"}
+
+	configuration {"windows", "gmake"}
+	    postbuildcommands {"ln -fs " .. os.getcwd()  .. "/../assets debug/assets"}
+	    postbuildcommands {"ln -fs " .. os.getcwd()  .. "/../assets release/assets"}
 		buildoptions {"-Wall", "-std=c99"}
 
 
-   configuration {"windows"}
-
+   configuration {"windows", "vs2017 or qbs"}
 	   includedirs {"../third_party/windows/SDL2-2.0.5/include/", "../third_party/windows/OpenAL/include/"}
-	   -- postbuildcommands {"mklink /D debug\\assets ..\\..\\..\\assets"}
-	   -- postbuildcommands {"mklink /D release\\assets ..\\..\\..\\assets"}
 
 	   local sdl_lib_dir    = "../third_party/windows/SDL2-2.0.5/lib/x64/"
 	   local openal_lib_dir = "../third_party/windows/OpenAL/lib/"
@@ -23,7 +25,7 @@ solution "Symmetry"
 	   defines {"_CRT_SECURE_NO_WARNINGS"}
 	   flags {"NoIncrementalLink", "NoEditAndContinue"}
 
-    configuration "Debug"
+   configuration "Debug"
 	    if (_ACTION ~= nil and _ACTION ~= "postbuild_copy") then
 		   os.mkdir(_ACTION .. "/debug")
 		   targetdir (_ACTION .. "/debug")
@@ -31,7 +33,7 @@ solution "Symmetry"
 		defines { "DEBUG" }
 		flags { "Symbols" }
 
-    configuration "Release"
+   configuration "Release"
 	    if (_ACTION ~= nil and _ACTION ~= "postbuild_copy") then
 		   os.mkdir(_ACTION .. "/release")
 		   targetdir (_ACTION .. "/release")
@@ -54,7 +56,12 @@ solution "Symmetry"
 				linkoptions {"`pkg-config --libs sdl2 openal`"}
 				links {"m"}
 
-			configuration "windows"
+			configuration {"windows", "gmake"}
+				buildoptions {"`pkg-config --cflags-only-I sdl2 openal`"}
+				linkoptions {"`pkg-config --libs sdl2 openal`"}
+				links {"m"}
+
+			configuration {"windows", "vs2017 or qbs"}
 			    libdirs { sdl_lib_dir, openal_lib_dir }
 			    links {"SDL2", "OpenAL32"}
 				
@@ -116,5 +123,8 @@ solution "Symmetry"
 			defines {"GAME_LIB"}
 			files { "../src/common/**.c", "../src/common/**.h", "../src/libsymmetry/**.h", "../src/libsymmetry/**.c" }
 
+			configuration {"windows", "gmake"}
+				buildoptions {"`pkg-config --cflags-only-I sdl2`"}
+				
 			configuration "Debug"
 		        defines {"GL_DEBUG_CONTEXT", "AL_DEBUG"}

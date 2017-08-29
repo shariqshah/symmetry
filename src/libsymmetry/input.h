@@ -4,11 +4,7 @@
 #include <stdlib.h>
 #include "../common/num_types.h"
 
-#if defined(_MSC_VER)
-	#include <SDL.h>
-#else
-	#include <SDL2/SDL.h>
-#endif
+#include <SDL.h>
 
 struct Key_Combination
 {

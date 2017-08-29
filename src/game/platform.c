@@ -4,11 +4,7 @@
 #include "../common/hashmap.h"
 #include "../common/string_utils.h"
 
-#if defined(_MSC_VER)
-	#include <SDL.h>
-#else
-	#include <SDL2/SDL.h>
-#endif
+#include <SDL.h>
 
 #include <string.h>
 #include <stdlib.h>

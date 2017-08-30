@@ -10,7 +10,7 @@
 
    - ### Entity
 
-		```.conf
+		```
 		# Comment, Sample entity definition in file, paremeters left out are set to defaults
 		# Empty line at the end specifies end of entity definition
 		entity:   "Something"
@@ -27,7 +27,7 @@
    - Add to_string functions for major structs like transform, model etc to ease in conversion?
    - ### Configuration Variables a.k.a cfg-vars
 
-		```.conf
+		```
 		# Comment
 		render_width: 1024
 		render_height: 1024
@@ -43,7 +43,7 @@
 
    - ### Keybindings
 
-       ```.conf
+       ```
        # All keys are parsed by comparing the output of SDL_GetKeyname
 	   # Each line represents a keybinding
 	   Move_Forward: W
@@ -149,8 +149,6 @@
 
 - ## TODO
 
-	- Add file copy and delete to platform api
-	- Make dll reloading workaround compatilble on linux
 	- Find a solution for the asset import/export situation by either updating the blender exporter or adding assimp as dependancy
 	- Fix bugs with sound sources not updating
 	- Add creating distributable build and uploading to itch.io account support to GENie under windows and linux.
@@ -294,8 +292,7 @@
 	* Fix frustum culling sometimes not working
 	* Compile and test on windows
 	* Fix mouse bugs
-	* Fix
-	* issues with opengl context showing 2.1 only
+	* Fix issues with opengl context showing 2.1 only
 	* Improve this readme
 	* Replace orgfile with simple text readme and reduce duplication
 	* Fix camera acting all weird when right click is held
@@ -308,3 +305,6 @@
 	* Implemented file copy and file delete on windows and linux.
 	* Implemented a work-around for dll locking on windows by creating a copy of the game lib at launch and when reloading,
 	  unloading the current dll, deleting it and creating new copy of the updated dll and loading that
+	* Added file copy and delete to platform api
+	* Made dll reloading workaround compatilble on linux
+	* Default keybindings as fallback

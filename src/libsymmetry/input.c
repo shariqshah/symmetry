@@ -45,36 +45,37 @@ void input_init(void)
 		}
 	}
 
-	/* struct Key_Combination forward_keys[2]      = {{KEY_W, KMD_NONE}, {KEY_UP, KMD_ALT | KMD_SHIFT}}; */
-	/* struct Key_Combination backward_keys[2]     = {{KEY_S, KMD_NONE}, {KEY_DOWN, KMD_NONE}}; */
-	/* struct Key_Combination up_keys[2]           = {KEY_Q}; */
-	/* struct Key_Combination down_keys[2]         = {KEY_E}; */
-	/* struct Key_Combination left_keys[2]         = {KEY_A, KEY_LEFT}; */
-	/* struct Key_Combination right_keys[2]        = {KEY_D, KEY_RIGHT}; */
-	/* struct Key_Combination turn_right_keys[1]   = {KEY_L}; */
-	/* struct Key_Combination turn_left_keys[1]    = {KEY_J}; */
-	/* struct Key_Combination turn_up_keys[1]      = {KEY_I}; */
-	/* struct Key_Combination turn_down_keys[1]    = {KEY_K}; */
-	/* struct Key_Combination sprint_keys[2]       = {KEY_LSHIFT, KEY_RSHIFT}; */
-	/* struct Key_Combination recompute_keys[2]    = {KEY_F5, KEY_H}; */
-	/* struct Key_Combination ed_toggle_keys[1]    = {KEY_F1}; */
-	/* struct Key_Combination win_fullscr_keys[1]  = {KEY_F11}; */
-	/* struct Key_Combination win_max_keys[1]      = {KEY_F12}; */
-	/* input_map_create("Move_Forward",      forward_keys,     2); */
-	/* input_map_create("Move_Backward",     backward_keys,    2); */
-	/* input_map_create("Move_Up",           up_keys,          1); */
-	/* input_map_create("Move_Down",         down_keys,        1); */
-	/* input_map_create("Move_Left",         left_keys,        2); */
-	/* input_map_create("Move_Right",        right_keys,       2); */
-	/* input_map_create("Turn_Right",        turn_right_keys,  1); */
-	/* input_map_create("Turn_Left",         turn_left_keys,   1); */
-	/* input_map_create("Turn_Up",           turn_up_keys,     1); */
-	/* input_map_create("Turn_Down",         turn_down_keys,   1); */
-	/* input_map_create("Sprint",            sprint_keys,      2); */
-	/* input_map_create("Recompute",         recompute_keys,   2); */
-	/* input_map_create("Editor_Toggle",     ed_toggle_keys,   1); */
-	/* input_map_create("Window_Fullscreen", win_fullscr_keys, 1); */
-	/* input_map_create("Window_Maximize",   win_max_keys,     1); */
+	/* Default keys for fallback */
+	struct Key_Combination forward_keys[2]      = {{KEY_W, KMD_NONE}, {KEY_UP, KMD_ALT | KMD_SHIFT}};
+	struct Key_Combination backward_keys[2]     = {{KEY_S, KMD_NONE}, {KEY_DOWN, KMD_NONE}};
+	struct Key_Combination up_keys[2]           = {{KEY_Q}};
+	struct Key_Combination down_keys[2]         = {{KEY_E}};
+	struct Key_Combination left_keys[2]         = {{KEY_A}, {KEY_LEFT}};
+	struct Key_Combination right_keys[2]        = {{KEY_D}, {KEY_RIGHT}};
+	struct Key_Combination turn_right_keys[1]   = {{KEY_L}};
+	struct Key_Combination turn_left_keys[1]    = {{KEY_J}};
+	struct Key_Combination turn_up_keys[1]      = {{KEY_I}};
+	struct Key_Combination turn_down_keys[1]    = {{KEY_K}};
+	struct Key_Combination sprint_keys[2]       = {{KEY_LSHIFT}, {KEY_RSHIFT}};
+	struct Key_Combination ed_toggle_keys[1]    = {{KEY_F1}};
+	struct Key_Combination win_fullscr_keys[1]  = {{KEY_F11}};
+	struct Key_Combination win_max_keys[1]      = {{KEY_F12}};
+	struct Key_Combination reload_game_keys[1]  = {{KEY_F5}};
+	input_map_create("Move_Forward",      forward_keys,     2);
+	input_map_create("Move_Backward",     backward_keys,    2);
+	input_map_create("Move_Up",           up_keys,          1);
+	input_map_create("Move_Down",         down_keys,        1);
+	input_map_create("Move_Left",         left_keys,        2);
+	input_map_create("Move_Right",        right_keys,       2);
+	input_map_create("Turn_Right",        turn_right_keys,  1);
+	input_map_create("Turn_Left",         turn_left_keys,   1);
+	input_map_create("Turn_Up",           turn_up_keys,     1);
+	input_map_create("Turn_Down",         turn_down_keys,   1);
+	input_map_create("Sprint",            sprint_keys,      2);
+	input_map_create("Editor_Toggle",     ed_toggle_keys,   1);
+	input_map_create("Window_Fullscreen", win_fullscr_keys, 1);
+	input_map_create("Window_Maximize",   win_max_keys,     1);
+	input_map_create("Reload_Game_Lib",   reload_game_keys, 1);
 }
 
 void input_cleanup(void)
@@ -344,6 +345,7 @@ void input_map_create(const char* name, struct Key_Combination* keys, int num_ke
 		for(int i = 0; i < num_keys; i++)
 		{
 			struct Key_Combination* new_comb = array_grow(map->keys, struct Key_Combination);
+			new_comb->mods = KMD_NONE;
 			*new_comb = keys[i];
 			log_message("Added new Key combination to input map : %s", name);
 		}
@@ -355,7 +357,10 @@ void input_map_create(const char* name, struct Key_Combination* keys, int num_ke
 		new_map->keys  = array_new_cap(struct Key_Combination, num_keys);
 		new_map->state = KS_INACTIVE;
 		for(int i = 0; i < num_keys; i++)
-			new_map->keys[i] = keys[i];
+		{
+			new_map->keys[i].mods = KMD_NONE;
+			new_map->keys[i]      = keys[i];
+		}
 		log_message("Created Input Map : %s", name);
 	}
 }

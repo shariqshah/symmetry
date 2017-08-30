@@ -12,8 +12,10 @@
 static struct Platform_Api platform_api;
 static struct Window*      window        = NULL;
 static bool                reload_game   = false;
+#if defined(__MSC_VER)
 static const char*         lib_name      = "libSymmetry.dll";
 static const char*         lib_copy_name = "libSymmetry.copy.dll";
+#endif
 
 void*           game_lib_handle = NULL;
 struct Game_Api game;
@@ -128,11 +130,13 @@ int main(int argc, char** args)
 						game_lib_handle = NULL;
 						game.cleanup    = NULL;
 						game.init       = NULL;
+#if defined(_MSC_VER)
 						if(!io_file_delete(DIRT_EXECUTABLE, lib_copy_name))
 						{
 							done = true;
 							continue;
 						}
+#endif
 					}
 					
 					if(!game_lib_load())
@@ -225,6 +229,7 @@ void game_lib_reload(void)
 
 bool game_lib_load(void)
 {
+#if defined(__MSC_VER)
 	if(!io_file_copy(DIRT_EXECUTABLE, lib_name, lib_copy_name))
 	{
 		log_error("main:game_lib_load", "Failed to copy dll");
@@ -232,6 +237,9 @@ bool game_lib_load(void)
 	}
 	
     game_lib_handle = platform_load_library("libSymmetry.copy");
+#else
+	game_lib_handle = platform_load_library("Symmetry");
+#endif
     if(!game_lib_handle)
     {
         log_error("main:game_lib_load", "Failed to load game library");

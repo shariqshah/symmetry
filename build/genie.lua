@@ -8,7 +8,7 @@ solution "Symmetry"
 	configuration {"linux"}
 	    postbuildcommands {"ln -fs " .. os.getcwd()  .. "/../assets debug/assets"}
 	    postbuildcommands {"ln -fs " .. os.getcwd()  .. "/../assets release/assets"}
-		buildoptions {"-Wall", "-std=c99"}
+		buildoptions {"-Wall", "-std=c99", "`pkg-config --cflags-only-I sdl2`"}
 
 	configuration {"windows", "gmake"}
 	    postbuildcommands {"ln -fs " .. os.getcwd()  .. "/../assets debug/assets"}
@@ -118,13 +118,16 @@ solution "Symmetry"
 		-------------------------
 		project "Library"
 		    kind "SharedLib"
-			targetname "libSymmetry"
 			language "C"
+			targetname "Symmetry"
 			defines {"GAME_LIB"}
 			files { "../src/common/**.c", "../src/common/**.h", "../src/libsymmetry/**.h", "../src/libsymmetry/**.c" }
 
-			configuration {"windows", "gmake"}
+			configuration {"windows or linux", "gmake"}
 				buildoptions {"`pkg-config --cflags-only-I sdl2`"}
-				
+
+			configuration "windows"
+			    targetname "libSymmetry"
+			
 			configuration "Debug"
 		        defines {"GL_DEBUG_CONTEXT", "AL_DEBUG"}

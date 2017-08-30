@@ -91,7 +91,7 @@ bool gui_init(void)
     platform->textinput_callback_set(&gui_handle_textinput_event);
 	//gui_font_set("Ubuntu-R.ttf", 14);
 	//gui_font_set("FiraSans-Regular.ttf", 14);
-	gui_font_set("RobotoCondensed-Regular.ttf", 18);
+	gui_font_set("roboto_condensed.ttf", 16);
 //	gui_theme_set(GT_RED);
     gui_theme_set(GT_DEFAULT);
 	success = true;

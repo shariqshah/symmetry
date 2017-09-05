@@ -15,6 +15,7 @@
 #include <string.h>
 #include <assert.h>
 #include <stdarg.h>
+#include <ctype.h>
 
 #define MAX_ENTITY_PROP_NAME_LEN 128
 #define MAX_ENTITY_PROP_LEN      256
@@ -195,35 +196,33 @@ struct Entity* entity_get_parent(int node)
 	return parent;
 }
 
-bool entity_save(struct Entity* entity, const char* filename, int directory_type)
+bool entity_write(struct Entity* entity, FILE* file)
 {
-	bool success = false;
-    FILE* entity_file = platform->file.open(directory_type, filename, "w");
-	if(!entity_file)
+	if(!file)
 	{
-		log_error("entity:save", "Failed to open entity file %s for writing");
-		return success;
+		log_error("entity:write", "Invalid file handle");
+		return false;
 	}
 
 	/* First write all properties common to all entity types */
-	fprintf(entity_file, "name: %s\n", entity->name);
-	fprintf(entity_file, "type: %d\n", entity->type);
-	fprintf(entity_file, "is_listener: %s\n", entity->is_listener ? "true" : "false");
-	fprintf(entity_file, "renderable: %s\n", entity->renderable ? "true" : "false");
+	fprintf(file, "name: %s\n", entity->name);
+	fprintf(file, "type: %d\n", entity->type);
+	fprintf(file, "is_listener: %s\n", entity->is_listener ? "true" : "false");
+	fprintf(file, "renderable: %s\n", entity->renderable ? "true" : "false");
 
 	struct Entity* parent = entity_get_parent(entity->id);
-	fprintf(entity_file, "parent: %s\n", parent->name);
+	fprintf(file, "parent: %s\n", parent ? parent->name : "NONE");
 
 	/* Transform */
-	fprintf(entity_file, "position: %.5f %.5f %.5f\n",
+	fprintf(file, "position: %.5f %.5f %.5f\n",
 			entity->transform.position.x,
 			entity->transform.position.y,
 			entity->transform.position.z);
-	fprintf(entity_file, "scale: %.5f %.5f %.5f\n",
+	fprintf(file, "scale: %.5f %.5f %.5f\n",
 			entity->transform.scale.x,
 			entity->transform.scale.y,
 			entity->transform.scale.z);
-	fprintf(entity_file, "rotation: %.5f %.5f %.5f %.5f\n",
+	fprintf(file, "rotation: %.5f %.5f %.5f %.5f\n",
 			entity->transform.rotation.x,
 			entity->transform.rotation.y,
 			entity->transform.rotation.z,
@@ -233,12 +232,12 @@ bool entity_save(struct Entity* entity, const char* filename, int directory_type
 	{
 	case ET_CAMERA:
 	{
-		fprintf(entity_file, "ortho: %s\n", entity->camera.ortho ? "true" : "false");
-		fprintf(entity_file, "resizeable: %s\n", entity->camera.resizeable ? "true" : "false");
-		fprintf(entity_file, "fov: %.5f\n", entity->camera.fov);
-		fprintf(entity_file, "nearz: %.5f\n", entity->camera.nearz);
-		fprintf(entity_file, "farz: %.5f\n", entity->camera.farz);
-		fprintf(entity_file, "render_texture: %s\n", entity->camera.render_tex == -1 ? "false" : "true");
+		fprintf(file, "ortho: %s\n", entity->camera.ortho ? "true" : "false");
+		fprintf(file, "resizeable: %s\n", entity->camera.resizeable ? "true" : "false");
+		fprintf(file, "fov: %.5f\n", entity->camera.fov);
+		fprintf(file, "nearz: %.5f\n", entity->camera.nearz);
+		fprintf(file, "farz: %.5f\n", entity->camera.farz);
+		fprintf(file, "render_texture: %s\n", entity->camera.render_tex == -1 ? "false" : "true");
 		break;
 	}
 	case ET_STATIC_MESH:
@@ -246,23 +245,23 @@ bool entity_save(struct Entity* entity, const char* filename, int directory_type
 		/* TODO: Change this after adding proper support for exported models from blender */
 		struct Material* material = material_get(entity->model.material);
 		struct Geometry* geom = geom_get(entity->model.geometry_index);
-		fprintf(entity_file, "material: %s\n", material->name);
-		fprintf(entity_file, "geometry: %s\n", geom->filename);
+		fprintf(file, "material: %s\n", material->name);
+		fprintf(file, "geometry: %s\n", geom->filename);
 		break;
 	}
 	case ET_LIGHT:
 	{
-		fprintf(entity_file, "light_type: %d\n", entity->light.valid);
-		fprintf(entity_file, "outer_angle: %.5f\n", entity->light.outer_angle);
-		fprintf(entity_file, "inner_angle: %.5f\n", entity->light.inner_angle);
-		fprintf(entity_file, "falloff: %.5f\n", entity->light.falloff);
-		fprintf(entity_file, "radius: %d\n", entity->light.radius);
-		fprintf(entity_file, "intensity: %.5f\n", entity->light.intensity);
-		fprintf(entity_file, "depth_bias: %.5f\n", entity->light.depth_bias);
-		fprintf(entity_file, "valid: %s\n", entity->light.valid ? "true" : "false");
-		fprintf(entity_file, "cast_shadow: %s\n", entity->light.cast_shadow ? "true" : "false");
-		fprintf(entity_file, "pcf_enabled: %s\n", entity->light.pcf_enabled ? "true" : "false");
-		fprintf(entity_file, "color: %.5f %.5f %.5f",
+		fprintf(file, "light_type: %d\n", entity->light.valid);
+		fprintf(file, "outer_angle: %.5f\n", entity->light.outer_angle);
+		fprintf(file, "inner_angle: %.5f\n", entity->light.inner_angle);
+		fprintf(file, "falloff: %.5f\n", entity->light.falloff);
+		fprintf(file, "radius: %d\n", entity->light.radius);
+		fprintf(file, "intensity: %.5f\n", entity->light.intensity);
+		fprintf(file, "depth_bias: %.5f\n", entity->light.depth_bias);
+		fprintf(file, "valid: %s\n", entity->light.valid ? "true" : "false");
+		fprintf(file, "cast_shadow: %s\n", entity->light.cast_shadow ? "true" : "false");
+		fprintf(file, "pcf_enabled: %s\n", entity->light.pcf_enabled ? "true" : "false");
+		fprintf(file, "color: %.5f %.5f %.5f",
 				entity->light.color.x,
 				entity->light.color.y,
 				entity->light.color.z);
@@ -270,30 +269,44 @@ bool entity_save(struct Entity* entity, const char* filename, int directory_type
 	}
 	case ET_SOUND_SOURCE:
 	{
-		fprintf(entity_file, "active: %s\n", entity->sound_source.active ? "true" : "false");
-		fprintf(entity_file, "relative: %s\n", entity->sound_source.relative ? "true" : "false");
+		fprintf(file, "active: %s\n", entity->sound_source.active ? "true" : "false");
+		fprintf(file, "relative: %s\n", entity->sound_source.relative ? "true" : "false");
 		break;
 	}
 	};
 
-	fprintf(entity_file, "\n");
-	log_message("Entity %s written to %s", entity->name, filename);
-	success = true;
-	fclose(entity_file);
-	return success;
+	fprintf(file, "\n");
+	return true;
 }
 
-struct Entity* entity_load(const char* filename, int directory_type)
+bool entity_save(struct Entity* entity, const char* filename, int directory_type)
 {
-    FILE* entity_file = platform->file.open(directory_type, filename, "r");
+    FILE* entity_file = platform->file.open(directory_type, filename, "w");
 	if(!entity_file)
 	{
-		log_error("entity:load", "Failed to open entity file %s for writing", filename);
-		return NULL;
+		log_error("entity:save", "Failed to open entity file %s for writing");
+		return false;
+	}
+
+	if(entity_write(entity, entity_file))
+		log_message("Entity %s saved to %s", entity->name, filename);
+	else
+		log_error("entity:save", "Failed to save entity : %s to file : %s", entity->name, filename);
+
+	fclose(entity_file);
+	return false;
+}
+
+struct Entity* entity_read(FILE* file)
+{
+	if(!file)
+	{
+		log_error("entity:read", "Invalid file handle");
+		return false;
 	}
 
 	struct Entity entity =
-    {
+	{
 		.id                  = -1,
 		.type                = ET_NONE,
 		.is_listener         = false,
@@ -301,7 +314,7 @@ struct Entity* entity_load(const char* filename, int directory_type)
 		.marked_for_deletion = false,
 		.name                = "DEFAULT_ENTITY_NAME",
 		.editor_selected     = 0
-    };
+	};
 	
     int   current_line  = 0;
 	char* material_name = NULL;
@@ -316,18 +329,18 @@ struct Entity* entity_load(const char* filename, int directory_type)
 	memset(prop_str, '\0', MAX_ENTITY_PROP_NAME_LEN);
 	memset(line_buffer, '\0', MAX_LINE_LEN);
 
-	while(fgets(line_buffer, MAX_LINE_LEN -1, entity_file))
+	while(fgets(line_buffer, MAX_LINE_LEN -1, file))
 	{
 		current_line++;
 		memset(prop_str, '\0', MAX_ENTITY_PROP_NAME_LEN);
 
 		if(line_buffer[0] == '#') continue;
-		if(strlen(line_buffer) == 0) break;
+		if(strlen(line_buffer) == 0 || isspace(line_buffer[0])) break;
 
 		char* value_str = strstr(line_buffer, ":");
 		if(!value_str)
 		{
-			log_warning("Malformed value in entity file %s, line %d", filename, current_line);
+			log_warning("Malformed value in line %d", current_line);
 			continue;
 		}
 
@@ -335,7 +348,7 @@ struct Entity* entity_load(const char* filename, int directory_type)
 		
 		if(sscanf(line_buffer, " %1024[^: ] : %*s", prop_str) != 1)
 		{
-			log_warning("Unable to read property name in entity file %s, line %d", filename, current_line);
+			log_warning("Unable to read property name in line %d", current_line);
 			continue;
 		}
 
@@ -414,7 +427,8 @@ struct Entity* entity_load(const char* filename, int directory_type)
 		else if(strncmp("render_texture", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
 		{
 			variant_from_str(&var_value, value_str, VT_BOOL);
-			variant_copy_out(&entity.camera.fbo, &var_value);
+			entity.camera.fbo = var_value.val_bool ? 0 : -1;
+			//variant_copy_out(&entity.camera.fbo, &var_value);
 		}
 
 		/* Light */
@@ -507,7 +521,10 @@ struct Entity* entity_load(const char* filename, int directory_type)
 	}
 
 	/* Do the things after assignment */
-	struct Entity* parent_entity = entity_find(parent_name);
+	struct Entity* parent_entity = NULL;
+	if(strcmp(parent_name, "NONE") == 0)
+		parent_entity = entity_find(parent_name);
+	
 	struct Entity* new_entity = entity_create(entity_name, entity.type, parent_entity ? parent_entity->id : -1);
 	free(entity_name);
 	transform_translate(new_entity, &entity.transform.position, TS_PARENT);
@@ -519,6 +536,9 @@ struct Entity* entity_load(const char* filename, int directory_type)
 	switch(new_entity->type)
 	{
 	case ET_CAMERA:
+		new_entity->camera.fbo = -1; /* TODO: FIX by storing fbo params in camera struct and writing them into file when saving */
+		new_entity->camera.render_tex = -1;
+		new_entity->camera.depth_tex = -1;
 		camera_update_view(new_entity);
 		camera_update_proj(new_entity);
 		break;
@@ -538,8 +558,26 @@ struct Entity* entity_load(const char* filename, int directory_type)
                                       &new_entity->sound_source.buffer_handles[0]);
 		break;
 	};
-	
-	log_message("Entity %s loaded from %s", new_entity->name, filename);
+
+	return new_entity;
+}
+
+struct Entity* entity_load(const char* filename, int directory_type)
+{
+    FILE* entity_file = platform->file.open(directory_type, filename, "r");
+	if(!entity_file)
+	{
+		log_error("entity:load", "Failed to open entity file %s for writing", filename);
+		return NULL;
+	}
+
+	struct Entity* new_entity = NULL;
+	new_entity = entity_read(entity_file);
+	if(new_entity)
+		log_message("Entity %s loaded from %s", new_entity->name, filename);
+	else
+		log_error("entity:load", "Failed to load entity from %s", filename);	
+
 	fclose(entity_file);
 	return new_entity;
 }

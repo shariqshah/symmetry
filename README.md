@@ -149,6 +149,10 @@
 
 - ## TODO
 
+	- Add camera fbo params into camera struct so they can be saved and loaded into file
+	- Finish loading scene from file
+	- Fix space not being added after some entities are written to file
+	- Update makefiles to be able to compile the code in it's current state
 	- Find a solution for the asset import/export situation by either updating the blender exporter or adding assimp as dependancy
 	- Fix bugs with sound sources not updating
 	- Add creating distributable build and uploading to itch.io account support to GENie under windows and linux.
@@ -308,3 +312,4 @@
 	* Added file copy and delete to platform api
 	* Made dll reloading workaround compatilble on linux
 	* Default keybindings as fallback
+	* Implemented writing scene to file

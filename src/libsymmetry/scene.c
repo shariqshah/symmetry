@@ -124,7 +124,6 @@ struct Entity* scene_get_parent(struct Entity* entity)
 
 bool scene_load(const char* filename, int directory_type)
 {
-	bool success = false;
     FILE* entity_file = platform->file.open(directory_type, filename, "r");
 	if(!entity_file)
 	{
@@ -132,13 +131,62 @@ bool scene_load(const char* filename, int directory_type)
         return false;
 	}
 
-    struct Entity* root = entity_get(root_node);
+	int count = 0;
+	while(!feof(entity_file))
+	{
+		struct Entity* new_entity = NULL;
+		new_entity = entity_read(entity_file);
+		if(!new_entity)
+			log_error("scene:load", "Error reading entity");
+		else
+		{
+			log_message("Loaded %s", new_entity->name);
+			count++;
+		}
+		int c = fgetc(entity_file);
+	}
 
-	return success;
+	log_message("%d entites loaded from %s", count, filename);
+	fclose(entity_file);
+	return true;
 }
 
 bool scene_save(const char* filename, int directory_type)
 {
 	bool success = false;
+	FILE* scene_file = platform->file.open(directory_type, filename, "w");
+	if(!scene_file)
+	{
+		log_error("scene:save", "Failed to create scenefile %s for writing", filename);
+        return false;
+	}
+	
+	int* entities_to_write = array_new(int);
+	array_push(entities_to_write, root_node, int);
+
+	bool done = false;
+	int count = 0;
+	while(!done)
+	{
+		struct Entity* entity = entity_get(entities_to_write[0]);
+		if(!entity_write(entity, scene_file))
+		{
+			log_error("scene:save", "Failed to write '%s' to file", entity->name);
+			continue;
+		}
+
+		log_message("Entity '%s' written to file", entity->name);
+		count++;
+		for(int i = 0; i < array_len(entity->transform.children); i++)
+			array_push(entities_to_write, entity->transform.children[i], int);
+
+		array_remove_at(entities_to_write, 0);
+		if(array_len(entities_to_write) == 0) done = true;
+	}
+
+	log_message("%d entities written to %s", count, filename);
+	array_free(entities_to_write);
+	fclose(scene_file);
+	
 	return success;
 }

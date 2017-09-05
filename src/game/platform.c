@@ -461,8 +461,10 @@ void* platform_load_library(const char *name)
     memset(lib_name, '\0', MAX_LIB_NAME_LEN);
 #ifdef __linux__
     snprintf(lib_name, MAX_LIB_NAME_LEN, "./lib%s.so", name);
-#else
+#elif defined(_MSC_VER)
     snprintf(lib_name, MAX_LIB_NAME_LEN, "%s.dll", name);
+#elif defined(__MING32__) || defined(__MINGW64__)
+	snprintf(lib_name, MAX_LIB_NAME_LEN, "./%s.dll", name);
 #endif
     void* lib_handle = SDL_LoadObject(lib_name);
     if(!lib_handle) log_error("platform:load_library", "Failed to load library '%s', SDL : (%s)", lib_name, SDL_GetError());

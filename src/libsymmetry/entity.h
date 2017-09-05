@@ -3,6 +3,7 @@
 
 #include "../common/linmath.h"
 #include "../common/num_types.h"
+#include "../common/common.h"
 
 #define MAX_ENTITY_NAME_LEN 128
 #define MAX_SOUND_SOURCE_BUFFERS 5
@@ -128,6 +129,8 @@ struct Entity* entity_get_all(void);
 struct Entity* entity_get_parent(int node);
 bool           entity_save(struct Entity* entity, const char* filename, int directory_type);
 struct Entity* entity_load(const char* filename, int directory_type);
+bool           entity_write(struct Entity* entity, FILE* file);
+struct Entity* entity_read(FILE* file);
 const char*    entity_type_name_get(struct Entity* entity);
 
 

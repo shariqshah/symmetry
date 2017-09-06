@@ -100,9 +100,9 @@ void camera_update_proj(struct Entity* entity)
 void camera_attach_fbo(struct Entity* entity,
 					   int            width,
 					   int            height,
-					   int            has_depth,
-					   int            has_color,
-					   int            resizeable)
+					   bool           has_depth,
+					   bool           has_color,
+					   bool           resizeable)
 {
 	assert(width > 0 && height > 0);
 	struct Camera* camera = &entity->camera;
@@ -127,7 +127,7 @@ void camera_attach_fbo(struct Entity* entity,
 			texture_set_param(camera->render_tex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			texture_set_param(camera->render_tex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			texture_set_param(camera->render_tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			framebuffer_set_texture(camera->fbo, camera->render_tex, FA_COLOR_ATTACHMENT0);
+			framebuffer_texture_set(camera->fbo, camera->render_tex, FA_COLOR_ATTACHMENT0);
 		}
 
 		if(has_depth)
@@ -145,7 +145,7 @@ void camera_attach_fbo(struct Entity* entity,
 			texture_set_param(camera->depth_tex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			texture_set_param(camera->depth_tex, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 			texture_set_param(camera->depth_tex, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-			framebuffer_set_texture(camera->fbo, camera->depth_tex, FA_DEPTH_ATTACHMENT);
+			framebuffer_texture_set(camera->fbo, camera->depth_tex, FA_DEPTH_ATTACHMENT);
 		}
 	}
 	else

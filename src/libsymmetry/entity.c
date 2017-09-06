@@ -8,6 +8,7 @@
 #include "model.h"
 #include "material.h"
 #include "geometry.h"
+#include "framebuffer.h"
 #include "../common/variant.h"
 #include "../common/common.h"
 
@@ -237,7 +238,23 @@ bool entity_write(struct Entity* entity, FILE* file)
 		fprintf(file, "fov: %.5f\n", entity->camera.fov);
 		fprintf(file, "nearz: %.5f\n", entity->camera.nearz);
 		fprintf(file, "farz: %.5f\n", entity->camera.farz);
-		fprintf(file, "render_texture: %s\n", entity->camera.render_tex == -1 ? "false" : "true");
+		fprintf(file, "clear_color: %.5f %.5f %.5f %.5f\n",
+				entity->camera.clear_color.x,
+				entity->camera.clear_color.y,
+				entity->camera.clear_color.z,
+				entity->camera.clear_color.w);
+		if(entity->camera.fbo != -1)
+		{
+			fprintf(file, "has_fbo: true\n");
+			fprintf(file, "fbo_height: %d\n", framebuffer_height_get(entity->camera.fbo));
+			fprintf(file, "fbo_width: %d\n", framebuffer_width_get(entity->camera.fbo));
+			fprintf(file, "fbo_has_render_tex: %s\n", entity->camera.render_tex == -1 ? "false" : "true");
+			fprintf(file, "fbo_has_depth_tex: %s\n", entity->camera.depth_tex == -1 ? "false" : "true");
+		}
+		else
+		{
+			fprintf(file, "has_fbo: false\n");
+		}
 		break;
 	}
 	case ET_STATIC_MESH:
@@ -316,11 +333,13 @@ struct Entity* entity_read(FILE* file)
 		.editor_selected     = 0
 	};
 	
-    int   current_line  = 0;
-	char* material_name = NULL;
-	char* entity_name   = NULL;
-	char* geometry_name = NULL;
-	char* parent_name   = NULL;
+    int   current_line  	= 0;
+	char* material_name 	= NULL;
+	char* entity_name   	= NULL;
+	char* geometry_name 	= NULL;
+	char* parent_name   	= NULL;
+	int   camera_fbo_width  = -1;
+	int   camera_fbo_height = -1;
     char line_buffer[MAX_LINE_LEN];
     char prop_str[MAX_ENTITY_PROP_NAME_LEN];
 	static struct Variant var_value = { .type = VT_NONE};
@@ -359,7 +378,7 @@ struct Entity* entity_read(FILE* file)
 			entity_name = str_new(var_value.val_str);
 			//variant_copy_out(&entity.name, &var_value);
 		}
-		if(strncmp("parent", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		else if(strncmp("parent", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
 		{
 			variant_from_str(&var_value, value_str, VT_STR);
 			parent_name = str_new(var_value.val_str);
@@ -424,11 +443,35 @@ struct Entity* entity_read(FILE* file)
 			variant_from_str(&var_value, value_str, VT_FLOAT);
 			variant_copy_out(&entity.camera.farz, &var_value);
 		}
-		else if(strncmp("render_texture", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		else if(strncmp("has_fbo", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
 		{
 			variant_from_str(&var_value, value_str, VT_BOOL);
 			entity.camera.fbo = var_value.val_bool ? 0 : -1;
-			//variant_copy_out(&entity.camera.fbo, &var_value);
+		}		
+		else if(strncmp("fbo_height", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_INT);
+			variant_copy_out(&camera_fbo_height, &var_value);
+		}		
+		else if(strncmp("fbo_width", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_INT);
+			variant_copy_out(&camera_fbo_width, &var_value);
+		}
+		else if(strncmp("fbo_has_depth_tex", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_BOOL);
+			entity.camera.depth_tex = var_value.val_bool ? 0 : -1;
+		}
+		else if(strncmp("fbo_has_render_tex", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_BOOL);
+			entity.camera.render_tex = var_value.val_bool ? 0 : -1;
+		}
+		else if(strncmp("clear_color", prop_str, MAX_ENTITY_PROP_NAME_LEN) == 0)
+		{
+			variant_from_str(&var_value, value_str, VT_VEC4);
+			variant_copy_out(&entity.camera.clear_color, &var_value);
 		}
 
 		/* Light */
@@ -516,13 +559,17 @@ struct Entity* entity_read(FILE* file)
             variant_from_str(&var_value, value_str, VT_INT);
             variant_copy_out(&entity.sound_source.num_attached_buffers, &var_value);
         }
+		else
+		{
+			log_warning("Unknown entity property '%s' in line %d", prop_str, current_line);
+		}
 
 		variant_free(&var_value);
 	}
 
 	/* Do the things after assignment */
 	struct Entity* parent_entity = NULL;
-	if(strcmp(parent_name, "NONE") == 0)
+	if(strcmp(parent_name, "NONE") != 0)
 		parent_entity = entity_find(parent_name);
 	
 	struct Entity* new_entity = entity_create(entity_name, entity.type, parent_entity ? parent_entity->id : -1);
@@ -536,11 +583,26 @@ struct Entity* entity_read(FILE* file)
 	switch(new_entity->type)
 	{
 	case ET_CAMERA:
-		new_entity->camera.fbo = -1; /* TODO: FIX by storing fbo params in camera struct and writing them into file when saving */
+		new_entity->camera.fbo        = -1;
+		new_entity->camera.depth_tex  = -1;
 		new_entity->camera.render_tex = -1;
-		new_entity->camera.depth_tex = -1;
+		new_entity->camera.resizeable = false;
+		new_entity->camera.nearz = entity.camera.nearz;
+		new_entity->camera.farz  = entity.camera.farz;
+		new_entity->camera.ortho = entity.camera.ortho;
+		new_entity->camera.fov   = entity.camera.fov;
+		float aspect_ratio = (float)camera_fbo_width / (float)camera_fbo_height;
+		new_entity->camera.aspect_ratio = aspect_ratio <= 0.f ? (4.f / 3.f) : aspect_ratio;
 		camera_update_view(new_entity);
 		camera_update_proj(new_entity);
+		if(entity.camera.fbo != -1)
+		{
+			camera_attach_fbo(new_entity, camera_fbo_width, camera_fbo_height,
+							  entity.camera.depth_tex == -1 ? false : true,
+							  entity.camera.render_tex == -1 ? false : true,
+							  entity.camera.resizeable);
+		}
+		vec4_assign(&new_entity->camera.clear_color, &entity.camera.clear_color);
 		break;
 	case ET_STATIC_MESH:
 		model_create(new_entity, geometry_name, material_name);
@@ -552,8 +614,8 @@ struct Entity* entity_read(FILE* file)
 		light_add(new_entity);
 		break;
 	case ET_SOUND_SOURCE:
-        platform->sound.source_create(new_entity->sound_source.relative,
-                                      new_entity->sound_source.num_attached_buffers,
+        platform->sound.source_create(entity.sound_source.relative,
+                                      entity.sound_source.num_attached_buffers,
                                       &new_entity->sound_source.source_handle,
                                       &new_entity->sound_source.buffer_handles[0]);
 		break;

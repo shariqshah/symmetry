@@ -276,6 +276,9 @@ void editor_update(float dt)
 					nk_label(context, "ID", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%d", entity->id);
 					nk_layout_row_dynamic(context, row_height, 2);
 					nk_label(context, "Entity Type", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%s", entity_type_name_get(entity));
+					nk_layout_row_dynamic(context, row_height, 2);
+					struct Entity* parent_ent = entity_get(entity->transform.parent);
+					nk_label(context, "Parent Name", NK_TEXT_ALIGN_LEFT); nk_label(context, parent_ent ? parent_ent->name : "NONE", NK_TEXT_ALIGN_RIGHT);
 
 					/* Transform */
 					{
@@ -361,6 +364,29 @@ void editor_update(float dt)
 									nk_property_float(context, "Falloff", 0.f, &light->falloff, 100.f, 0.1f, 0.05f);
 								}
 							}
+							nk_tree_pop(context);
+						}
+					}
+
+					/* Camera */
+					if(entity->type == ET_CAMERA)
+					{
+						if(nk_tree_push(context, NK_TREE_TAB, "Camera", NK_MAXIMIZED))
+						{
+							struct Camera* camera = &entity->camera;
+
+							nk_layout_row_dynamic(context, row_height, 2);
+							nk_label(context, "Aspect Ratio", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%.5f", camera->aspect_ratio);
+							
+							nk_layout_row_dynamic(context, row_height, 1);
+							nk_property_float(context, "Fov", 45.f, &camera->fov, 90.f, 1.f, 5.f);
+
+							nk_layout_row_dynamic(context, row_height, 1);
+							nk_property_float(context, "NearZ", 0.01f, &camera->nearz, camera->farz, 0.1f, 1.f);
+							
+							nk_layout_row_dynamic(context, row_height, 1);
+							nk_property_float(context, "FarZ", camera->nearz, &camera->farz, FLT_MAX, 1.f, 5.f);
+							
 							nk_tree_pop(context);
 						}
 					}

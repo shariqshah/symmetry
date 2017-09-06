@@ -15,7 +15,7 @@ struct FBO
 	int  texture_attachments[FA_NUM_ATTACHMENTS];
 	int  width;
 	int  height;
-	int  resizeable;
+	bool resizeable;
 };
 
 struct FBO* fbo_list;
@@ -38,7 +38,7 @@ void framebuffer_cleanup(void)
 	empty_indices = NULL;
 }
 
-int framebuffer_create(int width, int height, int has_depth, int has_color, int resizeable)
+int framebuffer_create(int width, int height, bool has_depth, bool has_color, bool resizeable)
 {
 	int    index              = -1;
 	GLuint fbo                =  0;
@@ -146,6 +146,7 @@ void framebuffer_remove(int index)
 	fbo->handle             =  0;
 	fbo->width              = -1;
 	fbo->height             = -1;
+	fbo->resizeable         = false;
 }
 
 void framebuffer_unbind(void)
@@ -153,19 +154,19 @@ void framebuffer_unbind(void)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-int framebuffer_get_width(int index)
+int framebuffer_width_get(int index)
 {
 	assert(index < array_len(fbo_list) && index > -1);
 	return fbo_list[index].width;
 }
 
-int framebuffer_get_height(int index)
+int framebuffer_height_get(int index)
 {
 	assert(index < array_len(fbo_list) && index > -1);
 	return fbo_list[index].height;
 }
 
-void framebuffer_set_texture(int index, int texture, enum Framebuffer_Attachment attachment)
+void framebuffer_texture_set(int index, int texture, enum Framebuffer_Attachment attachment)
 {
 	assert(index < array_len(fbo_list) && index > -1);
 	GLenum gl_attachment = -1;
@@ -201,7 +202,7 @@ void framebuffer_set_texture(int index, int texture, enum Framebuffer_Attachment
 	glBindFramebuffer(GL_FRAMEBUFFER, current_fbo);
 }
 
-int framebuffer_get_texture(int index, enum Framebuffer_Attachment attachment)
+int framebuffer_texture_get(int index, enum Framebuffer_Attachment attachment)
 {
 	assert(index < array_len(fbo_list) &&
 		   index > -1 &&
@@ -210,7 +211,7 @@ int framebuffer_get_texture(int index, enum Framebuffer_Attachment attachment)
 	return fbo_list[index].texture_attachments[attachment];
 }
 
-uint framebuffer_get_gl_handle(int index)
+uint framebuffer_gl_handle_get(int index)
 {
 	assert(index < array_len(fbo_list) && index > -1);
 	return fbo_list[index].handle;
@@ -293,8 +294,8 @@ void framebuffer_resize_all(int width, int height)
 	}
 }
 
-void framebuffer_resizeable_set(int index, int resizeable)
+void framebuffer_resizeable_set(int index, bool resizeable)
 {
 	assert(index > -1 && index < array_len(fbo_list));
-	fbo_list[index].resizeable = resizeable ? 1 : 0;
+	fbo_list[index].resizeable = resizeable ? true : false;
 }

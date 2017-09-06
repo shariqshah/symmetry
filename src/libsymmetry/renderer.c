@@ -108,9 +108,9 @@ void renderer_init(void)
 	texture_set_param(def_depth_tex, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 	texture_set_param(def_depth_tex, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 
-	def_fbo = framebuffer_create(width, height, 1, 0, 1);
-	framebuffer_set_texture(def_fbo, def_albedo_tex, FA_COLOR_ATTACHMENT0);
-	framebuffer_set_texture(def_fbo, def_depth_tex, FA_DEPTH_ATTACHMENT);
+	def_fbo = framebuffer_create(width, height, true, false, true);
+	framebuffer_texture_set(def_fbo, def_albedo_tex, FA_COLOR_ATTACHMENT0);
+	framebuffer_texture_set(def_fbo, def_depth_tex, FA_DEPTH_ATTACHMENT);
 	composition_shader = shader_create("fbo.vert", "fbo.frag");
 	debug_shader       = shader_create("debug.vert", "debug.frag");
 
@@ -132,7 +132,7 @@ void renderer_draw(struct Entity* active_viewer)
 		int fbo = camera->fbo == -1 ? def_fbo : camera->fbo;
 		framebuffer_bind(fbo);
 		{
-			glViewport(0, 0, framebuffer_get_width(fbo), framebuffer_get_height(fbo));
+			glViewport(0, 0, framebuffer_width_get(fbo), framebuffer_height_get(fbo));
 			glEnable(GL_DEPTH_TEST);
 			glDepthFunc(GL_LEQUAL);
 			glClearColor(camera->clear_color.x,

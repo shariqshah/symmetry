@@ -132,18 +132,26 @@ bool scene_load(const char* filename, int directory_type)
 	}
 
 	int count = 0;
+	int eof_char = -1;
 	while(!feof(entity_file))
 	{
+		if(eof_char != -1) ungetc(eof_char, entity_file);
 		struct Entity* new_entity = NULL;
 		new_entity = entity_read(entity_file);
 		if(!new_entity)
+		{
 			log_error("scene:load", "Error reading entity");
+		}
 		else
 		{
 			log_message("Loaded %s", new_entity->name);
 			count++;
 		}
-		int c = fgetc(entity_file);
+		eof_char = fgetc(entity_file);
+		/* To check end of file, we  get the next character and before beginning
+		   loop we check if eof occured, feof only returns true if the last read
+		   was an eof. If it wasn't eof then we return the character back to the
+		   stream and carry on. */
 	}
 
 	log_message("%d entites loaded from %s", count, filename);

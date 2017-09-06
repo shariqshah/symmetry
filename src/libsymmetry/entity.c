@@ -261,7 +261,7 @@ bool entity_write(struct Entity* entity, FILE* file)
 		fprintf(file, "valid: %s\n", entity->light.valid ? "true" : "false");
 		fprintf(file, "cast_shadow: %s\n", entity->light.cast_shadow ? "true" : "false");
 		fprintf(file, "pcf_enabled: %s\n", entity->light.pcf_enabled ? "true" : "false");
-		fprintf(file, "color: %.5f %.5f %.5f",
+		fprintf(file, "color: %.5f %.5f %.5f\n",
 				entity->light.color.x,
 				entity->light.color.y,
 				entity->light.color.z);

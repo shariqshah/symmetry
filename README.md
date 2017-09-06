@@ -151,7 +151,6 @@
 
 	- Add camera fbo params into camera struct so they can be saved and loaded into file
 	- Finish loading scene from file
-	- Fix space not being added after some entities are written to file
 	- Update makefiles to be able to compile the code in it's current state
 	- Find a solution for the asset import/export situation by either updating the blender exporter or adding assimp as dependancy
 	- Fix bugs with sound sources not updating
@@ -313,3 +312,5 @@
 	* Made dll reloading workaround compatilble on linux
 	* Default keybindings as fallback
 	* Implemented writing scene to file
+	* Fixed space not being added after light entities are written to file by adding missing new-line
+	* Fixed error caused by the way eof was checked in scene file 

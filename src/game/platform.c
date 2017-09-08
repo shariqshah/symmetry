@@ -422,13 +422,13 @@ int platform_key_from_name(const char* key_name)
 	#define max_name_len  30
 	char trimmed_key_name[max_name_len] = {'\0'};
 
-	const char* start_ptr = &key_name[0];
-	while(isspace(start_ptr[0])) start_ptr++;
-		
-	const char* end_ptr = &key_name[strlen(key_name)];
-	while(isspace(end_ptr[0])) end_ptr--;
- 
-	strncpy(trimmed_key_name, start_ptr, (end_ptr - start_ptr));
+	int start = 0;
+	while(isspace(key_name[start]) != 0) start++;
+	
+	int end = strlen(key_name);
+	while(isspace(key_name[end]) != 0) end--;
+
+	strncpy(trimmed_key_name, &key_name[start], (end - start));
 	return SDL_GetKeyFromName(trimmed_key_name);
 }
 

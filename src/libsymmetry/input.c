@@ -7,6 +7,7 @@
 #include "gui.h"
 #include "../common/string_utils.h"
 #include "../common/common.h"
+#include "../common/parser.h"
 
 struct Input_Map
 {
@@ -20,7 +21,7 @@ static void input_on_mousebutton(int button, int state, int x, int y, int8 num_c
 static void input_on_mousemotion(int x, int y, int xrel, int yrel);
 static void input_on_mousewheel(int x, int y);
 static int  map_find(const char* name);
-
+static void on_parser_assign(const char* key, const char* value, const char* filename, int current_line);
 static struct Input_Map* input_map_list = NULL;
 
 void input_init(void)
@@ -90,11 +91,81 @@ void input_cleanup(void)
 	input_map_list = NULL;
 }
 
+void on_parser_assign(const char* key, const char* value, const char* filename, int current_line)
+{
+	char* value_copy = str_new(value);
+	//value_copy[strlen(value_copy) - 1] = '\0';
+	char* val = strtok(value_copy, ",");
+	if(!val)
+	{
+		log_warning("Unable to parse keys for keybinding %s in file %s, line %d", key, filename, current_line);
+		free(value_copy);
+		return;
+	}
+
+	while(val)
+	{
+#define max_key_str_len 20
+		/* Check if there are any Modifiers */
+		int       modifiers        = KMD_NONE;
+		char*     keys             = strstr(val, "-");
+		char*     start_loc        = val;
+		char      key_name[max_key_str_len];
+		int       skip_to_next     = 0;
+		while(keys)
+		{
+			memset(key_name, '\0', max_key_str_len);
+			strncpy(key_name, start_loc, (keys - start_loc));
+			log_message("key_name : %s", key_name);
+
+			int key_modifier = platform->key_from_name(key_name);
+
+			if(key_modifier == KEY_UNKNOWN)
+			{
+				log_warning("Unrecognized key %s in keybindings file %s, at line %d", key_name, filename, current_line);
+				skip_to_next = true;
+				break;
+			}
+
+			switch(key_modifier)
+			{
+			case KEY_LSHIFT: case KEY_RSHIFT: modifiers |= KMD_SHIFT; break;
+			case KEY_LCTRL:  case KEY_RCTRL:  modifiers |= KMD_CTRL;  break;
+			case KEY_LALT:   case KEY_RALT:   modifiers |= KMD_ALT;   break;
+			};
+				
+			++keys;
+			start_loc = keys;
+			keys = strstr(keys, "-");
+		}
+		
+		if(skip_to_next)
+		{
+			val = strtok(NULL, ",");
+			continue;
+		}
+			
+		/* Copy the last key after the hyphen */
+		strncpy(key_name, start_loc, max_key_str_len);
+		int key_code = platform->key_from_name(key_name);
+		if(key_code == KEY_UNKNOWN)
+		{
+			log_warning("Unrecognized key %s in keybindings file %s, at line %d", key_name, filename, current_line);
+			val = strtok(NULL, ",");
+			continue;
+		}
+
+		struct Key_Combination key_comb = { .key = key_code, .mods = modifiers};
+		input_map_create(key, &key_comb, 1);
+			
+		val = strtok(NULL, ",");
+	}
+	free(value_copy);
+}
+
 bool input_keybinds_load(const char* filename, int directory_type)
 {
 	bool success = false;
-	#define MAX_KEYBIND_LEN 128
-	#define MAX_LINE_LEN    512
     FILE* config_file = platform->file.open(directory_type, filename, "r");
 	if(!config_file)
 	{
@@ -102,105 +173,16 @@ bool input_keybinds_load(const char* filename, int directory_type)
 		return success;
 	}
 
-	/* Read line by line, ignore comments */
-	char key_str[MAX_KEYBIND_LEN];
-	char line_buffer[MAX_LINE_LEN];
-	memset(key_str, '\0', MAX_KEYBIND_LEN);
-	memset(line_buffer, '\0', MAX_LINE_LEN);
-	int current_line = 0;
-	while(fgets(line_buffer, MAX_LINE_LEN - 1, config_file))
+	if(!parser_load(config_file, filename, &on_parser_assign, false, 0))
 	{
-		current_line++;
-		line_buffer[strcspn(line_buffer, "\r\n")] = '\0';
-		
-		if(line_buffer[0] == '#' || strlen(line_buffer) == 0)
-			continue;
-
-		//log_message("Line : %s", line_buffer);
-		memset(key_str, '\0', MAX_KEYBIND_LEN);
-		char* value_str = strstr(line_buffer, ":");
-		if(!value_str)
-		{
-			log_warning("Malformed value in config file %s, line %d", filename, current_line);
-			continue;
-		}
-		
-		value_str++; /* Ignore the colon(:) and set the pointer after it */
-		
-		if(sscanf(line_buffer, " %1024[^: ] : %*s", key_str) != 1)
-		{
-			log_warning("Unable to read key in keybindings file %s, line %d", filename, current_line);
-			continue;
-		}
-
-		char* val = strtok(value_str, ",");
-		if(!val)
-		{
-			log_warning("Unable to parse keys for keybinding %s in file %s, line %d", key_str, filename, current_line);
-			continue;
-		}
-
-		while(val)
-		{
-			//log_message("Key read : %s", val);
-
-			#define max_key_str_len 20
-			/* Check if there are any Modifiers */
-			int       modifiers        = KMD_NONE;
-			char*     keys             = strstr(val, "-");
-			char*     start_loc        = val;
-			char      key_name[max_key_str_len];
-			int       skip_to_next     = 0;
-			while(keys)
-			{
-				memset(key_name, '\0', max_key_str_len);
-				strncpy(key_name, start_loc, (keys - start_loc));
-				//log_message("key_name : %s", key_name);
-
-                int key_modifier = platform->key_from_name(key_name);
-
-				if(key_modifier == KEY_UNKNOWN)
-				{
-					log_warning("Unrecognized key %s in keybindings file %s, at line %d", key_name, filename, current_line);
-					skip_to_next = 1;
-					break;
-				}
-
-				switch(key_modifier)
-				{
-				case KEY_LSHIFT: case KEY_RSHIFT: modifiers |= KMD_SHIFT; break;
-				case KEY_LCTRL:  case KEY_RCTRL:  modifiers |= KMD_CTRL;  break;
-				case KEY_LALT:   case KEY_RALT:   modifiers |= KMD_ALT;   break;
-				};
-				
-				++keys;
-				start_loc = keys;
-				keys = strstr(keys, "-");
-			}
-			if(skip_to_next)
-			{
-				val = strtok(NULL, ",");
-				continue;
-			}
-			
-			/* Copy the last key after the hyphen */
-			strncpy(key_name, start_loc, max_key_str_len);
-            int key = platform->key_from_name(key_name);
-			if(key == KEY_UNKNOWN)
-			{
-				log_warning("Unrecognized key %s in keybindings file %s, at line %d", key_name, filename, current_line);
-				val = strtok(NULL, ",");
-				continue;
-			}
-
-			struct Key_Combination key_comb = { .key = key, .mods = modifiers};
-			input_map_create(key_str, &key_comb, 1);
-			
-			val = strtok(NULL, ",");
-		}
+		log_error("input:keybinds_load", "Failed to parse file %s", filename);
+	}
+	else
+	{
+		log_message("Loaded keybindings from %s", filename);
+		success = true;
 	}
 	
-	success = true;
 	fclose(config_file);
 	return success;
 }
@@ -231,7 +213,7 @@ bool input_keybinds_save(const char* filename)
 		}
 		fprintf(config_file, "\n");
 	}
-
+	fprintf(config_file, "\n");
 	fclose(config_file);
 	log_message("Keybindings saved to %s", filename);
 	success = true;

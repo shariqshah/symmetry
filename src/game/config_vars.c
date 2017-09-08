@@ -4,6 +4,7 @@
 #include "../common/hashmap.h"
 #include "file_io.h"
 #include "../common/log.h"
+#include "../common/parser.h"
 #include "platform.h"
 
 #include <stdlib.h>
@@ -12,6 +13,8 @@
 #define MAX_LINE_LEN 512
 
 static struct Hashmap* cvars = NULL;
+
+static void config_on_parser_assign(const char* key, const char* value, const char* filename, int current_line);
 
 void config_vars_init(void)
 {
@@ -43,6 +46,17 @@ struct Hashmap* config_vars_get(void)
 	return cvars;
 }
 
+void config_on_parser_assign(const char* key, const char* value, const char* filename, int current_line)
+{
+	struct Variant* cvar = hashmap_value_get(cvars, key);
+	if(!cvar)
+	{
+		log_warning("Unknown config key '%s' in file %s, line %d", key, filename, current_line);
+		return;
+	}
+	variant_from_str(cvar, value, cvar->type);
+}
+
 bool config_vars_load(const char* filename, int directory_type)
 {
 	bool success = false;
@@ -53,45 +67,16 @@ bool config_vars_load(const char* filename, int directory_type)
 		return success;
 	}
 
-	/* Read line by line, ignore comments */
-	char key_str[HASH_MAX_KEY_LEN];
-	char line_buffer[MAX_LINE_LEN];
-	memset(key_str, '\0', HASH_MAX_KEY_LEN);
-	memset(line_buffer, '\0', MAX_LINE_LEN);
-	int current_line = 0;
-	while(fgets(line_buffer, MAX_LINE_LEN - 1, config_file))
+	if(!parser_load(config_file, filename, &config_on_parser_assign, false, 0))
 	{
-		current_line++;
-		memset(key_str, '\0', HASH_MAX_KEY_LEN);
-		
-		if(line_buffer[0] == '#' || strlen(line_buffer) == 0)
-			continue;
-		
-		char* value_str = strstr(line_buffer, ":");
-		if(!value_str)
-		{
-			log_warning("Malformed value in config file %s, line %d", filename, current_line);
-			continue;
-		}
-		
-		value_str++; /* Ignore the colon(:) and set the pointer after it */
-
-		if(sscanf(line_buffer, " %1024[^: ] : %*s", key_str) != 1)
-		{
-			log_warning("Unable to read key in config file %s, line %d", filename, current_line);
-			continue;
-		}
-		
-		struct Variant* value = hashmap_value_get(cvars, key_str);
-		if(!value)
-		{
-			log_warning("Unknown value in config file %s, line %d", filename, current_line);
-			continue;
-		}
-		variant_from_str(value, value_str, value->type);
+		log_error("config_vars:load", "Failed to parse config file %s", filename);
+	}
+	else
+	{
+		log_message("Loaded config from %s", filename);
+		success = true;
 	}
 
-	success = true;
 	fclose(config_file);
 	return success;
 }

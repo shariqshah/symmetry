@@ -93,7 +93,7 @@ struct Log_Api
 struct Platform_Api
 {
     // General platform api
-    void        (*poll_events)(bool *out_quit);
+    void        (*poll_events)(bool* out_quit);
     void        (*keyboard_callback_set)(Keyboard_Event_Func func);
     void        (*mousebutton_callback_set)(Mousebutton_Event_Func func);
     void        (*mousemotion_callback_set)(Mousemotion_Event_Func func);
@@ -130,6 +130,5 @@ struct Game_Api
     bool (*init)(struct Window*, struct Platform_Api* platform_api);
     void (*cleanup)(void);
 };
-
 
 #endif

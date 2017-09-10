@@ -425,11 +425,14 @@ int platform_key_from_name(const char* key_name)
 	int start = 0;
 	while(isspace(key_name[start]) != 0) start++;
 	
-	int end = strlen(key_name);
+	int end = strlen(key_name) - 1;
 	while(isspace(key_name[end]) != 0) end--;
 
-	strncpy(trimmed_key_name, &key_name[start], (end - start));
-	return SDL_GetKeyFromName(trimmed_key_name);
+	strncpy(trimmed_key_name, &key_name[start], (end - start) + 1);
+	int key =  SDL_GetKeyFromName(trimmed_key_name);
+	if(key == SDLK_UNKNOWN)
+		log_error("platform:key_from_name", "Unrecognized key '%s', SDL (%s)", trimmed_key_name, SDL_GetError());
+	return key;
 }
 
 const char* platform_key_name_get(int key)

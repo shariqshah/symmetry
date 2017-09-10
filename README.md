@@ -149,7 +149,6 @@
 
 - ## TODO
 
-	- Fix bugs in stripping key name for input map
 	- Modify entity loading logic to use the new parsing code
 	- Implement sound/listener loading from scene file
 	- Finish loading scene from file
@@ -319,3 +318,4 @@
 	* Camera fbo params are now written to file when entity is saved
 	* Fixed several bugs with entity loading
 	* Removed duplicate parsing logic
+	* Fixed bugs in stripping key name for input map

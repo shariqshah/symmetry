@@ -116,7 +116,6 @@ void on_parser_assign(const char* key, const char* value, const char* filename, 
 		{
 			memset(key_name, '\0', max_key_str_len);
 			strncpy(key_name, start_loc, (keys - start_loc));
-			log_message("key_name : %s", key_name);
 
 			int key_modifier = platform->key_from_name(key_name);
 

@@ -149,7 +149,7 @@
 
 - ## TODO
 
-	- Modify entity loading logic to use the new parsing code
+	- Modify entity loading logic to use the new parsing code by parsing all entity properties into a hashmap first then recreating entity from that
 	- Implement sound/listener loading from scene file
 	- Finish loading scene from file
 	- Update makefiles to be able to compile the code in it's current state

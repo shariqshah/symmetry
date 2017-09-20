@@ -24,6 +24,7 @@
 #include "gl_load.h"
 #include "gui.h"
 #include "editor.h"
+#include "../common/parser.h"
 #include "../common/hashmap.h"
 #include "../common/variant.h"
 #include "../common/common.h"
@@ -214,6 +215,17 @@ void scene_setup(void)
 		log_message("Scene loaded!");
 		struct Entity* player = entity_find("player");
 		game_state->player_node = player->id;
+	}
+
+	FILE* obj_file = platform->file.open(DIRT_INSTALL, "obj_test.symtres", "r");
+	if(obj_file)
+	{
+		parser_load_objects(obj_file, "obj_test.symtres");
+		fclose(obj_file);
+	}
+	else
+	{
+		log_warning("Failed to open obj_test.symtres");
 	}
 }
 

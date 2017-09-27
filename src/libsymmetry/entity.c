@@ -626,7 +626,7 @@ struct Entity* entity_read(FILE* file)
 
 struct Entity* entity_load(const char* filename, int directory_type)
 {
-    FILE* entity_file = platform->file.open(directory_type, filename, "r");
+    FILE* entity_file = platform->file.open(directory_type, filename, "rb");
 	if(!entity_file)
 	{
 		log_error("entity:load", "Failed to open entity file %s for writing", filename);

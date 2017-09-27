@@ -12,7 +12,7 @@
 static struct Platform_Api platform_api;
 static struct Window*      window        = NULL;
 static bool                reload_game   = false;
-#if defined(__MSC_VER)
+#if defined(_MSC_VER)
 static const char*         lib_name      = "libSymmetry.dll";
 static const char*         lib_copy_name = "libSymmetry.copy.dll";
 #elif defined(__MINGW32__) || defined(__MINGW64__)
@@ -232,7 +232,7 @@ void game_lib_reload(void)
 
 bool game_lib_load(void)
 {
-#if defined(__MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
+#if defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
 	if(!io_file_copy(DIRT_EXECUTABLE, lib_name, lib_copy_name))
 	{
 		log_error("main:game_lib_load", "Failed to copy dll");

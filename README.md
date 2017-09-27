@@ -44,6 +44,7 @@
    - ### Keybindings
 
        ```
+	   
        # All keys are parsed by comparing the output of SDL_GetKeyname
 	   # Each line represents a keybinding
 	   Move_Forward: W
@@ -60,6 +61,7 @@
        # Single modifier keys are allowed but multiple modifier keys without corresponding
 	   # non-modifier key are not allowed
 	   Sprint: Left Shift
+	   
 	   ```
 
    - ### Level/Scene
@@ -100,6 +102,7 @@
 	- Fat entites with all related properties, i.e. position, mesh etc in them. Easy to serialize, memory friendly, simple to implement but would require significant changes to the current codebase, for example:
 
 	```
+	
    	struct Entity
 	{
 		int    type;
@@ -126,11 +129,13 @@
 			}
 		}
 	};
+	
 	```
 
    - Change component implementation by using anonymous unions to simulate interfaces. e.g
 
 	```
+	
      struct Component
 	 {
 		int type;
@@ -141,6 +146,7 @@
 			struct Camera {....};
 		}
 	 }
+	 
 	 ```
 
    - Use handles for assets

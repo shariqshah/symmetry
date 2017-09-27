@@ -105,110 +105,110 @@ bool game_init(struct Window* window, struct Platform_Api* platform_api)
 
 void scene_setup(void)
 {	
-	/* struct Entity* player = scene_add_new("player", ET_CAMERA); */
-	/* game_state->player_node = player->id; */
-	/* vec3 viewer_pos = {10, 5, 100}; */
-	/* transform_set_position(player, &viewer_pos); */
-	/* int render_width, render_height; */
-	/* render_width = 1024; */
-	/* render_height = 768; */
-	/* camera_create(player, render_width, render_height); */
-	/* camera_attach_fbo(player, render_width, render_height, 1, 1, 1); */
-	/* vec4_fill(&player->camera.clear_color, 0.3f, 0.6f, 0.9f, 1.0f); */
+	//struct Entity* player = scene_add_new("player", ET_CAMERA);
+	//game_state->player_node = player->id;
+	//vec3 viewer_pos = {10, 5, 100};
+	//transform_set_position(player, &viewer_pos);
+	//int render_width, render_height;
+	//render_width = 1024;
+	//render_height = 768;
+	//camera_create(player, render_width, render_height);
+	//camera_attach_fbo(player, render_width, render_height, 1, 1, 1);
+	//vec4_fill(&player->camera.clear_color, 0.3f, 0.6f, 0.9f, 1.0f);
 
-	/* vec4 color = {1.f, 1.f, 1.f, 1.f }; */
-	/* struct Entity* new_ent = scene_add_new("Model_Entity", ET_STATIC_MESH); */
-	/* vec3 position = {0, 0, -5}; */
-	/* transform_translate(new_ent, &position, TS_WORLD); */
-	/* new_ent->renderable = true; */
-	/* model_create(new_ent, "default.pamesh", "Blinn_Phong"); */
-	/* model_set_material_param(new_ent, "diffuse_color", &color); */
-	/* int tex = texture_create_from_file("white.tga", TU_DIFFUSE); */
-	/* model_set_material_param(new_ent, "diffuse_texture", &tex); */
-	/* vec3 scale = {1, 1, 1}; */
-	/* transform_scale(new_ent, &scale); */
+	//vec4 color = {1.f, 1.f, 1.f, 1.f };
+	//struct Entity* new_ent = scene_add_new("Model_Entity", ET_STATIC_MESH);
+	//vec3 position = {0, 0, -5};
+	//transform_translate(new_ent, &position, TS_WORLD);
+	//new_ent->renderable = true;
+	//model_create(new_ent, "default.pamesh", "Blinn_Phong");
+	//model_set_material_param(new_ent, "diffuse_color", &color);
+	//int tex = texture_create_from_file("white.tga", TU_DIFFUSE);
+	//model_set_material_param(new_ent, "diffuse_texture", &tex);
+	//vec3 scale = {1, 1, 1};
+	//transform_scale(new_ent, &scale);
 
-	/* /\* struct Entity* sound_ent = scene_add_as_child("Sound_ENT", ET_SOUND_SOURCE, new_ent->id); *\/ */
-    /* /\* struct Sound_Source* sound_source = &sound_ent->sound_source; *\/ */
-    /* /\* platform->sound.source_create(true, 1, &sound_source->source_handle, &sound_source->buffer_handles[0]); *\/ */
-    /* /\* platform->sound.source_load_wav(sound_source->source_handle, *\/ */
-    /* /\*                                 sound_source->buffer_handles[0], *\/ */
-    /* /\*                                 "BigExplosion.wav"); *\/ */
-	/* /\* //sound_source_relative_set(source, true); *\/ */
-    /* /\* platform->sound.source_volume_set(sound_source->source_handle, 1.f); *\/ */
-    /* /\* platform->sound.source_loop_set(sound_source->source_handle, true); *\/ */
-    /* /\* platform->sound.source_play(sound_source->source_handle); *\/ */
+	///* struct Entity* sound_ent = scene_add_as_child("Sound_ENT", ET_SOUND_SOURCE, new_ent->id); */
+ //   /* struct Sound_Source* sound_source = &sound_ent->sound_source; */
+ //   /* platform->sound.source_create(true, 1, &sound_source->source_handle, &sound_source->buffer_handles[0]); */
+ //   /* platform->sound.source_load_wav(sound_source->source_handle, */
+ //   /*                                 sound_source->buffer_handles[0], */
+ //   /*                                 "BigExplosion.wav"); */
+	///* //sound_source_relative_set(source, true); */
+ //   /* platform->sound.source_volume_set(sound_source->source_handle, 1.f); */
+ //   /* platform->sound.source_loop_set(sound_source->source_handle, true); */
+ //   /* platform->sound.source_play(sound_source->source_handle); */
 
-	/* int parent_node = new_ent->id; */
-	/* int num_suz = 10; */
-	/* srand(time(NULL)); */
-	/* for(int i = 0; i < num_suz; i++) */
-	/* { */
-	/* 	int x = rand() % num_suz; */
-	/* 	int y = rand() % num_suz; */
-	/* 	int z = rand() % num_suz; */
-	/* 	x++; y++; z++; */
-	/* 	struct Entity* suz = scene_add_as_child("Suzanne", ET_STATIC_MESH, parent_node); */
-	/* 	//struct Entity* suz = scene_add_new("Suzanne", ET_STATIC_MESH); */
-	/* 	suz->renderable = true; */
-	/* 	model_create(suz, "default.pamesh", "Blinn_Phong"); */
-	/* 	model_set_material_param(suz, "diffuse_color", &color); */
-	/* 	float spec_str = 80.f; */
-	/* 	model_set_material_param(suz, "specular_strength", &spec_str); */
-	/* 	vec3 s_pos = {x, 0, z}; */
-	/* 	transform_translate(suz, &s_pos, TS_WORLD); */
-	/* } */
-	
+	//int parent_node = new_ent->id;
+	//int num_suz = 10;
+	//srand(time(NULL));
+	//for(int i = 0; i < num_suz; i++)
+	//{
+	//	int x = rand() % num_suz;
+	//	int y = rand() % num_suz;
+	//	int z = rand() % num_suz;
+	//	x++; y++; z++;
+	//	struct Entity* suz = scene_add_as_child("Suzanne", ET_STATIC_MESH, parent_node);
+	//	//struct Entity* suz = scene_add_new("Suzanne", ET_STATIC_MESH);
+	//	suz->renderable = true;
+	//	model_create(suz, "default.pamesh", "Blinn_Phong");
+	//	model_set_material_param(suz, "diffuse_color", &color);
+	//	float spec_str = 80.f;
+	//	model_set_material_param(suz, "specular_strength", &spec_str);
+	//	vec3 s_pos = {x, 0, z};
+	//	transform_translate(suz, &s_pos, TS_WORLD);
+	//}
+	//
 
-	/* struct Entity* ground = scene_add_new("Ground", ET_STATIC_MESH); */
-	/* ground->renderable = true; */
-	/* model_create(ground, "default.pamesh", "Blinn_Phong"); */
-	/* model_set_material_param(ground, "diffuse_color", &color); */
-	/* int white_tex = texture_create_from_file("white.tga", TU_DIFFUSE); */
-	/* model_set_material_param(ground, "diffuse_texture", &white_tex); */
-	/* float spec_str = 80.f; */
-	/* model_set_material_param(ground, "specular_strength", &spec_str); */
-	/* vec3 pos = {0, -5, 0}; */
-	/* vec3 scale_ground = {400.f, 2.f, 400.f}; */
-	/* transform_set_position(ground, &pos); */
-	/* transform_scale(ground, &scale_ground); */
+	//struct Entity* ground = scene_add_new("Ground", ET_STATIC_MESH);
+	//ground->renderable = true;
+	//model_create(ground, "default.pamesh", "Blinn_Phong");
+	//model_set_material_param(ground, "diffuse_color", &color);
+	//int white_tex = texture_create_from_file("white.tga", TU_DIFFUSE);
+	//model_set_material_param(ground, "diffuse_texture", &white_tex);
+	//float spec_str = 80.f;
+	//model_set_material_param(ground, "specular_strength", &spec_str);
+	//vec3 pos = {0, -5, 0};
+	//vec3 scale_ground = {400.f, 2.f, 400.f};
+	//transform_set_position(ground, &pos);
+	//transform_scale(ground, &scale_ground);
 
-	/* /\* struct Entity* screen = scene_add_new("Screen", NULL); *\/ */
-	/* /\* struct Model* screen_model = entity_component_add(screen, C_MODEL, NULL, NULL); *\/ */
-	/* /\* screen_model->geometry_index = geom_find("Quad"); *\/ */
-	/* /\* struct Entity* screen_camera = scene_add_as_child("Screen_Camera", NULL, screen->node); *\/ */
-	/* /\* struct Transform* screen_camera_tran = entity_component_get(screen_camera, C_TRANSFORM); *\/ */
-	/* /\* transform_rotate(screen_camera_tran, &UNIT_Y, 180.f, TS_WORLD); *\/ */
-	/* /\* struct Camera* cam = entity_component_add(screen_camera, C_CAMERA, 50, 50); *\/ */
-	/* /\* cam->nearz = 0.1f; *\/ */
-	/* /\* cam->farz  = 50.f; *\/ */
-	/* /\* camera_update_proj(cam); *\/ */
-	/* /\* camera_attach_fbo(cam, 128, 128, 1, 1, 0); *\/ */
-	/* /\* model_set_material_param(screen_model, "diffuse_color", &color); *\/ */
-	/* /\* model_set_material_param(screen_model, "diffuse_texture", &cam->render_tex); *\/ */
+	///* struct Entity* screen = scene_add_new("Screen", NULL); */
+	///* struct Model* screen_model = entity_component_add(screen, C_MODEL, NULL, NULL); */
+	///* screen_model->geometry_index = geom_find("Quad"); */
+	///* struct Entity* screen_camera = scene_add_as_child("Screen_Camera", NULL, screen->node); */
+	///* struct Transform* screen_camera_tran = entity_component_get(screen_camera, C_TRANSFORM); */
+	///* transform_rotate(screen_camera_tran, &UNIT_Y, 180.f, TS_WORLD); */
+	///* struct Camera* cam = entity_component_add(screen_camera, C_CAMERA, 50, 50); */
+	///* cam->nearz = 0.1f; */
+	///* cam->farz  = 50.f; */
+	///* camera_update_proj(cam); */
+	///* camera_attach_fbo(cam, 128, 128, 1, 1, 0); */
+	///* model_set_material_param(screen_model, "diffuse_color", &color); */
+	///* model_set_material_param(screen_model, "diffuse_texture", &cam->render_tex); */
 
-	/* const int MAX_LIGHTS = 3; */
-	/* for(int i = 0; i < MAX_LIGHTS; i++) */
-	/* { */
-	/* 	int x = rand() % MAX_LIGHTS; */
-	/* 	int z = rand() % MAX_LIGHTS; */
-	/* 	x++; z++; */
-	/* 	struct Entity* light_ent = scene_add_new("Light_Ent", ET_LIGHT); */
-	/* 	vec3 lt_pos = {x * 20, 0, z * 20}; */
-	/* 	transform_set_position(light_ent, &lt_pos); */
-	/* 	light_create(light_ent, LT_POINT); */
-	/* 	vec3_fill(&light_ent->light.color, 1.f / (float)x, 1.f / ((rand() % 10) + 1.f), 1.f / (float)z); */
-	/* 	light_ent->light.intensity = 1.f; */
-	/* } */
+	//const int MAX_LIGHTS = 3;
+	//for(int i = 0; i < MAX_LIGHTS; i++)
+	//{
+	//	int x = rand() % MAX_LIGHTS;
+	//	int z = rand() % MAX_LIGHTS;
+	//	x++; z++;
+	//	struct Entity* light_ent = scene_add_new("Light_Ent", ET_LIGHT);
+	//	vec3 lt_pos = {x * 20, 0, z * 20};
+	//	transform_set_position(light_ent, &lt_pos);
+	//	light_create(light_ent, LT_POINT);
+	//	vec3_fill(&light_ent->light.color, 1.f / (float)x, 1.f / ((rand() % 10) + 1.f), 1.f / (float)z);
+	//	light_ent->light.intensity = 1.f;
+	//}
 
-	/* /\* log_message("Sizeof Entity : %d", sizeof(struct Entity)); *\/ */
+	/* log_message("Sizeof Entity : %d", sizeof(struct Entity)); */
 
-	/* /\* struct Entity* light_ent = entity_find("Ground"); *\/ */
-	/* /\* entity_save(light_ent, "ground.ent", DT_INSTALL); *\/ */
+	/* struct Entity* light_ent = entity_find("Ground"); */
+	/* entity_save(light_ent, "ground.ent", DT_INSTALL); */
 
-	/* scene_save("test.scene", DIRT_INSTALL); */
+	//scene_save("test.scene", DIRT_INSTALL);
 
-	/* //struct Entity* light = entity_load("light.ent", DT_INSTALL); */
+	//struct Entity* light = entity_load("light.ent", DT_INSTALL);
 
 	if(scene_load("test.scene", DIRT_INSTALL))
 	{
@@ -217,7 +217,7 @@ void scene_setup(void)
 		game_state->player_node = player->id;
 	}
 
-	FILE* obj_file = platform->file.open(DIRT_INSTALL, "obj_test.symtres", "r");
+	FILE* obj_file = platform->file.open(DIRT_INSTALL, "test_scene.symtres", "rb");
 	if(obj_file)
 	{
 		parser_load_objects(obj_file, "obj_test.symtres");

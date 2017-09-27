@@ -19,6 +19,12 @@ void scene_init(void)
 
 struct Entity* scene_add_new(const char* name, const int type)
 {
+	if(root_node == -1)
+	{
+		log_warning("No root node in scene");
+		struct Entity* root = entity_create("ROOT", ET_ROOT, -1);
+		root_node = root->id;
+	}
 	return scene_add_as_child(name, type, root_node);
 }
 
@@ -124,7 +130,7 @@ struct Entity* scene_get_parent(struct Entity* entity)
 
 bool scene_load(const char* filename, int directory_type)
 {
-    FILE* entity_file = platform->file.open(directory_type, filename, "r");
+    FILE* entity_file = platform->file.open(directory_type, filename, "rb");
 	if(!entity_file)
 	{
         log_error("scene:load", "Failed to open scenefile %s for reading", filename);

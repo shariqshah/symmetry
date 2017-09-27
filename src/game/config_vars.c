@@ -60,7 +60,7 @@ void config_on_parser_assign(const char* key, const char* value, const char* fil
 bool config_vars_load(const char* filename, int directory_type)
 {
 	bool success = false;
-	FILE* config_file = io_file_open(directory_type, filename, "r");
+	FILE* config_file = io_file_open(directory_type, filename, "rb");
 	if(!config_file)
 	{
 		log_error("config:vars_load", "Could not open %s", filename);

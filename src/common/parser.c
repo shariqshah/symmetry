@@ -107,37 +107,62 @@ bool parser_load_objects(FILE* file, const char* filename)
 			continue;
 		}
 
+		// Check if type string is valid
+		int type_str_len = strnlen(type_str, HASH_MAX_KEY_LEN);
+		if(type_str_len < 3 || strncmp(type_str, "{", HASH_MAX_KEY_LEN) == 0 || strncmp(type_str, "}", HASH_MAX_KEY_LEN) == 0)
+		{
+			log_warning("Invalid object type '%s' on line %d", type_str, current_line);
+			continue;
+		}
+
 		long obj_beginning = -1;
 		long obj_ending    = -1;
-		int  obj_begin_expexted_at = current_line + 1;
+		int  obj_begin_expexted_at = current_line;
 		bool found_next_before_current_ended = false;
 		
 		/* Opening brace and closing brace */
-		while(fgets(line_buffer, MAX_LINE_LEN - 1, file))
+		char c = ' ';
+		int line_len = strnlen(line_buffer, MAX_LINE_LEN);
+		int seek_amount = line_len - type_str_len;
+		fseek(file, -seek_amount, SEEK_CUR);
+		while(!feof(file))
 		{
-			current_line++;
-			if(strchr(line_buffer, '{'))
+			c = fgetc(file);
+			if(c == '\n')
 			{
-				obj_beginning = ftell(file) - strlen(line_buffer);
-				while(fgets(line_buffer, MAX_LINE_LEN - 1, file))
+				current_line++;
+				continue;
+			}
+
+			if(c == '{')
+			{
+				obj_beginning = ftell(file) - 1;
+				c = ' ';
+				while(!feof(file))
 				{
-					current_line++;
+					c = fgetc(file);
+					if(c == '\n')
+					{
+						current_line++;
+						continue;
+					}
+					
 					/* check if we found opening brace of next object,
-					   if this is true then it means that this object is missing
-					   it's closing brace and we should stop */
-					if(strchr(line_buffer, '{'))
+					if this is true then it means that this object is missing
+					it's closing brace and we should stop */
+					if(c == '{')
 					{
 						found_next_before_current_ended = true;
 						break;
 					}
-					
-					if(strchr(line_buffer, '}'))
+
+					if(c == '}')
 					{
 						obj_ending = ftell(file);
 						break;
 					}
 				}
-				if(obj_ending) break;
+				if(obj_ending != -1) break;
 			}
 		}
 
@@ -157,6 +182,7 @@ bool parser_load_objects(FILE* file, const char* filename)
 		}
 
 		memset(obj_str, '\0', 1024);
+		memset(line_buffer, '\0', MAX_LINE_LEN);
 		fseek(file, obj_beginning, SEEK_SET);
 		fread(obj_str, obj_ending - obj_beginning, 1, file);
 		log_to_stdout("Object found\nType: %s\n%s\n\n", type_str, obj_str);

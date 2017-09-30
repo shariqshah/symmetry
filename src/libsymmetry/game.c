@@ -217,10 +217,24 @@ void scene_setup(void)
 		game_state->player_node = player->id;
 	}
 
-	FILE* obj_file = platform->file.open(DIRT_INSTALL, "test_scene.symtres", "rb");
+    FILE* obj_file = platform->file.open(DIRT_INSTALL, "obj_test.symtres", "rb");
 	if(obj_file)
 	{
-		parser_load_objects(obj_file, "obj_test.symtres");
+        struct Parser* parsed_file = parser_load_objects(obj_file, "obj_test.symtres");
+        log_message("%d objects read from %s", array_len(parsed_file->objects), "obj_test.symtres");
+        for(int i = 0; i < array_len(parsed_file->objects); i++)
+        {
+            struct Parser_Object* object = &parsed_file->objects[i];
+            if(object->type == PO_UNKNOWN)
+                log_message("Type : Unknown");
+            else if(object->type == PO_ENTITY)
+                log_message("Type : Entity");
+            else if(object->type == PO_MATERIAL)
+                log_message("Type : Material");
+            else if(object->type == PO_MODEL)
+                log_message("Type : Model");
+            hashmap_debug_print(object->data);
+        }
 		fclose(obj_file);
 	}
 	else

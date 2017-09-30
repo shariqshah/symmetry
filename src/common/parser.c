@@ -1,20 +1,18 @@
 #include "parser.h"
 #include "hashmap.h"
+#include "array.h"
 #include "log.h"
+#include "string_utils.h"
 
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
+#include <assert.h>
 
 #define MAX_LINE_LEN 512
 #define MAX_VALUE_LEN 512
 
-struct Parser_Object
-{
-	int type;
-	char* key;
-	char* value;
-	char* object_data;
-};
+static int parser_object_type_from_str(const char* str);
 
 bool parser_load(FILE* file, const char* filename, Parser_Assign_Func assign_func, bool return_on_emptyline, int current_line)
 {
@@ -37,6 +35,7 @@ bool parser_load(FILE* file, const char* filename, Parser_Assign_Func assign_fun
 	char line_buffer[MAX_LINE_LEN];
 	memset(key_str, '\0', HASH_MAX_KEY_LEN);
 	memset(line_buffer, '\0', MAX_LINE_LEN);
+    memset(format_str, '\0', 64);
 	snprintf(format_str, 64, " %%%d[^: ] : %%%d[^\n]", HASH_MAX_KEY_LEN, MAX_VALUE_LEN);
 	
 	while(fgets(line_buffer, MAX_LINE_LEN - 1, file))
@@ -67,7 +66,7 @@ bool parser_load(FILE* file, const char* filename, Parser_Assign_Func assign_fun
 	return true;
 }
 
-bool parser_load_objects(FILE* file, const char* filename)
+struct Parser* parser_load_objects(FILE* file, const char* filename)
 {
 	/* Note, this is isn't really a proper parser and might have lurking bugs, it just has to be
 	   good enough for my needs. For example, multiple opening and closing braces on them
@@ -81,6 +80,16 @@ bool parser_load_objects(FILE* file, const char* filename)
 		log_error("parser:load_objects", "Invalid file handle for file %s", filename);
 		return false;
 	}
+
+    struct Parser* parser = malloc(sizeof(*parser));
+    if(!parser)
+    {
+        log_error("parser:load_objects", "Out of memeory");
+        return parser;
+    }
+
+    parser->filename = str_new(filename);
+    parser->objects = array_new(struct Parser_Object);
 
 	int current_line = 0;
 	char line_buffer[MAX_LINE_LEN];
@@ -136,7 +145,7 @@ bool parser_load_objects(FILE* file, const char* filename)
 
 			if(c == '{')
 			{
-				obj_beginning = ftell(file) - 1;
+                obj_beginning = ftell(file);
 				c = ' ';
 				while(!feof(file))
 				{
@@ -158,7 +167,7 @@ bool parser_load_objects(FILE* file, const char* filename)
 
 					if(c == '}')
 					{
-						obj_ending = ftell(file);
+                        obj_ending = ftell(file) - 1;
 						break;
 					}
 				}
@@ -185,8 +194,73 @@ bool parser_load_objects(FILE* file, const char* filename)
 		memset(line_buffer, '\0', MAX_LINE_LEN);
 		fseek(file, obj_beginning, SEEK_SET);
 		fread(obj_str, obj_ending - obj_beginning, 1, file);
-		log_to_stdout("Object found\nType: %s\n%s\n\n", type_str, obj_str);
+        fseek(file, obj_ending + 1, SEEK_SET); // Position cursor after closing brace '}'
+
+        // Read into intermediate parser object and add it to the objects list
+        struct Parser_Object* object = array_grow(parser->objects, struct Parser_Object);
+        object->type = parser_object_type_from_str(type_str);
+        object->data = hashmap_new();
+
+        char format_str[64];
+        char key_str[HASH_MAX_KEY_LEN];
+        char value_str[MAX_VALUE_LEN];
+
+        memset(format_str, '\0', 64);
+        snprintf(format_str, 64, " %%%d[^: ] : %%%d[^\n]", HASH_MAX_KEY_LEN, MAX_VALUE_LEN);
+        char* line = strtok(obj_str, "\n");
+        do
+        {
+            memset(key_str, '\0', HASH_MAX_KEY_LEN);
+            memset(value_str, '\0', MAX_VALUE_LEN);
+
+            if(strlen(line) == 0)
+            {
+                    continue;
+            }
+
+            if(line[0] == '#')
+                continue;
+
+            if(sscanf(line, format_str, key_str, value_str) != 2)
+            {
+                log_warning("Malformed value in config file %s, line %d", filename, current_line);
+                continue;
+            }
+            hashmap_str_set(object->data, key_str, value_str);
+        }
+        while((line = strtok(NULL, "\n")) != NULL);
+
+        //log_to_stdout("Object found\nType: %s\n%s\n\n", type_str, obj_str);
 	}
 	
-	return true;
+    return parser;
+}
+
+int parser_object_type_from_str(const char* str)
+{
+    int object_type = PO_UNKNOWN;
+
+    if(strncmp(str, "Entity", HASH_MAX_KEY_LEN) == 0) object_type = PO_ENTITY;
+    else if(strncmp(str, "Model", HASH_MAX_KEY_LEN) == 0) object_type = PO_MODEL;
+    else if(strncmp(str, "Material", HASH_MAX_KEY_LEN) == 0) object_type = PO_MATERIAL;
+
+    return object_type;
+}
+
+void parser_free(struct Parser *parser)
+{
+    assert(parser);
+    if(parser->filename)
+    {
+        free(parser->filename);
+        parser->filename = NULL;
+    }
+
+    for(int i = 0; i < array_len(parser->objects); i++)
+    {
+        struct Parser_Object* object = &parser->objects[i];
+        hashmap_free(object->data);
+        object->data = NULL;
+        object->type = PO_UNKNOWN;
+    }
 }

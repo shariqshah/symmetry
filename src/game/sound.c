@@ -10,11 +10,12 @@
 #include <AL/alc.h>
 #include <AL/alext.h>
 
-#if defined(_MSC_VER)
-	#include <SDL.h>
-#else
-	#include <SDL2/SDL.h>
-#endif
+//#if defined(_MSC_VER)
+//	#include <SDL.h>
+//#else
+//	#include <SDL2/SDL.h>
+//#endif
+#include <SDL.h>
 
 struct Sound_State
 {

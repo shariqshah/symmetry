@@ -15,8 +15,18 @@ void model_create(struct Entity* entity, const char* geo_name, const char* mater
 {
 	struct Model* model = &entity->model;
 	/* if no name is given for geometry, use default */
-	if(!geo_name) geo_name = "default.pamesh";
-	int geo_index = geom_create_from_file(geo_name);
+	int geo_index = geom_create_from_file(geo_name ? geo_name : "default.pamesh");
+
+	if(geo_index == -1)
+	{
+		log_error("model:create", "Failed to load model %s", geo_name);
+		geo_index = geom_create_from_file("default.pamesh");
+		if(geo_index == -1)
+		{
+			log_error("model:create", "Could not load default model 'default.pamesh' ");
+			return;
+		}
+	}
 
 	model->geometry_index = geo_index;
 	if(!material_register_model(entity, material_name ? material_name : "Unshaded"))

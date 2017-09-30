@@ -126,6 +126,11 @@ void hashmap_value_remove(struct Hashmap* hashmap, const char* key)
 	if(index_to_remove != -1) array_remove_at(hashmap->buckets[index], index_to_remove);
 }
 
+bool hashmap_value_exists(struct Hashmap * hashmap, const char * key)
+{
+	return hashmap_value_get(hashmap, key);
+}
+
 
 void hashmap_float_set(struct Hashmap* hashmap, const char* key, const float value)
 {
@@ -219,55 +224,64 @@ void hashmap_ptr_set(struct Hashmap* hashmap, const char* key, void* value)
 
 float hashmap_float_get(const struct Hashmap* hashmap, const char* key)
 {
-	const struct Variant* variant = hashmap_value_get(hashmap, key);
+	struct Variant* variant = hashmap_value_get(hashmap, key);
+	if(variant->type == VT_STR)	variant_from_str(variant, variant->val_str, VT_FLOAT);
 	return variant->val_float;
 }
 
 int hashmap_int_get(const struct Hashmap* hashmap, const char* key)
 {
-	const struct Variant* variant = hashmap_value_get(hashmap, key);
+	struct Variant* variant = hashmap_value_get(hashmap, key);
+	if(variant->type == VT_STR)	variant_from_str(variant, variant->val_str, VT_INT);
 	return variant->val_int;
 }
 
 double hashmap_double_get(const struct Hashmap* hashmap, const char* key)
 {
-	const struct Variant* variant = hashmap_value_get(hashmap, key);
+	struct Variant* variant = hashmap_value_get(hashmap, key);
+	if(variant->type == VT_STR)	variant_from_str(variant, variant->val_str, VT_DOUBLE);
 	return variant->val_double;
 }
 
 bool hashmap_bool_get(const struct Hashmap* hashmap, const char* key)
 {
-	const struct Variant* variant = hashmap_value_get(hashmap, key);
+	struct Variant* variant = hashmap_value_get(hashmap, key);
+	if(variant->type == VT_STR)	variant_from_str(variant, variant->val_str, VT_BOOL);
 	return variant->val_bool;
 }
 
 vec2 hashmap_vec2_get(const struct Hashmap* hashmap, const char* key)
 {
-	const struct Variant* variant = hashmap_value_get(hashmap, key);
+	struct Variant* variant = hashmap_value_get(hashmap, key);
+	if(variant->type == VT_STR)	variant_from_str(variant, variant->val_str, VT_VEC2);
 	return variant->val_vec2;
 }
 
 vec3 hashmap_vec3_get(const struct Hashmap* hashmap, const char* key)
 {
-	const struct Variant* variant = hashmap_value_get(hashmap, key);
+	struct Variant* variant = hashmap_value_get(hashmap, key);
+	if(variant->type == VT_STR)	variant_from_str(variant, variant->val_str, VT_VEC3);
 	return variant->val_vec3;
 }
 
 vec4 hashmap_vec4_get(const struct Hashmap* hashmap, const char* key)
 {
-	const struct Variant* variant = hashmap_value_get(hashmap, key);
+	struct Variant* variant = hashmap_value_get(hashmap, key);
+	if(variant->type == VT_STR)	variant_from_str(variant, variant->val_str, VT_VEC4);
 	return variant->val_vec4;
 }
 
 quat hashmap_quat_get(const struct Hashmap* hashmap, const char* key)
 {
-	const struct Variant* variant = hashmap_value_get(hashmap, key);
+	struct Variant* variant = hashmap_value_get(hashmap, key);
+	if(variant->type == VT_STR)	variant_from_str(variant, variant->val_str, VT_QUAT);
 	return variant->val_quat;
 }
 
 const mat4* hashmap_mat4_get(const struct Hashmap* hashmap, const char* key)
 {
-	const struct Variant* variant = hashmap_value_get(hashmap, key);
+	struct Variant* variant = hashmap_value_get(hashmap, key);
+	if(variant->type == VT_STR)	variant_from_str(variant, variant->val_str, VT_MAT4);
 	return variant->val_mat4;
 }
 

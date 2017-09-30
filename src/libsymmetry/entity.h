@@ -9,6 +9,7 @@
 #define MAX_SOUND_SOURCE_BUFFERS 5
 
 struct Material_Param;
+struct Parser_Object;
 
 enum Entity_Type
 {
@@ -128,9 +129,9 @@ struct Entity* entity_find(const char* name);
 struct Entity* entity_get_all(void);
 struct Entity* entity_get_parent(int node);
 bool           entity_save(struct Entity* entity, const char* filename, int directory_type);
-struct Entity* entity_load(const char* filename, int directory_type);
+bool           entity_load(const char* filename, int directory_type);
 bool           entity_write(struct Entity* entity, FILE* file);
-struct Entity* entity_read(FILE* file);
+struct Entity* entity_read(struct Parser_Object* object);
 const char*    entity_type_name_get(struct Entity* entity);
 
 

@@ -14,6 +14,7 @@ struct Variant;
 struct Hashmap* 	  hashmap_new(void);
 void            	  hashmap_free(struct Hashmap* hashmap);
 void            	  hashmap_value_remove(struct Hashmap* hashmap, const char* key);
+bool                  hashmap_value_exists(struct Hashmap* hashmap, const char* key);
 void            	  hashmap_value_set(struct Hashmap* hashmap, const char* key, const struct Variant* value);
 struct Variant*       hashmap_value_get(const struct Hashmap* hashmap, const char* key);
 

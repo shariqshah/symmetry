@@ -201,22 +201,23 @@ void scene_setup(void)
 	//	light_ent->light.intensity = 1.f;
 	//}
 
-	/* log_message("Sizeof Entity : %d", sizeof(struct Entity)); */
+	///* log_message("Sizeof Entity : %d", sizeof(struct Entity)); */
 
-	/* struct Entity* light_ent = entity_find("Ground"); */
-	/* entity_save(light_ent, "ground.ent", DT_INSTALL); */
+	///* struct Entity* light_ent = entity_find("Ground"); */
+	///* entity_save(light_ent, "ground.ent", DT_INSTALL); */
 
-	//scene_save("test.scene", DIRT_INSTALL);
+	//scene_save("test.symtres", DIRT_INSTALL);
 
 	//struct Entity* light = entity_load("light.ent", DT_INSTALL);
 
-	if(scene_load("test.scene", DIRT_INSTALL))
+	if(scene_load("test.symtres", DIRT_INSTALL))
 	{
 		log_message("Scene loaded!");
 		struct Entity* player = entity_find("player");
 		game_state->player_node = player->id;
 	}
 
+	/*
     FILE* obj_file = platform->file.open(DIRT_INSTALL, "obj_test.symtres", "rb");
 	if(obj_file)
 	{
@@ -240,7 +241,7 @@ void scene_setup(void)
 	else
 	{
 		log_warning("Failed to open obj_test.symtres");
-	}
+	}*/
 }
 
 void debug(float dt)

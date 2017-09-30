@@ -1,0 +1,272 @@
+Entity
+{
+	name: ROOT
+	type: 2
+	is_listener: false
+	renderable: false
+	parent: NONE
+	position: 0.00000 0.00000 0.00000
+	scale: 1.00000 1.00000 1.00000
+	rotation: 0.00000 0.00000 0.00000 1.00000
+}
+
+Entity
+{
+	name: player
+	type: 3
+	is_listener: false
+	renderable: false
+	parent: ROOT
+	position: 10.00000 5.00000 100.00000
+	scale: 1.00000 1.00000 1.00000
+	rotation: 0.00000 0.00000 0.00000 1.00000
+	ortho: false
+	resizeable: true
+	fov: 60.00000
+	nearz: 0.10000
+	farz: 1000.00000
+	clear_color: 0.30000 0.60000 0.90000 1.00000
+	has_fbo: true
+	fbo_height: 768
+	fbo_width: 1024
+	fbo_has_render_tex: true
+	fbo_has_depth_tex: true
+}
+
+Entity
+{
+	name: Model_Entity
+	type: 5
+	is_listener: false
+	renderable: true
+	parent: ROOT
+	position: 0.00000 0.00000 -5.00000
+	scale: 1.00000 1.00000 1.00000
+	rotation: 0.00000 0.00000 0.00000 1.00000
+	material: Blinn_Phong
+	geometry: default.pamesh
+}
+
+Entity
+{
+	name: Ground
+	type: 5
+	is_listener: false
+	renderable: true
+	parent: ROOT
+	position: 0.00000 -5.00000 0.00000
+	scale: 400.00000 2.00000 400.00000
+	rotation: 0.00000 0.00000 0.00000 1.00000
+	material: Blinn_Phong
+	geometry: default.pamesh
+}
+
+Entity
+{
+	name: Light_Ent
+	type: 4
+	is_listener: false
+	renderable: false
+	parent: ROOT
+	position: 20.00000 0.00000 60.00000
+	scale: 1.00000 1.00000 1.00000
+	rotation: 0.00000 0.00000 0.00000 1.00000
+	light_type: 1
+	outer_angle: 0.52360
+	inner_angle: 0.34907
+	falloff: 1.50000
+	radius: 20
+	intensity: 1.00000
+	depth_bias: 0.00050
+	valid: true
+	cast_shadow: false
+	pcf_enabled: false
+	color: 1.00000 0.12500 0.33333
+}
+
+Entity
+{
+	name: Light_Ent
+	type: 4
+	is_listener: false
+	renderable: false
+	parent: ROOT
+	position: 60.00000 0.00000 40.00000
+	scale: 1.00000 1.00000 1.00000
+	rotation: 0.00000 0.00000 0.00000 1.00000
+	light_type: 1
+	outer_angle: 0.52360
+	inner_angle: 0.34907
+	falloff: 1.50000
+	radius: 20
+	intensity: 1.00000
+	depth_bias: 0.00050
+	valid: true
+	cast_shadow: false
+	pcf_enabled: false
+	color: 0.33333 0.20000 0.50000
+}
+
+Entity
+{
+	name: Light_Ent
+	type: 4
+	is_listener: false
+	renderable: false
+	parent: ROOT
+	position: 20.00000 0.00000 20.00000
+	scale: 1.00000 1.00000 1.00000
+	rotation: 0.00000 0.00000 0.00000 1.00000
+	light_type: 1
+	outer_angle: 0.52360
+	inner_angle: 0.34907
+	falloff: 1.50000
+	radius: 20
+	intensity: 1.00000
+	depth_bias: 0.00050
+	valid: true
+	cast_shadow: false
+	pcf_enabled: false
+	color: 1.00000 0.14286 1.00000
+}
+
+Entity
+{
+	name: Suzanne
+	type: 5
+	is_listener: false
+	renderable: true
+	parent: Model_Entity
+	position: 6.00000 0.00000 8.00000
+	scale: 1.00000 1.00000 1.00000
+	rotation: 0.00000 0.00000 0.00000 1.00000
+	material: Blinn_Phong
+	geometry: default.pamesh
+}
+
+Entity
+{
+	name: Suzanne
+	type: 5
+	is_listener: false
+	renderable: true
+	parent: Model_Entity
+	position: 8.00000 0.00000 3.00000
+	scale: 1.00000 1.00000 1.00000
+	rotation: 0.00000 0.00000 0.00000 1.00000
+	material: Blinn_Phong
+	geometry: default.pamesh
+}
+
+Entity
+{
+	name: Suzanne
+	type: 5
+	is_listener: false
+	renderable: true
+	parent: Model_Entity
+	position: 6.00000 0.00000 7.00000
+	scale: 1.00000 1.00000 1.00000
+	rotation: 0.00000 0.00000 0.00000 1.00000
+	material: Blinn_Phong
+	geometry: default.pamesh
+}
+
+Entity
+{
+	name: Suzanne
+	type: 5
+	is_listener: false
+	renderable: true
+	parent: Model_Entity
+	position: 7.00000 0.00000 7.00000
+	scale: 1.00000 1.00000 1.00000
+	rotation: 0.00000 0.00000 0.00000 1.00000
+	material: Blinn_Phong
+	geometry: default.pamesh
+}
+
+Entity
+{
+	name: Suzanne
+	type: 5
+	is_listener: false
+	renderable: true
+	parent: Model_Entity
+	position: 6.00000 0.00000 7.00000
+	scale: 1.00000 1.00000 1.00000
+	rotation: 0.00000 0.00000 0.00000 1.00000
+	material: Blinn_Phong
+	geometry: default.pamesh
+}
+
+Entity
+{
+	name: Suzanne
+	type: 5
+	is_listener: false
+	renderable: true
+	parent: Model_Entity
+	position: 3.00000 0.00000 2.00000
+	scale: 1.00000 1.00000 1.00000
+	rotation: 0.00000 0.00000 0.00000 1.00000
+	material: Blinn_Phong
+	geometry: default.pamesh
+}
+
+Entity
+{
+	name: Suzanne
+	type: 5
+	is_listener: false
+	renderable: true
+	parent: Model_Entity
+	position: 2.00000 0.00000 7.00000
+	scale: 1.00000 1.00000 1.00000
+	rotation: 0.00000 0.00000 0.00000 1.00000
+	material: Blinn_Phong
+	geometry: default.pamesh
+}
+
+Entity
+{
+	name: Suzanne
+	type: 5
+	is_listener: false
+	renderable: true
+	parent: Model_Entity
+	position: 10.00000 0.00000 7.00000
+	scale: 1.00000 1.00000 1.00000
+	rotation: 0.00000 0.00000 0.00000 1.00000
+	material: Blinn_Phong
+	geometry: default.pamesh
+}
+
+Entity
+{
+	name: Suzanne
+	type: 5
+	is_listener: false
+	renderable: true
+	parent: Model_Entity
+	position: 6.00000 0.00000 4.00000
+	scale: 1.00000 1.00000 1.00000
+	rotation: 0.00000 0.00000 0.00000 1.00000
+	material: Blinn_Phong
+	geometry: default.pamesh
+}
+
+Entity
+{
+	name: Suzanne
+	type: 5
+	is_listener: false
+	renderable: true
+	parent: Model_Entity
+	position: 2.00000 0.00000 6.00000
+	scale: 1.00000 1.00000 1.00000
+	rotation: 0.00000 0.00000 0.00000 1.00000
+	material: Blinn_Phong
+	geometry: default.pamesh
+}
+

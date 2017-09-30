@@ -191,7 +191,7 @@ bool material_register_model(struct Entity* entity, const char* material_name)
 	assert(material_name && entity);
 	bool success = false;
 	int index = material_get_index(material_name);
-	if(index < -1)
+	if(index <= -1)
 	{
 		log_error("material:register_model", "Material '%s' not found", material_name);
 		return success;

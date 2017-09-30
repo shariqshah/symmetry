@@ -130,39 +130,39 @@ struct Entity* scene_get_parent(struct Entity* entity)
 
 bool scene_load(const char* filename, int directory_type)
 {
-    FILE* entity_file = platform->file.open(directory_type, filename, "rb");
-	if(!entity_file)
-	{
-        log_error("scene:load", "Failed to open scenefile %s for reading", filename);
-        return false;
-	}
+ //   FILE* entity_file = platform->file.open(directory_type, filename, "r");
+	//if(!entity_file)
+	//{
+ //       log_error("scene:load", "Failed to open scenefile %s for reading", filename);
+ //       return false;
+	//}
 
-	int count = 0;
-	int eof_char = -1;
-	while(!feof(entity_file))
-	{
-		if(eof_char != -1) ungetc(eof_char, entity_file);
-		struct Entity* new_entity = NULL;
-		new_entity = entity_read(entity_file);
-		if(!new_entity)
-		{
-			log_error("scene:load", "Error reading entity");
-		}
-		else
-		{
-			log_message("Loaded %s", new_entity->name);
-			count++;
-		}
-		eof_char = fgetc(entity_file);
-		/* To check end of file, we  get the next character and before beginning
-		   loop we check if eof occured, feof only returns true if the last read
-		   was an eof. If it wasn't eof then we return the character back to the
-		   stream and carry on. */
-	}
+	//int count = 0;
+	//int eof_char = -1;
+	//while(!feof(entity_file))
+	//{
+	//	if(eof_char != -1) ungetc(eof_char, entity_file);
+	//	struct Entity* new_entity = NULL;
+	//	new_entity = entity_read(entity_file);
+	//	if(!new_entity)
+	//	{
+	//		log_error("scene:load", "Error reading entity");
+	//	}
+	//	else
+	//	{
+	//		log_message("Loaded %s", new_entity->name);
+	//		count++;
+	//	}
+	//	eof_char = fgetc(entity_file);
+	//	/* To check end of file, we  get the next character and before beginning
+	//	   loop we check if eof occured, feof only returns true if the last read
+	//	   was an eof. If it wasn't eof then we return the character back to the
+	//	   stream and carry on. */
+	//}
 
-	log_message("%d entites loaded from %s", count, filename);
-	fclose(entity_file);
-	return true;
+	//log_message("%d entites loaded from %s", count, filename);
+	//fclose(entity_file);
+	return entity_load(filename, directory_type);
 }
 
 bool scene_save(const char* filename, int directory_type)

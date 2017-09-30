@@ -206,8 +206,8 @@ struct Parser* parser_load_objects(FILE* file, const char* filename)
         char value_str[MAX_VALUE_LEN];
 
         memset(format_str, '\0', 64);
-        snprintf(format_str, 64, " %%%d[^: ] : %%%d[^\n]", HASH_MAX_KEY_LEN, MAX_VALUE_LEN);
-        char* line = strtok(obj_str, "\n");
+        snprintf(format_str, 64, " %%%d[^: ] : %%%d[^\r\n]", HASH_MAX_KEY_LEN, MAX_VALUE_LEN);
+        char* line = strtok(obj_str, "\r\n");
         do
         {
             memset(key_str, '\0', HASH_MAX_KEY_LEN);
@@ -228,7 +228,7 @@ struct Parser* parser_load_objects(FILE* file, const char* filename)
             }
             hashmap_str_set(object->data, key_str, value_str);
         }
-        while((line = strtok(NULL, "\n")) != NULL);
+        while((line = strtok(NULL, "\r\n")) != NULL);
 
         //log_to_stdout("Object found\nType: %s\n%s\n\n", type_str, obj_str);
 	}

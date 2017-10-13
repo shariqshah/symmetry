@@ -13,6 +13,7 @@ struct Entity* scene_add_new(const char* name, const int type); /* Add as child 
 struct Entity* scene_add_as_child(const char* name, const int type, int parent);
 struct Entity* scene_find(const char* name);
 struct Entity* scene_get_root(void);
+void           scene_root_set(struct Entity* entity);
 struct Entity* scene_get_child_by_name(struct Entity* parent, const char* name);
 struct Entity* scene_get_parent(struct Entity* entity);
 bool           scene_load(const char* filename, int directory_type);

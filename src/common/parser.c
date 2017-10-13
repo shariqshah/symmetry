@@ -1,5 +1,6 @@
 #include "parser.h"
 #include "hashmap.h"
+#include "variant.h"
 #include "array.h"
 #include "log.h"
 #include "string_utils.h"
@@ -12,7 +13,8 @@
 #define MAX_LINE_LEN 512
 #define MAX_VALUE_LEN 512
 
-static int parser_object_type_from_str(const char* str);
+static int         parser_object_type_from_str(const char* str);
+static const char* parser_object_type_to_str(int type);
 
 bool parser_load(FILE* file, const char* filename, Parser_Assign_Func assign_func, bool return_on_emptyline, int current_line)
 {
@@ -88,7 +90,6 @@ struct Parser* parser_load_objects(FILE* file, const char* filename)
         return parser;
     }
 
-    parser->filename = str_new(filename);
     parser->objects = array_new(struct Parser_Object);
 
 	int current_line = 0;
@@ -215,7 +216,7 @@ struct Parser* parser_load_objects(FILE* file, const char* filename)
 
             if(strlen(line) == 0)
             {
-                    continue;
+                continue;
             }
 
             if(line[0] == '#')
@@ -247,14 +248,21 @@ int parser_object_type_from_str(const char* str)
     return object_type;
 }
 
+const char* parser_object_type_to_str(int type)
+{
+	switch(type)
+	{
+	case PO_ENTITY:   return "Entity";
+	case PO_MODEL:    return "Model";
+	case PO_MATERIAL: return "Material";
+	case PO_UNKNOWN:  return "Unknown";
+	default: return "Unknown";
+	}
+}
+
 void parser_free(struct Parser *parser)
 {
     assert(parser);
-    if(parser->filename)
-    {
-        free(parser->filename);
-        parser->filename = NULL;
-    }
 
     for(int i = 0; i < array_len(parser->objects); i++)
     {
@@ -263,4 +271,72 @@ void parser_free(struct Parser *parser)
         object->data = NULL;
         object->type = PO_UNKNOWN;
     }
+}
+
+struct Parser* parser_new(void)
+{
+	struct Parser* parser = NULL;
+	parser = malloc(sizeof(*parser));
+	if(!parser)
+	{
+		log_error("parser:new", "Out of memory");
+		return NULL;
+	}
+
+	parser->objects = array_new(struct Parser_Object);
+	if(!parser->objects)
+	{
+		log_error("parser:new", "Could not create objects array for parser");
+		free(parser);
+		return NULL;
+	}
+
+	return parser;
+}
+
+struct Parser_Object* parser_object_new(struct Parser* parser, int type)
+{
+	assert(parser);
+	struct Parser_Object* object = array_grow(parser->objects, struct Parser_Object);
+	if(!object)
+	{
+		log_error("parser:object_new", "Failed to add new parser object");
+		return NULL;
+	}
+    object->type = type;
+	object->data = hashmap_new();
+
+	return object;
+}
+
+bool parser_write_objects(struct Parser* parser, FILE* file, const char* filename)
+{
+	assert(parser);
+	char value_str[MAX_VALUE_LEN];
+	int counter = 0;
+	for(int i = 0; i < array_len(parser->objects); i++)
+	{
+		struct Parser_Object* object = &parser->objects[i];
+		if(object->type == PO_UNKNOWN)
+		{
+			log_warning("Unknown object type, cannot write to %s", filename);
+			continue;
+		}
+
+		fprintf(file, "%s\n{\n", parser_object_type_to_str(object->type));
+
+		char* key = NULL;
+		struct Variant* value = NULL;
+		HASHMAP_FOREACH(object->data, key, value)
+		{
+			memset(value_str, '\0', MAX_VALUE_LEN);
+            variant_to_str(value, &value_str[0], MAX_VALUE_LEN);
+			fprintf(file, "\t%s : %s\n", key, value_str);
+		}
+		fprintf(file, "}\n\n");
+		counter++;
+	}
+
+	log_message("%d objects written to %s", counter, filename);
+	return true;
 }

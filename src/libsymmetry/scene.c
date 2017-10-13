@@ -4,6 +4,7 @@
 #include "../common/log.h"
 #include "transform.h"
 #include "../common/common.h"
+#include "../common/parser.h"
 
 #include <assert.h>
 #include <string.h>
@@ -103,6 +104,16 @@ struct Entity* scene_get_root(void)
 	return entity_get(root_node);
 }
 
+void scene_root_set(struct Entity* entity)
+{
+	// Only use this function when we know the scene is empty and needs a root node. 
+	// This is just a temporary way of setting root until we finalize how a scene should work
+	if(root_node == -1)
+		root_node = entity->id;
+	else
+		log_error("scene:root_set", "Scene already has a root node!");
+}
+
 struct Entity* scene_get_child_by_name(struct Entity* parent, const char* name)
 {
 	assert(parent);
@@ -175,6 +186,14 @@ bool scene_save(const char* filename, int directory_type)
         return false;
 	}
 	
+	struct Parser* parser = parser_new();
+	if(!parser)
+	{
+		log_error("scene:save", "Could not create Parser");
+		fclose(scene_file);
+		return false;
+	}
+
 	int* entities_to_write = array_new(int);
 	array_push(entities_to_write, root_node, int);
 
@@ -183,9 +202,16 @@ bool scene_save(const char* filename, int directory_type)
 	while(!done)
 	{
 		struct Entity* entity = entity_get(entities_to_write[0]);
-		if(!entity_write(entity, scene_file))
+		struct Parser_Object* object = parser_object_new(parser, PO_ENTITY);
+		if(!object)
 		{
-			log_error("scene:save", "Failed to write '%s' to file", entity->name);
+			log_error("scene:save", "Failed to create parser object for %s", entity->name);
+			continue;
+		}
+
+		if(!entity_write(entity, object))
+		{
+			log_error("scene:save", "Failed to write '%s' into parser object", entity->name);
 			continue;
 		}
 
@@ -198,8 +224,18 @@ bool scene_save(const char* filename, int directory_type)
 		if(array_len(entities_to_write) == 0) done = true;
 	}
 
-	log_message("%d entities written to %s", count, filename);
+	if(parser_write_objects(parser, scene_file, filename))
+	{
+		log_message("%d entities written to %s", count, filename);
+	}
+	else
+	{
+		log_error("scene:save", "Failed to write scene to %s", filename);
+		success = false;
+	}
+
 	array_free(entities_to_write);
+	parser_free(parser);
 	fclose(scene_file);
 	
 	return success;

@@ -210,11 +210,13 @@ void scene_setup(void)
 
 	//struct Entity* light = entity_load("light.ent", DT_INSTALL);
 
-	if(scene_load("test.symtres", DIRT_INSTALL))
+	if(scene_load("parser_write.symtres", DIRT_INSTALL))
 	{
 		log_message("Scene loaded!");
 		struct Entity* player = entity_find("player");
 		game_state->player_node = player->id;
+
+		//scene_save("parser_write.symtres", DIRT_INSTALL);
 	}
 
 	/*

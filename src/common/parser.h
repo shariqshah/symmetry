@@ -5,6 +5,7 @@
 
 enum Parser_Object_Type
 {
+    PO_CONFIG,
     PO_ENTITY,
     PO_MATERIAL,
     PO_MODEL,
@@ -30,5 +31,7 @@ void                  parser_free(struct Parser* parser);
 struct Parser*        parser_new(void);
 struct Parser_Object* parser_object_new(struct Parser* parser, int type);
 bool                  parser_write_objects(struct Parser* parser, FILE* file, const char* filename);
+int                   parser_object_type_from_str(const char* str);
+const char*           parser_object_type_to_str(int type);
 
 #endif

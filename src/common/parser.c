@@ -13,9 +13,6 @@
 #define MAX_LINE_LEN 512
 #define MAX_VALUE_LEN 512
 
-static int         parser_object_type_from_str(const char* str);
-static const char* parser_object_type_to_str(int type);
-
 bool parser_load(FILE* file, const char* filename, Parser_Assign_Func assign_func, bool return_on_emptyline, int current_line)
 {
 	if(!file)
@@ -241,9 +238,10 @@ int parser_object_type_from_str(const char* str)
 {
     int object_type = PO_UNKNOWN;
 
-    if(strncmp(str, "Entity", HASH_MAX_KEY_LEN) == 0) object_type = PO_ENTITY;
-    else if(strncmp(str, "Model", HASH_MAX_KEY_LEN) == 0) object_type = PO_MODEL;
-    else if(strncmp(str, "Material", HASH_MAX_KEY_LEN) == 0) object_type = PO_MATERIAL;
+    if(strncmp(str, "Entity", HASH_MAX_KEY_LEN) == 0)        object_type = PO_ENTITY;
+    else if(strncmp(str, "Model", HASH_MAX_KEY_LEN) == 0)    object_type = PO_MODEL;
+	else if(strncmp(str, "Material", HASH_MAX_KEY_LEN) == 0) object_type = PO_MATERIAL;
+	else if(strncmp(str, "Config", HASH_MAX_KEY_LEN) == 0)   object_type = PO_CONFIG;
 
     return object_type;
 }
@@ -255,6 +253,7 @@ const char* parser_object_type_to_str(int type)
 	case PO_ENTITY:   return "Entity";
 	case PO_MODEL:    return "Model";
 	case PO_MATERIAL: return "Material";
+	case PO_CONFIG:   return "Config";
 	case PO_UNKNOWN:  return "Unknown";
 	default: return "Unknown";
 	}

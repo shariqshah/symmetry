@@ -11,6 +11,8 @@ solution "Symmetry"
 		buildoptions {"-Wall", "-std=c99", "`pkg-config --cflags-only-I sdl2`"}
 
 	configuration {"windows", "gmake"}
+	    postbuildcommands {"rm -rf debug/assets"}
+	    postbuildcommands {"rm -rf release/assets"}
 	    postbuildcommands {"ln -fs " .. os.getcwd()  .. "/../assets debug/assets"}
 	    postbuildcommands {"ln -fs " .. os.getcwd()  .. "/../assets release/assets"}
 		buildoptions {"-Wall", "-std=c99"}

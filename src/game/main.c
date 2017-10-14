@@ -176,10 +176,10 @@ bool init(void)
     io_file_init(install_path, user_path);
     free(install_path);
     free(user_path);
-    if(!config_vars_load("config.cfg", DIRT_USER))
+    if(!config_vars_load("config.symtres", DIRT_USER))
     {
         log_error("main:init", "Could not load config, reverting to defaults");
-        config_vars_save("config.cfg", DIRT_USER);
+        config_vars_save("config.symtres", DIRT_USER);
     }
 
     if(!platform_init_video()) return false;

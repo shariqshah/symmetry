@@ -347,3 +347,14 @@ int hashmap_iter_next(struct Hashmap* hashmap, char** key, struct Variant** valu
 	}
 	return 0;
 }
+
+void hashmap_copy(struct Hashmap* from, struct Hashmap* to)
+{
+	struct Variant* from_val = NULL;
+	char* from_key = NULL;
+
+	HASHMAP_FOREACH(from, from_key, from_val)
+	{
+		hashmap_value_set(to, from_key, from_val);
+	}
+}

@@ -53,7 +53,14 @@ void log_init(const char* log_file_name, const char* user_directory)
 
 void log_cleanup(void)
 {
-	if(log_file) fclose(log_file);
+	if(log_file) 
+	{
+		time_t current_time;
+		time(&current_time);
+		fprintf(log_file, "\nLog closing at %s\n", ctime(&current_time));
+		fflush(log_file);
+		fclose(log_file);
+	}
 }
 
 

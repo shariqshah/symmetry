@@ -242,6 +242,7 @@ int parser_object_type_from_str(const char* str)
     else if(strncmp(str, "Model", HASH_MAX_KEY_LEN) == 0)    object_type = PO_MODEL;
 	else if(strncmp(str, "Material", HASH_MAX_KEY_LEN) == 0) object_type = PO_MATERIAL;
 	else if(strncmp(str, "Config", HASH_MAX_KEY_LEN) == 0)   object_type = PO_CONFIG;
+	else if(strncmp(str, "Key", HASH_MAX_KEY_LEN) == 0)      object_type = PO_KEY;
 
     return object_type;
 }
@@ -254,6 +255,7 @@ const char* parser_object_type_to_str(int type)
 	case PO_MODEL:    return "Model";
 	case PO_MATERIAL: return "Material";
 	case PO_CONFIG:   return "Config";
+	case PO_KEY:   return "Key";
 	case PO_UNKNOWN:  return "Unknown";
 	default: return "Unknown";
 	}

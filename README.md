@@ -155,8 +155,6 @@
 
 - ## TODO
 
-	- Add array support to variant
-	- Read/Write keybindings using new parser object
 	- Store Materials in new format supported by parser
 	- Add model description file which has the same syntax supported by parser and modify old blender exporter to conform to new standards
 	- Implement sound/listener loading from scene file
@@ -331,3 +329,4 @@
 	* Modify entity loading logic to use the new parsing code by parsing all entity properties into a hashmap first then recreating entity from that
 	* Implmented writing to file through the new Parser and Parser_Objects
 	* Changed Config to read/write using new Parser and Parser_Objects
+	* Implemented Reading/Writing keybindings using new parser object

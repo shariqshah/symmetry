@@ -6,10 +6,15 @@
 
 #include <SDL.h>
 
-struct Key_Combination
+struct Key_Binding
 {
-	int key;
-	int mods;
+	int   key_primary;
+	int   mods_primary;
+
+	int   key_secondary;
+	int   mods_secondary;
+
+	int   state;
 };
 
 enum Key_Mod
@@ -156,7 +161,8 @@ enum Keyboard_Key
 	KEY_RCTRL        = SDLK_RCTRL,
 	KEY_LALT         = SDLK_LALT,
 	KEY_RALT         = SDLK_RALT,
-	KEY_UNKNOWN      = SDLK_UNKNOWN
+	KEY_UNKNOWN      = SDLK_UNKNOWN,
+	KEY_NONE         = -1
 };
 
 enum Keyboard_Scancode
@@ -410,7 +416,7 @@ enum Keyboard_Scancode
 
 void input_init(void);
 bool input_keybinds_load(const char* filename, int directory_type);
-bool input_keybinds_save(const char* filename);
+bool input_keybinds_save(const char* filename, int directory_type);
 void input_cleanup(void);
 bool input_mousebutton_state_get(uint button, int state_type);
 bool input_is_key_pressed(int key);
@@ -421,8 +427,8 @@ void input_mouse_mode_set(enum Mouse_Mode mode);
 int  input_mouse_mode_get(void);
 void input_update(void);
 bool input_map_state_get(const char* map_name, int state);
-void input_map_create(const char* name, struct Key_Combination* keys, int num_keys);
-bool input_map_keys_set(const char* name, struct Key_Combination* keys, int num_keys);
+bool input_map_create(const char* name, struct Key_Binding key_combination);
+bool input_map_keys_set(const char* name, struct Key_Binding key_combination);
 bool input_map_remove(const char* name);
 bool input_map_name_set(const char* name, const char* new_name);
 

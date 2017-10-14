@@ -431,8 +431,8 @@ int platform_key_from_name(const char* key_name)
 
 	strncpy(trimmed_key_name, &key_name[start], (end - start) + 1);
 	int key =  SDL_GetKeyFromName(trimmed_key_name);
-	if(key == SDLK_UNKNOWN)
-		log_error("platform:key_from_name", "Unrecognized key '%s', SDL (%s)", trimmed_key_name, SDL_GetError());
+	/*if(key == SDLK_UNKNOWN)
+		log_error("platform:key_from_name", "Unrecognized key '%s', SDL (%s)", trimmed_key_name, SDL_GetError());*/
 	return key;
 }
 

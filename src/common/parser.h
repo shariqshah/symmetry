@@ -9,6 +9,7 @@ enum Parser_Object_Type
     PO_ENTITY,
     PO_MATERIAL,
     PO_MODEL,
+	PO_KEY,
     PO_UNKNOWN
 };
 

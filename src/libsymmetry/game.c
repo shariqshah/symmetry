@@ -216,6 +216,12 @@ void scene_setup(void)
 		struct Entity* player = entity_find("player");
 		game_state->player_node = player->id;
 
+		struct Entity* suz = entity_find("Suzanne");
+		struct Entity* sound_ent = scene_add_as_child("Sound_Ent", ET_SOUND_SOURCE, suz->id);
+		sound_ent->sound_source.source_handle = platform->sound.source_create(true, "sounds/teh_beatz.wav", ST_WAV);
+		platform->sound.source_loop_set(sound_ent->sound_source.source_handle, true);
+		platform->sound.source_play(sound_ent->sound_source.source_handle);
+
 		//scene_save("parser_write.symtres", DIRT_INSTALL);
 	}
 

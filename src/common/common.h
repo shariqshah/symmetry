@@ -26,10 +26,16 @@ typedef void (*Textinput_Event_Func)    (const char* text);
 
 enum Directory_Type
 {
-    DIRT_USER,					/* User directory or preferences directory */
-    DIRT_INSTALL,					/* Directory where the game's assets are, usually alongside the game's executable where the game is installed */
-	DIRT_EXECUTABLE,				/* Directory where the game's executable is located */
+    DIRT_USER,		 /* User directory or preferences directory */
+    DIRT_INSTALL,	 /* Directory where the game's assets are, usually alongside the game's executable where the game is installed */
+	DIRT_EXECUTABLE, /* Directory where the game's executable is located */
 	DIRT_COUNT
+};
+
+enum Sound_Source_Type
+{
+	ST_WAV = 0,
+	ST_WAV_STREAM
 };
 
 struct Sound_Api
@@ -38,17 +44,11 @@ struct Sound_Api
     void (*listener_update)(float apos_x, float apos_y, float apos_z,
                             float afwd_x, float afwd_y, float afwd_z,
                             float aup_x,  float aup_y,  float aup_z);
-    void (*source_update)(uint source_handle,
-                          float apos_x, float apos_y, float apos_z,
-                          float afwd_x, float afwd_y, float afwd_z,
-                          float aup_x,  float aup_y,  float aup_z);
-    void (*source_create)(bool relative, uint num_buffers, uint* out_handle, uint* out_buffer_handles);
-    void (*source_destroy)(uint source_handle, uint* attached_buffers, uint num_buffers);
+    void (*source_update)(uint source_handle, float apos_x, float apos_y, float apos_z);
+    uint (*source_create)(bool relative, const char* filename, int type);
+    void (*source_destroy)(uint source_handle);
     void (*source_volume_set)(uint source_handle, float volume);
-    void (*source_pitch_set)(uint source_handle, float pitch);
-    void (*source_load_wav)(uint source_handle, uint buffer_handle, const char* file_name);
     void (*source_loop_set)(uint source_handle, bool loop);
-    void (*source_relative_set)(uint source_handle, bool relative);
     void (*source_play)(uint source_handle);
     void (*source_pause)(uint source_handle);
     void (*source_rewind)(uint source_handle);

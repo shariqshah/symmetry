@@ -53,10 +53,11 @@ struct Model
 struct Sound_Source
 {
 	bool active;
+	int  type;
 	bool relative;
+	bool loop;
+	char* wav_filename;
     uint source_handle;
-    uint buffer_handles[MAX_SOUND_SOURCE_BUFFERS];
-    uint num_attached_buffers;
 };
 
 struct Camera

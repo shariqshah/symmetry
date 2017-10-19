@@ -19,13 +19,17 @@ solution "Symmetry"
 
 
    configuration {"windows", "vs2017 or qbs"}
-	   includedirs {"../third_party/windows/SDL2-2.0.5/include/", "../third_party/windows/OpenAL/include/"}
+   includedirs
+   {
+	  "../third_party/windows/SDL2-2.0.5/include/",
+      "../third_party/windows/Soloud/include/"
+   }
 
-	   local sdl_lib_dir    = "../third_party/windows/SDL2-2.0.5/lib/x64/"
-	   local openal_lib_dir = "../third_party/windows/OpenAL/lib/"
-	   
-	   defines {"_CRT_SECURE_NO_WARNINGS"}
-	   flags {"NoIncrementalLink", "NoEditAndContinue"}
+	local sdl_lib_dir    = "../third_party/windows/SDL2-2.0.5/lib/x64/"
+	local soloud_lib_dir = "../third_party/windows/Soloud/lib/"
+	
+	defines {"_CRT_SECURE_NO_WARNINGS"}
+	flags {"NoIncrementalLink", "NoEditAndContinue"}
 
    configuration "Debug"
 	    if (_ACTION ~= nil and _ACTION ~= "postbuild_copy") then
@@ -52,20 +56,38 @@ solution "Symmetry"
 			language "C"
 			files { "../src/common/**.c", "../src/common/**.h", "../src/game/**.c", "../src/game/**.h" }
 			defines {"GAME"}
-
+			local soloud_lib_name = 
+			
+			configuration "Debug"
+				links {"soloud_x64_d"}
+			
+			configuration "Release"
+				links {"soloud_x64"}
+				
 			configuration "linux"
-				buildoptions {"`pkg-config --cflags-only-other sdl2 openal`"}
-				linkoptions {"`pkg-config --libs sdl2 openal`"}
+				buildoptions {"`pkg-config --cflags-only-other sdl2`"}
+				linkoptions {"`pkg-config --libs sdl2`"}
 				links {"m"}
 
 			configuration {"windows", "gmake"}
-				buildoptions {"`pkg-config --cflags-only-I sdl2 openal`"}
-				linkoptions {"`pkg-config --libs sdl2 openal`"}
+				buildoptions {"`pkg-config --cflags-only-I sdl2`"}
+				linkoptions {"`pkg-config --libs sdl2`"}
 				links {"m"}
 
 			configuration {"windows", "vs2017 or qbs"}
-			    libdirs { sdl_lib_dir, openal_lib_dir }
-			    links {"SDL2", "OpenAL32"}
+			    libdirs { sdl_lib_dir, soloud_lib_dir }
+			    links {"SDL2"}
+				
+			
+				
+			configuration {"windows", "Release", "vs2017"}
+				postbuildcommands {
+					"xcopy ..\\..\\assets ..\\..\\bin\\assets /s /e /h /i /y /d",
+					"copy release\\Symmetry.exe ..\\..\\bin\\ /Y",
+					"copy release\\libSymmetry.dll ..\\..\\bin\\ /Y",
+					"copy release\\SDL2.dll ..\\..\\bin\\ /Y",
+					"copy release\\soloud_x64.dll ..\\..\\bin\\ /Y",
+				}
 				
 				newaction {
 				   trigger = "postbuild_copy",
@@ -87,8 +109,9 @@ solution "Symmetry"
 					  local success = false
 					  success = os.copyfile(sdl_lib_dir .. "SDL2.dll", copy_dest_dir .. "/debug/SDL2.dll")
 					  success = os.copyfile(sdl_lib_dir .. "SDL2.dll", copy_dest_dir .. "/release/SDL2.dll")
-					  success = os.copyfile("../third_party/windows/OpenAL/bin/OpenAL32.dll", copy_dest_dir .. "/debug/OpenAL32.dll")
-					  success = os.copyfile("../third_party/windows/OpenAL/bin/OpenAL32.dll", copy_dest_dir .. "/release/OpenAL32.dll")
+					  success = os.copyfile(soloud_lib_dir .. "soloud_x64_d.dll", copy_dest_dir .. "/debug/soloud_x64_d.dll")
+					  success = os.copyfile(soloud_lib_dir .. "soloud_x64.dll", copy_dest_dir .. "/release/soloud_x64.dll")
+					  
 
 					  if success ~= true then
 						 printf("Copying one or more dlls failed.")
@@ -125,11 +148,14 @@ solution "Symmetry"
 			defines {"GAME_LIB"}
 			files { "../src/common/**.c", "../src/common/**.h", "../src/libsymmetry/**.h", "../src/libsymmetry/**.c" }
 
-			configuration {"windows or linux", "gmake"}
-				buildoptions {"`pkg-config --cflags-only-I sdl2`"}
+			-- configuration {"windows or linux", "gmake"}
+				--buildoptions {"`pkg-config --cflags-only-I sdl2`"}
 
 			configuration "windows"
 			    targetname "libSymmetry"
+				
+			configuration {"windows", "vs2017"}
+				flags "NoImportLib"
 			
 			configuration "Debug"
-		        defines {"GL_DEBUG_CONTEXT", "AL_DEBUG"}
+		        defines {"GL_DEBUG_CONTEXT"}

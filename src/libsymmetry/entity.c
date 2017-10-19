@@ -58,9 +58,7 @@ void entity_remove(int index)
 	case ET_STATIC_MESH:  model_destroy(entity);        break;
     case ET_SOUND_SOURCE:
     {
-        platform->sound.source_destroy(entity->sound_source.source_handle,
-                                       &entity->sound_source.buffer_handles[0],
-                                       entity->sound_source.num_attached_buffers);
+        
     }
     break;
 	case ET_ROOT: break;
@@ -164,10 +162,7 @@ void entity_post_update(void)
                 transform_get_absolute_forward(entity, &abs_fwd);
                 transform_get_absolute_up(entity, &abs_up);
 
-                platform->sound.source_update(entity->sound_source.source_handle,
-                                              abs_pos.x, abs_pos.y, abs_pos.z,
-                                              abs_fwd.x, abs_fwd.y, abs_fwd.z,
-                                              abs_up.x,  abs_up.y,  abs_up.z);
+                platform->sound.source_update(entity->sound_source.source_handle, abs_pos.x, abs_pos.y, abs_pos.z);
             }
 
             if(entity->is_listener)
@@ -277,6 +272,9 @@ bool entity_write(struct Entity* entity, struct Parser_Object* object)
 	{
 		hashmap_bool_set(entity_data, "active", entity->sound_source.active);
 		hashmap_bool_set(entity_data, "relative", entity->sound_source.relative);
+		hashmap_int_set(entity_data, "sound_type", entity->sound_source.type);
+		hashmap_str_set(entity_data, "wav_filename", entity->sound_source.wav_filename);
+		hashmap_bool_set(entity_data, "loop", entity->sound_source.loop);
 		break;
 	}
 	};
@@ -440,13 +438,32 @@ struct Entity* entity_read(struct Parser_Object* object)
 	break;
 	case ET_SOUND_SOURCE:
 	{
-		if(hashmap_value_exists(object->data, "active"))               entity->sound_source.active = hashmap_bool_get(object->data, "active");
-		if(hashmap_value_exists(object->data, "relative"))             entity->sound_source.relative = hashmap_bool_get(object->data, "relative");
-		if(hashmap_value_exists(object->data, "num_attached_buffers")) entity->sound_source.num_attached_buffers = (uint)hashmap_int_get(object->data, "num_attached_buffers");
-		platform->sound.source_create(entity->sound_source.relative, 
-									  entity->sound_source.num_attached_buffers, 
-									  &entity->sound_source.source_handle,
-									  &entity->sound_source.buffer_handles);
+		struct Sound_Source* sound_source = &entity->sound_source;
+		sound_source->active               = false;
+		sound_source->relative             = false;
+		sound_source->loop                 = false;
+		sound_source->source_handle        = 0;
+		sound_source->wav_filename         = NULL;
+		sound_source->type                 = ST_WAV;
+
+		if(hashmap_value_exists(object->data, "active"))       sound_source->active = hashmap_bool_get(object->data, "active");
+		if(hashmap_value_exists(object->data, "relative"))     sound_source->relative = hashmap_bool_get(object->data, "relative");
+		if(hashmap_value_exists(object->data, "loop"))         sound_source->loop = hashmap_bool_get(object->data, "loop");
+		if(hashmap_value_exists(object->data, "wav_filename")) sound_source->wav_filename = str_new(hashmap_str_get(object->data, "wav_filename"));
+		if(hashmap_value_exists(object->data, "sound_type"))   sound_source->type = hashmap_int_get(object->data, "sound_type");
+		if(sound_source->wav_filename)
+		{
+			sound_source->source_handle = platform->sound.source_create(sound_source->relative, sound_source->wav_filename, sound_source->type);
+			platform->sound.source_loop_set(sound_source->source_handle, sound_source->loop);
+		}
+
+		vec3 abs_pos = {0.f, 0.f,  0.f};
+		vec3 abs_fwd = {0.f, 0.f, -1.f};
+		vec3 abs_up  = {0.f, 1.f, 0.f};
+		transform_get_absolute_pos(entity, &abs_pos);
+		transform_get_absolute_forward(entity, &abs_fwd);
+		transform_get_absolute_up(entity, &abs_up);
+		platform->sound.source_update(entity->sound_source.source_handle, abs_pos.x, abs_pos.y, abs_pos.z);
 	}
 	break;
 	case ET_PLAYER:
@@ -471,6 +488,20 @@ struct Entity* entity_read(struct Parser_Object* object)
 	default:
 		log_warning("Unhandled Entity type '%d' detected", entity->type);
 		break;
+	}
+
+	if(entity->is_listener)
+	{
+		vec3 abs_pos = {0.f, 0.f,  0.f};
+		vec3 abs_fwd = {0.f, 0.f, -1.f};
+		vec3 abs_up  = {0.f, 1.f, 0.f};
+		transform_get_absolute_pos(entity, &abs_pos);
+		transform_get_absolute_forward(entity, &abs_fwd);
+		transform_get_absolute_up(entity, &abs_up);
+
+		platform->sound.listener_update(abs_pos.x, abs_pos.y, abs_pos.z,
+										abs_fwd.x, abs_fwd.y, abs_fwd.z,
+										abs_up.x,  abs_up.y,  abs_up.z);
 	}
 
 	return entity;

@@ -52,12 +52,17 @@ struct Model
 
 struct Sound_Source
 {
-	bool active;
-	int  type;
-	bool relative;
-	bool loop;
-	char* wav_filename;
-    uint source_handle;
+	int                         type;
+	bool                        playing;
+	bool                        loop;
+	char*                       source_filename;
+    uint                        source_instance;
+	float                       min_distance;
+	float                       max_distance;
+	float                       rolloff_factor;
+	float                       volume;
+	int                         attenuation_type;
+	struct Sound_Source_Buffer* source;
 };
 
 struct Camera
@@ -134,6 +139,7 @@ bool           entity_load(const char* filename, int directory_type);
 bool           entity_write(struct Entity* entity, struct Parser_Object* object);
 struct Entity* entity_read(struct Parser_Object* object);
 const char*    entity_type_name_get(struct Entity* entity);
+void           entity_apply_sound_params(struct Entity* entity); // Convenience function to sync the data set in entity's sound_source with the actual sound source's instance
 
 
 #endif

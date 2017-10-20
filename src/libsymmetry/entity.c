@@ -162,7 +162,7 @@ void entity_post_update(void)
                 transform_get_absolute_forward(entity, &abs_fwd);
                 transform_get_absolute_up(entity, &abs_up);
 
-                platform->sound.source_update(entity->sound_source.source_handle, abs_pos.x, abs_pos.y, abs_pos.z);
+                platform->sound.source_instance_update_position(entity->sound_source.source_instance, abs_pos.x, abs_pos.y, abs_pos.z);
             }
 
             if(entity->is_listener)
@@ -270,11 +270,16 @@ bool entity_write(struct Entity* entity, struct Parser_Object* object)
 	}
 	case ET_SOUND_SOURCE:
 	{
-		hashmap_bool_set(entity_data, "active", entity->sound_source.active);
-		hashmap_bool_set(entity_data, "relative", entity->sound_source.relative);
-		hashmap_int_set(entity_data, "sound_type", entity->sound_source.type);
-		hashmap_str_set(entity_data, "wav_filename", entity->sound_source.wav_filename);
-		hashmap_bool_set(entity_data, "loop", entity->sound_source.loop);
+		struct Sound_Source* sound_source = &entity->sound_source;
+		hashmap_str_set(entity_data, "source_filename", sound_source->source_filename);
+		hashmap_bool_set(entity_data, "playing", sound_source->playing);
+		hashmap_int_set(entity_data, "sound_type", sound_source->type);
+		hashmap_bool_set(entity_data, "loop", sound_source->loop);
+		hashmap_float_set(entity_data, "volume", sound_source->volume);
+		hashmap_float_set(entity_data, "sound_min_distance", sound_source->min_distance);
+		hashmap_float_set(entity_data, "sound_max_distance", sound_source->max_distance);
+		hashmap_float_set(entity_data, "rolloff_factor", sound_source->rolloff_factor);
+		hashmap_int_set(entity_data, "sound_attenuation_type", sound_source->attenuation_type);
 		break;
 	}
 	};
@@ -439,31 +444,61 @@ struct Entity* entity_read(struct Parser_Object* object)
 	case ET_SOUND_SOURCE:
 	{
 		struct Sound_Source* sound_source = &entity->sound_source;
-		sound_source->active               = false;
-		sound_source->relative             = false;
-		sound_source->loop                 = false;
-		sound_source->source_handle        = 0;
-		sound_source->wav_filename         = NULL;
-		sound_source->type                 = ST_WAV;
+		sound_source->type                = ST_WAV;
+		sound_source->playing             = false;
+		sound_source->loop                = false;
+		sound_source->source_instance     = 0;
+		sound_source->min_distance        = 1.f;
+		sound_source->max_distance        = 1000.f;
+		sound_source->volume              = 1.f;
+		sound_source->rolloff_factor      = 1.f;
+		sound_source->attenuation_type    = SA_EXPONENTIAL;
+		sound_source->source              = NULL;
+		sound_source->source_filename     = NULL;
 
-		if(hashmap_value_exists(object->data, "active"))       sound_source->active = hashmap_bool_get(object->data, "active");
-		if(hashmap_value_exists(object->data, "relative"))     sound_source->relative = hashmap_bool_get(object->data, "relative");
-		if(hashmap_value_exists(object->data, "loop"))         sound_source->loop = hashmap_bool_get(object->data, "loop");
-		if(hashmap_value_exists(object->data, "wav_filename")) sound_source->wav_filename = str_new(hashmap_str_get(object->data, "wav_filename"));
-		if(hashmap_value_exists(object->data, "sound_type"))   sound_source->type = hashmap_int_get(object->data, "sound_type");
-		if(sound_source->wav_filename)
+		if(hashmap_value_exists(object->data, "playing"))                sound_source->playing          = hashmap_bool_get(object->data, "playing");
+		if(hashmap_value_exists(object->data, "loop"))                   sound_source->loop             = hashmap_bool_get(object->data, "loop");
+		if(hashmap_value_exists(object->data, "sound_min_distance"))     sound_source->min_distance     = hashmap_float_get(object->data, "sound_min_distance");
+		if(hashmap_value_exists(object->data, "sound_max_distance"))     sound_source->max_distance     = hashmap_float_get(object->data, "sound_max_distance");
+		if(hashmap_value_exists(object->data, "volume"))                 sound_source->volume           = hashmap_float_get(object->data, "volume");
+		if(hashmap_value_exists(object->data, "rolloff_factor"))         sound_source->rolloff_factor   = hashmap_float_get(object->data, "rolloff_factor");
+		if(hashmap_value_exists(object->data, "source_filename"))        sound_source->source_filename  = str_new(hashmap_str_get(object->data, "source_filename"));
+		if(hashmap_value_exists(object->data, "sound_type"))             sound_source->type             = hashmap_int_get(object->data, "sound_type");
+		if(hashmap_value_exists(object->data, "sound_attenuation_type")) sound_source->attenuation_type = hashmap_int_get(object->data, "sound_attenuation_type");
+		if(sound_source->source_filename)
 		{
-			sound_source->source_handle = platform->sound.source_create(sound_source->relative, sound_source->wav_filename, sound_source->type);
-			platform->sound.source_loop_set(sound_source->source_handle, sound_source->loop);
-		}
+			sound_source->source = platform->sound.source_create(sound_source->source_filename, sound_source->type);
+			if(sound_source->source)
+			{
+				sound_source->source_instance = platform->sound.source_instance_create(sound_source->source, true);
 
-		vec3 abs_pos = {0.f, 0.f,  0.f};
-		vec3 abs_fwd = {0.f, 0.f, -1.f};
-		vec3 abs_up  = {0.f, 1.f, 0.f};
-		transform_get_absolute_pos(entity, &abs_pos);
-		transform_get_absolute_forward(entity, &abs_fwd);
-		transform_get_absolute_up(entity, &abs_up);
-		platform->sound.source_update(entity->sound_source.source_handle, abs_pos.x, abs_pos.y, abs_pos.z);
+				vec3 abs_pos = {0.f, 0.f,  0.f};
+				vec3 abs_fwd = {0.f, 0.f, -1.f};
+				vec3 abs_up  = {0.f, 1.f, 0.f};
+				transform_get_absolute_pos(entity, &abs_pos);
+				transform_get_absolute_forward(entity, &abs_fwd);
+				transform_get_absolute_up(entity, &abs_up);
+				platform->sound.source_instance_update_position(entity->sound_source.source_instance, abs_pos.x, abs_pos.y, abs_pos.z);
+
+				platform->sound.source_instance_loop_set(sound_source->source_instance, sound_source->loop);
+				platform->sound.source_instance_min_max_distance_set(sound_source->source_instance, sound_source->min_distance, sound_source->max_distance);
+				platform->sound.source_instance_attenuation_set(sound_source->source_instance, sound_source->attenuation_type, sound_source->rolloff_factor);
+				platform->sound.source_instance_volume_set(sound_source->source_instance, sound_source->volume);
+
+				platform->sound.update_3d();
+				if(sound_source->playing) platform->sound.source_instance_play(sound_source->source_instance);
+			}
+			else
+			{
+				log_error("Failed to create sound source from '%s'", sound_source->source_filename);
+				free(sound_source->source_filename);
+				sound_source->source_filename = NULL;
+			}
+		}
+		else
+		{
+			log_error("entity:read", "No filename provided for sound source for entity '%s'", entity->name);
+		}
 	}
 	break;
 	case ET_PLAYER:
@@ -572,4 +607,43 @@ const char* entity_type_name_get(struct Entity* entity)
 	default:              typename = "Unknown";      break;
 	};
 	return typename;
+}
+
+void entity_apply_sound_params(struct Entity* entity)
+{
+	if(entity->type != ET_SOUND_SOURCE) return;
+
+	struct Sound_Source* sound_source = &entity->sound_source;
+
+	// Check if sound source has no buffer attached but filename exists, this would mean we have to load the file first
+	if(!sound_source->source && sound_source->source_filename)
+	{
+		sound_source->source = platform->sound.source_create(sound_source->source_filename, sound_source->type);
+		if(!sound_source->source)
+		{
+			log_error("entity:sync_sound_params", "Failed to load file '%s' to provide sound source for entity %s", sound_source->source_filename, entity->name);
+			free(sound_source->source_filename);
+			sound_source->source_filename = NULL;
+			sound_source->source_instance = 0;
+			return;
+		}
+	}
+
+	if(sound_source->source_instance == 0) sound_source->source_instance = platform->sound.source_instance_create(sound_source->source, true);
+
+	vec3 abs_pos = {0.f, 0.f,  0.f};
+	vec3 abs_fwd = {0.f, 0.f, -1.f};
+	vec3 abs_up  = {0.f, 1.f, 0.f};
+	transform_get_absolute_pos(entity, &abs_pos);
+	transform_get_absolute_forward(entity, &abs_fwd);
+	transform_get_absolute_up(entity, &abs_up);
+	platform->sound.source_instance_update_position(entity->sound_source.source_instance, abs_pos.x, abs_pos.y, abs_pos.z);
+
+	platform->sound.source_instance_loop_set(sound_source->source_instance, sound_source->loop);
+	platform->sound.source_instance_min_max_distance_set(sound_source->source_instance, sound_source->min_distance, sound_source->max_distance);
+	platform->sound.source_instance_attenuation_set(sound_source->source_instance, sound_source->attenuation_type, sound_source->rolloff_factor);
+	platform->sound.source_instance_volume_set(sound_source->source_instance, sound_source->volume);
+
+	platform->sound.update_3d();
+	if(sound_source->playing) platform->sound.source_instance_play(sound_source->source_instance);
 }

@@ -218,38 +218,24 @@ void scene_setup(void)
 
 		struct Entity* suz = entity_find("Suzanne");
 		struct Entity* sound_ent = scene_add_as_child("Sound_Ent", ET_SOUND_SOURCE, suz->id);
-		sound_ent->sound_source.source_handle = platform->sound.source_create(true, "sounds/teh_beatz.wav", ST_WAV);
-		platform->sound.source_loop_set(sound_ent->sound_source.source_handle, true);
-		platform->sound.source_play(sound_ent->sound_source.source_handle);
+		struct Sound_Source* sound_source = &sound_ent->sound_source;
+		sound_source->source_filename  = str_new("sounds/teh_beatz.wav");
+		sound_source->type             = ST_WAV;
+		sound_source->attenuation_type = SA_LINEAR;
+		sound_source->rolloff_factor   = 0.95f;
+		sound_source->loop             = true;
+		sound_source->volume           = 1.f;
+		sound_source->min_distance     = 1.f;
+		sound_source->max_distance     = 50.f;
+		sound_source->playing          = true;
+
+		sound_source->source_instance  = 0;
+		sound_source->source           = NULL;
+
+		entity_apply_sound_params(sound_ent);
 
 		//scene_save("parser_write.symtres", DIRT_INSTALL);
 	}
-
-	/*
-    FILE* obj_file = platform->file.open(DIRT_INSTALL, "obj_test.symtres", "rb");
-	if(obj_file)
-	{
-        struct Parser* parsed_file = parser_load_objects(obj_file, "obj_test.symtres");
-        log_message("%d objects read from %s", array_len(parsed_file->objects), "obj_test.symtres");
-        for(int i = 0; i < array_len(parsed_file->objects); i++)
-        {
-            struct Parser_Object* object = &parsed_file->objects[i];
-            if(object->type == PO_UNKNOWN)
-                log_message("Type : Unknown");
-            else if(object->type == PO_ENTITY)
-                log_message("Type : Entity");
-            else if(object->type == PO_MATERIAL)
-                log_message("Type : Material");
-            else if(object->type == PO_MODEL)
-                log_message("Type : Model");
-            hashmap_debug_print(object->data);
-        }
-		fclose(obj_file);
-	}
-	else
-	{
-		log_warning("Failed to open obj_test.symtres");
-	}*/
 }
 
 void debug(float dt)
@@ -398,6 +384,7 @@ bool run(void)
 		render();
         platform->window.swap_buffers(game_state->window);
 		entity_post_update();
+		platform->sound.update_3d();
 	}
     return true;
 }

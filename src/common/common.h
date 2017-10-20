@@ -15,6 +15,7 @@ extern struct Game_Api game;
 
 struct Window;
 struct Hashmap;
+struct Sound_Source_Buffer;
 
 // Function Pointer decls
 typedef void (*Keyboard_Event_Func)     (int key, int scancode, int state, int repeat, int mod_ctrl, int mod_shift, int mod_alt);
@@ -38,21 +39,44 @@ enum Sound_Source_Type
 	ST_WAV_STREAM
 };
 
+enum Sound_Attenuation_Type
+{
+	SA_NONE = 0,   // No attenuation
+	SA_INVERSE,    // Inverse distance attenuation model
+	SA_LINEAR,     // Linear distance attenuation model
+	SA_EXPONENTIAL // Exponential distance attenuation model
+};
+
 struct Sound_Api
 {
+	void (*update_3d)(void);
     void (*volume_set)(float volume);
     void (*listener_update)(float apos_x, float apos_y, float apos_z,
                             float afwd_x, float afwd_y, float afwd_z,
                             float aup_x,  float aup_y,  float aup_z);
-    void (*source_update)(uint source_handle, float apos_x, float apos_y, float apos_z);
-    uint (*source_create)(bool relative, const char* filename, int type);
-    void (*source_destroy)(uint source_handle);
-    void (*source_volume_set)(uint source_handle, float volume);
-    void (*source_loop_set)(uint source_handle, bool loop);
-    void (*source_play)(uint source_handle);
-    void (*source_pause)(uint source_handle);
-    void (*source_rewind)(uint source_handle);
-    void (*source_stop)(uint source_handle);
+
+    void  (*source_instance_update_position)(uint source_instance, float apos_x, float apos_y, float apos_z);
+	uint  (*source_instance_create)(struct Sound_Source_Buffer* source, bool is3d);
+    void  (*source_instance_destroy)(uint source_instance);
+    void  (*source_instance_volume_set)(uint source_instance, float volume);
+    void  (*source_instance_loop_set)(uint source_instance, bool loop);
+    void  (*source_instance_play)(uint source_instance);
+    void  (*source_instance_pause)(uint source_instance);
+    void  (*source_instance_rewind)(uint source_instance);
+    void  (*source_instance_stop)(uint source_instance);
+	void  (*source_instance_min_max_distance_set)(uint source_instance, float min_distance, float max_distance);
+	void  (*source_instance_attenuation_set)(uint source_instance, int attenuation_type, float rolloff_factor);
+	float (*source_instance_volume_get)(uint source_instance);
+	bool  (*source_instance_loop_get)(uint source_instance);
+	bool  (*source_instance_is_paused)(uint source_instance);
+
+	struct Sound_Source_Buffer* (*source_create)(const char* filename, int type);
+	struct Sound_Source_Buffer* (*source_get)(const char* name);
+	void                        (*source_destroy)(const char* buffer_name);
+	void                        (*source_volume_set)(struct Sound_Source_Buffer* source, float volume);
+	void                        (*source_loop_set)(struct Sound_Source_Buffer* source, bool loop);
+	void                        (*source_stop_all)(struct Sound_Source_Buffer* source);
+	void                        (*source_min_max_distance_set)(struct Sound_Source_Buffer* source, float min_distance, float max_distance);
 };
 
 struct Window_Api

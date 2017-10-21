@@ -373,20 +373,49 @@ void editor_update(float dt)
 					{
 						if(nk_tree_push(context, NK_TREE_TAB, "Camera", NK_MAXIMIZED))
 						{
+							bool update = false;
 							struct Camera* camera = &entity->camera;
+							
+							if(!camera->ortho)
+							{
+								nk_layout_row_dynamic(context, row_height, 1);
+								float new_fov = nk_propertyf(context, "Fov", 30.f, camera->fov, 90.f, 0.1f, 1.f);
+								if(new_fov != camera->fov)
+								{
+									camera->fov = new_fov;
+									update = true;
+								}
 
-							nk_layout_row_dynamic(context, row_height, 2);
-							nk_label(context, "Aspect Ratio", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%.5f", camera->aspect_ratio);
-							
+								nk_layout_row_dynamic(context, row_height, 2);
+								nk_label(context, "Aspect Ratio", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%.5f", camera->aspect_ratio);
+							}
+
+							nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Clear Color", NK_TEXT_ALIGN_CENTERED);
 							nk_layout_row_dynamic(context, row_height, 1);
-							nk_property_float(context, "Fov", 45.f, &camera->fov, 90.f, 1.f, 5.f);
+							editor_widget_color_combov4(context, &camera->clear_color, 200, 300);
 
 							nk_layout_row_dynamic(context, row_height, 1);
-							nk_property_float(context, "NearZ", 0.01f, &camera->nearz, camera->farz, 0.1f, 1.f);
+							float new_near_z = nk_propertyf(context, "NearZ", -FLT_MAX, camera->nearz, camera->farz, 0.1f, 1.f);
+							if(new_near_z != camera->nearz)
+							{
+								camera->nearz = new_near_z;
+								update = true;
+							}
 							
 							nk_layout_row_dynamic(context, row_height, 1);
-							nk_property_float(context, "FarZ", camera->nearz, &camera->farz, FLT_MAX, 1.f, 5.f);
-							
+							float new_far_z = nk_propertyf(context, "FarZ", camera->nearz, camera->farz, FLT_MAX, 0.1f, 2.f);
+							if(new_far_z != camera->farz)
+							{
+								camera->farz = new_far_z;
+								update = true;
+							}
+
+							if(update)
+							{
+								if(!camera->ortho) camera_update_view(entity);
+								camera_update_proj(entity);
+							}
+
 							nk_tree_pop(context);
 						}
 					}

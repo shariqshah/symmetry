@@ -155,10 +155,13 @@
 
 - ## TODO
 
+	- Fix bugs with sprite batch renderer not working with projection matrix
+	- Implement necessary changes to run Soloud on linux
+	- Get rid of pkg-confg and system-installed SDL2 dependancy on linux and instead put custom compiled SDL libs in third_party similar to how we're handling it in windows
+	- Add fallback shader
+	- Implement Game States
 	- Store Materials in new format supported by parser
 	- Add model description file which has the same syntax supported by parser and modify old blender exporter to conform to new standards
-	- Implement sound/listener loading from scene file
-	- Finish loading scene from file
 	- Update makefiles to be able to compile the code in it's current state
 	- Find a solution for the asset import/export situation by either updating the blender exporter or adding assimp as dependancy
 	- Fix bugs with sound sources not updating
@@ -331,3 +334,9 @@
 	* Changed Config to read/write using new Parser and Parser_Objects
 	* Implemented Reading/Writing keybindings using new parser object
 	* Replaced OpenAL with Soloud with SDL2 backend
+	* Implemented sound/listener loading from scene file
+	* Finished loading scene from file
+	* Initial implementation of immediate-mode batched sprite render
+	* Fixed bugs with shader include file pre-processor
+	* Fixed bugs with editor's camera property viewer
+	* Fixed bugs related to changing camera projection

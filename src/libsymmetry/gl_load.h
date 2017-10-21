@@ -8,7 +8,6 @@
 
 #else
 
-#include <SDL2/SDL_opengl.h>
 
 #define SYMMETRY_GL_LIST \
     /*  ret, name, params */ \

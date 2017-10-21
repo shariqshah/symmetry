@@ -5,6 +5,7 @@
 #include "../common/array.h"
 #include "framebuffer.h"
 #include "texture.h"
+#include "game.h"
 #include "bounding_volumes.h"
 
 #include "../common/utils.h"
@@ -44,8 +45,8 @@ void camera_create(struct Entity* entity, int width, int height)
 	camera->farz       = 1000.f;
 	camera->nearz      = 0.1f;
 	camera->fov        = 60.f;
-	camera->ortho      = 0;
-	camera->resizeable = 1;
+	camera->ortho      = false;
+	camera->resizeable = true;
 	float aspect_ratio = (float)width / (float)height;
 	camera->aspect_ratio = aspect_ratio <= 0.f ? (4.f / 3.f) : aspect_ratio;
 	mat4_identity(&camera->view_mat);
@@ -62,7 +63,10 @@ void camera_update_view_proj(struct Entity* entity)
 {
 	struct Camera* camera = &entity->camera;
 	mat4_identity(&camera->view_proj_mat);
-	mat4_mul(&camera->view_proj_mat, &camera->proj_mat, &camera->view_mat);
+	if(camera->ortho)
+		mat4_mul(&camera->view_proj_mat, &camera->view_proj_mat, &camera->proj_mat);
+	else
+		mat4_mul(&camera->view_proj_mat, &camera->proj_mat, &camera->view_mat);
 	update_frustum(camera);
 }
 
@@ -92,7 +96,11 @@ void camera_update_proj(struct Entity* entity)
 	}
 	else
 	{
-		mat4_ortho(&camera->proj_mat, -1, 1, -1, 1, camera->nearz, camera->farz);
+		int width, height;
+		struct Game_State* game_state = game_state_get();
+		platform->window.get_size(game_state->window, &width, &height);
+
+		mat4_ortho(&camera->proj_mat, 0, width, height, 0, camera->nearz, camera->farz);
 	}
 	camera_update_view_proj(entity);
 }

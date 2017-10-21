@@ -74,6 +74,18 @@ void log_to_stdout(const char* message, ...)
 	printf("\n%s", COL_RESET);
 }
 
+void log_raw(const char* str, ...)
+{
+	va_list console_list, file_list;
+	va_start(console_list, str);
+	va_copy(file_list, console_list);
+	vfprintf(log_file, str, file_list);
+	vprintf(str, console_list);
+	va_end(console_list);
+	va_end(file_list);
+	fflush(log_file);
+}
+
 void log_message(const char* message, ...)
 {
 	printf("%sMSG : ", COL_DEFAULT);

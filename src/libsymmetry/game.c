@@ -24,6 +24,7 @@
 #include "gl_load.h"
 #include "gui.h"
 #include "editor.h"
+#include "sprite.h"
 #include "../common/parser.h"
 #include "../common/hashmap.h"
 #include "../common/variant.h"
@@ -216,6 +217,12 @@ void scene_setup(void)
 		struct Entity* player = entity_find("player");
 		game_state->player_node = player->id;
 
+		/*struct Camera* camera = &player->camera;
+		camera->ortho = true;
+		camera->farz  =  1.f;
+		camera->nearz = -1.f;
+		camera_update_proj(player);*/
+
 		/*struct Entity* suz = entity_find("Suzanne");
 		struct Entity* sound_ent = scene_add_as_child("Sound_Ent", ET_SOUND_SOURCE, suz->id);
 		struct Sound_Source* sound_source = &sound_ent->sound_source;
@@ -363,6 +370,36 @@ void debug(float dt)
     transform_rotate(model, &x_axis, 25.f * dt, TS_WORLD);
 	vec3 amount = {0, 0, -5 * dt};
 	transform_translate(model, &amount, TS_LOCAL);
+
+	struct Sprite_Batch* batch = get_batch();
+
+	sprite_batch_begin(batch);
+	static struct Sprite sprite;
+
+	sprite.vertices[0].pos.x = 0.f; sprite.vertices[0].pos.y = 0.f; sprite.vertices[0].pos.z = 0.f;
+	sprite.vertices[1].pos.x = 1.f; sprite.vertices[1].pos.y = 0.f; sprite.vertices[1].pos.z = 0.f;
+	sprite.vertices[2].pos.x = 0.f; sprite.vertices[2].pos.y = 1.f; sprite.vertices[2].pos.z = 0.f;
+	sprite.vertices[3].pos.x = 0.f; sprite.vertices[3].pos.y = 1.f; sprite.vertices[3].pos.z = 0.f;
+	sprite.vertices[4].pos.x = 1.f; sprite.vertices[4].pos.y = 1.f; sprite.vertices[4].pos.z = 0.f;
+	sprite.vertices[5].pos.x = 1.f; sprite.vertices[5].pos.y = 0.f; sprite.vertices[5].pos.z = 0.f;
+
+	sprite.vertices[0].uv.x = 0.f; sprite.vertices[0].uv.y = 0.f;
+	sprite.vertices[1].uv.x = 1.f; sprite.vertices[1].uv.y = 0.f;
+	sprite.vertices[2].uv.x = 0.f; sprite.vertices[2].uv.y = 1.f;
+	sprite.vertices[3].uv.x = 0.f; sprite.vertices[3].uv.y = 1.f;
+	sprite.vertices[4].uv.x = 1.f; sprite.vertices[4].uv.y = 1.f;
+	sprite.vertices[5].uv.x = 1.f; sprite.vertices[5].uv.y = 0.f;
+
+	sprite.vertices[0].color.x = 0.f; sprite.vertices[0].color.y = 0.f; sprite.vertices[0].color.z = 0.f; sprite.vertices[0].color.w = 1.f;
+	sprite.vertices[1].color.x = 1.f; sprite.vertices[1].color.y = 0.f; sprite.vertices[1].color.z = 0.f; sprite.vertices[1].color.w = 1.f;
+	sprite.vertices[2].color.x = 0.f; sprite.vertices[2].color.y = 1.f; sprite.vertices[2].color.z = 0.f; sprite.vertices[2].color.w = 1.f;
+	sprite.vertices[3].color.x = 1.f; sprite.vertices[3].color.y = 1.f; sprite.vertices[3].color.z = 0.f; sprite.vertices[3].color.w = 1.f;
+	sprite.vertices[4].color.x = 1.f; sprite.vertices[4].color.y = 1.f; sprite.vertices[4].color.z = 0.f; sprite.vertices[4].color.w = 1.f;
+	sprite.vertices[5].color.x = 1.f; sprite.vertices[5].color.y = 1.f; sprite.vertices[5].color.z = 0.f; sprite.vertices[5].color.w = 1.f;
+
+	sprite_batch_add_sprite(batch, &sprite);
+
+	sprite_batch_end(batch);
 }
 
 bool run(void)

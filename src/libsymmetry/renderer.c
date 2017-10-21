@@ -18,6 +18,7 @@
 #include "geometry.h"
 #include "material.h"
 #include "editor.h"
+#include "sprite.h"
 #include "../common/variant.h"
 #include "../common/common.h"
 
@@ -37,6 +38,8 @@ static int debug_shader       = -1;
 static int num_culled = 0, num_rendered = 0, num_indices = 0;
 static int num_culled_slot = -1, num_rendered_slot = -1, num_indices_slot = -1;
 
+
+static struct Sprite_Batch* sprite_batch = NULL;
 
 void on_framebuffer_size_change(int width, int height);
 
@@ -117,6 +120,16 @@ void renderer_init(void)
 	num_culled_slot   = editor_debugvar_slot_create("Culled Geom",   VT_INT);
 	num_rendered_slot = editor_debugvar_slot_create("Rendered Geom", VT_INT);
 	num_indices_slot  = editor_debugvar_slot_create("Total Indices", VT_INT);
+
+	sprite_batch = malloc(sizeof(*sprite_batch));
+	if(!sprite_batch)
+	{
+		log_error("renderer:init", "Failed to allocated sprite batch");
+	}
+	else
+	{
+		sprite_batch_create(sprite_batch, "sprite_map.tga", "sprite.vert", "sprite.frag", GL_TRIANGLES);
+	}
 }
 
 void renderer_draw(struct Entity* active_viewer)
@@ -390,12 +403,30 @@ void renderer_draw(struct Entity* active_viewer)
 		shader_unbind();
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
-	
+
+	/* Render 2D stuff */
+	shader_bind(sprite_batch->shader);
+	{
+		static mat4 ortho_mat;
+		mat4_identity(&ortho_mat);
+		/*int width, height;
+		struct Game_State* game_state = game_state_get();
+		platform->window.get_size(game_state->window, &width, &height);
+
+		mat4_ortho(&ortho_mat, 0, width, height, 0, -1.f, 1.f);*/
+		shader_set_uniform_mat4(sprite_batch->shader, "mvp", &ortho_mat);
+
+		sprite_batch_render(sprite_batch);
+	}
+	shader_unbind();
+
+	/* Render UI */
 	gui_render(NK_ANTI_ALIASING_ON);
 }
 
 void renderer_cleanup(void)
 {
+	free(sprite_batch);
 	gui_cleanup();
 	geom_remove(quad_geo);
 	framebuffer_remove(def_fbo);
@@ -445,6 +476,11 @@ int renderer_check_glerror(const char* context)
 		error = 0;
 
 	return error;
+}
+
+struct Sprite_Batch * get_batch(void)
+{
+	return sprite_batch;
 }
 
 void renderer_debug_draw_enabled(bool enabled)

@@ -13,28 +13,24 @@
 #include <string.h>
 #include <assert.h>
 
-// Constants for locations of attributes inside all shaders
-const int POSITION_LOC = 0;
-const int NORMAL_LOC   = 1;
-const int UV_LOC       = 2;
-const int COLOR_LOC    = 3;
-
 static uint* shader_list;
 static int*  empty_indices;
+
+#define MAX_INCLUDE_LINE_LEN 256
 
 void debug_print_shader(const char* shaderText)
 {
 	size_t len = strlen(shaderText);
 	int line_count = 1;
-	printf("%d. ", line_count);
+	log_raw("%d. ", line_count);
 	for(uint i = 0; i < len; i++)
 	{
 		if(shaderText[i] != '\n')
-			printf("%c", shaderText[i]);
+			log_raw("%c", shaderText[i]);
 		else
-			printf("\n%d. ", ++line_count);
+			log_raw("\n%d. ", ++line_count);
 	}
-	printf("\n END_DEBUG_PRINT\n\n");
+	log_raw("\n END_DEBUG_PRINT\n\n");
 }
 
 char* run_preprocessor(char* shader_text)
@@ -42,40 +38,32 @@ char* run_preprocessor(char* shader_text)
 	char* include_loc = strstr(shader_text, "//include");
 	if(include_loc)
 	{
-		char* line_end = strchr(include_loc, '\n');
-		int line_size  = line_end - include_loc;
-		char* inc_line = malloc((sizeof(char) * line_size) + 1);
-		strncpy(inc_line, include_loc, line_size);
-		inc_line[line_size] = '\0';
+		char inc_line[MAX_INCLUDE_LINE_LEN];
+		memset(inc_line, '\0', MAX_INCLUDE_LINE_LEN);
+
+		char fmt_str[64];
+		snprintf(fmt_str, 64, "//include %%%d[^\r\n]", MAX_INCLUDE_LINE_LEN);
+		sscanf(shader_text, fmt_str, inc_line);
 
 		char* filename = strtok(inc_line, " ");
 		while(filename)
 		{
-			filename = strtok(NULL, " ");
 			if(filename)
 			{
 				char* path = str_new("shaders/");
 				path = str_concat(path, filename);
-                char* file = platform->file.read(DIRT_INSTALL, path, "r", NULL);
-				char* shader_copy = str_new(shader_text);
-				char* temp = realloc(shader_text, (strlen(shader_text) + strlen(file) + 2));
-				if(temp)
+                char* file_contents = platform->file.read(DIRT_INSTALL, path, "rb", NULL);
+				if(file_contents)
 				{
-					shader_text = temp;
-					strcpy(shader_text, file);
-					strcat(shader_text, shader_copy);
+					char* shader_text_new = str_new("%s\n%s", file_contents, shader_text);
+					free(shader_text);
+					free(file_contents);
+					free(path);
+					shader_text = shader_text_new;
 				}
-				else
-				{
-					log_warning("Realloc failed in Shader::run_preprocessor");
-				}
-
-				free(path);
-				free(shader_copy);
-				free(file);
 			}
+			filename = strtok(NULL, " ");
 		}
-		free(inc_line);
 	}
 	return shader_text;
 }
@@ -96,8 +84,8 @@ int shader_create(const char* vert_shader_name, const char* frag_shader_name)
 	GLuint vert_shader = glCreateShader(GL_VERTEX_SHADER);
 	GLuint frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
 
-    char* vert_source = platform->file.read(DIRT_INSTALL, vs_path, "r", NULL);
-    char* frag_source = platform->file.read(DIRT_INSTALL, fs_path, "r", NULL);
+    char* vert_source = platform->file.read(DIRT_INSTALL, vs_path, "rb", NULL);
+    char* frag_source = platform->file.read(DIRT_INSTALL, fs_path, "rb", NULL);
 
 	assert(vert_source != NULL);
 	assert(frag_source != NULL);
@@ -164,10 +152,10 @@ int shader_create(const char* vert_shader_name, const char* frag_shader_name)
 	glAttachShader(program, frag_shader);
 
 	// Bind attribute locations
-	glBindAttribLocation(program, POSITION_LOC, "vPosition");
-	glBindAttribLocation(program, NORMAL_LOC,   "vNormal");
-	glBindAttribLocation(program, UV_LOC,       "vUV");
-	glBindAttribLocation(program, COLOR_LOC,    "vColor");
+	glBindAttribLocation(program, AL_POSITION, "vPosition");
+	glBindAttribLocation(program, AL_NORMAL,   "vNormal");
+	glBindAttribLocation(program, AL_UV,       "vUV");
+	glBindAttribLocation(program, AL_COLOR,    "vColor");
 	renderer_check_glerror("shader:create");
 	glLinkProgram(program);
 

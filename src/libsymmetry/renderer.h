@@ -32,6 +32,7 @@ struct Render_Settings
 };
 
 struct Entity;
+struct Sprite_Batch;
 
 void renderer_settings_get(struct Render_Settings* settings);
 void renderer_settings_set(const struct Render_Settings* settings);
@@ -41,5 +42,7 @@ void renderer_cleanup(void);
 void renderer_clearcolor_set(float r, float g, float b, float a);
 void renderer_debug_draw_enabled(bool enabled);
 int  renderer_check_glerror(const char* context);
+
+struct Sprite_Batch* get_batch(void);
 
 #endif

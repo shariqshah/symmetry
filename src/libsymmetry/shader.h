@@ -3,6 +3,15 @@
 
 #include "../common/linmath.h"
 
+// Constants for locations of attributes inside all shaders
+enum Attribute_Location
+{
+	AL_POSITION = 0,
+    AL_NORMAL   = 1,
+    AL_UV       = 2,
+    AL_COLOR    = 3
+};
+
 enum Uniform_Type
 {
 	UT_FLOAT = 0,

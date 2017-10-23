@@ -63,10 +63,7 @@ void camera_update_view_proj(struct Entity* entity)
 {
 	struct Camera* camera = &entity->camera;
 	mat4_identity(&camera->view_proj_mat);
-	if(camera->ortho)
-		mat4_mul(&camera->view_proj_mat, &camera->view_proj_mat, &camera->proj_mat);
-	else
-		mat4_mul(&camera->view_proj_mat, &camera->proj_mat, &camera->view_mat);
+	mat4_mul(&camera->view_proj_mat, &camera->proj_mat, &camera->view_mat);
 	update_frustum(camera);
 }
 

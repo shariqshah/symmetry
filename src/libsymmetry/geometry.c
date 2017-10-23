@@ -192,6 +192,21 @@ void geom_remove(int index)
 				geometry->normals       = NULL;
 				geometry->vertex_colors = NULL;
 				geometry->filename      = NULL;
+
+				glDeleteBuffers(1, &geometry->vertex_vbo);
+				glDeleteBuffers(1, &geometry->color_vbo);
+				glDeleteBuffers(1, &geometry->uv_vbo);
+				glDeleteBuffers(1, &geometry->normal_vbo);
+				glDeleteBuffers(1, &geometry->index_vbo);
+				glDeleteVertexArrays(1, geometry->vao);
+
+				geometry->vertex_vbo = 0;
+				geometry->color_vbo	 = 0;
+				geometry->uv_vbo	 = 0;
+				geometry->normal_vbo = 0;
+				geometry->index_vbo  = 0;
+				geometry->vao        = 0;
+
 				array_push(empty_indices, index, int);
 			}
 		}

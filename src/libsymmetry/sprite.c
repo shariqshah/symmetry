@@ -24,7 +24,7 @@ void sprite_cleanup(void)
 void sprite_batch_create(struct Sprite_Batch* batch, const char* texture_name, const char* vert_shader, const char* frag_shader, int draw_mode)
 {
 	assert(batch);
-	memset(&batch->sprites[0], '\0', sizeof(struct Sprite) * SPRITE_BATCH_SIZE);
+	memset(&batch->sprites[0], 0, sizeof(struct Sprite) * SPRITE_BATCH_SIZE);
 	glGenVertexArrays(1, &batch->vao);
 	
 	glBindVertexArray(batch->vao);
@@ -74,6 +74,23 @@ void sprite_batch_create(struct Sprite_Batch* batch, const char* texture_name, c
 	}
 	batch->shader = shader;
 	batch->draw_mode = draw_mode;
+}
+
+void sprite_batch_remove(struct Sprite_Batch * batch)
+{
+	assert(batch);
+	glDeleteBuffers(1, &batch->vbo);
+	glDeleteVertexArrays(1, &batch->vbo);
+	batch->current_sprite_count = 0;
+	texture_remove(batch->texture);
+	shader_remove(batch->shader);
+
+	batch->texture = -1;
+	batch->shader  = -1;
+	batch->current_sprite_count = 0;
+	batch->vao = 0;
+	batch->vbo = 0;
+	memset(&batch->sprites[0], 0, sizeof(struct Sprite) * SPRITE_BATCH_SIZE);
 }
 
 void sprite_batch_begin(struct Sprite_Batch* batch)

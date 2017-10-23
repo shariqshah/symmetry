@@ -219,8 +219,8 @@ void scene_setup(void)
 
 		/*struct Camera* camera = &player->camera;
 		camera->ortho = true;
-		camera->farz  =  1.f;
-		camera->nearz = -1.f;
+		camera->farz  = 500.f;
+		camera->nearz = 1.f;
 		camera_update_proj(player);*/
 
 		/*struct Entity* suz = entity_find("Suzanne");
@@ -376,12 +376,12 @@ void debug(float dt)
 	sprite_batch_begin(batch);
 	static struct Sprite sprite;
 
-	sprite.vertices[0].pos.x = 0.f; sprite.vertices[0].pos.y = 0.f; sprite.vertices[0].pos.z = 0.f;
-	sprite.vertices[1].pos.x = 1.f; sprite.vertices[1].pos.y = 0.f; sprite.vertices[1].pos.z = 0.f;
-	sprite.vertices[2].pos.x = 0.f; sprite.vertices[2].pos.y = 1.f; sprite.vertices[2].pos.z = 0.f;
-	sprite.vertices[3].pos.x = 0.f; sprite.vertices[3].pos.y = 1.f; sprite.vertices[3].pos.z = 0.f;
-	sprite.vertices[4].pos.x = 1.f; sprite.vertices[4].pos.y = 1.f; sprite.vertices[4].pos.z = 0.f;
-	sprite.vertices[5].pos.x = 1.f; sprite.vertices[5].pos.y = 0.f; sprite.vertices[5].pos.z = 0.f;
+	sprite.vertices[0].position.x = 0.f; sprite.vertices[0].position.y = 0.f; sprite.vertices[0].position.z = 0.f;
+	sprite.vertices[1].position.x = 50.f; sprite.vertices[1].position.y = 0.f; sprite.vertices[1].position.z = 0.f;
+	sprite.vertices[2].position.x = 0.f; sprite.vertices[2].position.y = 50.f; sprite.vertices[2].position.z = 0.f;
+	sprite.vertices[3].position.x = 0.f; sprite.vertices[3].position.y = 50.f; sprite.vertices[3].position.z = 0.f;
+	sprite.vertices[4].position.x = 50.f; sprite.vertices[4].position.y = 50.f; sprite.vertices[4].position.z = 0.f;
+	sprite.vertices[5].position.x = 50.f; sprite.vertices[5].position.y = 0.f; sprite.vertices[5].position.z = 0.f;
 
 	sprite.vertices[0].uv.x = 0.f; sprite.vertices[0].uv.y = 0.f;
 	sprite.vertices[1].uv.x = 1.f; sprite.vertices[1].uv.y = 0.f;

@@ -409,11 +409,11 @@ void renderer_draw(struct Entity* active_viewer)
 	{
 		static mat4 ortho_mat;
 		mat4_identity(&ortho_mat);
-		/*int width, height;
+		int width, height;
 		struct Game_State* game_state = game_state_get();
 		platform->window.get_size(game_state->window, &width, &height);
 
-		mat4_ortho(&ortho_mat, 0, width, height, 0, -1.f, 1.f);*/
+		mat4_ortho(&ortho_mat, 0, width, height, 0, -10.f, 10.f);
 		shader_set_uniform_mat4(sprite_batch->shader, "mvp", &ortho_mat);
 
 		sprite_batch_render(sprite_batch);
@@ -426,6 +426,7 @@ void renderer_draw(struct Entity* active_viewer)
 
 void renderer_cleanup(void)
 {
+	sprite_batch_remove(sprite_batch);
 	free(sprite_batch);
 	gui_cleanup();
 	geom_remove(quad_geo);

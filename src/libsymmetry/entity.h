@@ -74,6 +74,7 @@ struct Camera
 	float aspect_ratio;
 	float nearz;
 	float farz;
+	float zoom;
 	bool  ortho;
 	int   fbo;
 	int   render_tex;

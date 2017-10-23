@@ -220,7 +220,7 @@ void scene_setup(void)
 		/*struct Camera* camera = &player->camera;
 		camera->ortho = true;
 		camera->farz  = 500.f;
-		camera->nearz = 1.f;
+		camera->nearz = -500.f;
 		camera_update_proj(player);*/
 
 		/*struct Entity* suz = entity_find("Suzanne");

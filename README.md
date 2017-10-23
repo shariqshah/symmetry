@@ -155,7 +155,6 @@
 
 - ## TODO
 
-	- Fix bugs with sprite batch renderer not working with projection matrix
 	- Implement necessary changes to run Soloud on linux
 	- Get rid of pkg-confg and system-installed SDL2 dependancy on linux and instead put custom compiled SDL libs in third_party similar to how we're handling it in windows
 	- Add fallback shader
@@ -340,3 +339,5 @@
 	* Fixed bugs with shader include file pre-processor
 	* Fixed bugs with editor's camera property viewer
 	* Fixed bugs related to changing camera projection
+	* Fixed bugs with sprite batch renderer not working with projection matrix
+	* Fixed broken orthographic camera

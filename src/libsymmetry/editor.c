@@ -376,6 +376,15 @@ void editor_update(float dt)
 							bool update = false;
 							struct Camera* camera = &entity->camera;
 							
+							nk_layout_row_dynamic(context, row_height, 2);
+							nk_label(context, "Orthographic", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+							bool ortho = nk_checkbox_label(context, "", &camera->ortho);
+							if(ortho != camera->ortho)
+							{
+								update = true;
+							}
+							
+
 							if(!camera->ortho)
 							{
 								nk_layout_row_dynamic(context, row_height, 1);
@@ -395,6 +404,14 @@ void editor_update(float dt)
 							editor_widget_color_combov4(context, &camera->clear_color, 200, 300);
 
 							nk_layout_row_dynamic(context, row_height, 1);
+							float new_zoom = nk_propertyf(context, "Zoom", 1.f, camera->zoom, FLT_MAX, 0.1f, 1.f);
+							if(new_zoom != camera->zoom)
+							{
+								camera->zoom = new_zoom;
+								update = true;
+							}
+
+							nk_layout_row_dynamic(context, row_height, 1);
 							float new_near_z = nk_propertyf(context, "NearZ", -FLT_MAX, camera->nearz, camera->farz, 0.1f, 1.f);
 							if(new_near_z != camera->nearz)
 							{
@@ -412,7 +429,7 @@ void editor_update(float dt)
 
 							if(update)
 							{
-								if(!camera->ortho) camera_update_view(entity);
+								camera_update_view(entity);
 								camera_update_proj(entity);
 							}
 

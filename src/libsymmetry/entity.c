@@ -226,6 +226,7 @@ bool entity_write(struct Entity* entity, struct Parser_Object* object)
 		hashmap_bool_set(entity_data, "ortho", camera->ortho);
 		hashmap_bool_set(entity_data, "resizeable", camera->resizeable);
 		hashmap_float_set(entity_data, "fov", camera->fov);
+		hashmap_float_set(entity_data, "zoom", camera->zoom);
 		hashmap_float_set(entity_data, "nearz", camera->nearz);
 		hashmap_float_set(entity_data, "farz", camera->farz);
 		hashmap_vec4_set(entity_data, "clear_color", &camera->clear_color);
@@ -395,6 +396,7 @@ struct Entity* entity_read(struct Parser_Object* object)
 
 		if(hashmap_value_exists(object->data, "fov"))                entity->camera.fov = hashmap_float_get(object->data, "fov");
 		if(hashmap_value_exists(object->data, "resizeable"))         entity->camera.resizeable = hashmap_bool_get(object->data, "resizeable");
+		if(hashmap_value_exists(object->data, "zoom"))               entity->camera.zoom = hashmap_float_get(object->data, "zoom");
 		if(hashmap_value_exists(object->data, "nearz"))              entity->camera.nearz = hashmap_float_get(object->data, "nearz");
 		if(hashmap_value_exists(object->data, "farz"))               entity->camera.farz = hashmap_float_get(object->data, "farz");
 		if(hashmap_value_exists(object->data, "ortho"))              entity->camera.ortho = hashmap_bool_get(object->data, "ortho");

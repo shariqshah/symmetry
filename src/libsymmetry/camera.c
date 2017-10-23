@@ -47,6 +47,7 @@ void camera_create(struct Entity* entity, int width, int height)
 	camera->fov        = 60.f;
 	camera->ortho      = false;
 	camera->resizeable = true;
+	camera->zoom       = 1.f;
 	float aspect_ratio = (float)width / (float)height;
 	camera->aspect_ratio = aspect_ratio <= 0.f ? (4.f / 3.f) : aspect_ratio;
 	mat4_identity(&camera->view_mat);
@@ -86,7 +87,7 @@ void camera_update_proj(struct Entity* entity)
 	if(!camera->ortho)
 	{
 		mat4_perspective(&camera->proj_mat,
-						 camera->fov,
+						 camera->fov / camera->zoom,
 						 camera->aspect_ratio,
 						 camera->nearz,
 						 camera->farz);
@@ -96,8 +97,13 @@ void camera_update_proj(struct Entity* entity)
 		int width, height;
 		struct Game_State* game_state = game_state_get();
 		platform->window.get_size(game_state->window, &width, &height);
-
-		mat4_ortho(&camera->proj_mat, 0, width, height, 0, camera->nearz, camera->farz);
+		mat4_ortho(&camera->proj_mat, 
+					-width / camera->zoom,
+					 width / camera->zoom,
+					 height / camera->zoom,
+					-height / camera->zoom,
+					 camera->nearz,
+					 camera->farz);
 	}
 	camera_update_view_proj(entity);
 }

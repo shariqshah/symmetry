@@ -155,6 +155,7 @@
 
 - ## TODO
 
+	- Move third party libs/include directories into root/lib and root/include. Put common includes like header-only libs into root/include/common and others which require platform specific stuff into root/include/linux etc.
 	- Implement necessary changes to run Soloud on linux
 	- Get rid of pkg-confg and system-installed SDL2 dependancy on linux and instead put custom compiled SDL libs in third_party similar to how we're handling it in windows
 	- Add fallback shader

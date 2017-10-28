@@ -7,7 +7,7 @@
 #include "gl_load.h"
 
 #include <assert.h>
-
+#include <string.h>
 
 static int sprite_count = 0;
 

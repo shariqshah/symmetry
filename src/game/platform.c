@@ -453,13 +453,14 @@ char* platform_user_directory_get(const char* organization, const char* applicat
 	}
 	else
 	{
-		log_error("platform:user_directory_get", "Error getting user directory, %s", SDL_GetError());
+        log_to_stdout("ERR(platform:user_directory_get) Error getting user directory, %s", SDL_GetError());
 	}
 	return user_directory;
 }
 
 void* platform_load_library(const char *name)
 {
+    char* install_dir = platform_install_directory_get();
 #define MAX_LIB_NAME_LEN 256
     char lib_name[MAX_LIB_NAME_LEN];
     memset(lib_name, '\0', MAX_LIB_NAME_LEN);
@@ -472,6 +473,7 @@ void* platform_load_library(const char *name)
 #endif
     void* lib_handle = SDL_LoadObject(lib_name);
     if(!lib_handle) log_error("platform:load_library", "Failed to load library '%s', SDL : (%s)", lib_name, SDL_GetError());
+    free(install_dir);
     return lib_handle;
 }
 

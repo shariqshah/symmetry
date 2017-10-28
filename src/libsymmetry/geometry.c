@@ -198,7 +198,7 @@ void geom_remove(int index)
 				glDeleteBuffers(1, &geometry->uv_vbo);
 				glDeleteBuffers(1, &geometry->normal_vbo);
 				glDeleteBuffers(1, &geometry->index_vbo);
-				glDeleteVertexArrays(1, geometry->vao);
+				glDeleteVertexArrays(1, &geometry->vao);
 
 				geometry->vertex_vbo = 0;
 				geometry->color_vbo	 = 0;

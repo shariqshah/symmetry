@@ -8,6 +8,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <soloud_c.h>
 
@@ -47,7 +48,7 @@ bool sound_init(void)
 		return false;
 	}
 
-	Soloud_initEx(sound_state.soloud_context, SOLOUD_CLIP_ROUNDOFF | SOLOUD_ENABLE_VISUALIZATION, SOLOUD_AUTO, SOLOUD_AUTO, SOLOUD_AUTO, SOLOUD_AUTO);
+    Soloud_initEx(sound_state.soloud_context, SOLOUD_CLIP_ROUNDOFF | SOLOUD_ENABLE_VISUALIZATION, SOLOUD_SDL2, SOLOUD_AUTO, SOLOUD_AUTO, SOLOUD_AUTO);
 	Soloud_setGlobalVolume(sound_state.soloud_context, 4);
 
 	Soloud_set3dListenerParameters(sound_state.soloud_context,

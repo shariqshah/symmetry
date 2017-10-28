@@ -19,12 +19,6 @@ solution "Symmetry"
 
 
    configuration {"windows", "vs2017 or qbs"}
-   includedirs
-   {
-	  "../third_party/windows/SDL2-2.0.5/include/",
-      "../third_party/windows/Soloud/include/"
-   }
-
 	local sdl_lib_dir    = "../third_party/windows/SDL2-2.0.5/lib/x64/"
 	local soloud_lib_dir = "../third_party/windows/Soloud/lib/"
 	
@@ -54,19 +48,14 @@ solution "Symmetry"
 		    kind "ConsoleApp"
 			targetname "Symmetry"
 			language "C"
-			files { "../src/common/**.c", "../src/common/**.h", "../src/game/**.c", "../src/game/**.h" }
+			files { "../src/common/**.c", "../src/common/**.h", "../src/game/**.c", "../src/game/**.h"}
 			defines {"GAME"}
-			local soloud_lib_name = 
 			
-			configuration "Debug"
-				links {"soloud_x64_d"}
-			
-			configuration "Release"
-				links {"soloud_x64"}
-				
 			configuration "linux"
+			    includedirs	{"../third_party/linux/SDL2/include/", "../third_party/linux/Soloud/include/"}
 				buildoptions {"`pkg-config --cflags-only-other sdl2`"}
 				linkoptions {"`pkg-config --libs sdl2`"}
+				libdirs {"../third_party/linux/Soloud/lib/"}
 				links {"m"}
 
 			configuration {"windows", "gmake"}
@@ -75,10 +64,15 @@ solution "Symmetry"
 				links {"m"}
 
 			configuration {"windows", "vs2017 or qbs"}
-			    libdirs { sdl_lib_dir, soloud_lib_dir }
-			    links {"SDL2"}
+			   includedirs {"../third_party/windows/SDL2-2.0.5/include/", "../third_party/windows/Soloud/include/"}
+			   libdirs { sdl_lib_dir, soloud_lib_dir }
+			   links {"SDL2"}
 				
+			configuration "Debug"
+				links {"soloud_x64_d"}
 			
+			configuration "Release"
+				links {"soloud_x64"}
 				
 			configuration {"windows", "Release", "vs2017"}
 				postbuildcommands {
@@ -148,14 +142,16 @@ solution "Symmetry"
 			defines {"GAME_LIB"}
 			files { "../src/common/**.c", "../src/common/**.h", "../src/libsymmetry/**.h", "../src/libsymmetry/**.c" }
 
-			-- configuration {"windows or linux", "gmake"}
-				--buildoptions {"`pkg-config --cflags-only-I sdl2`"}
-
 			configuration "windows"
 			    targetname "libSymmetry"
 				
 			configuration {"windows", "vs2017"}
+				includedirs {"../third_party/windows/SDL2-2.0.5/include/"}
 				flags "NoImportLib"
+
+
+			configuration {"linux"}
+			    includedirs {"../third_party/linux/SDL2/include/"}
 			
 			configuration "Debug"
 		        defines {"GL_DEBUG_CONTEXT"}

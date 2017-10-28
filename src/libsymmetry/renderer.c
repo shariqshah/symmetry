@@ -24,6 +24,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #define MAX_UNIFORM_NAME_LEN 64
 

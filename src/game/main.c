@@ -4,6 +4,7 @@
 #include "../common/log.h"
 #include "sound.h"
 #include "platform.h"
+#include "physics.h"
 #include "file_io.h"
 #include "config_vars.h"
 #include "../common/hashmap.h"
@@ -118,8 +119,14 @@ int main(int argc, char** args)
             .log =
             {
                 .file_handle_get = &log_file_handle_get
-            }
+            },
+			.physics = 
+			{
+				.init    = &physics_init,
+				.cleanup = &physics_cleanup
+			}
         };
+
         if(!game_lib_load())
             log_error("main", "Failed to load  game library");
         else
@@ -221,7 +228,7 @@ bool init(void)
     return true;
 }
 
-void cleanup()
+void cleanup(void)
 {
 	if(game.cleanup) game.cleanup();
 	if(game_lib_handle) platform_unload_library(game_lib_handle);

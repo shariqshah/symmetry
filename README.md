@@ -155,6 +155,7 @@
 
 - ## TODO
 
+	- Complete Newton integration
 	- Add fallback shader
 	- Implement Game States
 	- Store Materials in new format supported by parser

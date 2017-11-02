@@ -14,8 +14,8 @@ static int root_node = -1;
 void scene_init(void)
 {
 	/* Add root node to scene */
-	/* struct Entity* root = entity_create("ROOT", ET_ROOT, -1); */
-	/* root_node = root->id; */
+	 /*struct Entity* root = entity_create("ROOT", ET_ROOT, -1);
+	 root_node = root->id; */
 }
 
 struct Entity* scene_add_new(const char* name, const int type)

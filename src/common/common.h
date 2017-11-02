@@ -47,6 +47,12 @@ enum Sound_Attenuation_Type
 	SA_EXPONENTIAL // Exponential distance attenuation model
 };
 
+struct Physics_Api
+{
+	void(*init)(void);
+	void(*cleanup)(void);
+};
+
 struct Sound_Api
 {
 	void (*update_3d)(void);
@@ -142,11 +148,12 @@ struct Platform_Api
     void*       (*load_function_gl)(const char* name);
     void        (*reload_game_lib)(void);
 
-    struct Window_Api window;
-    struct Sound_Api  sound;
-    struct File_Api   file;
-    struct Config_Api config;
-    struct Log_Api    log;
+    struct Window_Api  window;
+    struct Sound_Api   sound;
+    struct File_Api    file;
+    struct Config_Api  config;
+    struct Log_Api     log;
+	struct Physics_Api physics;
 };
 
 struct Game_Api

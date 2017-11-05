@@ -155,7 +155,19 @@
 
 - ## TODO
 
-	- Complete Newton integration
+	- Trimesh support
+	- Debug physics mesh drawing
+	- Serializing/Deserializing physics data
+	- Proper physics time-step and speed
+	- Storing entity reference/id in rigidbody
+	- Storing rigidbody in entity
+	- Expose complete physics api with forces/joints etc
+	- Complete ODE integration
+	- Test physics code on linux
+	- Terrain rendering using heightfields
+	- Re-order lib folder for linux by putting all libraries in one folder
+	- Figure out a better way for handling libs on linux, current method DOES NOT work on other computers
+	- Fix 30fps bug on windows
 	- Add fallback shader
 	- Implement Game States
 	- Store Materials in new format supported by parser

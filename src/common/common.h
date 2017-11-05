@@ -17,6 +17,10 @@ struct Window;
 struct Hashmap;
 struct Sound_Source_Buffer;
 
+//Physics Decls
+typedef void* Rigidbody;
+typedef void (*RigidbodyMoveCB)(Rigidbody);
+
 // Function Pointer decls
 typedef void (*Keyboard_Event_Func)     (int key, int scancode, int state, int repeat, int mod_ctrl, int mod_shift, int mod_alt);
 typedef void (*Mousebutton_Event_Func)  (int button, int state, int x, int y, int8 num_clicks);
@@ -49,8 +53,19 @@ enum Sound_Attenuation_Type
 
 struct Physics_Api
 {
-	void(*init)(void);
-	void(*cleanup)(void);
+	void      (*init)(void);
+	void      (*cleanup)(void);
+	void      (*step)(float);
+	void      (*gravity_set)(float x, float y, float z);
+	void      (*gravity_get)(float* x, float* y, float* z);
+	void      (*body_position_set)(Rigidbody body, float x, float y, float z);
+	void      (*body_position_get)(Rigidbody body, float* x, float* y, float* z);
+	void      (*body_rotation_set)(Rigidbody body, float x, float y, float z, float w);
+	void      (*body_rotation_get)(Rigidbody body, float* x, float* y, float* z, float* w);
+	Rigidbody (*plane_create)(float a, float b, float c, float d);
+	Rigidbody (*box_create)(float length, float width, float height);
+	void      (*body_set_moved_callback)(Rigidbody body, RigidbodyMoveCB callback);
+	void      (*body_kinematic_set)(Rigidbody body);
 };
 
 struct Sound_Api

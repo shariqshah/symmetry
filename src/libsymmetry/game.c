@@ -47,9 +47,13 @@ static void render(void);
 static void debug(float dt);
 static void debug_gui(float dt);
 static void scene_setup(void);
+static void on_box_move(Rigidbody body);
 
 static struct Game_State* game_state = NULL;
 struct Platform_Api* platform = NULL;
+
+
+static int suz_id = 0;
 
 bool game_init(struct Window* window, struct Platform_Api* platform_api)
 {
@@ -98,6 +102,7 @@ bool game_init(struct Window* window, struct Platform_Api* platform_api)
 	material_init();
 	entity_init();
 	platform->physics.init();
+	platform->physics.gravity_set(0.f, -9.8f, 0.f);
 	scene_init();
 	
 	/* Debug scene setup */
@@ -235,12 +240,23 @@ void scene_setup(void)
         struct Entity* player = entity_find("player");
         game_state->player_node = player->id;
 
+		struct Entity* suz = entity_find("Suzanne");
+		suz_id = suz->id;
         /*struct Camera* camera = &player->camera;
         camera->ortho = true;
         camera->farz  = 500.f;
         camera->nearz = -500.f;
         camera_update_proj(player);*/
     }
+
+	platform->physics.plane_create(0, 1, 0, 0);
+	Rigidbody box = platform->physics.box_create(5, 5, 5);
+	platform->physics.body_position_set(box, 0.f, 50.f, 0.f);
+	platform->physics.body_set_moved_callback(box, on_box_move);
+
+	/*Rigidbody ground_box = platform->physics.box_create(1000, 5, 1000);
+	platform->physics.body_position_set(ground_box, 0.f, 0.f, 0.f);
+	platform->physics.body_kinematic_set(ground_box);*/
 }
 
 void debug(float dt)
@@ -363,11 +379,11 @@ void debug(float dt)
 		transform_translate(model, &amount, TS_LOCAL);
 	}
 
-	struct Entity* model = scene_find("Model_Entity");
+	/*struct Entity* model = scene_find("Model_Entity");
 	vec3 x_axis = {0, 1, 0};
     transform_rotate(model, &x_axis, 25.f * dt, TS_WORLD);
 	vec3 amount = {0, 0, -5 * dt};
-	transform_translate(model, &amount, TS_LOCAL);
+	transform_translate(model, &amount, TS_LOCAL);*/
 
 	struct Sprite_Batch* batch = get_batch();
 
@@ -416,6 +432,7 @@ bool run(void)
 		gui_input_end();
 		
 		update(delta_time, &should_window_close);
+		platform->physics.step(delta_time);
 		render();
         platform->window.swap_buffers(game_state->window);
 		entity_post_update();
@@ -1686,4 +1703,19 @@ void game_cleanup(void)
 struct Game_State* game_state_get(void)
 {
 	return game_state;
+}
+
+void on_box_move(Rigidbody body)
+{
+	struct Entity* suz = entity_get(suz_id);
+	vec3 pos = {0};
+	quat rot = {0};
+
+	platform->physics.body_position_get(body, &pos.x, &pos.y, &pos.z);
+	platform->physics.body_rotation_get(body, &rot.x, &rot.y, &rot.z, &rot.w);
+
+	quat_assign(&suz->transform.rotation, &rot);
+	transform_set_position(suz, &pos);
+
+	log_message("Pos : %.3f, %.3f, %.3f", pos.x, pos.y, pos.z);
 }

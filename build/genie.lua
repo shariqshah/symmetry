@@ -6,14 +6,14 @@ solution "Symmetry"
 	configuration {"linux"}
 	    postbuildcommands {"ln -fs " .. os.getcwd()  .. "/../assets debug/assets"}
 	    postbuildcommands {"ln -fs " .. os.getcwd()  .. "/../assets release/assets"}
-		buildoptions {"-Wall", "-std=c99", "`pkg-config --cflags-only-I sdl2`"}
+		buildoptions {"-Wall", "-std=c99"}
 
 	configuration {"windows", "vs2017"}	
 		defines {"_CRT_SECURE_NO_WARNINGS"}
 		flags {"NoIncrementalLink", "NoEditAndContinue"}
 		local windowsPlatform = string.gsub(os.getenv("WindowsSDKVersion") or "10.0.16299.0", "\\", "")
 		local action = premake.action.current()
-		if(action ~= nil) then
+		if(action ~= nil and _ACTION == "vs2017") then
 			action.vstudio.windowsTargetPlatformVersion    = windowsPlatform
 			action.vstudio.windowsTargetPlatformMinVersion = windowsPlatform
 		end
@@ -66,46 +66,48 @@ solution "Symmetry"
 		defines {"GAME"}
 
 		configuration "linux"
-			includedirs	{"../include/linux/sdl2/", "../include/common/soloud/"}
-			libdirs {"../lib/linux/sdl2/", "../lib/linux/soloud/"}
-			links {"SDL2", "m"}
+			includedirs	{"../include/linux/sdl2/", "../include/common/soloud/", "../include/linux/"}
+			libdirs {"../lib/linux/sdl2/", "../lib/linux/soloud/", "../lib/linux/ode/"}
+			links {"SDL2", "m", "ode", "pthread"}
 
 		configuration {"windows", "vs2017"}
-		   includedirs	{"../include/windows/sdl2/", "../include/common/soloud/", "../include/common/newton/"}
-		   libdirs {"../lib/windows/sdl2/", "../lib/windows/soloud/", "../lib/windows/newton/"}
+		   includedirs	{"../include/windows/sdl2/", "../include/common/soloud/", "../include/windows/"}
+		   libdirs {"../lib/windows/sdl2/", "../lib/windows/soloud/", "../lib/windows/ode/"}
 		   links {"SDL2"}
 			
 		configuration "Debug"
-			links {"soloud_x64_d", "newton_d"}
+			links {"soloud_x64_d"}
 		
 		configuration "Release"
-			links {"soloud_x64", "newton"}
+			links {"soloud_x64"}
 			
 		configuration {"windows", "Release", "vs2017"}
 			postbuildcommands 
 			{
 				"copy ..\\..\\lib\\windows\\sdl2\\SDL2.dll release\\ /Y",
 				"copy ..\\..\\lib\\windows\\soloud\\soloud_x64.dll release\\ /Y",
-				"copy ..\\..\\lib\\windows\\newton\\newton.dll release\\ /Y",
+				"copy ..\\..\\lib\\windows\\ode\\ode_double.dll release\\ /Y",
 				"xcopy ..\\..\\assets ..\\..\\bin\\assets /s /e /h /i /y /d",
 				"copy release\\Symmetry.exe ..\\..\\bin\\ /Y",
 				"copy release\\libSymmetry.dll ..\\..\\bin\\ /Y",
 				"copy release\\SDL2.dll ..\\..\\bin\\ /Y",
 				"copy release\\soloud_x64.dll ..\\..\\bin\\ /Y",
-				"copy release\\newton.dll ..\\..\\bin\\ /Y",
+				"copy release\\ode_double.dll ..\\..\\bin\\ /Y",
 				"rmdir release\\assets",
 				"mklink /D release\\assets ..\\..\\..\\assets"
 			}
+			links {"ode_double"}
 			
 		configuration {"windows", "Debug", "vs2017"}
 			postbuildcommands 
 			{
 				"copy ..\\..\\lib\\windows\\sdl2\\SDL2.dll debug\\ /Y",
 				"copy ..\\..\\lib\\windows\\soloud\\soloud_x64_d.dll debug\\ /Y",
-				"copy ..\\..\\lib\\windows\\newton\\newton_d.dll debug\\ /Y",
+				"copy ..\\..\\lib\\windows\\ode\\ode_doubled.dll debug\\ /Y",
 				"rmdir debug\\assets",
 				"mklink /D debug\\assets ..\\..\\..\\assets"
 			}
+			links {"ode_doubled"}
 	-------------------------
 	-- libSymmetry
 	-------------------------

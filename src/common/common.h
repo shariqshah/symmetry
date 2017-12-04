@@ -66,6 +66,8 @@ struct Physics_Api
 	Rigidbody (*box_create)(float length, float width, float height);
 	void      (*body_set_moved_callback)(Rigidbody body, RigidbodyMoveCB callback);
 	void      (*body_kinematic_set)(Rigidbody body);
+	void      (*body_mass_set)(Rigidbody body, float mass);
+	float     (*body_mass_get)(Rigidbody body);
 };
 
 struct Sound_Api

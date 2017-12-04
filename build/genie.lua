@@ -104,6 +104,7 @@ solution "Symmetry"
 				"copy ..\\..\\lib\\windows\\sdl2\\SDL2.dll debug\\ /Y",
 				"copy ..\\..\\lib\\windows\\soloud\\soloud_x64_d.dll debug\\ /Y",
 				"copy ..\\..\\lib\\windows\\ode\\ode_doubled.dll debug\\ /Y",
+				"copy ..\\..\\lib\\windows\\ode\\ode_doubled.pdb debug\\ /Y",
 				"rmdir debug\\assets",
 				"mklink /D debug\\assets ..\\..\\..\\assets"
 			}

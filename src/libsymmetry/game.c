@@ -118,8 +118,9 @@ void scene_setup(void)
  //   vec3 viewer_pos = {10, 5, 100};
  //   transform_set_position(player, &viewer_pos);
  //   int render_width, render_height;
- //   render_width = 1024;
- //   render_height = 768;
+	//struct Hashmap* config = platform->config.get();
+	//render_width  = hashmap_int_get(config, "render_width");
+	//render_height = hashmap_int_get(config, "render_height");
  //   camera_create(player, render_width, render_height);
  //   camera_attach_fbo(player, render_width, render_height, 1, 1, 1);
  //   vec4_fill(&player->camera.clear_color, 0.3f, 0.6f, 0.9f, 1.0f);
@@ -195,7 +196,7 @@ void scene_setup(void)
  //   /* model_set_material_param(screen_model, "diffuse_color", &color); */
  //   /* model_set_material_param(screen_model, "diffuse_texture", &cam->render_tex); */
 
- //   const int MAX_LIGHTS = 3;
+ //   const int MAX_LIGHTS = 10;
  //   for(int i = 0; i < MAX_LIGHTS; i++)
  //   {
  //       int x = rand() % MAX_LIGHTS;
@@ -219,12 +220,12 @@ void scene_setup(void)
  //   struct Sound_Source* sound_source = &sound_ent->sound_source;
 	//sound_source->source_filename = str_new("sounds/teh_beatz.wav");
  //   sound_source->type             = ST_WAV;
- //   sound_source->attenuation_type = SA_LINEAR;
+ //   sound_source->attenuation_type = SA_INVERSE;
  //   sound_source->rolloff_factor   = 0.95f;
  //   sound_source->loop             = true;
- //   sound_source->volume           = 1.f;
+ //   sound_source->volume           = 0.5f;
  //   sound_source->min_distance     = 1.f;
- //   sound_source->max_distance     = 50.f;
+ //   sound_source->max_distance     = 10.f;
  //   sound_source->playing          = true;
 
  //   sound_source->source_instance  = 0;
@@ -240,7 +241,7 @@ void scene_setup(void)
         struct Entity* player = entity_find("player");
         game_state->player_node = player->id;
 
-		struct Entity* suz = entity_find("Suzanne");
+		struct Entity* suz = entity_find("Model_Entity");
 		suz_id = suz->id;
         /*struct Camera* camera = &player->camera;
         camera->ortho = true;
@@ -250,12 +251,14 @@ void scene_setup(void)
     }
 
 	platform->physics.plane_create(0, 1, 0, 0);
-	Rigidbody box = platform->physics.box_create(5, 5, 5);
+	Rigidbody box = platform->physics.box_create(2.5, 2.5, 2.5);
 	platform->physics.body_position_set(box, 0.f, 50.f, 0.f);
+	platform->physics.body_mass_set(box, 10.f);
 	platform->physics.body_set_moved_callback(box, on_box_move);
 
-	/*Rigidbody ground_box = platform->physics.box_create(1000, 5, 1000);
-	platform->physics.body_position_set(ground_box, 0.f, 0.f, 0.f);
+	Rigidbody plane = platform->physics.plane_create(0, 1, 0, 0);
+	//Rigidbody ground_box = platform->physics.box_create(1000, 1, 1000);
+	/*platform->physics.body_position_set(ground_box, 0.f, 0.f, 0.f);
 	platform->physics.body_kinematic_set(ground_box);*/
 }
 
@@ -1717,5 +1720,5 @@ void on_box_move(Rigidbody body)
 	quat_assign(&suz->transform.rotation, &rot);
 	transform_set_position(suz, &pos);
 
-	log_message("Pos : %.3f, %.3f, %.3f", pos.x, pos.y, pos.z);
+	//log_message("Pos : %.3f, %.3f, %.3f", pos.x, pos.y, pos.z);
 }

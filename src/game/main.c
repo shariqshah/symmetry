@@ -132,6 +132,8 @@ int main(int argc, char** args)
 				.body_rotation_set       = &physics_body_rotation_set,
 				.body_rotation_get       = &physics_body_rotation_get,
 				.body_kinematic_set      = &physics_body_kinematic_set,
+				.body_mass_set           = &physics_body_mass_set,
+				.body_mass_get           = &physics_body_mass_get,
 				.body_set_moved_callback = &physics_body_set_moved_callback,
 				.plane_create            = &physics_plane_create,
 				.box_create              = &physics_box_create

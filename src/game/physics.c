@@ -34,7 +34,15 @@ void physics_init(void)
 		log_message("Physics world created");
 		Physics.space = dHashSpaceCreate(0);
 		Physics.contact_group = dJointGroupCreate(0);
-		Physics.step_size = 0.16;
+		Physics.step_size = 0.016;
+		dWorldSetCFM(Physics.world,1e-5);
+		dWorldSetAutoDisableFlag(Physics.world, 1);
+		dWorldSetLinearDamping( Physics.world, 0.00001);
+		dWorldSetAngularDamping( Physics.world, 0.005);
+		dWorldSetMaxAngularSpeed( Physics.world, 200);
+
+		dWorldSetContactMaxCorrectingVel( Physics.world,0.1);
+		dWorldSetContactSurfaceLayer( Physics.world,0.001);
 	}
 }
 
@@ -52,11 +60,19 @@ void physics_cleanup(void)
 
 void physics_step(float delta_time)
 {
+	//if(delta_time <= 0.f) delta_time = Physics.step_size;
+	//dSpaceCollide(Physics.space, NULL, physics_near_callback);
+	//dWorldQuickStep(Physics.world, delta_time);
+	////dWorldStep(Physics.world, Physics.step_size);
+	//dJointGroupEmpty(Physics.contact_group);
+
 	int steps = (int)ceilf(delta_time / Physics.step_size);
+	//log_message("Num steps : %d", steps);
 	for(int i = 0; i < steps; i++)
 	{
 		dSpaceCollide(Physics.space, NULL, physics_near_callback);
 		dWorldQuickStep(Physics.world, Physics.step_size);
+		//dWorldStep(Physics.world, Physics.step_size);
 		dJointGroupEmpty(Physics.contact_group);
 	}
 }
@@ -116,39 +132,59 @@ void physics_near_callback(void* data, dGeomID o1, dGeomID o2)
 	assert(o1);
 	assert(o2);
 
-	if(dGeomIsSpace(o1) || dGeomIsSpace(o2))
-	{
-		fprintf(stderr, "testing space %p %p\n", (void*)o1, (void*)o2);
-		// colliding a space with something
-		dSpaceCollide2(o1, o2, data, &physics_near_callback);
-		// Note we do not want to test intersections within a space,
-		// only between spaces.
-		return;
-	}
+	//if(dGeomIsSpace(o1) || dGeomIsSpace(o2))
+	//{
+	//	fprintf(stderr, "testing space %p %p\n", (void*)o1, (void*)o2);
+	//	// colliding a space with something
+	//	dSpaceCollide2(o1, o2, data, &physics_near_callback);
+	//	// Note we do not want to test intersections within a space,
+	//	// only between spaces.
+	//	return;
+	//}
 
 	//  fprintf(stderr,"testing geoms %p %p\n", o1, o2);
 
-	const int N = 32;
-	dContact contact[32];
-	int n = dCollide(o1, o2, N, &(contact[0].geom), sizeof(dContact));
+	// exit without doing anything if the two bodies are connected by a joint
+	dBodyID b1 = dGeomGetBody(o1);
+	dBodyID b2 = dGeomGetBody(o2);
+
+	if (b1 && b2 && dAreConnectedExcluding(b1,b2,dJointTypeContact))
+		return;
+
+	if(o1 == o2)
+		log_message("same body!");
+
+
+#define MAX_CONTACTS 8
+	dContact contact[MAX_CONTACTS];
+	for (int i = 0; i < MAX_CONTACTS; i++)
+	{
+		//contact[i].surface.mode = dContactBounce | dContactSoftCFM;
+		contact[i].surface.mode = dContactBounce | dContactSoftCFM;
+		contact[i].surface.mu = dInfinity;
+		contact[i].surface.mu2 = 0;
+		contact[i].surface.bounce = 0.1;
+		contact[i].surface.bounce_vel = 0.1;
+		contact[i].surface.soft_cfm = 0.01;
+	}
+
+	int n = dCollide(o1, o2, MAX_CONTACTS, &(contact[0].geom), sizeof(dContact));
 	if(n > 0)
 	{
-		for(int i = 0; i<n; i++)
-		{
-			// Paranoia  <-- not working for some people, temporarily removed for 0.6
-			//dIASSERT(dVALIDVEC3(contact[i].geom.pos));
-			//dIASSERT(dVALIDVEC3(contact[i].geom.normal));
-			//dIASSERT(!dIsNan(contact[i].geom.depth));
-			contact[i].surface.slip1 = 0.7;
-			contact[i].surface.slip2 = 0.7;
-			contact[i].surface.mode = dContactSoftERP | dContactSoftCFM | dContactApprox1 | dContactSlip1 | dContactSlip2;
-			contact[i].surface.mu = 50.0; // was: dInfinity
-			contact[i].surface.soft_erp = 0.96;
-			contact[i].surface.soft_cfm = 0.04;
+		log_message("Collision!");
+		for(int i = 0; i < n; i++)
+		{	
+			//contact[i].surface.slip1 = 0.7;
+			//contact[i].surface.slip2 = 0.7;
+			//contact[i].surface.mode = dContactSoftERP | dContactSoftCFM | dContactApprox1 | dContactSlip1 | dContactSlip2;
+			//contact[i].surface.mu = 50.0; // was: dInfinity
+			//contact[i].surface.soft_erp = 0.96;
+			//contact[i].surface.soft_cfm = 0.04;
+
 			dJointID c = dJointCreateContact(Physics.world, Physics.contact_group, &contact[i]);
-			dJointAttach(c,
-				dGeomGetBody(contact[i].geom.g1),
-				dGeomGetBody(contact[i].geom.g2));
+			dJointAttach(c, b1, b2);
+				/*dGeomGetBody(contact[i].geom.g1),
+				dGeomGetBody(contact[i].geom.g2));*/
 		}
 	}
 }
@@ -167,6 +203,9 @@ Rigidbody physics_box_create(float length, float width, float height)
 	dGeomID box = dCreateBox(Physics.space, length, height, width);
 	dBodyID body = dBodyCreate(Physics.world);
 	dGeomSetBody(box, body);
+	dBodySetAngularVel(body, 0, 0, 0);
+	dBodySetLinearVel(body, 0, 0, 0);
+	dBodySetTorque(body, 0, 0, 0);
 	return body;
 }
 
@@ -182,7 +221,9 @@ float physics_body_mass_get(Rigidbody body)
 
 void physics_body_mass_set(Rigidbody body, float mass)
 {
-	
+	/*dMass dmass;
+	dMassAdjust(&dmass, mass);
+	dBodySetMass(body, &dmass);*/
 }
 
 void physics_body_kinematic_set(Rigidbody body)

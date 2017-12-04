@@ -155,10 +155,11 @@
 
 - ## TODO
 
-	- Trimesh support
+	- Proper physics time-step and speed
+	- Fix lights type not being correctly saved/loaded from file
+	- Physics Trimesh support
 	- Debug physics mesh drawing
 	- Serializing/Deserializing physics data
-	- Proper physics time-step and speed
 	- Storing entity reference/id in rigidbody
 	- Storing rigidbody in entity
 	- Expose complete physics api with forces/joints etc

@@ -649,3 +649,9 @@ void entity_apply_sound_params(struct Entity* entity)
 	platform->sound.update_3d();
 	if(sound_source->playing) platform->sound.source_instance_play(sound_source->source_instance);
 }
+
+
+void entity_on_rigidbody_move(Rigidbody body_A, Rigidbody body_B)
+{
+	
+}

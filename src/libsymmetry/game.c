@@ -103,6 +103,8 @@ bool game_init(struct Window* window, struct Platform_Api* platform_api)
 	entity_init();
 	platform->physics.init();
 	platform->physics.gravity_set(0.f, -9.8f, 0.f);
+	platform->physics.body_set_moved_callback(entity_rigidbody_on_move);
+	platform->physics.body_set_collision_callback(entity_rigidbody_on_collision);
 	scene_init();
 	
 	/* Debug scene setup */
@@ -254,12 +256,15 @@ void scene_setup(void)
 	Rigidbody box = platform->physics.box_create(2.5, 2.5, 2.5);
 	platform->physics.body_position_set(box, 0.f, 50.f, 0.f);
 	platform->physics.body_mass_set(box, 10.f);
-	platform->physics.body_set_moved_callback(box, on_box_move);
+	platform->physics.body_data_set(box, (void*)suz_id);
 
-	Rigidbody plane = platform->physics.plane_create(0, 1, 0, 0);
-	//Rigidbody ground_box = platform->physics.box_create(1000, 1, 1000);
-	/*platform->physics.body_position_set(ground_box, 0.f, 0.f, 0.f);
-	platform->physics.body_kinematic_set(ground_box);*/
+	/*Rigidbody plane = platform->physics.plane_create(0, 1, 0, 0);*/
+	Rigidbody ground_box = platform->physics.box_create(10, 10, 10);
+	platform->physics.body_position_set(ground_box, 0.f, 0.f, 0.f);
+	platform->physics.body_kinematic_set(ground_box);
+	struct Entity* ground = entity_find("Ground");
+	platform->physics.body_data_set(ground_box, (void*)ground->id);
+
 }
 
 void debug(float dt)
@@ -1706,19 +1711,4 @@ void game_cleanup(void)
 struct Game_State* game_state_get(void)
 {
 	return game_state;
-}
-
-void on_box_move(Rigidbody body)
-{
-	struct Entity* suz = entity_get(suz_id);
-	vec3 pos = {0};
-	quat rot = {0};
-
-	platform->physics.body_position_get(body, &pos.x, &pos.y, &pos.z);
-	platform->physics.body_rotation_get(body, &rot.x, &rot.y, &rot.z, &rot.w);
-
-	quat_assign(&suz->transform.rotation, &rot);
-	transform_set_position(suz, &pos);
-
-	//log_message("Pos : %.3f, %.3f, %.3f", pos.x, pos.y, pos.z);
 }

@@ -122,21 +122,24 @@ int main(int argc, char** args)
             },
 			.physics = 
 			{
-				.init                    = &physics_init,
-				.cleanup                 = &physics_cleanup,
-				.step                    = &physics_step,
-				.gravity_set             = &physics_gravity_set,
-				.gravity_get             = &physics_gravity_get,
-				.body_position_set       = &physics_body_position_set,
-				.body_position_get       = &physics_body_position_get,
-				.body_rotation_set       = &physics_body_rotation_set,
-				.body_rotation_get       = &physics_body_rotation_get,
-				.body_kinematic_set      = &physics_body_kinematic_set,
-				.body_mass_set           = &physics_body_mass_set,
-				.body_mass_get           = &physics_body_mass_get,
-				.body_set_moved_callback = &physics_body_set_moved_callback,
-				.plane_create            = &physics_plane_create,
-				.box_create              = &physics_box_create
+				.init                        = &physics_init,
+				.cleanup                     = &physics_cleanup,
+				.step                        = &physics_step,
+				.gravity_set                 = &physics_gravity_set,
+				.gravity_get                 = &physics_gravity_get,
+				.body_position_set           = &physics_body_position_set,
+				.body_position_get           = &physics_body_position_get,
+				.body_rotation_set           = &physics_body_rotation_set,
+				.body_rotation_get           = &physics_body_rotation_get,
+				.body_kinematic_set          = &physics_body_kinematic_set,
+				.body_mass_set               = &physics_body_mass_set,
+				.body_mass_get               = &physics_body_mass_get,
+				.body_data_set               = &physics_body_data_set,
+				.body_data_get               = &physics_body_data_get,
+				.body_set_moved_callback     = &physics_body_set_moved_callback,
+				.body_set_collision_callback = &physics_body_set_collision_callback,
+				.plane_create                = &physics_plane_create,
+				.box_create                  = &physics_box_create
 			}
         };
 

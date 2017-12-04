@@ -141,6 +141,7 @@ bool           entity_write(struct Entity* entity, struct Parser_Object* object)
 struct Entity* entity_read(struct Parser_Object* object);
 const char*    entity_type_name_get(struct Entity* entity);
 void           entity_apply_sound_params(struct Entity* entity); // Convenience function to sync the data set in entity's sound_source with the actual sound source's instance
-void           entity_on_rigidbody_move(Rigidbody body_A, Rigidbody body_B);
+void           entity_rigidbody_on_move(Rigidbody body);
+void           entity_rigidbody_on_collision(Rigidbody body_A, Rigidbody body_B);
 
 #endif

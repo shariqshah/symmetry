@@ -18,10 +18,14 @@ void physics_body_rotation_set(Rigidbody body, float x, float y, float z, float 
 Rigidbody physics_plane_create(float a, float b, float c, float d);
 Rigidbody physics_box_create(float length, float width, float height);
 
-void physics_body_set_moved_callback(Rigidbody body, RigidbodyMoveCB callback);
+void physics_body_set_moved_callback(RigidbodyMoveCB callback);
+void physics_body_set_collision_callback(RigidbodyColCB callback);
 
 float physics_body_mass_get(Rigidbody body);
 void  physics_body_mass_set(Rigidbody body, float mass);
+
+void  physics_body_data_set(Rigidbody body, void* data);
+void* physics_body_data_get(Rigidbody body);
 
 void physics_body_kinematic_set(Rigidbody body);
 

@@ -651,7 +651,36 @@ void entity_apply_sound_params(struct Entity* entity)
 }
 
 
-void entity_on_rigidbody_move(Rigidbody body_A, Rigidbody body_B)
+void entity_rigidbody_on_move(Rigidbody body)
 {
-	
+	int id = platform->physics.body_data_get(body);
+	struct Entity* entity = entity_get(id);
+	vec3 pos = {0};
+	quat rot = {0};
+
+	platform->physics.body_position_get(body, &pos.x, &pos.y, &pos.z);
+	platform->physics.body_rotation_get(body, &rot.x, &rot.y, &rot.z, &rot.w);
+
+	quat_assign(&entity->transform.rotation, &rot);
+	transform_set_position(entity, &pos);
+}
+
+void entity_rigidbody_on_collision(Rigidbody body_A, Rigidbody body_B)
+{
+	struct Entity* ent_A = NULL;
+	struct Entity* ent_B = NULL;
+
+	if(body_A) 
+	{
+		int id_A = platform->physics.body_data_get(body_A);
+		ent_A = entity_get(id_A);
+	}
+
+	if(body_B) 
+	{
+		int id_B = platform->physics.body_data_get(body_B);
+		ent_B = entity_get(id_B);
+	}
+
+	if(ent_A && ent_B) log_message("Entity %s collided with Entity %s", ent_A->name, ent_B->name);
 }

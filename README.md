@@ -155,7 +155,7 @@
 
 - ## TODO
 
-	- Proper physics time-step and speed
+	- Update physics if entity position/rotation/scale etc are changed
 	- Fix lights type not being correctly saved/loaded from file
 	- Physics Trimesh support
 	- Debug physics mesh drawing
@@ -356,3 +356,5 @@
 	* Implement necessary changes to run Soloud on linux
 	* Moved third party libs/include directories into root/lib and root/include. Put common includes like header-only libs into root/include/common and others which require platform specific stuff into root/include/linux etc.
 	* Got rid of pkg-confg and system-installed SDL2 dependancy on linux and instead put custom compiled SDL libs in libs folder similar to how we're handling it in windows
+	* Proper physics time-step and speed
+	* Proper handling of rigidbody associated with an entity and notifying it of movement or collision

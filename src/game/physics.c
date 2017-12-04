@@ -6,10 +6,12 @@
 
 static struct 
 {
-	dWorldID world;
-	dSpaceID space;
-	dJointGroupID contact_group;
-	double step_size;
+	dWorldID        world;
+	dSpaceID        space;
+	dJointGroupID   contact_group;
+	double          step_size;
+	RigidbodyColCB  on_collision;
+	RigidbodyMoveCB on_move;
 }
 Physics;
 
@@ -37,12 +39,11 @@ void physics_init(void)
 		Physics.step_size = 0.016;
 		dWorldSetCFM(Physics.world,1e-5);
 		dWorldSetAutoDisableFlag(Physics.world, 1);
-		dWorldSetLinearDamping( Physics.world, 0.00001);
-		dWorldSetAngularDamping( Physics.world, 0.005);
-		dWorldSetMaxAngularSpeed( Physics.world, 200);
-
-		dWorldSetContactMaxCorrectingVel( Physics.world,0.1);
-		dWorldSetContactSurfaceLayer( Physics.world,0.001);
+		dWorldSetLinearDamping(Physics.world, 0.00001);
+		dWorldSetAngularDamping(Physics.world, 0.005);
+		dWorldSetMaxAngularSpeed(Physics.world, 200);
+		dWorldSetContactMaxCorrectingVel(Physics.world,0.1);
+		dWorldSetContactSurfaceLayer(Physics.world,0.001);
 	}
 }
 
@@ -60,19 +61,11 @@ void physics_cleanup(void)
 
 void physics_step(float delta_time)
 {
-	//if(delta_time <= 0.f) delta_time = Physics.step_size;
-	//dSpaceCollide(Physics.space, NULL, physics_near_callback);
-	//dWorldQuickStep(Physics.world, delta_time);
-	////dWorldStep(Physics.world, Physics.step_size);
-	//dJointGroupEmpty(Physics.contact_group);
-
 	int steps = (int)ceilf(delta_time / Physics.step_size);
-	//log_message("Num steps : %d", steps);
 	for(int i = 0; i < steps; i++)
 	{
 		dSpaceCollide(Physics.space, NULL, physics_near_callback);
 		dWorldQuickStep(Physics.world, Physics.step_size);
-		//dWorldStep(Physics.world, Physics.step_size);
 		dJointGroupEmpty(Physics.contact_group);
 	}
 }
@@ -171,7 +164,7 @@ void physics_near_callback(void* data, dGeomID o1, dGeomID o2)
 	int n = dCollide(o1, o2, MAX_CONTACTS, &(contact[0].geom), sizeof(dContact));
 	if(n > 0)
 	{
-		log_message("Collision!");
+		Physics.on_collision(b1, b2);
 		for(int i = 0; i < n; i++)
 		{	
 			//contact[i].surface.slip1 = 0.7;
@@ -206,12 +199,19 @@ Rigidbody physics_box_create(float length, float width, float height)
 	dBodySetAngularVel(body, 0, 0, 0);
 	dBodySetLinearVel(body, 0, 0, 0);
 	dBodySetTorque(body, 0, 0, 0);
+	dBodySetMovedCallback(body, Physics.on_move);
+
 	return body;
 }
 
-void physics_body_set_moved_callback(Rigidbody body, RigidbodyMoveCB callback)
+void physics_body_set_moved_callback(RigidbodyMoveCB callback)
 {
-	dBodySetMovedCallback(body, callback);
+	Physics.on_move = callback;
+}
+
+void physics_body_set_collision_callback(RigidbodyColCB callback)
+{
+	Physics.on_collision = callback;
 }
 
 float physics_body_mass_get(Rigidbody body)
@@ -224,6 +224,16 @@ void physics_body_mass_set(Rigidbody body, float mass)
 	/*dMass dmass;
 	dMassAdjust(&dmass, mass);
 	dBodySetMass(body, &dmass);*/
+}
+
+void physics_body_data_set(Rigidbody body, void * data)
+{
+	dBodySetData(body, data);
+}
+
+void * physics_body_data_get(Rigidbody body)
+{
+	return dBodyGetData(body);
 }
 
 void physics_body_kinematic_set(Rigidbody body)

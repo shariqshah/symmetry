@@ -20,6 +20,7 @@ struct Sound_Source_Buffer;
 //Physics Decls
 typedef void* Rigidbody;
 typedef void (*RigidbodyMoveCB)(Rigidbody);
+typedef void (*RigidbodyColCB)(Rigidbody, Rigidbody);
 
 // Function Pointer decls
 typedef void (*Keyboard_Event_Func)     (int key, int scancode, int state, int repeat, int mod_ctrl, int mod_shift, int mod_alt);
@@ -64,10 +65,13 @@ struct Physics_Api
 	void      (*body_rotation_get)(Rigidbody body, float* x, float* y, float* z, float* w);
 	Rigidbody (*plane_create)(float a, float b, float c, float d);
 	Rigidbody (*box_create)(float length, float width, float height);
-	void      (*body_set_moved_callback)(Rigidbody body, RigidbodyMoveCB callback);
+	void      (*body_set_moved_callback)(RigidbodyMoveCB callback);
+	void      (*body_set_collision_callback)(RigidbodyColCB callback);
 	void      (*body_kinematic_set)(Rigidbody body);
 	void      (*body_mass_set)(Rigidbody body, float mass);
 	float     (*body_mass_get)(Rigidbody body);
+	void*     (*body_data_get)(Rigidbody body);
+	void      (*body_data_set)(Rigidbody body, void* data);
 };
 
 struct Sound_Api

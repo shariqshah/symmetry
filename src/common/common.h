@@ -19,6 +19,7 @@ struct Sound_Source_Buffer;
 
 //Physics Decls
 typedef void* Rigidbody;
+typedef void* Collision_Shape;
 typedef void (*RigidbodyMoveCB)(Rigidbody);
 typedef void (*RigidbodyColCB)(Rigidbody, Rigidbody);
 
@@ -54,24 +55,48 @@ enum Sound_Attenuation_Type
 
 struct Physics_Api
 {
-	void      (*init)(void);
-	void      (*cleanup)(void);
-	void      (*step)(float);
-	void      (*gravity_set)(float x, float y, float z);
-	void      (*gravity_get)(float* x, float* y, float* z);
-	void      (*body_position_set)(Rigidbody body, float x, float y, float z);
-	void      (*body_position_get)(Rigidbody body, float* x, float* y, float* z);
-	void      (*body_rotation_set)(Rigidbody body, float x, float y, float z, float w);
-	void      (*body_rotation_get)(Rigidbody body, float* x, float* y, float* z, float* w);
-	Rigidbody (*plane_create)(float a, float b, float c, float d);
-	Rigidbody (*box_create)(float length, float width, float height);
-	void      (*body_set_moved_callback)(RigidbodyMoveCB callback);
-	void      (*body_set_collision_callback)(RigidbodyColCB callback);
-	void      (*body_kinematic_set)(Rigidbody body);
-	void      (*body_mass_set)(Rigidbody body, float mass);
-	float     (*body_mass_get)(Rigidbody body);
-	void*     (*body_data_get)(Rigidbody body);
-	void      (*body_data_set)(Rigidbody body, void* data);
+	void            (*init)(void);
+	void            (*cleanup)(void);
+	void            (*step)(float);
+	void            (*gravity_set)(float x, float y, float z);
+	void            (*gravity_get)(float* x, float* y, float* z);
+
+	void            (*cs_remove)(Collision_Shape shape);
+
+	Collision_Shape (*cs_plane_create)(float a, float b, float c, float d);
+	void            (*cs_plane_params_set)(Collision_Shape shape, float a, float b, float c, float d);
+	void            (*cs_plane_params_get)(Collision_Shape shape, float* a, float* b, float* c, float* d);
+
+	Collision_Shape (*cs_box_create)(float x, float y, float z);
+	void            (*cs_box_params_set)(Collision_Shape shape, float x, float y, float z);
+	void            (*cs_box_params_get)(Collision_Shape shape, float* x, float* y, float* z);
+
+	Collision_Shape (*cs_sphere_create)(float radius);
+	void            (*cs_shpere_radius_set)(Collision_Shape shape, float radius);
+	float           (*cs_sphere_radius_get)(Collision_Shape shape);
+
+	Collision_Shape (*cs_capsule_create)(float radius, float length);
+	void            (*cs_capsule_params_set)(Collision_Shape shape, float radius, float length);
+	void            (*cs_capsule_params_get)(Collision_Shape shape, float* radius, float* length);
+
+	void            (*body_remove)(Rigidbody body);
+	Rigidbody       (*body_box_create)(float length, float width, float height);
+	Rigidbody       (*body_sphere_create)(float radius);
+	Rigidbody       (*body_capsule_create)(float radius, float height);
+	Collision_Shape (*body_cs_get)(Rigidbody body);
+	void            (*body_cs_set)(Rigidbody body, Collision_Shape shape);
+	void            (*body_position_set)(Rigidbody body, float x, float y, float z);
+	void            (*body_position_get)(Rigidbody body, float* x, float* y, float* z);
+	void            (*body_rotation_set)(Rigidbody body, float x, float y, float z, float w);
+	void            (*body_rotation_get)(Rigidbody body, float* x, float* y, float* z, float* w);
+	void            (*body_set_moved_callback)(RigidbodyMoveCB callback);
+	void            (*body_set_collision_callback)(RigidbodyColCB callback);
+	void            (*body_kinematic_set)(Rigidbody body);
+	void            (*body_mass_set)(Rigidbody body, float mass);
+	float           (*body_mass_get)(Rigidbody body);
+	void*           (*body_data_get)(Rigidbody body);
+	void            (*body_data_set)(Rigidbody body, void* data);
+	void            (*body_force_add)(Rigidbody body, float fx, float fy, float fz);
 };
 
 struct Sound_Api

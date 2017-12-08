@@ -156,6 +156,8 @@
 - ## TODO
 
 	- Update physics if entity position/rotation/scale etc are changed
+	- Physics raycasting
+	- Physics forces/torque etc
 	- Fix lights type not being correctly saved/loaded from file
 	- Physics Trimesh support
 	- Debug physics mesh drawing
@@ -358,3 +360,6 @@
 	* Got rid of pkg-confg and system-installed SDL2 dependancy on linux and instead put custom compiled SDL libs in libs folder similar to how we're handling it in windows
 	* Proper physics time-step and speed
 	* Proper handling of rigidbody associated with an entity and notifying it of movement or collision
+	* Added physics spheres and other primitive shapes
+	* Separated collision shape and rigidbody
+	* Implemented Getting/Modifying primitive physics shapes' values like length, radius etc

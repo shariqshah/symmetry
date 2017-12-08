@@ -182,26 +182,182 @@ void physics_near_callback(void* data, dGeomID o1, dGeomID o2)
 	}
 }
 
+Collision_Shape physics_body_cs_get(Rigidbody body)
+{
+	return dBodyGetFirstGeom(body);
+}
 
-Rigidbody physics_plane_create(float a, float b, float c, float d)
+void physics_body_cs_set(Rigidbody body, Collision_Shape shape)
+{
+	dGeomSetBody(shape, body);
+}
+
+Collision_Shape physics_cs_plane_create(float a, float b, float c, float d)
 {
 	dGeomID plane = dCreatePlane(Physics.space, a, b, c, d);
-	/*dBodyID body = dBodyCreate(Physics.world);
-	dGeomSetBody(plane, body);*/
 	return plane;
 }
 
-Rigidbody physics_box_create(float length, float width, float height)
+void physics_cs_plane_params_set(Collision_Shape shape, float a, float b, float c, float d)
 {
-	dGeomID box = dCreateBox(Physics.space, length, height, width);
-	dBodyID body = dBodyCreate(Physics.world);
-	dGeomSetBody(box, body);
-	dBodySetAngularVel(body, 0, 0, 0);
-	dBodySetLinearVel(body, 0, 0, 0);
-	dBodySetTorque(body, 0, 0, 0);
-	dBodySetMovedCallback(body, Physics.on_move);
+	dGeomPlaneSetParams(shape, a, b, c, d);
+}
+
+void physics_cs_plane_params_get(Collision_Shape shape, float* a, float* b, float* c, float* d)
+{
+	assert(a && b && c && d);
+	*a = *b = *c = *d = 0.f;
+	float result[4] = { 0.f };
+	dGeomPlaneGetParams(shape, result);
+	*a = result[0];
+	*b = result[1];
+	*c = result[2];
+	*d = result[3];
+}
+
+Collision_Shape physics_cs_box_create(float x, float y, float z)
+{
+	dGeomID box = dCreateBox(Physics.space, x, y, z);
+	if(!box)
+	{
+		log_error("physics:cs_box_create", "Failed to create box collision shape");
+	}
+	return box;
+
+}
+
+void physics_cs_box_params_get(Collision_Shape shape, float* x, float* y, float* z)
+{
+	assert(x && y && z);
+	*x = *y = *z = 0.f;
+	float lengths[3] = { 0.f };
+	dGeomBoxGetLengths(shape, lengths);
+	*x = lengths[0];
+	*y = lengths[1];
+	*z = lengths[2];
+}
+
+void physics_cs_box_params_set(Collision_Shape shape, float x, float y, float z)
+{
+	dGeomBoxSetLengths(shape, x, y, z);
+}
+
+Collision_Shape physics_cs_sphere_create(float radius)
+{
+	dGeomID sphere = dCreateSphere(Physics.space, radius);
+	if(!sphere)
+	{
+		log_error("physics:cs_sphere_create", "Failed to create sphere collision shape");
+	}
+	return sphere;
+}
+
+float physics_cs_sphere_radius_get(Collision_Shape shape)
+{
+	return dGeomSphereGetRadius(shape);
+}
+
+void physics_cs_sphere_radius_set(Collision_Shape shape, float radius)
+{
+	dGeomSphereSetRadius(shape, radius);
+}
+
+Collision_Shape physics_cs_capsule_create(float radius, float length)
+{
+	dGeomID capsule = dCreateCapsule(Physics.space, radius, length);
+	if(!capsule)
+	{
+		log_error("physics:cs_capsule_create", "Failed to create capsule collision shape");
+	}
+	return capsule;
+}
+
+void physics_cs_capsule_params_get(Collision_Shape shape, float* radius, float* length)
+{
+	assert(radius && length);
+	*radius = *length = 0.f;
+	dGeomCapsuleGetParams(shape, radius, length);
+}
+
+void physics_cs_capsule_params_set(Collision_Shape shape, float radius, float length)
+{
+	dGeomCapsuleSetParams(shape, radius, length);
+}
+
+void physics_box_params_get(Rigidbody body, float* x, float* y, float* z)
+{
+	assert(x && y && z);
+	*x = *y = *z = 0.f;
+	dGeomID box = dBodyGetFirstGeom(body);
+	if(box == 0)
+	{
+		log_error("physics:box_get_params", "Body has invalid geometry");
+		return;
+	}
+	float lengths[3] = { 0.f };
+	dGeomBoxGetLengths(box, lengths);
+	*x = lengths[0];
+	*y = lengths[1];
+	*z = lengths[2];
+}
+
+void physics_box_params_set(Rigidbody body, float x, float y, float z)
+{
+	assert(x && y && z);
+	dGeomID box = dBodyGetFirstGeom(body);
+	if(box == 0)
+	{
+		log_error("physics:box_get_params", "Body has invalid geometry");
+		return;
+	}
+	dGeomBoxSetLengths(box, x, y, z);
+}
+
+Rigidbody physics_body_box_create(float x, float y, float z)
+{
+	Rigidbody body = NULL;
+	Collision_Shape box = physics_cs_box_create(x, y, z);
+	if(box)
+	{
+		body = dBodyCreate(Physics.world);
+		physics_body_cs_set(body, box);
+		dBodySetMovedCallback(body, Physics.on_move);
+	}
 
 	return body;
+}
+
+Rigidbody physics_body_sphere_create(float radius)
+{
+	Rigidbody body = NULL;
+	Collision_Shape sphere = physics_cs_sphere_create(radius);
+	if(sphere)
+	{
+		body = dBodyCreate(Physics.world);
+		physics_body_cs_set(body, sphere);
+		dBodySetMovedCallback(body, Physics.on_move);
+	}
+	
+	return body;
+}
+
+Rigidbody physics_body_capsule_create(float radius, float length)
+{
+	Rigidbody body = NULL;
+	Collision_Shape capsule = physics_cs_capsule_create(radius, length);
+	if(capsule)
+	{
+		body = dBodyCreate(Physics.world);
+		physics_body_cs_set(body, capsule);
+		dBodySetMovedCallback(body, Physics.on_move);
+	}
+
+	return body;
+}
+
+void physics_body_force_add(Rigidbody body, float fx, float fy, float fz)
+{
+	dBodyAddForce(body, fx, fy, fz);
 }
 
 void physics_body_set_moved_callback(RigidbodyMoveCB callback)
@@ -239,4 +395,17 @@ void * physics_body_data_get(Rigidbody body)
 void physics_body_kinematic_set(Rigidbody body)
 {
 	dBodySetKinematic(body);
+}
+
+void physics_body_remove(Rigidbody body)
+{
+	dGeomID shape = dBodyGetFirstGeom(body);
+	if(shape)
+		physics_cs_remove(shape);
+	dBodyDestroy(body);
+}
+
+void physics_cs_remove(Collision_Shape shape)
+{
+	dGeomDestroy(shape);
 }

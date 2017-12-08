@@ -252,14 +252,15 @@ void scene_setup(void)
         camera_update_proj(player);*/
     }
 
-	platform->physics.plane_create(0, 1, 0, 0);
-	Rigidbody box = platform->physics.box_create(2.5, 2.5, 2.5);
+	platform->physics.cs_plane_create(0, 1, 0, 0);
+	Rigidbody box = platform->physics.body_box_create(2.5, 2.5, 2.5);
 	platform->physics.body_position_set(box, 0.f, 50.f, 0.f);
 	platform->physics.body_mass_set(box, 10.f);
 	platform->physics.body_data_set(box, (void*)suz_id);
+	platform->physics.body_force_add(box, -100.f, 0.f, 0.f);
 
 	/*Rigidbody plane = platform->physics.plane_create(0, 1, 0, 0);*/
-	Rigidbody ground_box = platform->physics.box_create(10, 10, 10);
+	Rigidbody ground_box = platform->physics.body_box_create(10, 10, 10);
 	platform->physics.body_position_set(ground_box, 0.f, 0.f, 0.f);
 	platform->physics.body_kinematic_set(ground_box);
 	struct Entity* ground = entity_find("Ground");

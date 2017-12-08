@@ -127,6 +127,7 @@ int main(int argc, char** args)
 				.step                        = &physics_step,
 				.gravity_set                 = &physics_gravity_set,
 				.gravity_get                 = &physics_gravity_get,
+
 				.body_position_set           = &physics_body_position_set,
 				.body_position_get           = &physics_body_position_get,
 				.body_rotation_set           = &physics_body_rotation_set,
@@ -138,8 +139,27 @@ int main(int argc, char** args)
 				.body_data_get               = &physics_body_data_get,
 				.body_set_moved_callback     = &physics_body_set_moved_callback,
 				.body_set_collision_callback = &physics_body_set_collision_callback,
-				.plane_create                = &physics_plane_create,
-				.box_create                  = &physics_box_create
+				.body_force_add              = &physics_body_force_add,
+				.body_box_create             = &physics_body_box_create,
+				.body_sphere_create          = &physics_body_sphere_create,
+				.body_capsule_create         = &physics_body_capsule_create,
+				.body_remove                 = &physics_body_remove,
+				.body_cs_set                 = &physics_body_cs_set,
+				.body_cs_get                 = &physics_body_cs_get,
+
+				.cs_box_create               = &physics_cs_box_create,
+				.cs_plane_create             = &physics_cs_plane_create,
+				.cs_sphere_create            = &physics_cs_sphere_create,
+				.cs_capsule_create           = &physics_cs_capsule_create,
+				.cs_remove                   = &physics_cs_remove,
+				.cs_plane_params_get         = &physics_cs_plane_params_get,
+				.cs_capsule_params_get       = &physics_cs_capsule_params_get,
+				.cs_box_params_get	         = &physics_cs_box_params_get,
+				.cs_sphere_radius_get        = &physics_cs_sphere_radius_get,
+				.cs_plane_params_set         = &physics_cs_plane_params_set,
+				.cs_capsule_params_set       = &physics_cs_capsule_params_set,
+				.cs_box_params_set	         = &physics_cs_box_params_set,
+				.cs_shpere_radius_set        = &physics_cs_sphere_radius_set
 			}
         };
 

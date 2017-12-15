@@ -97,6 +97,7 @@ void physics_body_position_get(Rigidbody body, float * x, float * y, float * z)
 void physics_body_position_set(Rigidbody body, float x, float y, float z)
 {
 	dBodySetPosition(body, x, y, z);
+	dBodyEnable(body);
 }
 
 void physics_body_rotation_get(Rigidbody body, float * x, float * y, float * z, float * w)
@@ -117,6 +118,7 @@ void physics_body_rotation_set(Rigidbody body, float x, float y, float z, float 
 	rotation[3] = z;
 	rotation[0] = w;
 	dBodySetQuaternion(body, &rotation[0]);
+	dBodyEnable(body);
 }
 
 

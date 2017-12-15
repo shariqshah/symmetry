@@ -48,6 +48,7 @@ static void debug(float dt);
 static void debug_gui(float dt);
 static void scene_setup(void);
 static void on_box_move(Rigidbody body);
+static void on_collision_test(struct Entity* this_ent, struct Entity* other_ent, Rigidbody body, Rigidbody body2);
 
 static struct Game_State* game_state = NULL;
 struct Platform_Api* platform = NULL;
@@ -151,7 +152,7 @@ void scene_setup(void)
  //   /* platform->sound.source_play(sound_source->source_handle); */
 
  //   int parent_node = new_ent->id;
- //   int num_suz = 10;
+ //   int num_suz = 50;
  //   srand(time(NULL));
  //   for(int i = 0; i < num_suz; i++)
  //   {
@@ -254,17 +255,21 @@ void scene_setup(void)
 
 	platform->physics.cs_plane_create(0, 1, 0, 0);
 	Rigidbody box = platform->physics.body_box_create(2.5, 2.5, 2.5);
-	platform->physics.body_position_set(box, 0.f, 50.f, 0.f);
-	platform->physics.body_mass_set(box, 10.f);
-	platform->physics.body_data_set(box, (void*)suz_id);
-	platform->physics.body_force_add(box, -100.f, 0.f, 0.f);
+	/*platform->physics.body_position_set(box, 0.f, 50.f, 0.f);
+	platform->physics.body_mass_set(box, 10.f);*/
+	/*platform->physics.body_data_set(box, (void*)suz_id);*/
+	//platform->physics.body_force_add(box, -100.f, 0.f, 0.f);
+	struct Entity* suz = entity_find("Model_Entity");
+	entity_rigidbody_set(suz, box);
+	suz->collision.on_collision = &on_collision_test;
 
 	/*Rigidbody plane = platform->physics.plane_create(0, 1, 0, 0);*/
 	Rigidbody ground_box = platform->physics.body_box_create(10, 10, 10);
 	platform->physics.body_position_set(ground_box, 0.f, 0.f, 0.f);
 	platform->physics.body_kinematic_set(ground_box);
 	struct Entity* ground = entity_find("Ground");
-	platform->physics.body_data_set(ground_box, (void*)ground->id);
+	entity_rigidbody_set(ground, ground_box);
+	/*platform->physics.body_data_set(ground_box, (void*)ground->id);*/
 
 }
 
@@ -390,7 +395,7 @@ void debug(float dt)
 
 	/*struct Entity* model = scene_find("Model_Entity");
 	vec3 x_axis = {0, 1, 0};
-    transform_rotate(model, &x_axis, 25.f * dt, TS_WORLD);
+    transform_rotate(model, &x_axis, 50.f * dt, TS_WORLD);
 	vec3 amount = {0, 0, -5 * dt};
 	transform_translate(model, &amount, TS_LOCAL);*/
 
@@ -1712,4 +1717,16 @@ void game_cleanup(void)
 struct Game_State* game_state_get(void)
 {
 	return game_state;
+}
+
+void on_collision_test(struct Entity* this_ent, struct Entity* other_ent, Rigidbody body, Rigidbody body2)
+{
+	float y = this_ent->transform.position.y;
+	if(y < 10.f)
+	{
+		vec3 translation = {0.f, 50.f, 0.f};
+		transform_translate(this_ent, &translation, TS_WORLD);
+		//platform->physics.body_force_add(body, 0.f, -100.f, 0.f);
+	}
+	//platform->physics.body_force_add(body, 0.f, 500.f, 0.f);
 }

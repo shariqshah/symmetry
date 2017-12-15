@@ -58,14 +58,29 @@ void entity_remove(int index)
 	case ET_STATIC_MESH:  model_destroy(entity);        break;
     case ET_SOUND_SOURCE:
     {
-        
+        platform->sound.source_instance_destroy(entity->sound_source.source_instance);
+		entity->sound_source.source_instance = 0;
     }
     break;
 	case ET_ROOT: break;
 	default: log_error("entity:remove", "Invalid entity type"); break;
 	};
+
+	if(entity->has_collision)
+	{
+		platform->physics.body_remove(entity->collision.rigidbody);
+		entity->has_collision          = false;
+		entity->collision.rigidbody    = NULL;
+		entity->collision.on_collision = NULL;
+	}
+
+	if(entity->is_listener)
+	{
+		platform->sound.listener_update(0.f, 0.f, 0.f, 0.f, 0.f, -1.f, 0.f, 1.f, 0.f);
+		entity->is_listener = false;
+	}
+
 	entity->id                  = -1;
-	entity->is_listener         = false;
 	entity->marked_for_deletion = false;
 	entity->editor_selected     = 0;
 	entity->renderable          = false;
@@ -92,11 +107,14 @@ struct Entity* entity_create(const char* name, const int type, int parent_id)
 	
 	strncpy(new_entity->name, name ? name : "DEFAULT_ENTITY_NAME", MAX_ENTITY_NAME_LEN);
 	new_entity->name[MAX_ENTITY_NAME_LEN - 1] = '\0';
-	new_entity->id                  = index;
-    new_entity->is_listener         = false;
-	new_entity->type                = type;
-	new_entity->marked_for_deletion = false;
-	new_entity->renderable          = false;
+	new_entity->id                     = index;
+    new_entity->is_listener            = false;
+	new_entity->type                   = type;
+	new_entity->marked_for_deletion    = false;
+	new_entity->renderable             = false;
+	new_entity->has_collision          = false;
+	new_entity->collision.on_collision = NULL;
+	new_entity->collision.rigidbody    = NULL;
 	new_entity->editor_selected     = 0;
 	transform_create(new_entity, parent_id);
 	return new_entity;	   
@@ -153,7 +171,7 @@ void entity_post_update(void)
             {
 				camera_update_view(entity);
             }
-			else if(entity->type == ET_SOUND_SOURCE)
+			else
             {
                 vec3 abs_pos = {0.f, 0.f,  0.f};
                 vec3 abs_fwd = {0.f, 0.f, -1.f};
@@ -162,23 +180,28 @@ void entity_post_update(void)
                 transform_get_absolute_forward(entity, &abs_fwd);
                 transform_get_absolute_up(entity, &abs_up);
 
-                platform->sound.source_instance_update_position(entity->sound_source.source_instance, abs_pos.x, abs_pos.y, abs_pos.z);
-            }
+				if(entity->type == ET_SOUND_SOURCE)
+					platform->sound.source_instance_update_position(entity->sound_source.source_instance, abs_pos.x, abs_pos.y, abs_pos.z);
+				
+				if(entity->is_listener)
+				{
+					platform->sound.listener_update(abs_pos.x, abs_pos.y, abs_pos.z,
+													abs_fwd.x, abs_fwd.y, abs_fwd.z,
+													abs_up.x,  abs_up.y,  abs_up.z);
+				}
+            
 
-            if(entity->is_listener)
-            {
-                vec3 abs_pos = {0.f, 0.f,  0.f};
-                vec3 abs_fwd = {0.f, 0.f, -1.f};
-                vec3 abs_up  = {0.f, 1.f, 0.f};
-                transform_get_absolute_pos(entity, &abs_pos);
-                transform_get_absolute_forward(entity, &abs_fwd);
-                transform_get_absolute_up(entity, &abs_up);
-
-                platform->sound.listener_update(abs_pos.x, abs_pos.y, abs_pos.z,
-                                                abs_fwd.x, abs_fwd.y, abs_fwd.z,
-                                                abs_up.x,  abs_up.y,  abs_up.z);
-            }
-		}	
+				if(entity->has_collision && entity->transform.sync_physics)
+				{
+					assert(entity->collision.rigidbody);
+					quat abs_rot = { 0.f, 0.f, 0.f, 1.f };
+					transform_get_absolute_rot(entity, &abs_rot);
+					platform->physics.body_rotation_set(entity->collision.rigidbody, abs_rot.x, abs_rot.y, abs_rot.z, abs_rot.w);
+					platform->physics.body_position_set(entity->collision.rigidbody, abs_pos.x, abs_pos.y, abs_pos.z);
+					entity->transform.sync_physics = false;
+				}
+			}
+		}
 	}
 }
 
@@ -663,6 +686,7 @@ void entity_rigidbody_on_move(Rigidbody body)
 
 	quat_assign(&entity->transform.rotation, &rot);
 	transform_set_position(entity, &pos);
+	entity->transform.sync_physics = false;
 }
 
 void entity_rigidbody_on_collision(Rigidbody body_A, Rigidbody body_B)
@@ -682,5 +706,42 @@ void entity_rigidbody_on_collision(Rigidbody body_A, Rigidbody body_B)
 		ent_B = entity_get(id_B);
 	}
 
-	if(ent_A && ent_B) log_message("Entity %s collided with Entity %s", ent_A->name, ent_B->name);
+	if(ent_A && ent_A->collision.on_collision)
+	{
+		ent_A->collision.on_collision(ent_A, ent_B ? ent_B : NULL, body_A, body_B ? body_B : NULL);
+	}
+
+	if(ent_B && ent_B->collision.on_collision)
+	{
+		ent_B->collision.on_collision(ent_B, ent_A ? ent_A : NULL, body_B, body_A ? body_A : NULL);
+	}
+
+	if(ent_A && ent_B)
+	{
+		log_message("Entity %s collided with Entity %s", ent_A->name, ent_B->name);
+	}
+}
+
+void entity_rigidbody_set(struct Entity * entity, Rigidbody body)
+{
+	assert(entity && body);
+
+	//Remove previous rigidbody if there is any
+	if(entity->has_collision && entity->collision.rigidbody)
+	{
+		platform->physics.body_remove(entity->collision.rigidbody);
+		entity->collision.rigidbody = NULL;
+	}
+
+	entity->has_collision = true;
+	entity->collision.rigidbody = body;
+
+	vec3 abs_pos = {0.f, 0.f,  0.f};
+	quat abs_rot = {0.f, 0.f, 0.f, 1.f};
+	transform_get_absolute_pos(entity, &abs_pos);
+	transform_get_absolute_rot(entity, &abs_rot);
+
+	platform->physics.body_rotation_set(body, abs_rot.x, abs_rot.y, abs_rot.z, abs_rot.w);
+	platform->physics.body_position_set(body, abs_pos.x, abs_pos.y, abs_pos.z);
+	platform->physics.body_data_set(body, (void*)entity->id);
 }

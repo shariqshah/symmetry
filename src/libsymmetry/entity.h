@@ -11,6 +11,8 @@
 struct Material_Param;
 struct Parser_Object;
 
+typedef void (*Collision_CB)(struct Entity* this_entity, struct Entity* other_entity, Rigidbody, Rigidbody);
+
 enum Entity_Type
 {
 	ET_NONE,
@@ -41,6 +43,7 @@ struct Transform
 	int  parent;
 	int* children;
 	bool is_modified;
+	bool sync_physics;
 };
 
 struct Model
@@ -100,6 +103,12 @@ struct Light
 	float depth_bias;
 };
 
+struct Collision
+{
+	Rigidbody    rigidbody;
+	Collision_CB on_collision;
+};
+
 struct Entity
 {
 	int              id;
@@ -108,8 +117,10 @@ struct Entity
 	bool             is_listener; /* TODO: Replace all booleans with flags */
 	bool             marked_for_deletion;
 	bool             renderable;
+	bool             has_collision;
 	int              editor_selected;
 	struct Transform transform;
+	struct Collision collision;
 
 	union
 	{
@@ -143,5 +154,6 @@ const char*    entity_type_name_get(struct Entity* entity);
 void           entity_apply_sound_params(struct Entity* entity); // Convenience function to sync the data set in entity's sound_source with the actual sound source's instance
 void           entity_rigidbody_on_move(Rigidbody body);
 void           entity_rigidbody_on_collision(Rigidbody body_A, Rigidbody body_B);
+void           entity_rigidbody_set(struct Entity* entity, Rigidbody body);
 
 #endif

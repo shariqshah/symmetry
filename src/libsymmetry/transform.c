@@ -207,6 +207,7 @@ void transform_update_transmat(struct Entity* entity)
 		}
 	}
 	transform->is_modified = true;
+	if(entity->has_collision) entity->transform.sync_physics = true;
 }
 
 void transform_destroy(struct Entity* entity)

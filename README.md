@@ -155,7 +155,6 @@
 
 - ## TODO
 
-	- Update physics if entity position/rotation/scale etc are changed
 	- Physics raycasting
 	- Physics forces/torque etc
 	- Fix lights type not being correctly saved/loaded from file
@@ -167,6 +166,8 @@
 	- Expose complete physics api with forces/joints etc
 	- Complete ODE integration
 	- Test physics code on linux
+	- Pipeline improvements, getting models/materials etc to/from other programs
+	- Necessary basic editor additions like placing objects, scaling, rotating etc
 	- Terrain rendering using heightfields
 	- Re-order lib folder for linux by putting all libraries in one folder
 	- Figure out a better way for handling libs on linux, current method DOES NOT work on other computers
@@ -363,3 +364,4 @@
 	* Added physics spheres and other primitive shapes
 	* Separated collision shape and rigidbody
 	* Implemented Getting/Modifying primitive physics shapes' values like length, radius etc
+	* Update physics if entity position/rotation/scale etc are changed

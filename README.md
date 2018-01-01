@@ -155,7 +155,6 @@
 
 - ## TODO
 
-	- Physics raycasting
 	- Physics forces/torque etc
 	- Fix lights type not being correctly saved/loaded from file
 	- Physics Trimesh support
@@ -365,3 +364,4 @@
 	* Separated collision shape and rigidbody
 	* Implemented Getting/Modifying primitive physics shapes' values like length, radius etc
 	* Update physics if entity position/rotation/scale etc are changed
+	* Implemented Physics raycasting

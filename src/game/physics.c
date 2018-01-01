@@ -16,6 +16,7 @@ static struct
 Physics;
 
 static void physics_near_callback(void* data, dGeomID body1, dGeomID body2);
+static void physics_cs_ray_hit_callback(void* data, dGeomID geom1, dGeomID geom2);
 
 void physics_init(void)
 {
@@ -399,6 +400,45 @@ void physics_body_kinematic_set(Rigidbody body)
 	dBodySetKinematic(body);
 }
 
+void physics_cs_ray_hit_callback(void* data, dGeomID geom1, dGeomID geom2)
+{
+	dContact contact;
+	if(dCollide(geom1, geom2, 1, &contact.geom, sizeof(contact)) == 1)
+	{
+		struct Raycast_Hit* rayhit = (struct Raycast_Hit*)data;
+		Rigidbody body = dGeomGetBody(geom2);
+		if(body)
+		{
+			int entity_id = (int)dBodyGetData(body);
+			if(entity_id != 0) rayhit->entity_id = entity_id;
+		}
+		else
+		{
+			int entity_id = (int)dGeomGetData(geom2);
+			if(entity_id != 0) rayhit->entity_id = entity_id;
+		}
+	}
+}
+
+bool physics_cs_ray_cast(Collision_Shape ray, 
+						 struct Raycast_Hit* out_rayhit, 
+						 float pos_x, float pos_y, float pos_z, 
+						 float dir_x, float dir_y, float dir_z)
+{
+	assert(out_rayhit);
+	out_rayhit->entity_id = -1;
+	dGeomRaySet(ray, pos_x, pos_y, pos_z, dir_x, dir_y, dir_z);
+	dSpaceCollide2(ray, Physics.space, (void*)out_rayhit, &physics_cs_ray_hit_callback);
+	return out_rayhit->entity_id == -1 ? false : true;
+}
+
+Collision_Shape physics_cs_ray_create(float length, bool first_contact, bool backface_cull)
+{
+	dGeomID ray = dCreateRay(Physics.space, length);
+	dGeomRaySetParams(ray, first_contact, backface_cull);
+	return ray;
+}
+
 void physics_body_remove(Rigidbody body)
 {
 	dGeomID shape = dBodyGetFirstGeom(body);
@@ -410,4 +450,16 @@ void physics_body_remove(Rigidbody body)
 void physics_cs_remove(Collision_Shape shape)
 {
 	dGeomDestroy(shape);
+}
+
+void physics_cs_data_set(Collision_Shape shape, void* data)
+{
+	assert(shape);
+	dGeomSetData(shape, data);
+}
+
+void* physics_cs_data_get(Collision_Shape shape)
+{
+	assert(shape);
+	return dGeomGetData(shape);
 }

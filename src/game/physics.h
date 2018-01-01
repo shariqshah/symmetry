@@ -36,6 +36,15 @@ Collision_Shape physics_cs_capsule_create(float radius, float height);
 void            physics_cs_capsule_params_get(Collision_Shape shape, float* radius, float* height);
 void            physics_cs_capsule_params_set(Collision_Shape shape, float radius, float height);
 
+void            physics_cs_data_set(Collision_Shape shape, void* data);
+void*           physics_cs_data_get(Collision_Shape shape);
+
+Collision_Shape physics_cs_ray_create(float length, bool first_contact, bool backface_cull);
+bool            physics_cs_ray_cast(Collision_Shape ray, 
+									struct Raycast_Hit* out_rayhit, 
+									float pos_x, float pos_y, float pos_z, 
+						            float dir_x, float dir_y, float dir_z);
+
 Rigidbody physics_body_box_create(float x, float y, float z);
 Rigidbody physics_body_sphere_create(float radius);
 Rigidbody physics_body_capsule_create(float radius, float height);
@@ -54,5 +63,7 @@ void* physics_body_data_get(Rigidbody body);
 void physics_body_force_add(Rigidbody body, float fx, float fy, float fz);
 
 void physics_body_kinematic_set(Rigidbody body);
+
+
 
 #endif

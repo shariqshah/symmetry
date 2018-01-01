@@ -263,12 +263,13 @@ void scene_setup(void)
 	entity_rigidbody_set(suz, box);
 	suz->collision.on_collision = &on_collision_test;
 
-	/*Rigidbody plane = platform->physics.plane_create(0, 1, 0, 0);*/
-	Rigidbody ground_box = platform->physics.body_box_create(10, 10, 10);
-	platform->physics.body_position_set(ground_box, 0.f, 0.f, 0.f);
-	platform->physics.body_kinematic_set(ground_box);
+	Collision_Shape plane = platform->physics.cs_plane_create(0, 1, 0, 0);
+	//Rigidbody ground_box = platform->physics.body_box_create(10, 10, 10);
+	/*platform->physics.body_position_set(ground_box, 0.f, 0.f, 0.f);
+	platform->physics.body_kinematic_set(ground_box);*/
 	struct Entity* ground = entity_find("Ground");
-	entity_rigidbody_set(ground, ground_box);
+	entity_collision_shape_set(ground, plane);
+	//entity_rigidbody_set(ground, ground_box);
 	/*platform->physics.body_data_set(ground_box, (void*)ground->id);*/
 
 }
@@ -276,7 +277,7 @@ void scene_setup(void)
 void debug(float dt)
 {
 	//struct Entity* entity = entity_get(player_node);
-	struct Entity* entity =  entity_get(game_state->player_node);
+	struct Entity* player_entity =  entity_get(game_state->player_node);
 	float move_speed = 5.f, move_scale = 3.f, turn_speed = 50.f;
 	vec3 offset = {0, 0, 0};
 	float turn_up_down = 0.f;
@@ -329,25 +330,25 @@ void debug(float dt)
 	
 	if(turn_left_right != 0.f)
 	{
-		transform_rotate(entity, &rot_axis_left_right, -turn_left_right, TS_WORLD);
+		transform_rotate(player_entity, &rot_axis_left_right, -turn_left_right, TS_WORLD);
 		vec3 up = {0.f, 0.f, 0.f};
 		vec3 forward = {0.f, 0.f, 0.f};
 		vec3 lookat = {0.f, 0.f, 0.f};
-		transform_get_up(entity, &up);
-		transform_get_forward(entity, &forward);
-		transform_get_lookat(entity, &lookat);
+		transform_get_up(player_entity, &up);
+		transform_get_forward(player_entity, &forward);
+		transform_get_lookat(player_entity, &lookat);
 		/* log_message("Up : %s", tostr_vec3(&up)); */
 		/* log_message("FR : %s", tostr_vec3(&forward)); */
 	}
 	if(turn_up_down != 0.f)
 	{
-		transform_rotate(entity, &rot_axis_up_down, turn_up_down, TS_LOCAL);
+		transform_rotate(player_entity, &rot_axis_up_down, turn_up_down, TS_LOCAL);
 		vec3 up = {0.f, 0.f, 0.f};
 		vec3 forward = {0.f, 0.f, 0.f};
 		vec3 lookat = {0.f, 0.f, 0.f};
-		transform_get_up(entity, &up);
-		transform_get_forward(entity, &forward);
-		transform_get_lookat(entity, &lookat);
+		transform_get_up(player_entity, &up);
+		transform_get_forward(player_entity, &forward);
+		transform_get_lookat(player_entity, &lookat);
 		/* log_message("Up : %s", tostr_vec3(&up)); */
 		/* log_message("FR : %s", tostr_vec3(&forward)); */
 	}
@@ -364,7 +365,7 @@ void debug(float dt)
 	vec3_scale(&offset, &offset, dt);
 	if(offset.x != 0 || offset.y != 0 || offset.z != 0)
 	{
-		transform_translate(entity, &offset, TS_LOCAL);
+		transform_translate(player_entity, &offset, TS_LOCAL);
  		//log_message("Position : %s", tostr_vec3(&transform->position));
 	}
 
@@ -428,6 +429,27 @@ void debug(float dt)
 	sprite_batch_add_sprite(batch, &sprite);
 
 	sprite_batch_end(batch);
+
+	//Raycast test
+	if(input_is_key_pressed(KEY_R))
+	{
+		Collision_Shape ray = platform->physics.cs_ray_create(20.f, true, true);
+		vec3 position = {0.f, 0.f, 0.f};
+		vec3 direction = {0.f, 0.f, 0.f};
+		transform_get_absolute_forward(player_entity, &direction);
+		transform_get_absolute_position(player_entity, &position);
+		struct Raycast_Hit hit;
+		if(platform->physics.cs_ray_cast(ray, &hit, position.x, position.y, position.z, direction.x, direction.y, direction.z))
+		{
+			struct Entity* entity_hit = entity_get(hit.entity_id);
+			log_message("Ray hit %s", entity_hit->name);
+		}
+		else
+		{
+			log_message("Ray didn't hit anything!");
+		}
+		platform->physics.cs_remove(ray);
+	}
 }
 
 bool run(void)
@@ -1724,8 +1746,8 @@ void on_collision_test(struct Entity* this_ent, struct Entity* other_ent, Rigidb
 	float y = this_ent->transform.position.y;
 	if(y < 10.f)
 	{
-		vec3 translation = {0.f, 50.f, 0.f};
-		transform_translate(this_ent, &translation, TS_WORLD);
+		//vec3 translation = {0.f, 50.f, 0.f};
+		//transform_translate(this_ent, &translation, TS_WORLD);
 		//platform->physics.body_force_add(body, 0.f, -100.f, 0.f);
 	}
 	//platform->physics.body_force_add(body, 0.f, 500.f, 0.f);

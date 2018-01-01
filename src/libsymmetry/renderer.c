@@ -179,7 +179,7 @@ void renderer_draw(struct Entity* active_viewer)
 						struct Entity* light_entity = entity_get(light_index_list[i]);
 						struct Light*  light        = &light_entity->light; /* TODO: Cull lights according to camera frustum */
 						vec3 light_pos = {0, 0, 0};
-						transform_get_absolute_pos(light_entity, &light_pos);
+						transform_get_absolute_position(light_entity, &light_pos);
 
 						if(light->type != LT_POINT)
 						{
@@ -229,7 +229,7 @@ void renderer_draw(struct Entity* active_viewer)
 
 					shader_set_uniform_int(material->shader, "total_active_lights", valid_light_count);
 					vec3 camera_pos = {0, 0, 0};
-					transform_get_absolute_pos(viewer, &camera_pos);
+					transform_get_absolute_position(viewer, &camera_pos);
 					shader_set_uniform_vec3(material->shader, "camera_pos", &camera_pos);
 				}
 

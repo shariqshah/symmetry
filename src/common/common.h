@@ -53,6 +53,12 @@ enum Sound_Attenuation_Type
 	SA_EXPONENTIAL // Exponential distance attenuation model
 };
 
+struct Raycast_Hit
+{
+	int  entity_id;
+	float normal_x, normal_y, normal_z;
+};
+
 struct Physics_Api
 {
 	void            (*init)(void);
@@ -62,6 +68,8 @@ struct Physics_Api
 	void            (*gravity_get)(float* x, float* y, float* z);
 
 	void            (*cs_remove)(Collision_Shape shape);
+	void            (*cs_data_set)(Collision_Shape shape, void* data);
+	void*           (*cs_data_get)(Collision_Shape shape);
 
 	Collision_Shape (*cs_plane_create)(float a, float b, float c, float d);
 	void            (*cs_plane_params_set)(Collision_Shape shape, float a, float b, float c, float d);
@@ -78,6 +86,12 @@ struct Physics_Api
 	Collision_Shape (*cs_capsule_create)(float radius, float length);
 	void            (*cs_capsule_params_set)(Collision_Shape shape, float radius, float length);
 	void            (*cs_capsule_params_get)(Collision_Shape shape, float* radius, float* length);
+
+	Collision_Shape (*cs_ray_create)(float length, bool first_contact, bool backface_cull);
+	bool            (*cs_ray_cast)(Collision_Shape ray, 
+								   struct Raycast_Hit* out_rayhit, 
+								   float pos_x, float pos_y, float pos_z, 
+								   float dir_x, float dir_y, float dir_z);
 
 	void            (*body_remove)(Rigidbody body);
 	Rigidbody       (*body_box_create)(float length, float width, float height);

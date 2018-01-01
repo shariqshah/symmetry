@@ -68,7 +68,10 @@ void entity_remove(int index)
 
 	if(entity->has_collision)
 	{
-		platform->physics.body_remove(entity->collision.rigidbody);
+		if(entity->collision.rigidbody)
+			platform->physics.body_remove(entity->collision.rigidbody);
+		else
+			platform->physics.cs_remove(entity->collision.collision_shape);
 		entity->has_collision          = false;
 		entity->collision.rigidbody    = NULL;
 		entity->collision.on_collision = NULL;
@@ -176,7 +179,7 @@ void entity_post_update(void)
                 vec3 abs_pos = {0.f, 0.f,  0.f};
                 vec3 abs_fwd = {0.f, 0.f, -1.f};
                 vec3 abs_up  = {0.f, 1.f, 0.f};
-                transform_get_absolute_pos(entity, &abs_pos);
+                transform_get_absolute_position(entity, &abs_pos);
                 transform_get_absolute_forward(entity, &abs_fwd);
                 transform_get_absolute_up(entity, &abs_up);
 
@@ -193,11 +196,13 @@ void entity_post_update(void)
 
 				if(entity->has_collision && entity->transform.sync_physics)
 				{
-					assert(entity->collision.rigidbody);
-					quat abs_rot = { 0.f, 0.f, 0.f, 1.f };
-					transform_get_absolute_rot(entity, &abs_rot);
-					platform->physics.body_rotation_set(entity->collision.rigidbody, abs_rot.x, abs_rot.y, abs_rot.z, abs_rot.w);
-					platform->physics.body_position_set(entity->collision.rigidbody, abs_pos.x, abs_pos.y, abs_pos.z);
+					if(entity->collision.rigidbody)
+					{
+						quat abs_rot = { 0.f, 0.f, 0.f, 1.f };
+						transform_get_absolute_rot(entity, &abs_rot);
+						platform->physics.body_rotation_set(entity->collision.rigidbody, abs_rot.x, abs_rot.y, abs_rot.z, abs_rot.w);
+						platform->physics.body_position_set(entity->collision.rigidbody, abs_pos.x, abs_pos.y, abs_pos.z);
+					}
 					entity->transform.sync_physics = false;
 				}
 			}
@@ -500,7 +505,7 @@ struct Entity* entity_read(struct Parser_Object* object)
 				vec3 abs_pos = {0.f, 0.f,  0.f};
 				vec3 abs_fwd = {0.f, 0.f, -1.f};
 				vec3 abs_up  = {0.f, 1.f, 0.f};
-				transform_get_absolute_pos(entity, &abs_pos);
+				transform_get_absolute_position(entity, &abs_pos);
 				transform_get_absolute_forward(entity, &abs_fwd);
 				transform_get_absolute_up(entity, &abs_up);
 				platform->sound.source_instance_update_position(entity->sound_source.source_instance, abs_pos.x, abs_pos.y, abs_pos.z);
@@ -555,7 +560,7 @@ struct Entity* entity_read(struct Parser_Object* object)
 		vec3 abs_pos = {0.f, 0.f,  0.f};
 		vec3 abs_fwd = {0.f, 0.f, -1.f};
 		vec3 abs_up  = {0.f, 1.f, 0.f};
-		transform_get_absolute_pos(entity, &abs_pos);
+		transform_get_absolute_position(entity, &abs_pos);
 		transform_get_absolute_forward(entity, &abs_fwd);
 		transform_get_absolute_up(entity, &abs_up);
 
@@ -659,7 +664,7 @@ void entity_apply_sound_params(struct Entity* entity)
 	vec3 abs_pos = {0.f, 0.f,  0.f};
 	vec3 abs_fwd = {0.f, 0.f, -1.f};
 	vec3 abs_up  = {0.f, 1.f, 0.f};
-	transform_get_absolute_pos(entity, &abs_pos);
+	transform_get_absolute_position(entity, &abs_pos);
 	transform_get_absolute_forward(entity, &abs_fwd);
 	transform_get_absolute_up(entity, &abs_up);
 	platform->sound.source_instance_update_position(entity->sound_source.source_instance, abs_pos.x, abs_pos.y, abs_pos.z);
@@ -718,7 +723,7 @@ void entity_rigidbody_on_collision(Rigidbody body_A, Rigidbody body_B)
 
 	if(ent_A && ent_B)
 	{
-		log_message("Entity %s collided with Entity %s", ent_A->name, ent_B->name);
+		//log_message("Entity %s collided with Entity %s", ent_A->name, ent_B->name);
 	}
 }
 
@@ -727,21 +732,53 @@ void entity_rigidbody_set(struct Entity * entity, Rigidbody body)
 	assert(entity && body);
 
 	//Remove previous rigidbody if there is any
-	if(entity->has_collision && entity->collision.rigidbody)
+	if(entity->has_collision && (entity->collision.rigidbody || entity->collision.collision_shape))
 	{
-		platform->physics.body_remove(entity->collision.rigidbody);
+		if(entity->collision.rigidbody)
+		{
+			platform->physics.body_remove(entity->collision.rigidbody);
+		}
+		else if(entity->collision.collision_shape)
+		{
+			platform->physics.cs_remove(entity->collision.collision_shape);
+		}
 		entity->collision.rigidbody = NULL;
+		entity->collision.collision_shape = NULL;
 	}
 
-	entity->has_collision = true;
-	entity->collision.rigidbody = body;
+	entity->has_collision             = true;
+	entity->collision.rigidbody       = body;
+	entity->collision.collision_shape = platform->physics.body_cs_get(body);
 
 	vec3 abs_pos = {0.f, 0.f,  0.f};
 	quat abs_rot = {0.f, 0.f, 0.f, 1.f};
-	transform_get_absolute_pos(entity, &abs_pos);
+	transform_get_absolute_position(entity, &abs_pos);
 	transform_get_absolute_rot(entity, &abs_rot);
 
 	platform->physics.body_rotation_set(body, abs_rot.x, abs_rot.y, abs_rot.z, abs_rot.w);
 	platform->physics.body_position_set(body, abs_pos.x, abs_pos.y, abs_pos.z);
 	platform->physics.body_data_set(body, (void*)entity->id);
+}
+
+void entity_collision_shape_set(struct Entity* entity, Collision_Shape shape)
+{
+	assert(entity && shape);
+
+	if(entity->has_collision && (entity->collision.rigidbody || entity->collision.collision_shape))
+	{
+		if(entity->collision.rigidbody)
+		{
+			platform->physics.body_remove(entity->collision.rigidbody);
+		}
+		else if(entity->collision.collision_shape)
+		{
+			platform->physics.cs_remove(entity->collision.collision_shape);
+		}
+		entity->collision.rigidbody = NULL;
+		entity->collision.collision_shape = NULL;
+	}
+
+	entity->has_collision = true;
+	entity->collision.collision_shape = shape;
+	platform->physics.cs_data_set(shape, (void*)entity->id);
 }

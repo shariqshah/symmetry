@@ -76,7 +76,7 @@ void camera_update_view(struct Entity* entity)
 	vec3 position = {0.f, 0.f, 0.f};
 	transform_get_absolute_lookat(entity, &lookat);
 	transform_get_absolute_up(entity, &up);
-	transform_get_absolute_pos(entity, &position);
+	transform_get_absolute_position(entity, &position);
 	mat4_lookat(&camera->view_mat, &position, &lookat, &up);
 	camera_update_view_proj(entity);
 }

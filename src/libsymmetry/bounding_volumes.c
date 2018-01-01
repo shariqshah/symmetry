@@ -46,7 +46,7 @@ int bv_intersect_frustum_sphere(vec4* frustum, struct Bounding_Sphere* sphere, s
 	vec3_fill(&abs_pos, 0.f, 0.f, 0.f);
 	vec3_fill(&abs_scale, 0.f, 0.f, 0.f);
 	
-	transform_get_absolute_pos(entity, &abs_pos);
+	transform_get_absolute_position(entity, &abs_pos);
 	transform_get_absolute_scale(entity, &abs_scale);
 	float max_scale_dimension = fabsf(abs_scale.x);
 	if(fabsf(abs_scale.y) > max_scale_dimension) max_scale_dimension = fabsf(abs_scale.y);

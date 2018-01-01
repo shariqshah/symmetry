@@ -284,7 +284,7 @@ void editor_update(float dt)
 					{
 						nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Position", NK_TEXT_ALIGN_CENTERED);
 						vec3 abs_pos = {0.f, 0.f, 0.f};
-						transform_get_absolute_pos(entity, &abs_pos);
+						transform_get_absolute_position(entity, &abs_pos);
 						if(editor_widget_v3(context, &abs_pos, "Px", "Py", "Pz", -FLT_MAX, FLT_MAX, 5.f, 1.f, row_height)) transform_set_position(entity, &abs_pos);
 
 						nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Rotation", NK_TEXT_ALIGN_CENTERED);

@@ -137,7 +137,7 @@ void transform_get_absolute_forward(struct Entity* entity, vec3* res)
 void transform_get_absolute_lookat(struct Entity* entity, vec3* res)
 {
 	vec3 abs_position = {0.f, 0.f, 0.f};
-	transform_get_absolute_pos(entity, &abs_position);
+	transform_get_absolute_position(entity, &abs_position);
 	transform_get_absolute_forward(entity, res);
 	vec3_add(res, &abs_position, res);
 }
@@ -240,7 +240,7 @@ void transform_set_position(struct Entity* entity, vec3* new_position)
 	transform_update_transmat(entity);
 }
 
-void transform_get_absolute_pos(struct Entity* entity, vec3* res)
+void transform_get_absolute_position(struct Entity* entity, vec3* res)
 {
 	vec3_assign(res, &entity->transform.position);
 	bool done = false;

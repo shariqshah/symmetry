@@ -6,10 +6,10 @@
 // Constants for locations of attributes inside all shaders
 enum Attribute_Location
 {
-	AL_POSITION = 0,
-    AL_NORMAL   = 1,
-    AL_UV       = 2,
-    AL_COLOR    = 3
+	ATTRIB_LOC_POSITION = 0,
+    ATTRIB_LOC_NORMAL   = 1,
+    ATRRIB_LOC_UV       = 2,
+    ATTRIB_LOC_COLOR    = 3
 };
 
 enum Uniform_Type

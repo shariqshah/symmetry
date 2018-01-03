@@ -405,12 +405,12 @@ void debug(float dt)
 	sprite_batch_begin(batch);
 	static struct Sprite sprite;
 
-	sprite.vertices[0].position.x = 0.f; sprite.vertices[0].position.y = 0.f; sprite.vertices[0].position.z = 0.f;
-	sprite.vertices[1].position.x = 50.f; sprite.vertices[1].position.y = 0.f; sprite.vertices[1].position.z = 0.f;
-	sprite.vertices[2].position.x = 0.f; sprite.vertices[2].position.y = 50.f; sprite.vertices[2].position.z = 0.f;
-	sprite.vertices[3].position.x = 0.f; sprite.vertices[3].position.y = 50.f; sprite.vertices[3].position.z = 0.f;
-	sprite.vertices[4].position.x = 50.f; sprite.vertices[4].position.y = 50.f; sprite.vertices[4].position.z = 0.f;
-	sprite.vertices[5].position.x = 50.f; sprite.vertices[5].position.y = 0.f; sprite.vertices[5].position.z = 0.f;
+	sprite.vertices[0].position.x = 0.f;  sprite.vertices[0].position.y = 0.f;  
+	sprite.vertices[1].position.x = 50.f; sprite.vertices[1].position.y = 0.f; 
+	sprite.vertices[2].position.x = 0.f;  sprite.vertices[2].position.y = 50.f; 
+	sprite.vertices[3].position.x = 0.f;  sprite.vertices[3].position.y = 50.f; 
+	sprite.vertices[4].position.x = 50.f; sprite.vertices[4].position.y = 50.f;
+	sprite.vertices[5].position.x = 50.f; sprite.vertices[5].position.y = 0.f; 
 
 	sprite.vertices[0].uv.x = 0.f; sprite.vertices[0].uv.y = 0.f;
 	sprite.vertices[1].uv.x = 1.f; sprite.vertices[1].uv.y = 0.f;

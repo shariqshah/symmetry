@@ -405,6 +405,8 @@ void renderer_draw(struct Entity* active_viewer)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 
+	shader_unbind();
+
 	/* Render 2D stuff */
 	shader_bind(sprite_batch->shader);
 	{
@@ -478,6 +480,10 @@ int renderer_check_glerror(const char* context)
 		error = 0;
 
 	return error;
+}
+
+void im_render_box(float position, float length, float width, float height)
+{
 }
 
 struct Sprite_Batch * get_batch(void)

@@ -156,6 +156,7 @@
 - ## TODO
 
 	- Physics forces/torque etc
+	- Replace all renderer_check_gl calls with GL_CHECK macro
 	- Fix lights type not being correctly saved/loaded from file
 	- Physics Trimesh support
 	- Debug physics mesh drawing
@@ -365,3 +366,4 @@
 	* Implemented Getting/Modifying primitive physics shapes' values like length, radius etc
 	* Update physics if entity position/rotation/scale etc are changed
 	* Implemented Physics raycasting
+	* Implemented immediate mode renderer that can draw arbitrary points, lines and triangles

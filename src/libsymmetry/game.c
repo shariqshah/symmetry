@@ -30,6 +30,7 @@
 #include "../common/hashmap.h"
 #include "../common/variant.h"
 #include "../common/common.h"
+#include "im_render.h"
 
 #define UNUSED(a) (void)a
 #ifndef _MSC_VER
@@ -450,6 +451,76 @@ void debug(float dt)
 		}
 		platform->physics.cs_remove(ray);
 	}
+
+	// Immediate geometry test
+	vec3 im_position = { 0.f, 20.f, 0.f };
+	vec3 im_scale    = { 1.f, 1.f, 1.f };
+	quat im_rot      = { 0.f, 0.f, 0.f, 1.f };
+	quat_identity(&im_rot);
+	im_begin(im_position, im_rot, im_scale, GL_LINES);
+
+	im_color(0.f, 1.f, 0.f, 1.f);
+	im_pos(0.f, 0.f, 0.f);
+	im_pos(100.f, 100.f, 10.f);
+
+	im_end();
+
+	im_position.x = -10;
+	im_begin(im_position, im_rot, im_scale, GL_TRIANGLES);
+
+	//Front
+	im_pos(0.f,  0.f,  0.f);
+	im_pos(0.f,  20.f, 0.f);
+	im_pos(20.f, 20.f, 0.f);
+	im_pos(20.f, 20.f, 0.f);
+	im_pos(20.f,  0.f, 0.f);
+	im_pos( 0.f,  0.f, 0.f);
+
+	//Back
+	im_pos(0.f,  0.f,  20.f);
+	im_pos(0.f,  20.f, 20.f);
+	im_pos(20.f, 20.f, 20.f);
+	im_pos(20.f, 20.f, 20.f);
+	im_pos(20.f,  0.f, 20.f);
+	im_pos( 0.f,  0.f, 20.f);
+
+	//Left
+	im_pos(0.f,  0.f,  0.f);
+	im_pos(0.f,  0.f, 20.f);
+	im_pos(0.f,  20.f, 20.f);
+	im_pos(0.f,  20.f, 20.f);
+	im_pos(0.f, 20.f, 0.f);
+	im_pos(0.f,  0.f, 20.f);
+
+	//Right
+	im_pos(20.f,  0.f,  0.f);
+	im_pos(20.f,  0.f, 20.f);
+	im_pos(20.f,  20.f, 20.f);
+	im_pos(20.f,  20.f, 20.f);
+	im_pos(20.f, 20.f, 0.f);
+	im_pos(20.f,  0.f, 20.f);
+
+	im_end();
+
+	im_position.x = -30.f;
+	im_begin(im_position, im_rot, im_scale, GL_LINES);
+	im_color(1.f, 1.f, 0.f, 1.f);
+
+	im_pos(0.f, 0.f, 0.f);
+	im_pos(0.f, 0.f, 10.f);
+
+	im_pos(0.f, 0.f, 10.f);
+	im_pos(0.f, 10.f, 10.f);
+
+	im_pos(0.f, 10.f, 10.f);
+	im_pos(0.f, 10.f, 0.f);
+
+	im_pos(0.f, 10.f, 0.f);
+	im_pos(0.f, 0.f, 0.f);
+
+	im_end();
+
+	
 }
 
 bool run(void)

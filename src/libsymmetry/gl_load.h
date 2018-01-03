@@ -61,8 +61,17 @@ SYMMETRY_GL_LIST
 
 #endif
 
+
+#ifdef GL_DEBUG
+	#define GL_CHECK(expression) do { gl_check(#expression, __LINE__, __FILE__)} while(false)
+#else
+	#define GL_CHECK(expression) (expression)
+
+#endif
+
 int  gl_load_library(void);
 bool gl_load_extentions(void);
+void gl_check_error(const char* expression, unsigned int line, const char* file);
 void gl_cleanup(void);
 
 #endif

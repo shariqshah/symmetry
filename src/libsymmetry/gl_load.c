@@ -45,3 +45,26 @@ bool gl_load_extentions(void)
 #endif
 	return success;
 }
+
+void gl_check_error(const char * expression, unsigned int line, const char * file)
+{
+	int error = 1;
+	GLenum error_code = glGetError();
+	const char* error_string = "No Error";
+	switch(error_code)
+	{
+	case GL_INVALID_OPERATION: 			   error_string = "Invalid Operation"; 		       break;
+	case GL_NO_ERROR:		   			   error_string = "No Error";		  		       break;
+	case GL_INVALID_ENUM:	   			   error_string = "Invalid ENUM";	  		       break;
+	case GL_INVALID_VALUE:	   			   error_string = "Invalid Value";	  		       break;
+	case GL_INVALID_FRAMEBUFFER_OPERATION: error_string = "Invalid FrameBuffer Operation"; break;
+	case GL_OUT_OF_MEMORY:		           error_string = "Out of Memory";		           break;
+	}
+
+	if(error_code != GL_NO_ERROR)
+		log_error("GL", "(%s:%d:%s) : %s", file, line, expression, error_string);
+	else
+		error = 0;
+
+	return error;
+}

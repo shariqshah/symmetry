@@ -43,8 +43,6 @@ void renderer_clearcolor_set(float r, float g, float b, float a);
 void renderer_debug_draw_enabled(bool enabled);
 int  renderer_check_glerror(const char* context);
 
-void im_render_box(float position, float length, float width, float height);
-
 struct Sprite_Batch* get_batch(void);
 
 #endif

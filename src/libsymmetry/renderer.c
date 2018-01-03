@@ -19,6 +19,7 @@
 #include "material.h"
 #include "editor.h"
 #include "sprite.h"
+#include "im_render.h"
 #include "../common/variant.h"
 #include "../common/common.h"
 
@@ -131,6 +132,8 @@ void renderer_init(void)
 	{
 		sprite_batch_create(sprite_batch, "sprite_map.tga", "sprite.vert", "sprite.frag", GL_TRIANGLES);
 	}
+
+	im_init();
 }
 
 void renderer_draw(struct Entity* active_viewer)
@@ -405,7 +408,9 @@ void renderer_draw(struct Entity* active_viewer)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 
-	shader_unbind();
+	//Immediate mode geometry render
+	im_render(active_viewer);
+
 
 	/* Render 2D stuff */
 	shader_bind(sprite_batch->shader);
@@ -416,7 +421,7 @@ void renderer_draw(struct Entity* active_viewer)
 		struct Game_State* game_state = game_state_get();
 		platform->window.get_size(game_state->window, &width, &height);
 
-		mat4_ortho(&ortho_mat, 0, width, height, 0, -10.f, 10.f);
+		mat4_ortho(&ortho_mat, 0.f, (float)width, (float)height, 0.f, -10.f, 10.f);
 		shader_set_uniform_mat4(sprite_batch->shader, "mvp", &ortho_mat);
 
 		sprite_batch_render(sprite_batch);
@@ -429,6 +434,7 @@ void renderer_draw(struct Entity* active_viewer)
 
 void renderer_cleanup(void)
 {
+	im_cleanup();
 	sprite_batch_remove(sprite_batch);
 	free(sprite_batch);
 	gui_cleanup();
@@ -480,10 +486,6 @@ int renderer_check_glerror(const char* context)
 		error = 0;
 
 	return error;
-}
-
-void im_render_box(float position, float length, float width, float height)
-{
 }
 
 struct Sprite_Batch * get_batch(void)

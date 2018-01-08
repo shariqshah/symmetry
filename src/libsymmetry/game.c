@@ -456,55 +456,59 @@ void debug(float dt)
 	vec3 im_position = { 0.f, 20.f, 0.f };
 	vec3 im_scale    = { 1.f, 1.f, 1.f };
 	quat im_rot      = { 0.f, 0.f, 0.f, 1.f };
+	vec4 im_color    = { 0.f, 1.f, 1.f, 1.f };
 	quat_identity(&im_rot);
-	im_begin(im_position, im_rot, im_scale, GL_LINES);
+	im_begin(im_position, im_rot, im_scale, im_color, GL_LINES);
 
-	im_color(0.f, 1.f, 0.f, 1.f);
 	im_pos(0.f, 0.f, 0.f);
 	im_pos(100.f, 100.f, 10.f);
 
 	im_end();
 
 	im_position.x = -10;
-	im_begin(im_position, im_rot, im_scale, GL_TRIANGLES);
+
+	im_color.x = 1.f;
+	im_color.y = 0.f;
+	im_begin(im_position, im_rot, im_scale, im_color, GL_TRIANGLES);
+
+	float length = 200 * sin(dt);
 
 	//Front
 	im_pos(0.f,  0.f,  0.f);
-	im_pos(0.f,  20.f, 0.f);
-	im_pos(20.f, 20.f, 0.f);
-	im_pos(20.f, 20.f, 0.f);
-	im_pos(20.f,  0.f, 0.f);
+	im_pos(0.f,  length, 0.f);
+	im_pos(length, length, 0.f);
+	im_pos(length, length, 0.f);
+	im_pos(length,  0.f, 0.f);
 	im_pos( 0.f,  0.f, 0.f);
 
 	//Back
-	im_pos(0.f,  0.f,  20.f);
-	im_pos(0.f,  20.f, 20.f);
-	im_pos(20.f, 20.f, 20.f);
-	im_pos(20.f, 20.f, 20.f);
-	im_pos(20.f,  0.f, 20.f);
-	im_pos( 0.f,  0.f, 20.f);
+	im_pos(0.f,  0.f,  length);
+	im_pos(0.f,  length, length);
+	im_pos(length, length, length);
+	im_pos(length, length, length);
+	im_pos(length,  0.f, length);
+	im_pos( 0.f,  0.f, length);
 
 	//Left
 	im_pos(0.f,  0.f,  0.f);
-	im_pos(0.f,  0.f, 20.f);
-	im_pos(0.f,  20.f, 20.f);
-	im_pos(0.f,  20.f, 20.f);
-	im_pos(0.f, 20.f, 0.f);
-	im_pos(0.f,  0.f, 20.f);
+	im_pos(0.f,  0.f, length);
+	im_pos(0.f,  length, length);
+	im_pos(0.f,  length, length);
+	im_pos(0.f, length, 0.f);
+	im_pos(0.f,  0.f, length);
 
 	//Right
-	im_pos(20.f,  0.f,  0.f);
-	im_pos(20.f,  0.f, 20.f);
-	im_pos(20.f,  20.f, 20.f);
-	im_pos(20.f,  20.f, 20.f);
-	im_pos(20.f, 20.f, 0.f);
-	im_pos(20.f,  0.f, 20.f);
+	im_pos(length,  0.f,  0.f);
+	im_pos(length,  0.f, length);
+	im_pos(length,  length, length);
+	im_pos(length,  length, length);
+	im_pos(length, length, 0.f);
+	im_pos(length,  0.f, length);
 
 	im_end();
 
 	im_position.x = -30.f;
-	im_begin(im_position, im_rot, im_scale, GL_LINES);
-	im_color(1.f, 1.f, 0.f, 1.f);
+	im_begin(im_position, im_rot, im_scale, im_color, GL_LINES);
 
 	im_pos(0.f, 0.f, 0.f);
 	im_pos(0.f, 0.f, 10.f);
@@ -520,7 +524,9 @@ void debug(float dt)
 
 	im_end();
 
-	
+	vec4 prim_color = {1.f, 1.f, 0.f, 1.f};
+	im_cube(5.f, im_position, im_rot, prim_color, GDM_TRIANGLES);
+	im_sphere(2.f, im_position, im_rot, prim_color, GDM_TRIANGLES);
 }
 
 bool run(void)

@@ -19,7 +19,7 @@ solution "Symmetry"
 		end
 	
    configuration "Debug"
-	    if (_ACTION ~= nil and _ACTION ~= "postbuild_copy") then
+	    if (_ACTION ~= nil and _ACTION ~= "postbuild_copy" and _ACTION ~= "build_addon") then
 		   os.mkdir(_ACTION .. "/debug")
 		   targetdir (_ACTION .. "/debug")
 		end
@@ -27,7 +27,7 @@ solution "Symmetry"
 		flags { "Symbols" }
 
    configuration "Release"
-	    if (_ACTION ~= nil and _ACTION ~= "postbuild_copy") then
+	    if (_ACTION ~= nil and _ACTION ~= "postbuild_copy" and _ACTION ~= "build_addon") then
 		   os.mkdir(_ACTION .. "/release")
 		   targetdir (_ACTION .. "/release")
 		end
@@ -133,3 +133,13 @@ solution "Symmetry"
 		
 		configuration "Debug"
 			defines {"GL_DEBUG_CONTEXT"}
+
+
+	newaction {
+	   trigger = "build_addon",
+	   description = "Build blender addon into zip file that can be loaded into blender",
+	   execute = function ()
+	   		   local output = os.outputof("cd ../blender_addon && zip -r io_symmetry_exp.zip io_symmetry_exp/__init__.py io_symmetry_exp/exporter.py && mv io_symmetry_exp.zip ../build");
+			   printf("Output of blender addon build : \n%s\n", output)
+	   end
+	}

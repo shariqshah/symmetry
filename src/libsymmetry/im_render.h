@@ -6,7 +6,12 @@
 struct IM_Vertex
 {
 	vec3 position;
-	vec4 color;
+};
+
+enum IM_Geom_Type
+{
+	IGT_PRIMITIVE = 0,
+	IGT_DYNAMIC
 };
 
 struct IM_Geom
@@ -14,8 +19,18 @@ struct IM_Geom
 	vec3 position;
 	quat rotation;
 	vec3 scale;
-	int  start_index;
-	int  num_vertices;
+	vec4 color;
+	int  type;
+	union
+	{
+		struct
+		{
+			int  start_index;
+			int  num_vertices;
+		};
+		int prim_geom_index;
+		
+	};
 	int  draw_mode;
 };
 
@@ -23,9 +38,10 @@ struct Entity;
 
 void im_init(void);
 void im_cleanup(void);
-void im_begin(vec3 position, quat rotation, vec3 scale, int draw_mode);
+void im_begin(vec3 position, quat rotation, vec3 scale, vec4 color, int draw_mode);
 void im_pos(float x, float y, float z);
-void im_color(float r, float g, float b, float a); // set active color
+void im_cube(float length, vec3 position, quat rotation, vec4 color, int draw_mode);
+void im_sphere(float radius, vec3 position, quat rotation, vec4 color, int draw_mode);
 void im_end(void);
 void im_render(struct Entity* active_viewer);
 

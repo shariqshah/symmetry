@@ -40,7 +40,7 @@ Entity
 	scale : 1.000 1.000 1.000
 	material : Blinn_Phong
 	rotation : 0.000 0.000 0.000 1.000
-	geometry : default.pamesh
+	geometry : sphere.symbres
 	is_listener : false
 	position : 0.000 50.000 0.000
 	parent : ROOT

@@ -155,6 +155,7 @@
 
 - ## TODO
 
+	- Convert IM_Vertex array to only be used as temporary storage for vertices between begin and end calls
 	- Physics forces/torque etc
 	- Replace all renderer_check_gl calls with GL_CHECK macro
 	- Fix lights type not being correctly saved/loaded from file

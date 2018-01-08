@@ -351,7 +351,7 @@ static void create_vao(struct Geometry* geometry)
 
 void geom_render(int index, enum Geometry_Draw_Mode draw_mode)
 {
-	assert((int)draw_mode > -1 && draw_mode < GDM_NUM_DRAWMODES);
+	assert((int)draw_mode > -1 && draw_mode < GDM_NUM_DRAWMODES && index >= 0);
 	struct Geometry* geo = &geometry_list[index];
 	glBindVertexArray(geo->vao);
 	if(geo->draw_indexed)

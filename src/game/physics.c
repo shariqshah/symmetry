@@ -113,7 +113,7 @@ void physics_body_rotation_get(Rigidbody body, float * x, float * y, float * z, 
 
 void physics_body_rotation_set(Rigidbody body, float x, float y, float z, float w)
 {
-	dReal rotation[4] = { 0 };
+	dReal rotation[4] = { 0.f };
 	rotation[1] = x;
 	rotation[2] = y;
 	rotation[3] = z;
@@ -229,12 +229,25 @@ Collision_Shape physics_cs_box_create(float x, float y, float z)
 
 }
 
+int physics_cs_type_get(Collision_Shape shape)
+{
+	int geom_class = dGeomGetClass(shape);
+	switch(geom_class)
+	{
+	case dBoxClass:      return CST_BOX;
+	case dSphereClass:   return CST_SPHERE;
+	case dCylinderClass: return CST_CYLINDER; 
+	case dTriMeshClass:  return CST_TRIMESH;
+	default: return CST_UNKNOWN;
+	}
+}
+
 void physics_cs_box_params_get(Collision_Shape shape, float* x, float* y, float* z)
 {
 	assert(x && y && z);
 	*x = *y = *z = 0.f;
-	float lengths[3] = { 0.f };
-	dGeomBoxGetLengths(shape, lengths);
+	dReal lengths[3] = { 0 };
+	dGeomBoxGetLengths(shape, &lengths[0]);
 	*x = lengths[0];
 	*y = lengths[1];
 	*z = lengths[2];
@@ -430,6 +443,65 @@ bool physics_cs_ray_cast(Collision_Shape ray,
 	dGeomRaySet(ray, pos_x, pos_y, pos_z, dir_x, dir_y, dir_z);
 	dSpaceCollide2(ray, Physics.space, (void*)out_rayhit, &physics_cs_ray_hit_callback);
 	return out_rayhit->entity_id == -1 ? false : true;
+}
+
+void physics_cs_position_get(Collision_Shape shape, float * x, float * y, float * z)
+{
+	assert(x && y && z);
+	if(dGeomGetClass(shape) == dPlaneClass)
+	{
+		*x = 0.f;
+		*y = 0.f;
+		*z = 0.f;
+		return;
+	}
+
+	const dReal* pos = dGeomGetPosition(shape);
+	*x = pos[0];
+	*y = pos[1];
+	*z = pos[2];
+}
+
+void physics_cs_position_set(Collision_Shape shape, float x, float y, float z)
+{
+	if(dGeomGetClass(shape) == dPlaneClass)
+		return;
+
+	dGeomSetPosition(shape, x, y, z);
+}
+
+void physics_cs_rotation_get(Collision_Shape shape, float* x, float* y, float* z, float* w)
+{
+	assert(x && y && z && w);
+
+	if(dGeomGetClass(shape) == dPlaneClass)
+	{
+		*x = 0.f;
+		*y = 0.f;
+		*z = 0.f;
+		*w = 1.f;
+		return;
+	}
+
+	dReal rotation[4] = { 1, 0, 0, 0 };
+	dGeomGetQuaternion(shape, &rotation[0]);
+	*x = rotation[1];
+	*y = rotation[2];
+	*z = rotation[3];
+	*w = rotation[0];
+}
+
+void physics_cs_rotation_set(Collision_Shape shape, float x, float y, float z, float w)
+{
+	if(dGeomGetClass(shape) == dPlaneClass)
+		return;
+
+	dReal rotation[4] = { 0.f };
+	rotation[1] = x;
+	rotation[2] = y;
+	rotation[3] = z;
+	rotation[0] = w;
+	dGeomSetQuaternion(shape, &rotation[0]);
 }
 
 Collision_Shape physics_cs_ray_create(float length, bool first_contact, bool backface_cull)

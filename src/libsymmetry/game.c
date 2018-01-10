@@ -255,7 +255,8 @@ void scene_setup(void)
     }
 
 	platform->physics.cs_plane_create(0, 1, 0, 0);
-	Rigidbody box = platform->physics.body_box_create(2.5, 2.5, 2.5);
+	//Rigidbody box = platform->physics.body_box_create(2.5, 2.5, 2.5);
+	Rigidbody box = platform->physics.body_sphere_create(3.5);
 	/*platform->physics.body_position_set(box, 0.f, 50.f, 0.f);
 	platform->physics.body_mass_set(box, 10.f);*/
 	/*platform->physics.body_data_set(box, (void*)suz_id);*/
@@ -264,15 +265,17 @@ void scene_setup(void)
 	entity_rigidbody_set(suz, box);
 	suz->collision.on_collision = &on_collision_test;
 
-	Collision_Shape plane = platform->physics.cs_plane_create(0, 1, 0, 0);
-	//Rigidbody ground_box = platform->physics.body_box_create(10, 10, 10);
-	/*platform->physics.body_position_set(ground_box, 0.f, 0.f, 0.f);
-	platform->physics.body_kinematic_set(ground_box);*/
-	struct Entity* ground = entity_find("Ground");
-	entity_collision_shape_set(ground, plane);
-	//entity_rigidbody_set(ground, ground_box);
-	/*platform->physics.body_data_set(ground_box, (void*)ground->id);*/
+	Rigidbody sphere = platform->physics.body_sphere_create(3.5f);
+	struct Entity* sphere_ent = entity_find("Sphere_Ent");
+	entity_rigidbody_set(sphere_ent, sphere);
 
+	//Collision_Shape plane = platform->physics.cs_plane_create(0, 1, 0, 0);
+	Rigidbody ground_box = platform->physics.body_box_create(10, 5, 10);
+	platform->physics.body_position_set(ground_box, 0.f, 0.f, 0.f);
+	/*platform->physics.body_kinematic_set(ground_box);*/
+	struct Entity* ground = entity_find("Ground");
+	//entity_collision_shape_set(ground, plane);
+	entity_rigidbody_set(ground, ground_box);
 }
 
 void debug(float dt)
@@ -525,8 +528,13 @@ void debug(float dt)
 	im_end();
 
 	vec4 prim_color = {1.f, 1.f, 0.f, 1.f};
-	im_cube(5.f, im_position, im_rot, prim_color, GDM_TRIANGLES);
-	im_sphere(2.f, im_position, im_rot, prim_color, GDM_TRIANGLES);
+	im_box(5.f, 2.f, 10.f, im_position, im_rot, prim_color, GDM_TRIANGLES);
+
+	for(int i = 0; i < 10; i++)
+	{
+		im_position.x += i * 2.f;
+		im_sphere(2.f, im_position, im_rot, prim_color, GDM_TRIANGLES);
+	}
 }
 
 bool run(void)

@@ -312,11 +312,11 @@ Entity
 	scale : 1.000 1.000 1.000
 	material : Blinn_Phong
 	rotation : 0.000 0.000 0.000 1.000
-	geometry : default.pamesh
+	geometry : sphere.symbres
 	is_listener : false
-	position : 3.000 0.000 4.000
-	parent : Model_Entity
-	name : Suzanne
+	position : 3.000 10.000 4.000
+	parent : ROOT
+	name : Sphere_Ent
 	renderable : true
 }
 

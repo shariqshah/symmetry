@@ -28,7 +28,8 @@ void config_vars_init(void)
 	hashmap_vec3_setf(cvars, "ambient_light",      0.1f, 0.1f, 0.1f);
 	hashmap_bool_set(cvars,  "msaa_enabled",       1);
 	hashmap_int_set(cvars,   "msaa_levels",        4);
-	hashmap_bool_set(cvars,  "debug_draw_enabled", 1);
+	hashmap_bool_set(cvars,  "debug_draw_enabled", true);
+	hashmap_bool_set(cvars,  "debug_draw_physics", true);
     hashmap_int_set(cvars,  "video_driver_linux",  VD_WAYLAND);
 	hashmap_int_set(cvars,   "debug_draw_mode",    0);
     hashmap_vec4_setf(cvars, "debug_draw_color",   1.f, 0.f, 0.f, 1.f);

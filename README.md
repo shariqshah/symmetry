@@ -155,17 +155,17 @@
 
 - ## TODO
 
-	- Convert IM_Vertex array to only be used as temporary storage for vertices between begin and end calls
 	- Physics forces/torque etc
+	- Implement physics debug visualizations for other primitives and tri mesh shapes
 	- Replace all renderer_check_gl calls with GL_CHECK macro
 	- Fix lights type not being correctly saved/loaded from file
 	- Physics Trimesh support
-	- Debug physics mesh drawing
 	- Serializing/Deserializing physics data
 	- Storing entity reference/id in rigidbody
 	- Storing rigidbody in entity
 	- Expose complete physics api with forces/joints etc
 	- Complete ODE integration
+	- Proper implementation of Scene struct with per-scene settings and configurations that can be loaded/saved to file instead of just dumping entities into a file
 	- Test physics code on linux
 	- Pipeline improvements, getting models/materials etc to/from other programs
 	- Necessary basic editor additions like placing objects, scaling, rotating etc
@@ -368,3 +368,5 @@
 	* Update physics if entity position/rotation/scale etc are changed
 	* Implemented Physics raycasting
 	* Implemented immediate mode renderer that can draw arbitrary points, lines and triangles
+	* Converted IM_Vertex array to only be used as temporary storage for vertices between begin and end calls
+	* Implemented Debug physics mesh drawing for box and sphere primitives

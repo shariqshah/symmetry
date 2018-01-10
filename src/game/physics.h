@@ -19,6 +19,7 @@ Collision_Shape physics_body_cs_get(Rigidbody body);
 void            physics_body_cs_set(Rigidbody body, Collision_Shape shape);
 
 void            physics_cs_remove(Collision_Shape shape);
+int             physics_cs_type_get(Collision_Shape shape);
 
 Collision_Shape physics_cs_plane_create(float a, float b, float c, float d);
 void            physics_cs_plane_params_set(Collision_Shape shape, float a, float b, float c, float d);
@@ -44,6 +45,12 @@ bool            physics_cs_ray_cast(Collision_Shape ray,
 									struct Raycast_Hit* out_rayhit, 
 									float pos_x, float pos_y, float pos_z, 
 						            float dir_x, float dir_y, float dir_z);
+
+void physics_cs_position_get(Collision_Shape shape, float* x, float* y, float* z);
+void physics_cs_position_set(Collision_Shape shape, float x, float y, float z);
+
+void physics_cs_rotation_get(Collision_Shape shape, float* x, float* y, float* z, float* w);
+void physics_cs_rotation_set(Collision_Shape shape, float x, float y, float z, float w);
 
 Rigidbody physics_body_box_create(float x, float y, float z);
 Rigidbody physics_body_sphere_create(float radius);

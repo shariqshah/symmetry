@@ -26,9 +26,10 @@ struct Render_Settings
 {
 	struct Fog fog;
 	vec3       ambient_light;
-	int        debug_draw_enabled;
+	bool       debug_draw_enabled;
 	vec4       debug_draw_color;
 	int        debug_draw_mode;
+	bool       debug_draw_physics;
 };
 
 struct Entity;

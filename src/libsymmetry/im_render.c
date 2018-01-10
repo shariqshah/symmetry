@@ -100,7 +100,7 @@ void im_pos(float x, float y, float z)
 	active_vertex_index++;
 }
 
-void im_cube(float length, vec3 position, quat rotation, vec4 color, int draw_mode)
+void im_box(float x, float y, float z, vec3 position, quat rotation, vec4 color, int draw_mode)
 {
 	if(active_geom)
 	{
@@ -113,7 +113,7 @@ void im_cube(float length, vec3 position, quat rotation, vec4 color, int draw_mo
 	active_geom->draw_mode = draw_mode;
 	active_geom->prim_geom_index = geom_create_from_file("cube.symbres");
 	vec3_assign(&active_geom->position, &position);
-	vec3 scale =  { length, length, length }; 
+	vec3 scale =  { x, y, z}; 
 	vec3_assign(&active_geom->scale, &scale);
 	vec4_assign(&active_geom->color, &color);
 	quat_assign(&active_geom->rotation, &rotation);

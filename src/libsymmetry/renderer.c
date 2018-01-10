@@ -408,6 +408,51 @@ void renderer_draw(struct Entity* active_viewer)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 
+	// Debug Physics render
+	if(hashmap_bool_get(cvars, "debug_draw_physics"))
+	{
+		static vec4 physics_draw_color = { 0.f, 0.f, 1.f, 1.f };
+		struct Entity* entity_list = entity_get_all();
+		for(int i = 0; i < array_len(entity_list); i++)
+		{
+			if(!entity_list[i].has_collision) continue;
+			struct Entity* entity = &entity_list[i];
+
+			//Get collision mesh and it's props then render it
+			vec3 pos = {0.f};
+			quat rot = {0.f, 0.f, 0.f, 1.f };
+			if(entity->collision.rigidbody)
+			{
+				platform->physics.body_position_get(entity->collision.rigidbody, &pos.x, &pos.y, &pos.z);
+				platform->physics.body_rotation_get(entity->collision.rigidbody, &rot.x, &rot.y, &rot.z, &rot.w);
+			}
+			else
+			{
+				platform->physics.cs_position_get(entity->collision.collision_shape, &pos.x, &pos.y, &pos.z);
+				platform->physics.cs_rotation_get(entity->collision.collision_shape, &rot.x, &rot.y, &rot.z, &rot.w);
+			}
+
+			int collision_shape_type = platform->physics.cs_type_get(entity->collision.collision_shape);
+			switch(collision_shape_type)
+			{
+			case CST_SPHERE:
+			{
+				float radius = platform->physics.cs_sphere_radius_get(entity->collision.collision_shape);
+				im_sphere(radius, pos, rot, physics_draw_color, GDM_TRIANGLES);
+			}
+			break;
+			case CST_BOX:
+			{
+				float x = 0.f, y = 0.f, z = 0.f;
+				platform->physics.cs_box_params_get(entity->collision.collision_shape, &x, &y, &z);
+				im_box(x, y, z, pos, rot, physics_draw_color, GDM_TRIANGLES);
+			};
+			break;
+			default: break;
+			}
+		}
+	}
+
 	//Immediate mode geometry render
 	im_render(active_viewer);
 
@@ -508,6 +553,7 @@ void renderer_settings_get(struct Render_Settings* settings)
 	settings->fog.max_dist           = hashmap_float_get(cvars, "fog_max_dist");
 	settings->fog.color              = hashmap_vec3_get(cvars,  "fog_color");
 	settings->debug_draw_enabled     = hashmap_bool_get(cvars,  "debug_draw_enabled");
+	settings->debug_draw_physics     = hashmap_bool_get(cvars,  "debug_draw_physics");
 	settings->debug_draw_mode        = hashmap_int_get(cvars,   "debug_draw_mode");
 	settings->debug_draw_color       = hashmap_vec4_get(cvars,  "debug_draw_color");
 	settings->ambient_light          = hashmap_vec3_get(cvars,  "ambient_light");
@@ -522,6 +568,7 @@ void renderer_settings_set(const struct Render_Settings* settings)
 	hashmap_float_set(cvars, "fog_max_dist",       settings->fog.max_dist);
 	hashmap_vec3_set(cvars,  "fog_color",          &settings->fog.color);
 	hashmap_bool_set(cvars,  "debug_draw_enabled", settings->debug_draw_enabled);
+	hashmap_bool_set(cvars,  "debug_draw_physics", settings->debug_draw_physics);
 	hashmap_int_set(cvars,   "debug_draw_mode",    settings->debug_draw_mode);
 	hashmap_vec4_set(cvars,  "debug_draw_color",   &settings->debug_draw_color);
 	hashmap_vec3_set(cvars,  "ambient_light",      &settings->ambient_light);

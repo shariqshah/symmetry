@@ -238,6 +238,58 @@ bool entity_write(struct Entity* entity, struct Parser_Object* object)
 	hashmap_int_set(entity_data, "type", entity->type);
 	hashmap_bool_set(entity_data, "is_listener", entity->is_listener);
 	hashmap_bool_set(entity_data, "renderable", entity->renderable);
+	hashmap_bool_set(entity_data, "has_collision", entity->has_collision);
+
+	if(entity->has_collision)
+	{
+		if(entity->collision.rigidbody)
+			hashmap_bool_set(entity_data, "has_rigidbody", true);
+		else
+			hashmap_bool_set(entity_data, "has_rigidbody", false);
+
+		int shape_type = platform->physics.cs_type_get(entity->collision.collision_shape);
+		hashmap_int_set(entity_data, "collision_shape_type", shape_type);
+		switch(shape_type)
+		{
+		case CST_BOX:
+		{
+			float x, y, z;
+			x = y = z = 0.f;
+			platform->physics.cs_box_params_get(entity->collision.collision_shape, &x, &y, &z);
+			hashmap_float_set(entity_data, "collision_shape_x", x);
+			hashmap_float_set(entity_data, "collision_shape_y", y);
+			hashmap_float_set(entity_data, "collision_shape_z", z);
+		}
+		break;
+		case CST_SPHERE:
+		{
+			float radius = 0.f;
+			platform->physics.cs_sphere_radius_get(entity->collision.collision_shape);
+			hashmap_float_set(entity_data, "collision_shape_radius", radius);
+		}
+		break;
+		case CST_CAPSULE:
+		{
+			float length = 0.f, radius = 0.f;
+			platform->physics.cs_capsule_params_get(entity->collision.collision_shape, &radius, &length);
+			hashmap_float_set(entity_data, "collision_shape_length", length);
+			hashmap_float_set(entity_data, "collision_shape_radius", radius);
+		}
+		break;
+		case CST_PLANE:
+		{
+			float a, b, c, d;
+			platform->physics.cs_plane_params_get(entity->collision.collision_shape, &a, &b, &c, &d);
+			hashmap_float_set(entity_data, "collision_shape_a", a);
+			hashmap_float_set(entity_data, "collision_shape_b", b);
+			hashmap_float_set(entity_data, "collision_shape_c", c);
+			hashmap_float_set(entity_data, "collision_shape_d", d);
+		}
+		break;
+		default: break;
+		}
+
+	}
 
 	struct Entity* parent = entity_get_parent(entity->id);
 	hashmap_str_set(entity_data, "parent", parent ? parent->name  : "NONE");

@@ -58,6 +58,8 @@ enum Collision_Shape_Type
 	CST_BOX = 0,
 	CST_SPHERE,
 	CST_CYLINDER,
+	CST_CAPSULE,
+	CST_PLANE,
 	CST_TRIMESH,
 	CST_UNKNOWN
 };

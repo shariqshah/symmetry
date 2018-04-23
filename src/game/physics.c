@@ -238,6 +238,7 @@ int physics_cs_type_get(Collision_Shape shape)
 	case dSphereClass:   return CST_SPHERE;
 	case dCylinderClass: return CST_CYLINDER; 
 	case dTriMeshClass:  return CST_TRIMESH;
+	case dPlaneClass:    return CST_PLANE;
 	default: return CST_UNKNOWN;
 	}
 }

@@ -155,6 +155,8 @@
 
 - ## TODO
 
+	- Work on (yet another)entity refactor before moving on to serialization
+	- Implement collision/physics data serialization, read and write.
 	- Physics forces/torque etc
 	- Implement physics debug visualizations for other primitives and tri mesh shapes
 	- Replace all renderer_check_gl calls with GL_CHECK macro
@@ -173,6 +175,7 @@
 	- Re-order lib folder for linux by putting all libraries in one folder
 	- Figure out a better way for handling libs on linux, current method DOES NOT work on other computers
 	- Fix 30fps bug on windows
+	- Change compilation so that that external libraries are compiled along with the project code(like Urho3d)
 	- Add fallback shader
 	- Implement Game States
 	- Store Materials in new format supported by parser

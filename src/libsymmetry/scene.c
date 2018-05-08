@@ -3,140 +3,530 @@
 #include "entity.h"
 #include "../common/log.h"
 #include "transform.h"
+#include "camera.h"
 #include "../common/common.h"
 #include "../common/parser.h"
+#include "model.h"
 
 #include <assert.h>
 #include <string.h>
+#include <stdlib.h>
 
-static int root_node = -1;
-
-void scene_init(void)
+void scene_init(struct Scene* scene)
 {
-	/* Add root node to scene */
-	 /*struct Entity* root = entity_create("ROOT", ET_ROOT, -1);
-	 root_node = root->id; */
-}
+	assert(scene);
+	//Initialize the root entity
+	entity_init(&scene->root_entity, "ROOT_ENTITY", NULL);
+	scene->root_entity.active  = true;
+	scene->root_entity.id      = 0;
+	scene->root_entity.type    = ET_ROOT;
 
-struct Entity* scene_add_new(const char* name, const int type)
-{
-	if(root_node == -1)
+	//Initialize player
+	entity_init(&scene->player, "Player", &scene->root_entity);
+	scene->player.base.active  = true;
+	scene->player.base.id      = 1;
+	scene->player.base.type    = ET_PLAYER;
+
+	for(int i = 0; i < MAX_ENTITIES;      i++) entity_reset(&scene->entities[i], i);
+	for(int i = 0; i < MAX_LIGHTS;        i++) entity_reset(&scene->lights[i], i);
+	for(int i = 0; i < MAX_STATIC_MESHES; i++) 
 	{
-		log_warning("No root node in scene");
-		struct Entity* root = entity_create("ROOT", ET_ROOT, -1);
-		root_node = root->id;
+		entity_reset(&scene->static_meshes[i], i);
+		struct Static_Mesh* mesh = &scene->static_meshes[i];
+		mesh->collision.collision_shape = NULL;
+		mesh->collision.rigidbody       = NULL;
+		mesh->collision.on_collision    = NULL;
+		mesh->model.geometry_index      = -1;
+		mesh->model.material            = NULL;
 	}
-	return scene_add_as_child(name, type, root_node);
-}
-
-struct Entity* scene_add_as_child(const char* name, const int type, int parent_id)
-{
-	assert(parent_id > -1);
-	return entity_create(name, type, parent_id);
-}
-
-void scene_remove(struct Entity* entity)
-{
-	assert(entity);
-	for(int i = 0; i < array_len(entity->transform.children); i++)
+	for(int i = 0; i < MAX_SOUND_SOURCES; i++) entity_reset(&scene->sound_sources[i], i);
+	for(int i = 0; i < MAX_CAMERAS;       i++) 
 	{
-		struct Entity* child = entity_get(entity->transform.children[i]);
-		scene_remove(child);
+		entity_init(&scene->cameras[i], NULL, &scene->root_entity);
+		camera_init(&scene->cameras[i], 1024, 768);
+		scene->cameras[i].base.id = i;
 	}
-	entity_remove(entity->id);
+
+	scene->active_camera_index = CT_EDITOR;
 }
 
-void scene_reset_parent(struct Entity* entity, struct Entity* new_parent)
+bool scene_load(struct Scene* scene, const char* filename, int dir_type);
+bool scene_save(struct Scene* scene, const char* filename, int dir_type);
+
+void scene_destroy(struct Scene* scene)
 {
-	assert(entity && new_parent);
-	struct Entity* curr_parent = entity_get(entity->transform.parent);
-	if(curr_parent)
+	assert(scene);
+
+	for(int i = 0; i < MAX_ENTITIES;      i++) scene_entity_remove(scene, &scene->entities[i]);
+	for(int i = 0; i < MAX_CAMERAS;       i++) scene_camera_remove(scene, &scene->cameras[i]);
+	for(int i = 0; i < MAX_LIGHTS;        i++) scene_light_remove(scene, &scene->lights[i]);
+	for(int i = 0; i < MAX_STATIC_MESHES; i++) scene_static_mesh_remove(scene, &scene->static_meshes[i]);
+	for(int i = 0; i < MAX_SOUND_SOURCES; i++) scene_sound_source_remove(scene, &scene->sound_sources[i]);
+	entity_reset(&scene->root_entity, 0);
+	scene->root_entity.active = false;
+}
+
+void scene_post_update(struct Scene* scene)
+{
+	assert(scene);
+
+	for(int i = 0; i < MAX_ENTITIES; i++)
 	{
-		/* find the index that the entity is at in the cuurent parent's
-		   children array and remove it from there. Then set the new_parent
-		   as the entity's parent */
-		int index = -1;
-		for(int i = 0; i < array_len(curr_parent->transform.children); i++)
+		struct Entity* entity = &scene->entities[i];
+		if(!entity->active) continue;
+
+		if(entity->marked_for_deletion)
 		{
-			if(curr_parent->transform.children[i] == entity->id)
+			scene_entity_remove(scene, entity);
+			continue;
+		}
+
+		if(entity->transform.is_modified) entity->transform.is_modified = false;
+	}
+
+	for(int i = 0; i < MAX_CAMERAS; i++)
+	{
+		struct Camera* camera = &scene->cameras[i];
+		if(!camera->base.active) continue;
+
+		if(camera->base.marked_for_deletion)
+		{
+			scene_camera_remove(scene, camera);
+			continue;
+		}
+
+		if(camera->base.transform.is_modified)
+		{
+			camera_update_view(camera);
+			camera->base.transform.is_modified = false;
+		}
+	}
+
+	for(int i = 0; i < MAX_SOUND_SOURCES; i++)
+	{
+		struct Sound_Source* sound_source = &scene->sound_sources[i];
+		if(!sound_source->base.active) continue;
+
+		if(sound_source->base.marked_for_deletion)
+		{
+			scene_sound_source_remove(scene, sound_source);
+			continue;
+		}
+
+		if(sound_source->base.transform.is_modified)
+		{
+			vec3 abs_pos = {0.f, 0.f,  0.f};
+			transform_get_absolute_position(&sound_source->base, &abs_pos);
+			platform->sound.source_instance_update_position(sound_source->source_instance, abs_pos.x, abs_pos.y, abs_pos.z);
+			sound_source->base.transform.is_modified = false;
+		}
+	}
+
+	for(int i = 0; i < MAX_STATIC_MESHES; i++)
+	{
+		struct Static_Mesh* static_mesh = &scene->static_meshes[i];
+		if(!static_mesh->base.active) continue;
+
+		if(static_mesh->base.marked_for_deletion)
+		{
+			scene_static_mesh_remove(scene, static_mesh);
+			continue;
+		}
+
+		if(static_mesh->base.transform.is_modified)
+		{
+			if(static_mesh->collision.rigidbody && static_mesh->base.transform.sync_physics)
 			{
-				index = i;
-				break;
+				quat abs_rot = { 0.f, 0.f, 0.f, 1.f };
+				vec3 abs_pos = {0.f, 0.f,  0.f};
+				transform_get_absolute_rot(&static_mesh->base, &abs_rot);
+				transform_get_absolute_position(&static_mesh->base, &abs_pos);
+				platform->physics.body_rotation_set(static_mesh->collision.rigidbody, abs_rot.x, abs_rot.y, abs_rot.z, abs_rot.w);
+				platform->physics.body_position_set(static_mesh->collision.rigidbody, abs_pos.x, abs_pos.y, abs_pos.z);
 			}
-		}
-
-		if(index > -1)
-		{
-			array_remove_at(curr_parent->transform.children, index);
-			entity->transform.parent = new_parent->id;
-			array_push(new_parent, entity->id, int);
-			transform_update_transmat(entity);
-		}
-		else
-		{
-			log_error("scene:reset_parent", "Entity %s not found in it's parent '%s''s children array");
+			static_mesh->base.transform.sync_physics = false;
+			static_mesh->base.transform.is_modified = false;
 		}
 	}
-	else
+
+	for(int i = 0; i < MAX_LIGHTS; i++)
 	{
-		log_error("scene:reset_parent", "Cannot change parent of ROOT entity");
-	}
-}
+		struct Light* light = &scene->lights[i];
+		if(!light->base.active) continue;
 
-void scene_cleanup(void)
-{
-	struct Entity* entity_list = entity_get_all();
-	for(int i = 0; i < array_len(entity_list); i++)
-	{
-		if(entity_list[i].id != -1)
-			entity_remove(i);
-	}
-	entity_post_update();
-}
-
-struct Entity* scene_find(const char* name)
-{
-	return entity_find(name);
-}
-
-struct Entity* scene_get_root(void)
-{
-	return entity_get(root_node);
-}
-
-void scene_root_set(struct Entity* entity)
-{
-	// Only use this function when we know the scene is empty and needs a root node. 
-	// This is just a temporary way of setting root until we finalize how a scene should work
-	if(root_node == -1)
-		root_node = entity->id;
-	else
-		log_error("scene:root_set", "Scene already has a root node!");
-}
-
-struct Entity* scene_get_child_by_name(struct Entity* parent, const char* name)
-{
-	assert(parent);
-	struct Entity* child = NULL;
-	for(int i = 0; i < array_len(parent->transform.children); i++)
-	{
-		struct Entity* curr_child = entity_get(parent->transform.children[i]);
-		if(strcmp(curr_child->name, name) == 0)
+		if(light->base.marked_for_deletion)
 		{
-			child = curr_child;
+			scene_light_remove(scene, light);
+			continue;
+		}
+
+		if(light->base.transform.is_modified) light->base.transform.is_modified = false;
+	}
+
+	for(int i = 0; i < MAX_ENTITIES; i++)
+	{
+		struct Entity* entity = &scene->entities[i];
+		if(!entity->active) continue;
+	}
+
+	if(scene->player.base.transform.is_modified)
+	{
+		vec3 abs_pos = {0.f, 0.f,  0.f};
+		vec3 abs_fwd = {0.f, 0.f, -1.f};
+		vec3 abs_up  = {0.f, 1.f, 0.f};
+		transform_get_absolute_position(&scene->player, &abs_pos);
+		transform_get_absolute_forward(&scene->player, &abs_fwd);
+		transform_get_absolute_up(&scene->player, &abs_up);
+
+		platform->sound.listener_update(abs_pos.x, abs_pos.y, abs_pos.z,
+										abs_fwd.x, abs_fwd.y, abs_fwd.z,
+										abs_up.x,  abs_up.y,  abs_up.z);
+		scene->player.base.transform.is_modified = false;
+	}
+}
+
+struct Entity* scene_entity_create(struct Scene* scene, const char* name, struct Entity* parent)
+{
+	assert(scene);
+
+	struct Entity* new_entity = NULL;
+	for(int i = 0; i < MAX_ENTITIES; i++)
+	{
+		struct Entity* entity = &scene->entities[i];
+		if(!entity->active)
+		{
+			new_entity = entity;
 			break;
 		}
 	}
-	return child;
+
+	if(new_entity)
+	{
+		if(!parent)
+			parent = &scene->root_entity;
+		entity_init(new_entity, name, parent);
+	}
+	else
+	{
+		log_error("scene:entity_create", "Max entity limit reached!");
+	}
+
+	return new_entity;
 }
 
-struct Entity* scene_get_parent(struct Entity* entity)
+struct Light* scene_light_create(struct Scene* scene, const char* name, struct Entity* parent, int light_type)
 {
-	assert(entity);
-	struct Entity* parent = NULL;
-	if(entity->transform.parent != -1)
-		parent = entity_get(entity->transform.parent);
-	return parent;
+	assert(scene);
+	struct Light* new_light = NULL;
+	for(int i = 0; i < MAX_LIGHTS; i++)
+	{
+		struct Light* light = &scene->lights[i];
+		if(!light->base.active)
+		{
+			new_light = light;
+			break;
+		}
+	}
+
+	if(new_light)
+	{
+		entity_init(&new_light->base, name, parent);
+		new_light->base.type = ET_LIGHT;
+		light_init(new_light, light_type);
+	}
+	else
+	{
+		log_error("scene:light_create", "Max light limit reached!");
+	}
+
+	return new_light;
+}
+
+struct Camera* scene_camera_create(struct Scene* scene, const char* name, struct Entity* parent, int width, int height)
+{
+	assert(scene);
+	struct Camera* new_camera = NULL;
+	for(int i = 0; i < MAX_CAMERAS; i++)
+	{
+		struct Camera* camera = &scene->cameras[i];
+		if(!camera->base.active)
+		{
+			new_camera = camera;
+			break;
+		}
+	}
+
+	if(new_camera)
+	{
+		entity_init(&new_camera->base, name, parent);
+		new_camera->base.type = ET_CAMERA;
+		camera_init(new_camera, width, height);
+	}
+	else
+	{
+		log_error("scene:camera_create", "Max camera limit reached!");
+	}
+
+	return new_camera;
+}
+
+struct Static_Model* scene_static_mesh_create(struct Scene* scene, const char* name, struct Entity* parent, const char* geometry_name, int material_type)
+{
+	assert(scene);
+	struct Static_Mesh* new_static_model = NULL;
+	for(int i = 0; i < MAX_STATIC_MESHES; i++)
+	{
+		struct Static_Mesh* static_model = &scene->static_meshes[i];
+		if(!static_model->base.active)
+		{
+			new_static_model = static_model;
+			break;
+		}
+	}
+
+	if(new_static_model)
+	{
+		entity_init(&new_static_model->base, name, parent);
+		new_static_model->base.type = ET_STATIC_MODEL;
+		model_init(&new_static_model->model, geometry_name, material_type);
+		// TODO: handle creating collision mesh for the model at creation
+	}
+	else
+	{
+		log_error("scene:model_create", "Max model limit reached!");
+	}
+
+	return new_static_model;
+}
+
+struct Sound_Source* scene_sound_source_create(struct Scene* scene, const char* name, struct Entity* parent, const char* filename, int type, bool loop, bool play)
+{
+	assert(scene && filename);
+	struct Sound_Source* new_sound_source = NULL;
+	for(int i = 0; i < MAX_SOUND_SOURCES; i++)
+	{
+		struct Sound_Source* sound_source = &scene->static_meshes[i];
+		if(!sound_source->base.active)
+		{
+			new_sound_source = sound_source;
+			break;
+		}
+	}
+
+	if(new_sound_source)
+	{
+		entity_init(&new_sound_source->base, name, parent);
+		new_sound_source->base.type = ET_SOUND_SOURCE;
+		struct Entity* entity = &new_sound_source->base;
+
+		new_sound_source->source_buffer = platform->sound.source_create(filename, type);
+		if(!new_sound_source->source_buffer)
+		{
+			log_error("entity:sync_sound_params", "Failed to load file '%s' to provide sound source for entity %s", filename, entity->name);
+			new_sound_source->source_instance = 0;
+			return new_sound_source;
+		}
+
+		new_sound_source->source_instance = platform->sound.source_instance_create(new_sound_source->source_buffer, true);
+		vec3 abs_pos = {0.f, 0.f,  0.f};
+		vec3 abs_fwd = {0.f, 0.f, -1.f};
+		vec3 abs_up  = {0.f, 1.f, 0.f};
+		transform_get_absolute_position(entity, &abs_pos);
+		transform_get_absolute_forward(entity, &abs_fwd);
+		transform_get_absolute_up(entity, &abs_up);
+		platform->sound.source_instance_update_position(new_sound_source->source_instance, abs_pos.x, abs_pos.y, abs_pos.z);
+
+		new_sound_source->loop             = loop;
+		new_sound_source->min_distance     = 0.f;
+		new_sound_source->max_distance     = 10.f;
+		new_sound_source->playing          = play;
+		new_sound_source->attenuation_type = SA_INVERSE;
+		new_sound_source->rolloff_factor   = 0.95f;
+		new_sound_source->volume           = 1.f;
+		new_sound_source->type             = type;
+
+		platform->sound.source_instance_loop_set(new_sound_source->source_instance, new_sound_source->loop);
+		platform->sound.source_instance_min_max_distance_set(new_sound_source->source_instance, new_sound_source->min_distance, new_sound_source->max_distance);
+		platform->sound.source_instance_attenuation_set(new_sound_source->source_instance, new_sound_source->attenuation_type, new_sound_source->rolloff_factor);
+		platform->sound.source_instance_volume_set(new_sound_source->source_instance, new_sound_source->volume);
+
+		platform->sound.update_3d();
+		if(new_sound_source->playing) platform->sound.source_instance_play(new_sound_source->source_instance);
+	}
+	else
+	{
+		log_error("scene:sound_source_create", "Max sound source limit reached!");
+	}
+
+	return new_sound_source;
+}
+
+struct Player* scene_player_get(struct Scene* scene)
+{
+	assert(scene);
+	return &scene->player;
+}
+
+void scene_entity_remove(struct Scene* scene, struct Entity* entity)
+{
+	assert(scene && entity && entity->id >= 0);
+
+	if(!entity->active) return;
+
+	transform_destroy(entity);
+	entity->active              = false;
+	entity->editor_selected     = false;
+	entity->marked_for_deletion = false;
+	memset(entity->name, '\0', MAX_ENTITY_NAME_LEN);
+}
+
+void scene_light_remove(struct Scene* scene, struct Light* light)
+{
+	assert(scene && light);
+	scene_entity_remove(scene, &light->base);
+}
+
+void scene_camera_remove(struct Scene* scene, struct Camera* camera)
+{
+	assert(scene && camera);
+	scene_entity_remove(scene, &camera->base);
+}
+
+void scene_static_mesh_remove(struct Scene* scene, struct Static_Mesh* mesh)
+{
+	assert(scene && mesh);
+	
+	mesh->collision.on_collision = NULL;
+	if(mesh->collision.collision_shape) platform->physics.cs_remove(mesh->collision.collision_shape);
+	if(mesh->collision.rigidbody) platform->physics.body_remove(mesh->collision.rigidbody);
+
+	model_reset(&mesh->model);
+	scene_entity_remove(scene, &mesh->base);
+}
+
+void scene_sound_source_remove(struct Scene* scene, struct Sound_Source* source)
+{
+	assert(scene && source);
+
+	platform->sound.source_instance_destroy(source->source_instance);
+	source->source_instance = 0;
+	scene_entity_remove(scene, &source->base);
+}
+
+struct Entity* scene_entity_find(struct Scene* scene, const char* name)
+{
+	assert(scene && name);
+	struct Entity* entity = NULL;
+
+	for(int i = 0; i < MAX_ENTITIES; i++)
+	{
+		if(strncmp(name, scene->entities[i].name, MAX_ENTITY_NAME_LEN) == 0)
+		{
+			entity = &scene->entities[i];
+			break;
+		}
+	}
+
+	return entity;
+}
+
+struct Light* scene_light_find(struct Scene* scene, const char* name)
+{
+	assert(scene && name);
+	struct Light* light = NULL;
+
+	for(int i = 0; i < MAX_ENTITIES; i++)
+	{
+		if(strncmp(name, scene->lights[i].base.name, MAX_ENTITY_NAME_LEN) == 0)
+		{
+			light = &scene->lights[i];
+			break;
+		}
+	}
+
+	return light;
+}
+
+struct Camera* scene_camera_find(struct Scene* scene, const char* name)
+{
+	assert(scene && name);
+	struct Camera* camera = NULL;
+
+	for(int i = 0; i < MAX_ENTITIES; i++)
+	{
+		if(strncmp(name, scene->cameras[i].base.name, MAX_ENTITY_NAME_LEN) == 0)
+		{
+			camera = &scene->cameras[i];
+			break;
+		}
+	}
+
+	return camera;
+}
+
+struct Static_Mesh* scene_static_mesh_find(struct Scene* scene, const char* name)
+{
+	assert(scene && name);
+	struct Static_Mesh* static_mesh = NULL;
+
+	for(int i = 0; i < MAX_ENTITIES; i++)
+	{
+		if(strncmp(name, scene->static_meshes[i].base.name, MAX_ENTITY_NAME_LEN) == 0)
+		{
+			static_mesh = &scene->static_meshes[i];
+			break;
+		}
+	}
+
+	return static_mesh;
+}
+
+struct Sound_Source* scene_sound_source_find(struct Scene* scene, const char* name)
+{
+	assert(scene && name);
+	struct Sound_Source* sound_source = NULL;
+
+	for(int i = 0; i < MAX_ENTITIES; i++)
+	{
+		if(strncmp(name, scene->sound_sources[i].base.name, MAX_ENTITY_NAME_LEN) == 0)
+		{
+			sound_source = &scene->sound_sources[i];
+			break;
+		}
+	}
+
+	return sound_source;
+}
+
+void* scene_find(struct Scene* scene, const char* name)
+{
+	void* entity = NULL;
+
+	entity = scene_entity_find(scene, name);
+	if(entity) return entity;
+	
+	entity = scene_light_find(scene, name);
+	if(entity) return entity;
+
+	entity = scene_camera_find(scene, name);
+	if(entity) return entity;
+
+	entity = scene_static_mesh_find(scene, name);
+	if(entity) return entity;
+
+	return entity;
+}
+
+void scene_entity_parent_reset(struct Scene* scene, struct Entity* entity)
+{
+	assert(scene && entity);
+	transform_parent_set(entity, &scene->root_entity, true);
+}
+
+void scene_entity_parent_set(struct Scene* scene, struct Entity* entity, struct Entity* parent)
+{
+	assert(scene && entity && parent);
+	transform_parent_set(entity, parent, true);
 }
 
 bool scene_load(const char* filename, int directory_type)
@@ -179,7 +569,7 @@ bool scene_load(const char* filename, int directory_type)
 bool scene_save(const char* filename, int directory_type)
 {
 	bool success = false;
-	FILE* scene_file = platform->file.open(directory_type, filename, "w");
+	/*FILE* scene_file = platform->file.open(directory_type, filename, "w");
 	if(!scene_file)
 	{
 		log_error("scene:save", "Failed to create scenefile %s for writing", filename);
@@ -236,7 +626,7 @@ bool scene_save(const char* filename, int directory_type)
 
 	array_free(entities_to_write);
 	parser_free(parser);
-	fclose(scene_file);
+	fclose(scene_file);*/
 	
 	return success;
 }

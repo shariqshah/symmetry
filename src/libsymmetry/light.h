@@ -3,13 +3,7 @@
 
 #define MAX_SHADOWMAPS 4
 
-struct Entity;
-
-void light_init(void);
-void light_cleanup(void);
-void light_destroy(struct Entity* entity);
-void light_create(struct Entity* entity, int light_type);
-void light_add(struct Entity* entity);
-int* light_get_valid_indices(int* out_count);
+void light_init(struct Light* light);
+void light_reset(struct Light* light);
 
 #endif

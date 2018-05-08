@@ -19,9 +19,8 @@
 
 static void update_frustum(struct Camera* camera);
 
-void camera_destroy(struct Entity* entity)
+void camera_reset(struct Camera* camera)
 {
-	struct Camera* camera = &entity->camera;
 	if(camera->fbo != -1)        framebuffer_remove(camera->fbo);
 	if(camera->render_tex != -1) texture_remove(camera->render_tex);
 	if(camera->depth_tex != -1)  texture_remove(camera->depth_tex);
@@ -36,9 +35,8 @@ void camera_destroy(struct Entity* entity)
 	vec4_fill(&camera->clear_color, 0.f, 1.f, 0.f, 1.0);
 }
 
-void camera_create(struct Entity* entity, int width, int height)
+void camera_init(struct Camera* camera, int width, int height)
 {
-	struct Camera* camera = &entity->camera;
 	camera->fbo        = -1;
 	camera->render_tex = -1;
 	camera->depth_tex  = -1;
@@ -55,35 +53,32 @@ void camera_create(struct Entity* entity, int width, int height)
 	mat4_identity(&camera->view_proj_mat);
 	for(int i = 0; i < FP_NUM_PLANES; i++)
 		vec4_fill(&camera->frustum[i], 0.f, 0.f, 0.f, 0.f);
-	camera_update_view(entity);
-	camera_update_proj(entity);
+	camera_update_view(camera);
+	camera_update_proj(camera);
 	vec4_fill(&camera->clear_color, 1.f, 1.f, 1.f, 1.f);
 }
 
-void camera_update_view_proj(struct Entity* entity)
+void camera_update_view_proj(struct Camera* camera)
 {
-	struct Camera* camera = &entity->camera;
 	mat4_identity(&camera->view_proj_mat);
 	mat4_mul(&camera->view_proj_mat, &camera->proj_mat, &camera->view_mat);
 	update_frustum(camera);
 }
 
-void camera_update_view(struct Entity* entity)
+void camera_update_view(struct Camera* camera)
 {
-	struct Camera* camera = &entity->camera;
 	vec3 lookat   = {0.f, 0.f, 0.f};
 	vec3 up       = {0.f, 0.f, 0.f};
 	vec3 position = {0.f, 0.f, 0.f};
-	transform_get_absolute_lookat(entity, &lookat);
-	transform_get_absolute_up(entity, &up);
-	transform_get_absolute_position(entity, &position);
+	transform_get_absolute_lookat(&camera->base, &lookat);
+	transform_get_absolute_up(&camera->base, &up);
+	transform_get_absolute_position(&camera->base, &position);
 	mat4_lookat(&camera->view_mat, &position, &lookat, &up);
-	camera_update_view_proj(entity);
+	camera_update_view_proj(&camera->base);
 }
 
-void camera_update_proj(struct Entity* entity)
+void camera_update_proj(struct Camera* camera)
 {
-	struct Camera* camera = &entity->camera;
 	if(!camera->ortho)
 	{
 		mat4_perspective(&camera->proj_mat,
@@ -105,10 +100,10 @@ void camera_update_proj(struct Entity* entity)
 					 camera->nearz,
 					 camera->farz);
 	}
-	camera_update_view_proj(entity);
+	camera_update_view_proj(camera);
 }
 
-void camera_attach_fbo(struct Entity* entity,
+void camera_attach_fbo(struct Camera* camera,
 					   int            width,
 					   int            height,
 					   bool           has_depth,
@@ -116,7 +111,6 @@ void camera_attach_fbo(struct Entity* entity,
 					   bool           resizeable)
 {
 	assert(width > 0 && height > 0);
-	struct Camera* camera = &entity->camera;
 	if(camera->fbo != -1)
 	{
 		log_error("camera:attach_fbo", "Camera already has fbo attached!");
@@ -207,16 +201,3 @@ static void update_frustum(struct Camera* camera)
 		vec4_scale(&camera->frustum[i], &camera->frustum[i], (1.f / length));
 	}
 }
-
-/* void camera_resize_all(int width, int height) */
-/* { */
-/* 	for(int i = 0; i < array_len(camera_list); i++) */
-/* 	{ */
-/* 		struct Camera* camera = &camera_list[i]; */
-/* 		if(!camera->resizeable) continue; */
-
-/* 		float aspect = (float)width / (float)height; */
-/* 		camera->aspect_ratio = aspect > 0.f ? aspect : 4.f / 3.f; */
-/* 		camera_update_proj(camera); */
-/* 	} */
-/* } */

@@ -12,312 +12,156 @@
 #include <stdlib.h>
 #include <assert.h>
 
-static struct Material* material_list;
-static int* empty_indices;
-
-void material_init(void)
+bool material_init(struct Material* material, int material_type)
 {
-	material_list = array_new(struct Material);
-	empty_indices = array_new(int);
+	assert(material && material_type > -1 && material_type < MAT_MAX);
 
-	/* TODO: implement reading material definitions from files */
-	/* Simple unshaded material */
-	struct Material* unshaded_mat = array_grow(material_list, struct Material);
-	unshaded_mat->name = str_new("Unshaded");
-	unshaded_mat->shader = shader_create("unshaded.vert", "unshaded.frag");
-	unshaded_mat->registered_models = array_new(int);
-	unshaded_mat->model_params = array_new(struct Uniform);
-	unshaded_mat->pipeline_params = array_new(struct Uniform);
-	unshaded_mat->active = 1;
-	unshaded_mat->lit = 0;
+	material->type = material_type;
+	memset(material->registered_models, 0, sizeof(struct Model*) * MAX_MATERIAL_REGISTERED_MODELS);
+	memset(material->model_params, 0, sizeof(struct Uniform) * MMP_MAX);
+	memset(material->pipeline_params, 0, sizeof(struct Uniform) * MPP_MAX);
 
-	/* Pipeline params/uniforms */
-	struct Uniform* uniform = array_grow(unshaded_mat->pipeline_params, struct Uniform);
-	uniform->name = str_new("mvp");
-	uniform->type = UT_MAT4;
-	uniform->location = shader_get_uniform_location(unshaded_mat->shader, uniform->name);
-
-	uniform = array_grow(unshaded_mat->pipeline_params, struct Uniform);
-	uniform->name = str_new("model_mat");
-	uniform->type = UT_MAT4;
-	uniform->location = shader_get_uniform_location(unshaded_mat->shader, uniform->name);
-
-	uniform = array_grow(unshaded_mat->pipeline_params, struct Uniform);
-	uniform->name = str_new("fog.mode");
-	uniform->type = UT_INT;
-	uniform->location = shader_get_uniform_location(unshaded_mat->shader, uniform->name);
-
-	uniform = array_grow(unshaded_mat->pipeline_params, struct Uniform);
-	uniform->name = str_new("fog.density");
-	uniform->type = UT_FLOAT;
-	uniform->location = shader_get_uniform_location(unshaded_mat->shader, uniform->name);
-
-	uniform = array_grow(unshaded_mat->pipeline_params, struct Uniform);
-	uniform->name = str_new("fog.start_dist");
-	uniform->type = UT_FLOAT;
-	uniform->location = shader_get_uniform_location(unshaded_mat->shader, uniform->name);
-
-	uniform = array_grow(unshaded_mat->pipeline_params, struct Uniform);
-	uniform->name = str_new("fog.max_dist");
-	uniform->type = UT_FLOAT;
-	uniform->location = shader_get_uniform_location(unshaded_mat->shader, uniform->name);
-
-	uniform = array_grow(unshaded_mat->pipeline_params, struct Uniform);
-	uniform->name = str_new("fog.color");
-	uniform->type = UT_VEC3;
-	uniform->location = shader_get_uniform_location(unshaded_mat->shader, uniform->name);
-
-	/* Material params */
-	uniform = array_grow(unshaded_mat->model_params, struct Uniform);
-	uniform->name = str_new("diffuse_color");
-	uniform->type = UT_VEC4;
-	vec4_fill(&uniform->d_vec4, 1.0f, 1.0f, 1.0f, 1.0f);
-	uniform->location = shader_get_uniform_location(unshaded_mat->shader, uniform->name);
-
-	uniform = array_grow(unshaded_mat->model_params, struct Uniform);
-	uniform->name = str_new("diffuse_texture");
-	uniform->type = UT_TEX;
-	uniform->d_int = texture_find("default.tga");
-	uniform->location = shader_get_uniform_location(unshaded_mat->shader, uniform->name);
-
-	/* Simple blinn_phong material */
-	struct Material* blinn_phong_mat = array_grow(material_list, struct Material);
-	blinn_phong_mat->name = str_new("Blinn_Phong");
-	blinn_phong_mat->shader = shader_create("blinn_phong.vert", "blinn_phong.frag");
-	blinn_phong_mat->registered_models = array_new(int);
-	blinn_phong_mat->model_params = array_new(struct Uniform);
-	blinn_phong_mat->pipeline_params = array_new(struct Uniform);
-	blinn_phong_mat->active = 1;
-	blinn_phong_mat->lit = 1;
-
-	/* Pipeline params/uniforms */
-	uniform = array_grow(blinn_phong_mat->pipeline_params, struct Uniform);
-	uniform->name = str_new("mvp");
-	uniform->type = UT_MAT4;
-	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
-
-	uniform = array_grow(blinn_phong_mat->pipeline_params, struct Uniform);
-	uniform->name = str_new("model_mat");
-	uniform->type = UT_MAT4;
-	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
-
-	/* uniform = array_grow(blinn_phong_mat->pipeline_params, struct Uniform); */
-	/* uniform->name = str_new("view_mat"); */
-	/* uniform->type = UT_MAT4; */
-	/* uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name); */
-
-	uniform = array_grow(blinn_phong_mat->pipeline_params, struct Uniform);
-	uniform->name = str_new("inv_model_mat");
-	uniform->type = UT_MAT4;
-	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
-
-	uniform = array_grow(blinn_phong_mat->pipeline_params, struct Uniform);
-	uniform->name = str_new("fog.mode");
-	uniform->type = UT_INT;
-	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
-
-	uniform = array_grow(blinn_phong_mat->pipeline_params, struct Uniform);
-	uniform->name = str_new("fog.density");
-	uniform->type = UT_FLOAT;
-	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
-
-	uniform = array_grow(blinn_phong_mat->pipeline_params, struct Uniform);
-	uniform->name = str_new("fog.start_dist");
-	uniform->type = UT_FLOAT;
-	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
-
-	uniform = array_grow(blinn_phong_mat->pipeline_params, struct Uniform);
-	uniform->name = str_new("fog.max_dist");
-	uniform->type = UT_FLOAT;
-	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
-
-	uniform = array_grow(blinn_phong_mat->pipeline_params, struct Uniform);
-	uniform->name = str_new("fog.color");
-	uniform->type = UT_VEC3;
-	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
-
-	uniform = array_grow(blinn_phong_mat->pipeline_params, struct Uniform);
-	uniform->name = str_new("ambient_light");
-	uniform->type = UT_VEC3;
-	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
-	
-	/* Material params */
-	uniform = array_grow(blinn_phong_mat->model_params, struct Uniform);
-	uniform->name = str_new("diffuse_color");
-	uniform->type = UT_VEC4;
-	vec4_fill(&uniform->d_vec4, 1.0f, 1.0f, 1.0f, 1.0f);
-	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
-
-	uniform = array_grow(blinn_phong_mat->model_params, struct Uniform);
-	uniform->name = str_new("diffuse_texture");
-	uniform->type = UT_TEX;
-	uniform->d_int = texture_find("default.tga");
-	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
-
-	uniform = array_grow(blinn_phong_mat->model_params, struct Uniform);
-	uniform->name = str_new("specular");
-	uniform->type = UT_FLOAT;
-	uniform->d_float = 1.f;
-	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
-
-	uniform = array_grow(blinn_phong_mat->model_params, struct Uniform);
-	uniform->name = str_new("diffuse");
-	uniform->type = UT_FLOAT;
-	uniform->d_float = 1.f;
-	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
-
-	uniform = array_grow(blinn_phong_mat->model_params, struct Uniform);
-	uniform->name = str_new("specular_strength");
-	uniform->type = UT_FLOAT;
-	uniform->d_float = 50.f;
-	uniform->location = shader_get_uniform_location(blinn_phong_mat->shader, uniform->name);
-}
-
-struct Material* material_get_all_materials(void)
-{
-	return material_list;
-}
-
-void material_cleanup(void)
-{
-	for(int i = 0; i < array_len(material_list); i++)
-		material_remove(i);
-	array_free(empty_indices);
-    array_free(material_list);
-}
-
-bool material_register_model(struct Entity* entity, const char* material_name)
-{
-	assert(material_name && entity);
-	bool success = false;
-	int index = material_get_index(material_name);
-	if(index <= -1)
+	switch(material_type)
 	{
-		log_error("material:register_model", "Material '%s' not found", material_name);
-		return success;
+	case MAT_BLINN:
+	{
+		material->lit  = true;
+		material->shader = shader_create("blinn_phong.vert", "blinn_phong.frag");
+
+		material->pipeline_params[MPP_INV_MODEL_MAT].type = UT_MAT4;
+		material->pipeline_params[MPP_INV_MODEL_MAT].location = shader_get_uniform_location(material->shader, "inv_model_mat");
+
+		material->pipeline_params[MPP_VIEW_MAT].type = UT_MAT4;
+		material->pipeline_params[MPP_VIEW_MAT].location = shader_get_uniform_location(material->shader, "view_mat");
+
+		material->pipeline_params[MPP_CAM_POS].type = UT_VEC3;
+		material->pipeline_params[MPP_CAM_POS].location = shader_get_uniform_location(material->shader, "camera_pos");
+
+		material->pipeline_params[MPP_TOTAL_LIGHTS].type = UT_INT;
+		material->pipeline_params[MPP_TOTAL_LIGHTS].location = shader_get_uniform_location(material->shader, "total_active_lights");
+
+		material->model_params[MMP_DIFFUSE_TEX].type = UT_TEX;
+		material->model_params[MMP_DIFFUSE_TEX].location = shader_get_uniform_location(material->shader, "diffuse_texture");
+
+		material->model_params[MMP_DIFFUSE_COL].type = UT_VEC4;
+		material->model_params[MMP_DIFFUSE_COL].location = shader_get_uniform_location(material->shader, "diffuse_color");
+
+		material->model_params[MMP_DIFFUSE].type = UT_FLOAT;
+		material->model_params[MMP_DIFFUSE].location = shader_get_uniform_location(material->shader, "diffuse");
+
+		material->model_params[MMP_SPECULAR].type = UT_FLOAT;
+		material->model_params[MMP_SPECULAR].location = shader_get_uniform_location(material->shader, "specular");
+
+		material->model_params[MMP_SPECULAR_STRENGTH].type = UT_FLOAT;
+		material->model_params[MMP_SPECULAR_STRENGTH].location = shader_get_uniform_location(material->shader, "specular");
+	}
+	break;
+	case MAT_UNSHADED:
+	{
+		material->lit = false;
+		material->shader = shader_create("unshaded.vert", "unshaded.frag");
+
+		material->model_params[MMP_DIFFUSE_TEX].type = UT_TEX;
+		material->model_params[MMP_DIFFUSE_TEX].location = shader_get_uniform_location(material->shader, "diffuse_texture");
+
+		material->model_params[MMP_DIFFUSE_COL].type = UT_VEC4;
+		material->model_params[MMP_DIFFUSE_COL].location = shader_get_uniform_location(material->shader, "diffuse_color");
+	};
+	break;
+	default:
+		log_error("material:init", "Invalid material type");
+		return false;
 	}
 
-	struct Model* model = &entity->model;
-	struct Material* material = &material_list[index];
-	model->material = index;
-	model->material_params = array_new(struct Material_Param);
-	for(int i = 0; i < array_len(material->model_params); i++)
+	// Setup common pipeline parameters
+	material->pipeline_params[MPP_FOG_MODE].type = UT_INT;
+	material->pipeline_params[MPP_FOG_MODE].location = shader_get_uniform_location(material->shader, "fog.mode");
+
+	material->pipeline_params[MPP_FOG_DENSITY].type = UT_FLOAT;
+	material->pipeline_params[MPP_FOG_DENSITY].location = shader_get_uniform_location(material->shader, "fog.density");
+
+	material->pipeline_params[MPP_FOG_START_DIST].type = UT_FLOAT;
+	material->pipeline_params[MPP_FOG_START_DIST].location = shader_get_uniform_location(material->shader, "fog.start_dist");
+
+	material->pipeline_params[MPP_FOG_MAX_DIST].type = UT_FLOAT;
+	material->pipeline_params[MPP_FOG_MAX_DIST].location = shader_get_uniform_location(material->shader, "fog.max_dist");
+
+	material->pipeline_params[MPP_FOG_COLOR].type = UT_VEC3;
+	material->pipeline_params[MPP_FOG_COLOR].location = shader_get_uniform_location(material->shader, "fog.color");
+
+	material->pipeline_params[MPP_MVP].type = UT_MAT4;
+	material->pipeline_params[MPP_MVP].location = shader_get_uniform_location(material->shader, "mvp");
+
+	material->pipeline_params[MPP_MODEL_MAT].type = UT_MAT4;
+	material->pipeline_params[MPP_MODEL_MAT].location = shader_get_uniform_location(material->shader, "model_mat");
+
+	material->pipeline_params[MPP_AMBIENT_LIGHT].type = UT_VEC3;
+	material->pipeline_params[MPP_AMBIENT_LIGHT].location = shader_get_uniform_location(material->shader, "ambient_light");
+
+	return true;
+}
+
+void material_reset(struct Material* material)
+{
+	assert(material);
+
+	material->type = -1;
+	memset(material->registered_models, 0, sizeof(struct Model*) * MAX_MATERIAL_REGISTERED_MODELS);
+	memset(material->model_params, 0, sizeof(struct Uniform) * MMP_MAX);
+	memset(material->pipeline_params, 0, sizeof(struct Uniform) * MPP_MAX);
+}
+
+bool material_register_model(struct Material* material, struct Model* model)
+{
+	assert(model && material);
+
+	for(int i = 0; i < MAX_MATERIAL_REGISTERED_MODELS; i++)
 	{
-		/* set up parameters */
-		struct Uniform* uniform = &material->model_params[i];
-		struct Material_Param* param = array_grow(model->material_params, struct Material_Param);
-		param->uniform_index = i;
-		switch(uniform->type)
+		if(!material->registered_models[i])
 		{
-		case UT_INT:
-			param->value = malloc(sizeof(int));
-			*((int*)param->value) = uniform->d_int;
+			material->registered_models[i] = model;
+
+			// Set default values for instance parameters
+			switch(material->type)
+			{
+			case MAT_BLINN:
+			{
+				variant_assign_vec4f(&model->material_params[MMP_DIFFUSE_COL], 1.f, 0.f, 1.f, 1.f);
+				variant_assign_float(&model->material_params[MMP_DIFFUSE], 1.f);
+				variant_assign_int(&model->material_params[MMP_DIFFUSE_TEX], texture_find("default.tga"));
+				variant_assign_float(&model->material_params[MMP_SPECULAR], 1.f);
+				variant_assign_float(&model->material_params[MMP_SPECULAR_STRENGTH], 50.f);
+			}
 			break;
-		case UT_FLOAT:
-			param->value = malloc(sizeof(float));
-			*((float*)param->value) = uniform->d_float;
+			case MAT_UNSHADED:
+			{
+				variant_assign_vec4f(&model->material_params[MMP_DIFFUSE_COL], 1.f, 0.f, 1.f, 1.f);
+				variant_assign_int(&model->material_params[MMP_DIFFUSE_TEX], texture_find("default.tga"));
+			}
 			break;
-		case UT_VEC2:
-			param->value = malloc(sizeof(vec2));
-			vec2_assign((vec2*)param->value, &uniform->d_vec2);
-			break;
-		case UT_VEC3:
-			param->value = malloc(sizeof(vec3));
-			vec3_assign((vec3*)param->value, &uniform->d_vec3);
-			break;
-		case UT_VEC4:
-			param->value = malloc(sizeof(vec4));
-			vec4_assign((vec4*)param->value, &uniform->d_vec4);
-			break;
-		case UT_MAT4:
-			param->value = malloc(sizeof(mat4));
-			mat4_identity((mat4*)param->value);
-			break;
-		case UT_TEX:
-			param->value = malloc(sizeof(int));
-			*((int*)param->value) = texture_create_from_file("default.tga", TU_DIFFUSE);
+			default:
+				log_error("material:register_model", "Invalid material type");
+				break;
+			}
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void material_unregister_model(struct Material* material, struct Model* model)
+{
+	assert(model && material);
+
+	for(int i = 0; i < MAX_MATERIAL_REGISTERED_MODELS; i++)
+	{
+		if(material->registered_models[i] == model)
+		{
+			material->registered_models[i] = NULL;
+			for(int i = 0; i < MMP_MAX; i++)
+				variant_free(&model->material_params[i]);
 			break;
 		}
 	}
-	
-	array_push(material->registered_models, entity->id, int);
-	success = true;
-	return success;
-}
-
-void material_unregister_model(struct Entity* entity)
-{
-	assert(entity);
-	struct Model* model = &entity->model;
-	struct Material* material = &material_list[model->material];
-	/* Remove textures, if any */
-	for(int i = 0; i < array_len(model->material_params); i++)
-	{
-		struct Material_Param* param = &model->material_params[i];
-		struct Uniform* uniform = &material->model_params[param->uniform_index];
-		if(uniform->type == UT_TEX)
-			texture_remove(*(int*)param->value);
-	}
-	/* Remove model index from material registry*/
-	for(int i = 0; i < array_len(material->registered_models); i++)
-	{
-		if(material->registered_models[i] == entity->id)
-		{
-			array_remove_at(material->registered_models, i);
-			break;
-		}
-	}
-}
-
-struct Material* material_find(const char* material_name)
-{
-	struct Material* material = NULL;
-	int index = material_get_index(material_name);
-	if(index > -1) material = &material_list[index];
-	return material;
-}
-
-int material_get_index(const char* material_name)
-{
-	int index = -1;
-	for(int i = 0; i < array_len(material_list); i++)
-	{
-		if(!material_list[i].name) continue;
-		
-		if(strcmp(material_name, material_list[i].name) == 0)
-		{
-			index = i;
-			break;
-		}
-	}
-	return index;
-}
-
-struct Material* material_get(int index)
-{
-	struct Material* material = NULL;
-	if(index > -1 && index < array_len(material_list))
-		material = &material_list[index];
-	return material;
-}
-
-void material_remove(int index)
-{
-	assert(index > -1 && index < array_len(material_list));
-	struct Material* material = &material_list[index];
-	if(!material->active)
-		return;
-	material->active = 0;
-	array_free(material->registered_models);
-	for(int i  = 0; i < array_len(material->model_params); i++)
-		free(material->model_params[i].name);
-	array_free(material->model_params);
-	
-	for(int i  = 0; i < array_len(material->pipeline_params); i++)
-		free(material->pipeline_params[i].name);
-	array_free(material->pipeline_params);
-	
-	log_message("Removed material '%s'", material->name);
-	free(material->name);
-	array_push(empty_indices, index, int);
 }

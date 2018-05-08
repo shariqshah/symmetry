@@ -8,7 +8,7 @@ enum Transform_Space { TS_LOCAL, TS_PARENT, TS_WORLD};
 
 struct Entity;
 
-void transform_create(struct Entity* entity, int parent_entity);
+void transform_init(struct Entity* entity, struct Entity* parent);
 void transform_destroy(struct Entity* entity);
 void transform_translate(struct Entity* entity, vec3* amount, enum Transform_Space space);
 void transform_rotate(struct Entity*    transform,

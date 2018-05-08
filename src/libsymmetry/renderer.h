@@ -3,6 +3,9 @@
 
 #include "../common/linmath.h"
 #include "../common/num_types.h"
+#include "material.h"
+
+struct Sprite_Batch;
 
 enum Fog_Mode
 {
@@ -14,11 +17,11 @@ enum Fog_Mode
 
 struct Fog
 {
-	int mode;
+	int   mode;
 	float density;
 	float start_dist;
 	float max_dist;
-	vec3 color;
+	vec3  color;
 };
 
 
@@ -32,18 +35,25 @@ struct Render_Settings
 	bool       debug_draw_physics;
 };
 
-struct Entity;
-struct Sprite_Batch;
+struct Renderer
+{
+	int def_fbo;
+	int def_albedo_tex;
+	int def_depth_tex;
+	int quad_geo;
+	int composition_shader;
+	int debug_shader;
+	int num_culled , num_rendered , num_indices;
+	int num_culled_slot, num_rendered_slot, num_indices_slot;
+	struct Sprite_Batch* sprite_batch;
+	struct Render_Settings settings;
+	struct Material materials[MAT_MAX];
+};
 
-void renderer_settings_get(struct Render_Settings* settings);
-void renderer_settings_set(const struct Render_Settings* settings);
-void renderer_init(void);
-void renderer_draw(struct Entity* active_viewer);
-void renderer_cleanup(void);
+void renderer_init(struct Renderer* renderer);
+void renderer_draw(struct Renderer* renderer, struct Scene* scene);
+void renderer_cleanup(struct Renderer* renderer);
 void renderer_clearcolor_set(float r, float g, float b, float a);
-void renderer_debug_draw_enabled(bool enabled);
-int  renderer_check_glerror(const char* context);
-
-struct Sprite_Batch* get_batch(void);
+void renderer_debug_draw_enabled(struct Renderer* renderer, bool enabled);
 
 #endif

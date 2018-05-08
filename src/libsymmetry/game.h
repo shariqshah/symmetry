@@ -11,13 +11,19 @@
 
 struct Window;
 struct Platform_Api;
+struct Renderer;
+struct Scene;
+struct Entity;
+struct Player;
 
 struct Game_State
 {
-	struct Window* window;
-	int            player_node;
-	int            player_pitch_node;
-	bool           is_initialized;
+	bool             is_initialized;
+	struct Window*   window;
+	struct Player*   player_node;
+	struct Entity*   player_pitch_node;
+	struct Renderer* renderer;
+	struct Scene*    scene;
 };
 
 

@@ -201,7 +201,7 @@ void editor_update(float dt)
 			/* Entities List */
 			if(nk_tree_push(context, NK_TREE_TAB, "Entities", NK_MAXIMIZED))
 			{
-				nk_layout_row_dynamic(context, 250, 1);
+				/*nk_layout_row_dynamic(context, 250, 1);
 				if(nk_group_begin(context, "Entity Name", NK_WINDOW_SCROLL_AUTO_HIDE))
 				{
 					struct Entity* entity_list = entity_get_all();
@@ -228,7 +228,7 @@ void editor_update(float dt)
 						}
 					}
 					nk_group_end(context);
-				}
+				}*/
 				nk_tree_pop(context);
 			}
 
@@ -264,186 +264,186 @@ void editor_update(float dt)
 		if(nk_group_begin(context, "Editor Right", NK_WINDOW_NO_SCROLLBAR))
 		{
 			/* Entity Inspector */
-			if(nk_tree_push(context, NK_TREE_TAB, "Inspector", NK_MAXIMIZED))
-			{
-				const int row_height = 18;
-				if(editor_state.selected_entity_id != -1)
-				{
-					struct Entity* entity = entity_get(editor_state.selected_entity_id);
-					nk_layout_row_dynamic(context, row_height, 2);
-					nk_label(context, "Name", NK_TEXT_ALIGN_LEFT); nk_label(context, entity->name, NK_TEXT_ALIGN_RIGHT);
-					nk_layout_row_dynamic(context, row_height, 2);
-					nk_label(context, "ID", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%d", entity->id);
-					nk_layout_row_dynamic(context, row_height, 2);
-					nk_label(context, "Entity Type", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%s", entity_type_name_get(entity));
-					nk_layout_row_dynamic(context, row_height, 2);
-					struct Entity* parent_ent = entity_get(entity->transform.parent);
-					nk_label(context, "Parent Name", NK_TEXT_ALIGN_LEFT); nk_label(context, parent_ent ? parent_ent->name : "NONE", NK_TEXT_ALIGN_RIGHT);
+			//if(nk_tree_push(context, NK_TREE_TAB, "Inspector", NK_MAXIMIZED))
+			//{
+			//	const int row_height = 18;
+			//	if(editor_state.selected_entity_id != -1)
+			//	{
+			//		struct Entity* entity = entity_get(editor_state.selected_entity_id);
+			//		nk_layout_row_dynamic(context, row_height, 2);
+			//		nk_label(context, "Name", NK_TEXT_ALIGN_LEFT); nk_label(context, entity->name, NK_TEXT_ALIGN_RIGHT);
+			//		nk_layout_row_dynamic(context, row_height, 2);
+			//		nk_label(context, "ID", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%d", entity->id);
+			//		nk_layout_row_dynamic(context, row_height, 2);
+			//		nk_label(context, "Entity Type", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%s", entity_type_name_get(entity));
+			//		nk_layout_row_dynamic(context, row_height, 2);
+			//		struct Entity* parent_ent = entity_get(entity->transform.parent);
+			//		nk_label(context, "Parent Name", NK_TEXT_ALIGN_LEFT); nk_label(context, parent_ent ? parent_ent->name : "NONE", NK_TEXT_ALIGN_RIGHT);
 
-					/* Transform */
-					{
-						nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Position", NK_TEXT_ALIGN_CENTERED);
-						vec3 abs_pos = {0.f, 0.f, 0.f};
-						transform_get_absolute_position(entity, &abs_pos);
-						if(editor_widget_v3(context, &abs_pos, "Px", "Py", "Pz", -FLT_MAX, FLT_MAX, 5.f, 1.f, row_height)) transform_set_position(entity, &abs_pos);
+			//		/* Transform */
+			//		{
+			//			nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Position", NK_TEXT_ALIGN_CENTERED);
+			//			vec3 abs_pos = {0.f, 0.f, 0.f};
+			//			transform_get_absolute_position(entity, &abs_pos);
+			//			if(editor_widget_v3(context, &abs_pos, "Px", "Py", "Pz", -FLT_MAX, FLT_MAX, 5.f, 1.f, row_height)) transform_set_position(entity, &abs_pos);
 
-						nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Rotation", NK_TEXT_ALIGN_CENTERED);
-						quat abs_rot = {0.f, 0.f, 0.f, 1.f};
-						transform_get_absolute_rot(entity, &abs_rot);
-						vec3 rot_angles = {0.f, 0.f, 0.f};
-						rot_angles.x = TO_DEGREES(quat_get_pitch(&abs_rot));
-						rot_angles.y = TO_DEGREES(quat_get_yaw(&abs_rot));
-						rot_angles.z = TO_DEGREES(quat_get_roll(&abs_rot));
-						vec3 curr_rot = {rot_angles.x, rot_angles.y, rot_angles.z};
+			//			nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Rotation", NK_TEXT_ALIGN_CENTERED);
+			//			quat abs_rot = {0.f, 0.f, 0.f, 1.f};
+			//			transform_get_absolute_rot(entity, &abs_rot);
+			//			vec3 rot_angles = {0.f, 0.f, 0.f};
+			//			rot_angles.x = TO_DEGREES(quat_get_pitch(&abs_rot));
+			//			rot_angles.y = TO_DEGREES(quat_get_yaw(&abs_rot));
+			//			rot_angles.z = TO_DEGREES(quat_get_roll(&abs_rot));
+			//			vec3 curr_rot = {rot_angles.x, rot_angles.y, rot_angles.z};
 
-						nk_layout_row_dynamic(context, row_height, 1); nk_property_float(context, "Rx", -FLT_MAX, &curr_rot.x, FLT_MAX, 5.f, 1.f);
-						nk_layout_row_dynamic(context, row_height, 1); nk_property_float(context, "Ry", -FLT_MAX, &curr_rot.y, FLT_MAX, 5.f, 1.f);
-						nk_layout_row_dynamic(context, row_height, 1); nk_property_float(context, "Rz", -FLT_MAX, &curr_rot.z, FLT_MAX, 5.f, 1.f);
+			//			nk_layout_row_dynamic(context, row_height, 1); nk_property_float(context, "Rx", -FLT_MAX, &curr_rot.x, FLT_MAX, 5.f, 1.f);
+			//			nk_layout_row_dynamic(context, row_height, 1); nk_property_float(context, "Ry", -FLT_MAX, &curr_rot.y, FLT_MAX, 5.f, 1.f);
+			//			nk_layout_row_dynamic(context, row_height, 1); nk_property_float(context, "Rz", -FLT_MAX, &curr_rot.z, FLT_MAX, 5.f, 1.f);
 
-						vec3 delta = {0.f, 0.f, 0.f};
-						vec3_sub(&delta, &rot_angles, &curr_rot);
+			//			vec3 delta = {0.f, 0.f, 0.f};
+			//			vec3_sub(&delta, &rot_angles, &curr_rot);
 
-						vec3 AXIS_X = {1.f, 0.f, 0.f};
-						vec3 AXIS_Y = {0.f, 1.f, 0.f};
-						vec3 AXIS_Z = {0.f, 0.f, 1.f};
+			//			vec3 AXIS_X = {1.f, 0.f, 0.f};
+			//			vec3 AXIS_Y = {0.f, 1.f, 0.f};
+			//			vec3 AXIS_Z = {0.f, 0.f, 1.f};
 
-						const float epsilon = 0.0001f;
-						if(fabsf(delta.x) > epsilon) transform_rotate(entity, &AXIS_X, delta.x, TS_WORLD);
-						if(fabsf(delta.y) > epsilon) transform_rotate(entity, &AXIS_Y, delta.y, TS_WORLD);
-						if(fabsf(delta.z) > epsilon) transform_rotate(entity, &AXIS_Z, delta.z, TS_WORLD);
+			//			const float epsilon = 0.0001f;
+			//			if(fabsf(delta.x) > epsilon) transform_rotate(entity, &AXIS_X, delta.x, TS_WORLD);
+			//			if(fabsf(delta.y) > epsilon) transform_rotate(entity, &AXIS_Y, delta.y, TS_WORLD);
+			//			if(fabsf(delta.z) > epsilon) transform_rotate(entity, &AXIS_Z, delta.z, TS_WORLD);
 
-						nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Scale", NK_TEXT_ALIGN_CENTERED);
-						vec3 abs_scale = {0.f, 0.f, 0.f};
-						transform_get_absolute_scale(entity, &abs_scale);
-						if(editor_widget_v3(context, &abs_scale, "SX", "SY", "SZ", 0.1f, FLT_MAX, 1.f, 0.1f, row_height))
-						{
-							entity->transform.scale = abs_scale;
-							transform_update_transmat(entity);
-						}
-					}
+			//			nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Scale", NK_TEXT_ALIGN_CENTERED);
+			//			vec3 abs_scale = {0.f, 0.f, 0.f};
+			//			transform_get_absolute_scale(entity, &abs_scale);
+			//			if(editor_widget_v3(context, &abs_scale, "SX", "SY", "SZ", 0.1f, FLT_MAX, 1.f, 0.1f, row_height))
+			//			{
+			//				entity->transform.scale = abs_scale;
+			//				transform_update_transmat(entity);
+			//			}
+			//		}
 
-					/* Light */
-					if(entity->type == ET_LIGHT)
-					{
-						if(nk_tree_push(context, NK_TREE_TAB, "Light", NK_MAXIMIZED))
-						{
-							struct Light* light = &entity->light;
-							if(light->type > LT_POINT)
-							{
-								nk_layout_row_dynamic(context, row_height, 1);
-								nk_label(context, "Invalid light type!", NK_TEXT_ALIGN_CENTERED);
-							}
-							else
-							{
-								static const char* light_types[] = {"Spot", "Directional", "Point"};
-								float combo_width = nk_widget_width(context), combo_height = row_height * (LT_MAX);
-								
-								nk_layout_row_dynamic(context, row_height, 2);
-								nk_label(context, "Light Type", NK_TEXT_ALIGN_LEFT);
-								nk_combobox(context, light_types, LT_MAX - 1, &light->type, row_height, nk_vec2(combo_width, combo_height));
-								
-								nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Light Color", NK_TEXT_ALIGN_CENTERED);
-								nk_layout_row_dynamic(context, row_height, 1);
-								editor_widget_color_combov3(context, &light->color, 200, 300);
+			//		/* Light */
+			//		if(entity->type == ET_LIGHT)
+			//		{
+			//			if(nk_tree_push(context, NK_TREE_TAB, "Light", NK_MAXIMIZED))
+			//			{
+			//				struct Light* light = &entity->light;
+			//				if(light->type > LT_POINT)
+			//				{
+			//					nk_layout_row_dynamic(context, row_height, 1);
+			//					nk_label(context, "Invalid light type!", NK_TEXT_ALIGN_CENTERED);
+			//				}
+			//				else
+			//				{
+			//					static const char* light_types[] = {"Spot", "Directional", "Point"};
+			//					float combo_width = nk_widget_width(context), combo_height = row_height * (LT_MAX);
+			//					
+			//					nk_layout_row_dynamic(context, row_height, 2);
+			//					nk_label(context, "Light Type", NK_TEXT_ALIGN_LEFT);
+			//					nk_combobox(context, light_types, LT_MAX - 1, &light->type, row_height, nk_vec2(combo_width, combo_height));
+			//					
+			//					nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Light Color", NK_TEXT_ALIGN_CENTERED);
+			//					nk_layout_row_dynamic(context, row_height, 1);
+			//					editor_widget_color_combov3(context, &light->color, 200, 300);
 
-								nk_layout_row_dynamic(context, row_height, 1);
-								nk_property_float(context, "Intensity", 0.f, &light->intensity, 100.f, 0.1f, 0.05f);
+			//					nk_layout_row_dynamic(context, row_height, 1);
+			//					nk_property_float(context, "Intensity", 0.f, &light->intensity, 100.f, 0.1f, 0.05f);
 
-								if(light->type != LT_DIR)
-								{
-									nk_layout_row_dynamic(context, row_height, 1);
-									light->outer_angle = TO_RADIANS(nk_propertyf(context, "Outer Angle", TO_DEGREES(light->inner_angle), TO_DEGREES(light->outer_angle), 360, 1.f, 0.5f));
+			//					if(light->type != LT_DIR)
+			//					{
+			//						nk_layout_row_dynamic(context, row_height, 1);
+			//						light->outer_angle = TO_RADIANS(nk_propertyf(context, "Outer Angle", TO_DEGREES(light->inner_angle), TO_DEGREES(light->outer_angle), 360, 1.f, 0.5f));
 
-									nk_layout_row_dynamic(context, row_height, 1);
-									light->inner_angle = TO_RADIANS(nk_propertyf(context, "Inner Angle", 1.f, TO_DEGREES(light->inner_angle), TO_DEGREES(light->outer_angle), 1.f, 0.5f));
+			//						nk_layout_row_dynamic(context, row_height, 1);
+			//						light->inner_angle = TO_RADIANS(nk_propertyf(context, "Inner Angle", 1.f, TO_DEGREES(light->inner_angle), TO_DEGREES(light->outer_angle), 1.f, 0.5f));
 
-									nk_layout_row_dynamic(context, row_height, 1);
-									nk_property_int(context, "Radius", 1, &light->radius, INT_MAX, 1, 1);
+			//						nk_layout_row_dynamic(context, row_height, 1);
+			//						nk_property_int(context, "Radius", 1, &light->radius, INT_MAX, 1, 1);
 
-									nk_layout_row_dynamic(context, row_height, 1);
-									nk_property_float(context, "Falloff", 0.f, &light->falloff, 100.f, 0.1f, 0.05f);
-								}
-							}
-							nk_tree_pop(context);
-						}
-					}
+			//						nk_layout_row_dynamic(context, row_height, 1);
+			//						nk_property_float(context, "Falloff", 0.f, &light->falloff, 100.f, 0.1f, 0.05f);
+			//					}
+			//				}
+			//				nk_tree_pop(context);
+			//			}
+			//		}
 
-					/* Camera */
-					if(entity->type == ET_CAMERA)
-					{
-						if(nk_tree_push(context, NK_TREE_TAB, "Camera", NK_MAXIMIZED))
-						{
-							bool update = false;
-							struct Camera* camera = &entity->camera;
-							
-							nk_layout_row_dynamic(context, row_height, 2);
-							nk_label(context, "Orthographic", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
-							bool ortho = nk_checkbox_label(context, "", &camera->ortho);
-							if(ortho != camera->ortho)
-							{
-								update = true;
-							}
-							
+			//		/* Camera */
+			//		if(entity->type == ET_CAMERA)
+			//		{
+			//			if(nk_tree_push(context, NK_TREE_TAB, "Camera", NK_MAXIMIZED))
+			//			{
+			//				bool update = false;
+			//				struct Camera* camera = &entity->camera;
+			//				
+			//				nk_layout_row_dynamic(context, row_height, 2);
+			//				nk_label(context, "Orthographic", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+			//				bool ortho = nk_checkbox_label(context, "", &camera->ortho);
+			//				if(ortho != camera->ortho)
+			//				{
+			//					update = true;
+			//				}
+			//				
 
-							if(!camera->ortho)
-							{
-								nk_layout_row_dynamic(context, row_height, 1);
-								float new_fov = nk_propertyf(context, "Fov", 30.f, camera->fov, 90.f, 0.1f, 1.f);
-								if(new_fov != camera->fov)
-								{
-									camera->fov = new_fov;
-									update = true;
-								}
+			//				if(!camera->ortho)
+			//				{
+			//					nk_layout_row_dynamic(context, row_height, 1);
+			//					float new_fov = nk_propertyf(context, "Fov", 30.f, camera->fov, 90.f, 0.1f, 1.f);
+			//					if(new_fov != camera->fov)
+			//					{
+			//						camera->fov = new_fov;
+			//						update = true;
+			//					}
 
-								nk_layout_row_dynamic(context, row_height, 2);
-								nk_label(context, "Aspect Ratio", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%.5f", camera->aspect_ratio);
-							}
+			//					nk_layout_row_dynamic(context, row_height, 2);
+			//					nk_label(context, "Aspect Ratio", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%.5f", camera->aspect_ratio);
+			//				}
 
-							nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Clear Color", NK_TEXT_ALIGN_CENTERED);
-							nk_layout_row_dynamic(context, row_height, 1);
-							editor_widget_color_combov4(context, &camera->clear_color, 200, 300);
+			//				nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Clear Color", NK_TEXT_ALIGN_CENTERED);
+			//				nk_layout_row_dynamic(context, row_height, 1);
+			//				editor_widget_color_combov4(context, &camera->clear_color, 200, 300);
 
-							nk_layout_row_dynamic(context, row_height, 1);
-							float new_zoom = nk_propertyf(context, "Zoom", 1.f, camera->zoom, FLT_MAX, 0.1f, 1.f);
-							if(new_zoom != camera->zoom)
-							{
-								camera->zoom = new_zoom;
-								update = true;
-							}
+			//				nk_layout_row_dynamic(context, row_height, 1);
+			//				float new_zoom = nk_propertyf(context, "Zoom", 1.f, camera->zoom, FLT_MAX, 0.1f, 1.f);
+			//				if(new_zoom != camera->zoom)
+			//				{
+			//					camera->zoom = new_zoom;
+			//					update = true;
+			//				}
 
-							nk_layout_row_dynamic(context, row_height, 1);
-							float new_near_z = nk_propertyf(context, "NearZ", -FLT_MAX, camera->nearz, camera->farz, 0.1f, 1.f);
-							if(new_near_z != camera->nearz)
-							{
-								camera->nearz = new_near_z;
-								update = true;
-							}
-							
-							nk_layout_row_dynamic(context, row_height, 1);
-							float new_far_z = nk_propertyf(context, "FarZ", camera->nearz, camera->farz, FLT_MAX, 0.1f, 2.f);
-							if(new_far_z != camera->farz)
-							{
-								camera->farz = new_far_z;
-								update = true;
-							}
+			//				nk_layout_row_dynamic(context, row_height, 1);
+			//				float new_near_z = nk_propertyf(context, "NearZ", -FLT_MAX, camera->nearz, camera->farz, 0.1f, 1.f);
+			//				if(new_near_z != camera->nearz)
+			//				{
+			//					camera->nearz = new_near_z;
+			//					update = true;
+			//				}
+			//				
+			//				nk_layout_row_dynamic(context, row_height, 1);
+			//				float new_far_z = nk_propertyf(context, "FarZ", camera->nearz, camera->farz, FLT_MAX, 0.1f, 2.f);
+			//				if(new_far_z != camera->farz)
+			//				{
+			//					camera->farz = new_far_z;
+			//					update = true;
+			//				}
 
-							if(update)
-							{
-								camera_update_view(entity);
-								camera_update_proj(entity);
-							}
+			//				if(update)
+			//				{
+			//					camera_update_view(entity);
+			//					camera_update_proj(entity);
+			//				}
 
-							nk_tree_pop(context);
-						}
-					}
-				}
-				else
-				{
-					nk_label(context, "No Entity Selected", NK_TEXT_ALIGN_CENTERED);
-				}
-				nk_tree_pop(context);
-			}
-			
+			//				nk_tree_pop(context);
+			//			}
+			//		}
+			//	}
+			//	else
+			//	{
+			//		nk_label(context, "No Entity Selected", NK_TEXT_ALIGN_CENTERED);
+			//	}
+			//	nk_tree_pop(context);
+			//}
+			//
 			nk_group_end(context);
 		}
 	}

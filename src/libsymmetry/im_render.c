@@ -155,7 +155,7 @@ void im_end(void)
 	memset(&IM_State.vertices[0], 0, sizeof(struct IM_Vertex) * MAX_IM_VERTICES);
 }
 
-void im_render(struct Entity* active_viewer)
+void im_render(struct Camera* active_viewer)
 {
 	if(IM_State.curr_geom == -1)
 		return;
@@ -182,7 +182,7 @@ void im_render(struct Entity* active_viewer)
 			mat4_mul(&mvp, &mvp, &rotation);
 			mat4_mul(&mvp, &mvp, &scale);
 
-			mat4_mul(&mvp, &active_viewer->camera.view_proj_mat, &mvp);
+			mat4_mul(&mvp, &active_viewer->view_proj_mat, &mvp);
 
 			shader_set_uniform_mat4(IM_State.im_shader, "mvp", &mvp);
 			shader_set_uniform_vec4(IM_State.im_shader, "geom_color", &geom->color);

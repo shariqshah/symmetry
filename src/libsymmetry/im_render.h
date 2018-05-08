@@ -34,7 +34,7 @@ struct IM_Geom
 	int  draw_mode;
 };
 
-struct Entity;
+struct Camera;
 
 void im_init(void);
 void im_cleanup(void);
@@ -43,6 +43,6 @@ void im_pos(float x, float y, float z);
 void im_box(float x, float y, float z, vec3 position, quat rotation, vec4 color, int draw_mode);
 void im_sphere(float radius, vec3 position, quat rotation, vec4 color, int draw_mode);
 void im_end(void);
-void im_render(struct Entity* active_viewer);
+void im_render(struct Camera* active_viewer);
 
 #endif

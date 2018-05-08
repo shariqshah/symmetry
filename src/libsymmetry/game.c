@@ -76,38 +76,38 @@ bool game_init(struct Window* window, struct Platform_Api* platform_api)
 	else
 	{
 		game_state->window = window;
-		game_state->player_node = -1;
-		game_state->player_pitch_node = -1;
+		game_state->player_node = NULL;
+		game_state->player_pitch_node = NULL;
 		game_state->is_initialized = false;
-	}
+		game_state->renderer = malloc(sizeof(*game_state->renderer));
+		game_state->scene = malloc(sizeof(*game_state->scene));
 
-	/* TODO: Decouple systems' init/cleanup from game, they should exist and run even if there's no "game" */
-	/* Init systems */
-    log_file_handle_set(platform->log.file_handle_get());
-    if(!gl_load_extentions())
-    {
-        log_error("game:init", "Failed to load GL extentions");
-        return false;
-    }
-    else
-    {
-        log_message("Loaded GL extentions");
-    }
-	input_init();
-	shader_init();
-	texture_init();
-	framebuffer_init();
-	geom_init();
-	editor_init();
-	renderer_init();
-	light_init();
-	material_init();
-	entity_init();
-	platform->physics.init();
-	platform->physics.gravity_set(0.f, -9.8f, 0.f);
-	platform->physics.body_set_moved_callback(entity_rigidbody_on_move);
-	platform->physics.body_set_collision_callback(entity_rigidbody_on_collision);
-	scene_init();
+		log_file_handle_set(platform->log.file_handle_get());
+		if(!gl_load_extentions())
+		{
+			log_error("game:init", "Failed to load GL extentions");
+			return false;
+		}
+		else
+		{
+			log_message("Loaded GL extentions");
+		}
+
+
+		input_init();
+		shader_init();
+		texture_init();
+		framebuffer_init();
+		geom_init();
+		editor_init();
+		platform->physics.init();
+		platform->physics.gravity_set(0.f, -9.8f, 0.f);
+		platform->physics.body_set_moved_callback(entity_rigidbody_on_move);
+		platform->physics.body_set_collision_callback(entity_rigidbody_on_collision);
+
+		scene_init(game_state->scene);
+		renderer_init(game_state->renderer);
+	}
 	
 	/* Debug scene setup */
 	scene_setup();
@@ -239,49 +239,48 @@ void scene_setup(void)
 
  //   scene_save("test_scene.symtres", DIRT_INSTALL);
 
-    if(scene_load("test_scene.symtres", DIRT_INSTALL))
-    {
-        log_message("Scene loaded!");
-        struct Entity* player = entity_find("player");
-        game_state->player_node = player->id;
+  //  if(scene_load("test_scene.symtres", DIRT_INSTALL))
+  //  {
+  //      log_message("Scene loaded!");
+  //      struct Entity* player = entity_find("player");
+  //      game_state->player_node = player->id;
 
-		struct Entity* suz = entity_find("Model_Entity");
-		suz_id = suz->id;
-        /*struct Camera* camera = &player->camera;
-        camera->ortho = true;
-        camera->farz  = 500.f;
-        camera->nearz = -500.f;
-        camera_update_proj(player);*/
-    }
+		//struct Entity* suz = entity_find("Model_Entity");
+		//suz_id = suz->id;
+  //      /*struct Camera* camera = &player->camera;
+  //      camera->ortho = true;
+  //      camera->farz  = 500.f;
+  //      camera->nearz = -500.f;
+  //      camera_update_proj(player);*/
+  //  }
 
-	platform->physics.cs_plane_create(0, 1, 0, 0);
-	//Rigidbody box = platform->physics.body_box_create(2.5, 2.5, 2.5);
-	Rigidbody box = platform->physics.body_sphere_create(3.5);
-	/*platform->physics.body_position_set(box, 0.f, 50.f, 0.f);
-	platform->physics.body_mass_set(box, 10.f);*/
-	/*platform->physics.body_data_set(box, (void*)suz_id);*/
-	//platform->physics.body_force_add(box, -100.f, 0.f, 0.f);
-	struct Entity* suz = entity_find("Model_Entity");
-	entity_rigidbody_set(suz, box);
-	suz->collision.on_collision = &on_collision_test;
+	//platform->physics.cs_plane_create(0, 1, 0, 0);
+	////Rigidbody box = platform->physics.body_box_create(2.5, 2.5, 2.5);
+	//Rigidbody box = platform->physics.body_sphere_create(3.5);
+	///*platform->physics.body_position_set(box, 0.f, 50.f, 0.f);
+	//platform->physics.body_mass_set(box, 10.f);*/
+	///*platform->physics.body_data_set(box, (void*)suz_id);*/
+	////platform->physics.body_force_add(box, -100.f, 0.f, 0.f);
+	//struct Entity* suz = entity_find("Model_Entity");
+	//entity_rigidbody_set(suz, box);
+	//suz->collision.on_collision = &on_collision_test;
 
-	Rigidbody sphere = platform->physics.body_sphere_create(3.5f);
-	struct Entity* sphere_ent = entity_find("Sphere_Ent");
-	entity_rigidbody_set(sphere_ent, sphere);
+	//Rigidbody sphere = platform->physics.body_sphere_create(3.5f);
+	//struct Entity* sphere_ent = entity_find("Sphere_Ent");
+	//entity_rigidbody_set(sphere_ent, sphere);
 
-	//Collision_Shape plane = platform->physics.cs_plane_create(0, 1, 0, 0);
-	Rigidbody ground_box = platform->physics.body_box_create(10, 5, 10);
-	platform->physics.body_position_set(ground_box, 0.f, 0.f, 0.f);
-	/*platform->physics.body_kinematic_set(ground_box);*/
-	struct Entity* ground = entity_find("Ground");
-	//entity_collision_shape_set(ground, plane);
-	entity_rigidbody_set(ground, ground_box);
+	////Collision_Shape plane = platform->physics.cs_plane_create(0, 1, 0, 0);
+	//Rigidbody ground_box = platform->physics.body_box_create(10, 5, 10);
+	//platform->physics.body_position_set(ground_box, 0.f, 0.f, 0.f);
+	///*platform->physics.body_kinematic_set(ground_box);*/
+	//struct Entity* ground = entity_find("Ground");
+	////entity_collision_shape_set(ground, plane);
+	//entity_rigidbody_set(ground, ground_box);
 }
 
 void debug(float dt)
 {
 	//struct Entity* entity = entity_get(player_node);
-	struct Entity* player_entity =  entity_get(game_state->player_node);
 	float move_speed = 5.f, move_scale = 3.f, turn_speed = 50.f;
 	vec3 offset = {0, 0, 0};
 	float turn_up_down = 0.f;
@@ -334,25 +333,25 @@ void debug(float dt)
 	
 	if(turn_left_right != 0.f)
 	{
-		transform_rotate(player_entity, &rot_axis_left_right, -turn_left_right, TS_WORLD);
+		/*transform_rotate(player_entity, &rot_axis_left_right, -turn_left_right, TS_WORLD);
 		vec3 up = {0.f, 0.f, 0.f};
 		vec3 forward = {0.f, 0.f, 0.f};
 		vec3 lookat = {0.f, 0.f, 0.f};
 		transform_get_up(player_entity, &up);
 		transform_get_forward(player_entity, &forward);
-		transform_get_lookat(player_entity, &lookat);
+		transform_get_lookat(player_entity, &lookat);*/
 		/* log_message("Up : %s", tostr_vec3(&up)); */
 		/* log_message("FR : %s", tostr_vec3(&forward)); */
 	}
 	if(turn_up_down != 0.f)
 	{
-		transform_rotate(player_entity, &rot_axis_up_down, turn_up_down, TS_LOCAL);
+		/*transform_rotate(player_entity, &rot_axis_up_down, turn_up_down, TS_LOCAL);
 		vec3 up = {0.f, 0.f, 0.f};
 		vec3 forward = {0.f, 0.f, 0.f};
 		vec3 lookat = {0.f, 0.f, 0.f};
 		transform_get_up(player_entity, &up);
 		transform_get_forward(player_entity, &forward);
-		transform_get_lookat(player_entity, &lookat);
+		transform_get_lookat(player_entity, &lookat);*/
 		/* log_message("Up : %s", tostr_vec3(&up)); */
 		/* log_message("FR : %s", tostr_vec3(&forward)); */
 	}
@@ -369,20 +368,20 @@ void debug(float dt)
 	vec3_scale(&offset, &offset, dt);
 	if(offset.x != 0 || offset.y != 0 || offset.z != 0)
 	{
-		transform_translate(player_entity, &offset, TS_LOCAL);
+		//transform_translate(player_entity, &offset, TS_LOCAL);
  		//log_message("Position : %s", tostr_vec3(&transform->position));
 	}
 
 	if(input_is_key_pressed(KEY_SPACE))
 	{
-		struct Entity* model = scene_find("Light_Ent");
+		struct Entity* model = scene_find(game_state->scene, "Light_Ent");
 		vec3 x_axis = {0, 1, 0};
 		transform_rotate(model, &x_axis, 25.f * dt, TS_WORLD);
 	}
 
 	if(input_is_key_pressed(KEY_M))
 	{
-		struct Entity* model = scene_find("Model_Entity");
+		struct Entity* model = scene_find(game_state->scene, "Model_Entity");
 		//vec3 y_axis = {0, 0, 1};
 		//transform_rotate(mod_tran, &y_axis, 25.f * dt, TS_LOCAL);
 		vec3 amount = {0, 0, -5 * dt};
@@ -391,7 +390,7 @@ void debug(float dt)
 
 	if(input_is_key_pressed(KEY_N))
 	{
-		struct Entity* model = scene_find("Model_Entity");
+		struct Entity* model = scene_find(game_state->scene, "Model_Entity");
 		/* vec3 y_axis = {0, 0, 1}; */
 		/* transform_rotate(mod_tran, &y_axis, 25.f * dt, TS_WORLD); */
 		vec3 amount = {0, 0, 5 * dt};
@@ -404,7 +403,7 @@ void debug(float dt)
 	vec3 amount = {0, 0, -5 * dt};
 	transform_translate(model, &amount, TS_LOCAL);*/
 
-	struct Sprite_Batch* batch = get_batch();
+	struct Sprite_Batch* batch = game_state->renderer->sprite_batch;
 
 	sprite_batch_begin(batch);
 	static struct Sprite sprite;
@@ -437,7 +436,7 @@ void debug(float dt)
 	//Raycast test
 	if(input_is_key_pressed(KEY_R))
 	{
-		Collision_Shape ray = platform->physics.cs_ray_create(20.f, true, true);
+		/*Collision_Shape ray = platform->physics.cs_ray_create(20.f, true, true);
 		vec3 position = {0.f, 0.f, 0.f};
 		vec3 direction = {0.f, 0.f, 0.f};
 		transform_get_absolute_forward(player_entity, &direction);
@@ -452,7 +451,7 @@ void debug(float dt)
 		{
 			log_message("Ray didn't hit anything!");
 		}
-		platform->physics.cs_remove(ray);
+		platform->physics.cs_remove(ray);*/
 	}
 
 	// Immediate geometry test
@@ -556,7 +555,7 @@ bool run(void)
 		platform->physics.step(delta_time);
 		render();
         platform->window.swap_buffers(game_state->window);
-		entity_post_update();
+		scene_post_update(game_state->scene);
 		platform->sound.update_3d();
 	}
     return true;
@@ -1788,8 +1787,7 @@ void debug_gui(float dt)
 
 void render(void)
 {
-	struct Entity* viewer = entity_get(game_state->player_node);
-	renderer_draw(viewer);
+	renderer_draw(game_state->renderer, game_state->scene);
 }
 
 void game_cleanup(void)
@@ -1799,16 +1797,16 @@ void game_cleanup(void)
 		if(game_state->is_initialized)
 		{
 			editor_cleanup();
-			scene_cleanup();
-			entity_cleanup();
-			material_cleanup();
-			light_cleanup();
+			scene_destroy(game_state->scene);
 			input_cleanup();
-			renderer_cleanup();
+			renderer_cleanup(game_state->renderer);
             geom_cleanup();
 			framebuffer_cleanup();
 			texture_cleanup();
 			shader_cleanup();
+
+			free(game_state->scene);
+			free(game_state->renderer);
 		}
 		free(game_state);
 		game_state = NULL;

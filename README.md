@@ -155,7 +155,26 @@
 
 - ## TODO
 
+	- Re-Implement player logic
+	- Re-Implement saving/loading scene to/from files
+	- Bring back functionality and complete overhaul 
+	- Break-up entity into base and derived entities
+	  - Move/Modify logic as necessary
+	  - Scene should contain fixed size lists of entites according to their types for example, separate lists of Lights, Static_Meshes,
+		AI entities, Particles etc
+	  - Entity post-update logic would move to scene as well, after update scene iterates through each specific list and does whatever
+	    is necessary
+	  - All this would enable us to hold valid poiniters to other entites, I suspect that would result in some other changes as well
+	  - Make materials/uniforms simpler. No need for generic materials defined in text
+	  - Possibly embed material into model somehow to make it easier to set material uniforms like colour etc
+	  - Create new system inside game_state to handle non-spatial sounds for music/ui etc
+	  - Setup scene such that player and editor camera are always added to every scene
+	  - Try to remove as much unnecessary global state as possible for example move textures/shaders/framebuffers or create a resource 
+	    system and move textures/shaders/sounds/geometry etc to that and framebuffer/shaders to renderer
 	- Work on (yet another)entity refactor before moving on to serialization
+	- Implement cross-hatching shader
+	- Update README's TODO section to reflect the current state of things and the things that are actually left to do
+	
 	- Implement collision/physics data serialization, read and write.
 	- Physics forces/torque etc
 	- Implement physics debug visualizations for other primitives and tri mesh shapes
@@ -373,3 +392,4 @@
 	* Implemented immediate mode renderer that can draw arbitrary points, lines and triangles
 	* Converted IM_Vertex array to only be used as temporary storage for vertices between begin and end calls
 	* Implemented Debug physics mesh drawing for box and sphere primitives
+	* Completed Phase 1 of codebase refactoring

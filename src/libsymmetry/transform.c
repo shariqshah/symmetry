@@ -5,17 +5,17 @@
 #include "../common/utils.h"
 #include <assert.h>
 
-void transform_create(struct Entity* entity, int parent_entity)
+void transform_init(struct Entity* entity, struct Entity* parent)
 {
 	struct Transform* transform = &entity->transform;
 	vec3_fill(&transform->position, 0.f, 0.f, 0.f);
 	vec3_fill(&transform->scale, 1.f, 1.f, 1.f);
 	quat_identity(&transform->rotation);
 	mat4_identity(&transform->trans_mat);
-	transform->children = array_new(int);
-	transform->parent   = -1;
-	if(parent_entity != -1)
-		transform_parent_set(entity, entity_get(parent_entity), false);
+	transform->children = array_new(struct Entity*);
+	transform->parent   = NULL;
+	if(parent)
+		transform_parent_set(entity, parent, false);
 	transform_update_transmat(entity);
 }
 
@@ -26,11 +26,11 @@ void transform_child_add(struct Entity* parent, struct Entity* child, bool updat
 
     /* Check if already added */
 	for(int i = 0; i < array_len(parent_transform->children); i++)
-		if(parent_transform->children[i] == child->id) return;
+		if(parent_transform->children[i] == child) return;
 	
-	int* new_child_loc = array_grow(parent_transform->children, int);
-	*new_child_loc = child->id;
-	child_transform->parent = parent->id;
+	struct Entity** new_child_loc = array_grow(parent_transform->children, struct Entity*);
+	*new_child_loc = child;
+	child_transform->parent = parent;
 	if(update_transmat) transform_update_transmat(child);
 }
 
@@ -40,10 +40,10 @@ bool transform_child_remove(struct Entity* parent, struct Entity* child)
 	struct Transform* parent_transform = &parent->transform;
 	for(int i = 0; i < array_len(parent_transform->children); i++)
 	{
-		if(parent_transform->children[i] == child->id)
+		if(parent_transform->children[i] == child)
 		{
 			array_remove_at(parent_transform, i);
-			child->transform.parent = -1;
+			child->transform.parent = NULL;
 			success = true;
 			return success;
 		};
@@ -53,7 +53,7 @@ bool transform_child_remove(struct Entity* parent, struct Entity* child)
 
 void transform_parent_set(struct Entity* child, struct Entity* parent, bool update_transmat)
 {
-	if(child->transform.parent == -1)
+	if(child->transform.parent == NULL)
 	{
 		transform_child_add(parent, child, false);
 	}
@@ -77,7 +77,7 @@ void transform_translate(struct Entity* entity, vec3* amount, enum Transform_Spa
 	}
 	else if(space == TS_PARENT)
 	{
-		struct Entity* parent = entity_get_parent(transform->parent);
+		struct Entity* parent = transform->parent;
 		if(parent)
 		{
 			struct Transform* parent_tran = &parent->transform;
@@ -189,10 +189,9 @@ void transform_update_transmat(struct Entity* entity)
 	mat4_mul(&transform->trans_mat, &transform->trans_mat, &rotation);
 	mat4_mul(&transform->trans_mat, &transform->trans_mat, &scale);
 	
-	struct Entity* parent = entity_get(transform->parent);
-	if(parent)
+	if(transform->parent)
 	{
-		struct Transform* parent_tran = &parent->transform;
+		struct Transform* parent_tran = &transform->parent->transform;
 		mat4_mul(&transform->trans_mat, &transform->trans_mat, &parent_tran->trans_mat);
 	}
 
@@ -201,13 +200,10 @@ void transform_update_transmat(struct Entity* entity)
 	if(children > 0)
 	{
 		for(int i = 0; i < children; i++)
-		{
-			struct Entity* child = entity_get(transform->children[i]);
-			transform_update_transmat(child);
-		}
+			transform_update_transmat(entity->transform.children[i]);
 	}
 	transform->is_modified = true;
-	if(entity->has_collision) entity->transform.sync_physics = true;
+	if(entity->type == ET_STATIC_MODEL) entity->transform.sync_physics = true; // Find a better way to handle this
 }
 
 void transform_destroy(struct Entity* entity)
@@ -218,7 +214,7 @@ void transform_destroy(struct Entity* entity)
 	{
 		for(int i = 0; i < children; i++)
 		{
-			struct Entity* child = entity_get(transform->children[i]);
+			struct Entity* child = transform->children[i];
 			child->marked_for_deletion = true;
 		}
 	}
@@ -229,7 +225,7 @@ void transform_destroy(struct Entity* entity)
 	vec3_fill(&transform->scale, 1.f, 1.f, 1.f);
 	quat_identity(&transform->rotation);
 	mat4_identity(&transform->trans_mat);
-	transform->parent = -1;
+	transform->parent = NULL;
 	transform->is_modified = false;
 }
 
@@ -244,7 +240,7 @@ void transform_get_absolute_position(struct Entity* entity, vec3* res)
 {
 	vec3_assign(res, &entity->transform.position);
 	bool done = false;
-	struct Entity* parent = entity_get(entity->transform.parent);
+	struct Entity* parent = entity->transform.parent;
 	while(!done)
 	{
 		if(!parent)
@@ -253,7 +249,7 @@ void transform_get_absolute_position(struct Entity* entity, vec3* res)
 			break;
 		}
 		vec3_add(res, res, &parent->transform.position);
-		parent = entity_get(parent->transform.parent);
+		parent = parent->transform.parent;
 	}
 }
 
@@ -262,7 +258,7 @@ void transform_get_absolute_scale(struct Entity* entity, vec3* res)
 	struct Transform* transform = &entity->transform;
 	vec3_assign(res, &transform->scale);
 	bool done = false;
-	struct Entity* parent = entity_get(transform->parent);
+	struct Entity* parent = transform->parent;
 	while(!done)
 	{
 		if(!parent)
@@ -271,7 +267,7 @@ void transform_get_absolute_scale(struct Entity* entity, vec3* res)
 			break;
 		}
 		vec3_mul(res, res, &parent->transform.scale);
-		parent = entity_get(parent->transform.parent);
+		parent = parent->transform.parent;
 	}
 	
 }
@@ -280,7 +276,7 @@ void transform_get_absolute_rot(struct Entity* entity, quat* res)
 {
 	quat_assign(res, &entity->transform.rotation);
 	bool done = false;
-	struct Entity* parent = entity_get(entity->transform.parent);
+	struct Entity* parent = entity->transform.parent;
 	while(!done)
 	{
 		if(!parent)
@@ -289,6 +285,6 @@ void transform_get_absolute_rot(struct Entity* entity, quat* res)
 			break;
 		}
 		quat_mul(res, res, &parent->transform.rotation);
-		parent = entity_get(parent->transform.parent);
+		parent = parent->transform.parent;
 	}
 }

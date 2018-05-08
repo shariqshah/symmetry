@@ -3,14 +3,14 @@
 
 #include "../common/num_types.h"
 
-struct Entity;
+struct Camera;
 
-void camera_destroy(struct Entity* entity);
-void camera_create(struct Entity* entity, int width, int height);
-void camera_update_view_proj(struct Entity* entity);
-void camera_update_view(struct Entity* entity);
-void camera_update_proj(struct Entity* entity);
-void camera_attach_fbo(struct Entity* entity,
+void camera_reset(struct Camera* camera);
+void camera_init(struct Camera* camera, int width, int height);
+void camera_update_view_proj(struct Camera* camera);
+void camera_update_view(struct Camera* camera);
+void camera_update_proj(struct Camera* camera);
+void camera_attach_fbo(struct Camera* camera,
 					   int            width,
 					   int            height,
 					   bool           has_depth,

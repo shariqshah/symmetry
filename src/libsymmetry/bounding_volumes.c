@@ -1,12 +1,9 @@
 #include "bounding_volumes.h"
-#include "entity.h"
-#include "transform.h"
 
 #include <math.h>
 
-int bv_intersect_frustum_box(vec4* frustum, struct Bounding_Box* box, struct Entity* entity)
+int bv_intersect_frustum_box(vec4* frustum, struct Bounding_Box* box, vec3* box_abs_position, vec3* box_abs_scale)
 {
-	struct Transform* transform = &entity->transform;
 	vec3 min, max, size, center, half_ext, half_size;
 	vec3_fill(&min, 0.f, 0.f, 0.f);
 	vec3_fill(&max, 0.f, 0.f, 0.f);
@@ -15,10 +12,10 @@ int bv_intersect_frustum_box(vec4* frustum, struct Bounding_Box* box, struct Ent
 	vec3_fill(&half_ext, 0.f, 0.f, 0.f);
 	vec3_fill(&half_size, 0.f, 0.f, 0.f);
 	
-	vec3_add(&min, &box->min, &transform->position);
-	vec3_mul(&min, &min, &transform->scale);
-	vec3_add(&max, &box->max, &transform->position);
-	vec3_mul(&min, &min, &transform->scale);
+	vec3_add(&min, &box->min, box_abs_position);
+	vec3_mul(&min, &min, box_abs_scale);
+	vec3_add(&max, &box->max, box_abs_position);
+	vec3_mul(&min, &min, box_abs_scale);
 	vec3_sub(&size, &max, &min);
 	vec3_add(&center, &max, &min);
 	vec3_scale(&center, &center, 0.5f);
@@ -37,22 +34,18 @@ int bv_intersect_frustum_box(vec4* frustum, struct Bounding_Box* box, struct Ent
 	return IT_INSIDE;
 }
 
-int bv_intersect_frustum_sphere(vec4* frustum, struct Bounding_Sphere* sphere, struct Entity* entity)
+int bv_intersect_frustum_sphere(vec4* frustum, struct Bounding_Sphere* sphere, vec3* sphere_abs_pos, vec3* sphere_abs_scale)
 {
 	int   intersect_type = IT_INSIDE;
-	vec3  center, abs_pos, abs_scale;
+	vec3  center;
 	float radius = sphere->radius;
 	vec3_fill(&center, 0.f, 0.f, 0.f);
-	vec3_fill(&abs_pos, 0.f, 0.f, 0.f);
-	vec3_fill(&abs_scale, 0.f, 0.f, 0.f);
 	
-	transform_get_absolute_position(entity, &abs_pos);
-	transform_get_absolute_scale(entity, &abs_scale);
-	float max_scale_dimension = fabsf(abs_scale.x);
-	if(fabsf(abs_scale.y) > max_scale_dimension) max_scale_dimension = fabsf(abs_scale.y);
-	if(fabsf(abs_scale.z) > max_scale_dimension) max_scale_dimension = fabsf(abs_scale.z);
+	float max_scale_dimension = fabsf(sphere_abs_scale->x);
+	if(fabsf(sphere_abs_scale->y) > max_scale_dimension) max_scale_dimension = fabsf(sphere_abs_scale->y);
+	if(fabsf(sphere_abs_scale->z) > max_scale_dimension) max_scale_dimension = fabsf(sphere_abs_scale->z);
 	radius *= max_scale_dimension;
-	vec3_add(&center, &sphere->center, &abs_pos);
+	vec3_add(&center, &sphere->center, sphere_abs_pos);
 	//vec3_mul(&center, &center, &transform->scale);
 	
 	for(int i = 0; i < 6; i++)

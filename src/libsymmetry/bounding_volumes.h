@@ -4,8 +4,6 @@
 #include "../common/linmath.h"
 #include "../common/num_types.h"
 
-struct Entity;
-
 struct Bounding_Box
 {
 	vec3 min;
@@ -36,8 +34,8 @@ enum Frustum_Planes
 	FP_NUM_PLANES
 };
 
-int  bv_intersect_frustum_box(vec4* frustum, struct Bounding_Box* box, struct Entity* entity);
-int  bv_intersect_frustum_sphere(vec4* frustum, struct Bounding_Sphere* sphere, struct Entity* entity);
+int bv_intersect_frustum_box(vec4* frustum, struct Bounding_Box* box, vec3* box_abs_position, vec3* box_abs_scale);
+int  bv_intersect_frustum_sphere(vec4* frustum, struct Bounding_Sphere* sphere, struct Transform* transform);
 bool bv_intersect_frustum_point(vec4* frustum, const vec3* point);
 
 #endif

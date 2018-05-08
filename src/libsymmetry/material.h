@@ -3,49 +3,67 @@
 
 #include "../common/linmath.h"
 #include "../common/num_types.h"
+#include "../common/variant.h"
 
-struct Entity;
+struct Model;
+
+#define MAX_UNIFORM_NAME_LEN 64
+#define MAX_MATERIAL_REGISTERED_MODELS 1024
 
 struct Uniform
 {
-	int   location;
-	char* name;
-	int   type;
-	union /* Default values */
-	{
-		vec2  d_vec2;
-		vec3  d_vec3;
-		vec4  d_vec4;
-		int   d_int;
-		float d_float;
-	};
+	int  location;
+	int  type;
 };
 
-struct Material_Param
+enum Mat_Type
 {
-	int   uniform_index;		/* Index of the corresponding uniform in the material's model_params */
-	void* value;				/* Actual value of the uniform */
+	MAT_BLINN = 0,
+	MAT_UNSHADED,
+	MAT_MAX
+};
+
+enum Mat_Model_Param
+{
+	MMP_DIFFUSE_TEX = 0,
+	MMP_DIFFUSE_COL,
+	MMP_DIFFUSE,
+	MMP_SPECULAR_STRENGTH,
+	MMP_SPECULAR,
+	MMP_MAX
+};
+
+enum Mat_Pipeline_Param
+{
+	MPP_MODEL_MAT = 0,
+	MPP_INV_MODEL_MAT,
+	MPP_VIEW_MAT,
+	MPP_MVP,
+	MPP_FOG_MODE,
+	MPP_FOG_DENSITY,
+	MPP_FOG_START_DIST,
+	MPP_FOG_MAX_DIST,
+	MPP_FOG_COLOR,
+	MPP_CAM_POS,
+	MPP_TOTAL_LIGHTS,
+	MPP_AMBIENT_LIGHT,
+	MPP_MAX
 };
 
 struct Material
 {
-	char*           name;
-	int             shader;
-	int*            registered_models;
-	bool            active;
-	bool            lit;					  /* If material uses light information */
-	struct Uniform* model_params; /* uniforms related to models */
-	struct Uniform* pipeline_params; /* general uniforms like matrices etc */
+	int            type;
+	int            shader;
+	struct Model*  registered_models[MAX_MATERIAL_REGISTERED_MODELS];
+	bool           lit;
+	struct Uniform model_params[MMP_MAX];
+	struct Uniform pipeline_params[MPP_MAX];
 };
 
-struct Material* material_get_all_materials(void);
-struct Material* material_find(const char* material_name);
-struct Material* material_get(int index);
-int 			 material_get_index(const char* material_name);
-void			 material_init(void);
-void			 material_cleanup(void);
-bool 			 material_register_model(struct Entity* entity, const char* material_name);
-void			 material_unregister_model(struct Entity* entity);
-void			 material_remove(int index);
+bool material_init(struct Material* material, int material_type);
+void material_reset(struct Material* material);
+bool material_register_model(struct Material* material, struct Model* model);
+void material_unregister_model(struct Material* material, struct Model* model);
+
 
 #endif

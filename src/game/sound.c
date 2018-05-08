@@ -199,15 +199,15 @@ struct Sound_Source_Buffer* sound_source_create(const char* filename, int type)
 
 	struct Sound_Source_Buffer* source = NULL;
 
-	long size = 0L;
-	char* memory = io_file_read(DIRT_INSTALL, filename, "rb", &size);
-
 	//See if we've already loaded this file
 	if(hashmap_value_exists(sound_sources, filename))
 	{
 		source = (struct Sound_Source_Buffer*)hashmap_ptr_get(sound_sources, filename);
 		return source;
 	}
+
+	long size = 0L;
+	char* memory = io_file_read(DIRT_INSTALL, filename, "rb", &size);
 
 	source = malloc(sizeof(*source));
 	if(!source)
@@ -245,10 +245,11 @@ struct Sound_Source_Buffer* sound_source_create(const char* filename, int type)
 		source->type = ST_WAV_STREAM;
 	}
 	break;
-	default: log_error("sound:source_create", "Invalid source type %d", type); return 0;
+	default: log_error("sound:source_create", "Invalid source type %d", type); break;
 	}
 
 	hashmap_ptr_set(sound_sources, filename, (void*)source);
+	if(memory) free(memory);
 	return source;
 }
 

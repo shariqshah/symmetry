@@ -7,7 +7,7 @@
 void light_init(struct Light* light, int light_type)
 {
 	light->valid       = true;
-	light->cast_shadow = 0;
+	light->cast_shadow = false;
 	light->depth_bias  = 0.0005f;
 	light->type        = light_type;
 	light->pcf_enabled = false;
@@ -15,7 +15,7 @@ void light_init(struct Light* light, int light_type)
 	light->falloff     = 1.5f;
 	light->outer_angle = TO_RADIANS(30.f);
 	light->inner_angle = TO_RADIANS(20.f);
-	light->radius      = 20;
+	light->radius      = 20.f;
 	vec3_fill(&light->color, 1.f, 1.f, 1.f);
 }
 

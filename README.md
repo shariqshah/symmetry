@@ -155,6 +155,7 @@
 
 - ## TODO
 
+	- Remove model and replace all usages with static mesh
 	- Re-Implement player logic
 	- Re-Implement saving/loading scene to/from files
 	- Bring back functionality and complete overhaul 

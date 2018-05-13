@@ -19,6 +19,8 @@
 #include "../common/num_types.h"
 #include "../common/string_utils.h"
 #include "../common/common.h"
+#include "input.h"
+#include "scene.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,10 +32,13 @@
 
 struct Editor_State
 {
-	bool enabled;
-	bool renderer_settings_window;
-	int  selected_entity_id;
-	int  top_panel_height;
+	bool  enabled;
+	bool  renderer_settings_window;
+	int   selected_entity_id;
+	int   top_panel_height;
+	float camera_turn_speed;
+	float camera_move_speed;
+	float camera_sprint_multiplier;
 };
 
 struct Debug_Variable
@@ -46,6 +51,7 @@ static struct Editor_State    editor_state;
 static struct Debug_Variable* debug_vars_list = NULL;
 static int*                   empty_indices   = NULL;
 
+static void editor_camera_update(float dt);
 static void editor_widget_color_combov3(struct nk_context* context, vec3* color, int width, int height);
 static void editor_widget_color_combov4(struct nk_context* context, vec4* color, int width, int height);
 static bool editor_widget_v3(struct nk_context* context,
@@ -65,8 +71,28 @@ void editor_init(void)
 	editor_state.renderer_settings_window = false;
 	editor_state.selected_entity_id       = -1;
 	editor_state.top_panel_height         = 20;
+	editor_state.camera_turn_speed        = 50.f;
+	editor_state.camera_move_speed        = 10.f;
+	editor_state.camera_sprint_multiplier = 2.f;
 	debug_vars_list                       = array_new(struct Debug_Variable);
 	empty_indices                         = array_new(int);
+
+	struct Camera* editor_camera = &game_state_get()->scene->cameras[CAM_EDITOR];
+	editor_camera->base.active = true;
+	vec3 cam_pos = {0.f, 15.f, -5.f};
+	transform_translate(editor_camera, &cam_pos, TS_WORLD);
+	editor_camera->clear_color.x = 0.3f;
+	editor_camera->clear_color.y = 0.6f;
+	editor_camera->clear_color.z = 0.9f;
+	editor_camera->clear_color.w = 1.f;
+
+	struct Hashmap* config = platform->config.get();
+	int render_width  = hashmap_int_get(config, "render_width");
+	int render_height = hashmap_int_get(config, "render_height");
+	camera_attach_fbo(editor_camera, render_width, render_height, true, true, true);
+
+	vec3 axis = {1.f, 0.f, 0.f};
+	transform_rotate(editor_camera, &axis, -25.f, TS_WORLD);
 }
 
 int editor_debugvar_slot_create(const char* name, int value_type)
@@ -145,6 +171,8 @@ void editor_debugvar_slot_set_quat(int index, quat* value)
 void editor_update(float dt)
 {
 	if(!editor_state.enabled) return;
+
+	editor_camera_update(dt);
 	
 	struct Game_State* game_state = game_state_get();
 	struct Gui_State*  gui_state  = gui_state_get();
@@ -536,6 +564,101 @@ void editor_update(float dt)
 void editor_toggle(void)
 {
 	editor_state.enabled = !editor_state.enabled;
+}
+
+void editor_camera_update(float dt)
+{
+	struct Camera* editor_camera = &game_state_get()->scene->cameras[CAM_EDITOR];
+	float move_speed = editor_state.camera_move_speed, turn_speed = editor_state.camera_turn_speed;
+	vec3 offset = {0, 0, 0};
+	float turn_up_down = 0.f;
+	float turn_left_right = 0.f;
+	float max_up_down = 60.f;
+	static float total_up_down_rot = 0.f;
+	vec3 rot_axis_up_down = {1, 0, 0};
+	vec3 rot_axis_left_right = {0, 1, 0};
+
+	/* Look around */
+	if(input_map_state_get("Turn_Up",    KS_PRESSED)) turn_up_down += turn_speed;
+	if(input_map_state_get("Turn_Down",  KS_PRESSED)) turn_up_down -= turn_speed;
+	if(input_map_state_get("Turn_Right", KS_PRESSED)) turn_left_right += turn_speed;
+	if(input_map_state_get("Turn_Left",  KS_PRESSED)) turn_left_right -= turn_speed;
+
+	if(input_mousebutton_state_get(MSB_RIGHT, KS_PRESSED))
+	{
+		const float scale = 0.1f;
+		int cursor_lr, cursor_ud;
+		input_mouse_delta_get(&cursor_lr, &cursor_ud);
+		if(input_mouse_mode_get() != MM_RELATIVE)
+		{
+			input_mouse_mode_set(MM_RELATIVE);
+			cursor_lr = cursor_ud = 0;
+		}
+
+		turn_up_down = -cursor_ud * turn_speed * dt * scale;
+		turn_left_right = cursor_lr * turn_speed * dt * scale;
+		//        log_message("ud : %d, lr : %d", cursor_ud, cursor_lr);
+	}
+	else
+	{
+		input_mouse_mode_set(MM_NORMAL);
+		//        log_message("ud : %.3f, lr : %.3f", turn_up_down, turn_left_right);
+		turn_up_down *= dt;
+		turn_left_right *= dt;
+	}
+
+	total_up_down_rot += turn_up_down;
+	if(total_up_down_rot >= max_up_down)
+	{
+		total_up_down_rot = max_up_down;
+		turn_up_down = 0.f;
+	}
+	else if(total_up_down_rot <= -max_up_down)
+	{
+		total_up_down_rot = -max_up_down;
+		turn_up_down = 0.f;
+	}
+
+	if(turn_left_right != 0.f)
+	{
+		/*transform_rotate(player_entity, &rot_axis_left_right, -turn_left_right, TS_WORLD);
+		vec3 up = {0.f, 0.f, 0.f};
+		vec3 forward = {0.f, 0.f, 0.f};
+		vec3 lookat = {0.f, 0.f, 0.f};
+		transform_get_up(player_entity, &up);
+		transform_get_forward(player_entity, &forward);
+		transform_get_lookat(player_entity, &lookat);*/
+		/* log_message("Up : %s", tostr_vec3(&up)); */
+		/* log_message("FR : %s", tostr_vec3(&forward)); */
+	}
+	if(turn_up_down != 0.f)
+	{
+		/*transform_rotate(player_entity, &rot_axis_up_down, turn_up_down, TS_LOCAL);
+		vec3 up = {0.f, 0.f, 0.f};
+		vec3 forward = {0.f, 0.f, 0.f};
+		vec3 lookat = {0.f, 0.f, 0.f};
+		transform_get_up(player_entity, &up);
+		transform_get_forward(player_entity, &forward);
+		transform_get_lookat(player_entity, &lookat);*/
+		/* log_message("Up : %s", tostr_vec3(&up)); */
+		/* log_message("FR : %s", tostr_vec3(&forward)); */
+	}
+
+	/* Movement */
+	if(input_map_state_get("Sprint",        KS_PRESSED)) move_speed *= editor_state.camera_sprint_multiplier;
+	if(input_map_state_get("Move_Forward",  KS_PRESSED)) offset.z   -= move_speed;
+	if(input_map_state_get("Move_Backward", KS_PRESSED)) offset.z   += move_speed;
+	if(input_map_state_get("Move_Left",     KS_PRESSED)) offset.x   -= move_speed;
+	if(input_map_state_get("Move_Right",    KS_PRESSED)) offset.x   += move_speed;
+	if(input_map_state_get("Move_Up",       KS_PRESSED)) offset.y   += move_speed;
+	if(input_map_state_get("Move_Down",     KS_PRESSED)) offset.y   -= move_speed;
+
+	vec3_scale(&offset, &offset, dt);
+	if(offset.x != 0 || offset.y != 0 || offset.z != 0)
+	{
+		transform_translate(editor_camera, &offset, TS_LOCAL);
+		//log_message("Position : %s", tostr_vec3(&transform->position));
+	}
 }
 
 void editor_widget_color_combov3(struct nk_context* context, vec3* color, int width, int height)

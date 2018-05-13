@@ -40,9 +40,9 @@ enum LightType
 
 enum Camera_Type
 {
-	CT_EDITOR = 0,
-	CT_GAME,
-	CT_MAX
+	CAM_EDITOR = 0,
+	CAM_GAME,
+	CAM_MAX
 };
 
 struct Transform

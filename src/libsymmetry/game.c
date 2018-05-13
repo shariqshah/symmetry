@@ -99,13 +99,13 @@ bool game_init(struct Window* window, struct Platform_Api* platform_api)
 		texture_init();
 		framebuffer_init();
 		geom_init();
-		editor_init();
 		platform->physics.init();
 		platform->physics.gravity_set(0.f, -9.8f, 0.f);
 		platform->physics.body_set_moved_callback(entity_rigidbody_on_move);
 		platform->physics.body_set_collision_callback(entity_rigidbody_on_collision);
 
 		scene_init(game_state->scene);
+		editor_init();
 		renderer_init(game_state->renderer);
 	}
 	
@@ -276,6 +276,24 @@ void scene_setup(void)
 	//struct Entity* ground = entity_find("Ground");
 	////entity_collision_shape_set(ground, plane);
 	//entity_rigidbody_set(ground, ground_box);
+
+	struct Static_Mesh* ground = scene_static_mesh_create(game_state->scene, "Ground_Mesh", NULL, "default.pamesh", MAT_BLINN);
+	vec3 scale = {200.f, 1.f, 200.f};
+	transform_scale(ground, &scale);
+	ground->model.material_params[MMP_DIFFUSE_TEX].val_int = texture_create_from_file("white.tga", TU_DIFFUSE);
+	ground->model.material_params[MMP_DIFFUSE].val_float = 0.5f;
+	ground->model.material_params[MMP_SPECULAR].val_float = 1.f;
+	ground->model.material_params[MMP_SPECULAR_STRENGTH].val_float = 1.f;
+	vec3_fill(&ground->model.material_params[MMP_DIFFUSE_COL].val_vec3, 1.f, 1.f, 1.f);
+	
+
+	struct Light* light = scene_light_create(game_state->scene, "Test_Light", NULL, LT_POINT);
+	light->color.x = 1.f;
+	light->color.y = 0.f;
+	light->color.z = 1.f;
+	light->radius = 20.f;
+	vec3 light_pos = {0.f, 5.f, 0.f};
+	transform_translate(light, &light_pos, TS_WORLD);
 }
 
 void debug(float dt)

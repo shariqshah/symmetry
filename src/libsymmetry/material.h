@@ -5,10 +5,10 @@
 #include "../common/num_types.h"
 #include "../common/variant.h"
 
-struct Model;
+struct Static_Mesh;
 
 #define MAX_UNIFORM_NAME_LEN 64
-#define MAX_MATERIAL_REGISTERED_MODELS 1024
+#define MAX_MATERIAL_REGISTERED_STATIC_MESHES 1024
 
 struct Uniform
 {
@@ -52,18 +52,18 @@ enum Mat_Pipeline_Param
 
 struct Material
 {
-	int            type;
-	int            shader;
-	struct Model*  registered_models[MAX_MATERIAL_REGISTERED_MODELS];
-	bool           lit;
-	struct Uniform model_params[MMP_MAX];
-	struct Uniform pipeline_params[MPP_MAX];
+	int                 type;
+	int                 shader;
+	struct Static_Mesh* registered_static_meshes[MAX_MATERIAL_REGISTERED_STATIC_MESHES];
+	bool                lit;
+	struct Uniform      model_params[MMP_MAX];
+	struct Uniform      pipeline_params[MPP_MAX];
 };
 
 bool material_init(struct Material* material, int material_type);
 void material_reset(struct Material* material);
-bool material_register_model(struct Material* material, struct Model* model);
-void material_unregister_model(struct Material* material, struct Model* model);
+bool material_register_static_mesh(struct Material* material, struct Static_Mesh* mesh);
+void material_unregister_static_mesh(struct Material* material, struct Static_Mesh* mesh);
 
 
 #endif

@@ -36,6 +36,7 @@ vec3 calc_point_light(in Light light)
 	vec3  specular_comp = vec3(0.0);
 	vec3  light_direction = vertex - light.position;
 	float dist = abs(length(light_direction));
+
 	if(dist <= light.radius)
 	{
 		light_direction = normalize(light_direction);
@@ -115,8 +116,6 @@ void main()
 	
 	for(int i = 0; i < total_active_lights; i++)
 	{
-		if(i == total_active_lights) break;
-
 		if(lights[i].type == LT_POINT)
 			light_contribution += calc_point_light(lights[i]);
 		else if(lights[i].type == LT_DIR)

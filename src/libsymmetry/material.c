@@ -4,7 +4,6 @@
 #include "entity.h"
 #include "../common/string_utils.h"
 #include "../common/log.h"
-#include "model.h"
 #include "texture.h"
 #include "light.h"
 
@@ -17,7 +16,7 @@ bool material_init(struct Material* material, int material_type)
 	assert(material && material_type > -1 && material_type < MAT_MAX);
 
 	material->type = material_type;
-	memset(material->registered_models, 0, sizeof(struct Model*) * MAX_MATERIAL_REGISTERED_MODELS);
+	memset(material->registered_static_meshes, '\0', sizeof(struct Static_Mesh*) * MAX_MATERIAL_REGISTERED_STATIC_MESHES);
 	memset(material->model_params, 0, sizeof(struct Uniform) * MMP_MAX);
 	memset(material->pipeline_params, 0, sizeof(struct Uniform) * MPP_MAX);
 
@@ -53,7 +52,7 @@ bool material_init(struct Material* material, int material_type)
 		material->model_params[MMP_SPECULAR].location = shader_get_uniform_location(material->shader, "specular");
 
 		material->model_params[MMP_SPECULAR_STRENGTH].type = UT_FLOAT;
-		material->model_params[MMP_SPECULAR_STRENGTH].location = shader_get_uniform_location(material->shader, "specular");
+		material->model_params[MMP_SPECULAR_STRENGTH].location = shader_get_uniform_location(material->shader, "specular_strength");
 	}
 	break;
 	case MAT_UNSHADED:
@@ -106,37 +105,37 @@ void material_reset(struct Material* material)
 	assert(material);
 
 	material->type = -1;
-	memset(material->registered_models, 0, sizeof(struct Model*) * MAX_MATERIAL_REGISTERED_MODELS);
+	memset(material->registered_static_meshes, '\0', sizeof(struct Static_Mesh*) * MAX_MATERIAL_REGISTERED_STATIC_MESHES);
 	memset(material->model_params, 0, sizeof(struct Uniform) * MMP_MAX);
 	memset(material->pipeline_params, 0, sizeof(struct Uniform) * MPP_MAX);
 }
 
-bool material_register_model(struct Material* material, struct Model* model)
+bool material_register_static_mesh(struct Material* material, struct Static_Mesh* mesh)
 {
-	assert(model && material);
+	assert(material);
 
-	for(int i = 0; i < MAX_MATERIAL_REGISTERED_MODELS; i++)
+	for(int i = 0; i < MAX_MATERIAL_REGISTERED_STATIC_MESHES; i++)
 	{
-		if(!material->registered_models[i])
+		if(!material->registered_static_meshes[i])
 		{
-			material->registered_models[i] = model;
+			material->registered_static_meshes[i] = mesh;
 
 			// Set default values for instance parameters
 			switch(material->type)
 			{
 			case MAT_BLINN:
 			{
-				variant_assign_vec4f(&model->material_params[MMP_DIFFUSE_COL], 1.f, 0.f, 1.f, 1.f);
-				variant_assign_float(&model->material_params[MMP_DIFFUSE], 1.f);
-				variant_assign_int(&model->material_params[MMP_DIFFUSE_TEX], texture_find("default.tga"));
-				variant_assign_float(&model->material_params[MMP_SPECULAR], 1.f);
-				variant_assign_float(&model->material_params[MMP_SPECULAR_STRENGTH], 50.f);
+				variant_assign_vec4f(&mesh->model.material_params[MMP_DIFFUSE_COL], 1.f, 0.f, 1.f, 1.f);
+				variant_assign_float(&mesh->model.material_params[MMP_DIFFUSE], 1.f);
+				variant_assign_int(&mesh->model.material_params[MMP_DIFFUSE_TEX], texture_find("default.tga"));
+				variant_assign_float(&mesh->model.material_params[MMP_SPECULAR], 1.f);
+				variant_assign_float(&mesh->model.material_params[MMP_SPECULAR_STRENGTH], 50.f);
 			}
 			break;
 			case MAT_UNSHADED:
 			{
-				variant_assign_vec4f(&model->material_params[MMP_DIFFUSE_COL], 1.f, 0.f, 1.f, 1.f);
-				variant_assign_int(&model->material_params[MMP_DIFFUSE_TEX], texture_find("default.tga"));
+				variant_assign_vec4f(&mesh->model.material_params[MMP_DIFFUSE_COL], 1.f, 0.f, 1.f, 1.f);
+				variant_assign_int(&mesh->model.material_params[MMP_DIFFUSE_TEX], texture_find("default.tga"));
 			}
 			break;
 			default:
@@ -150,17 +149,17 @@ bool material_register_model(struct Material* material, struct Model* model)
 	return false;
 }
 
-void material_unregister_model(struct Material* material, struct Model* model)
+void material_unregister_static_mesh(struct Material* material, struct Static_Mesh* mesh)
 {
-	assert(model && material);
+	assert(material);
 
-	for(int i = 0; i < MAX_MATERIAL_REGISTERED_MODELS; i++)
+	for(int i = 0; i < MAX_MATERIAL_REGISTERED_STATIC_MESHES; i++)
 	{
-		if(material->registered_models[i] == model)
+		if(material->registered_static_meshes[i] == mesh)
 		{
-			material->registered_models[i] = NULL;
+			material->registered_static_meshes[i] = NULL;
 			for(int i = 0; i < MMP_MAX; i++)
-				variant_free(&model->material_params[i]);
+				variant_free(&mesh->model.material_params[i]);
 			break;
 		}
 	}

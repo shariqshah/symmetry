@@ -7,6 +7,7 @@
 #include "../common/common.h"
 #include "../common/parser.h"
 #include "model.h"
+#include "light.h"
 
 #include <assert.h>
 #include <string.h>
@@ -47,7 +48,7 @@ void scene_init(struct Scene* scene)
 		scene->cameras[i].base.id = i;
 	}
 
-	scene->active_camera_index = CT_EDITOR;
+	scene->active_camera_index = CAM_EDITOR;
 }
 
 bool scene_load(struct Scene* scene, const char* filename, int dir_type);
@@ -273,22 +274,22 @@ struct Camera* scene_camera_create(struct Scene* scene, const char* name, struct
 struct Static_Model* scene_static_mesh_create(struct Scene* scene, const char* name, struct Entity* parent, const char* geometry_name, int material_type)
 {
 	assert(scene);
-	struct Static_Mesh* new_static_model = NULL;
+	struct Static_Mesh* new_static_mesh = NULL;
 	for(int i = 0; i < MAX_STATIC_MESHES; i++)
 	{
-		struct Static_Mesh* static_model = &scene->static_meshes[i];
-		if(!static_model->base.active)
+		struct Static_Mesh* static_mesh = &scene->static_meshes[i];
+		if(!static_mesh->base.active)
 		{
-			new_static_model = static_model;
+			new_static_mesh = static_mesh;
 			break;
 		}
 	}
 
-	if(new_static_model)
+	if(new_static_mesh)
 	{
-		entity_init(&new_static_model->base, name, parent);
-		new_static_model->base.type = ET_STATIC_MODEL;
-		model_init(&new_static_model->model, geometry_name, material_type);
+		entity_init(&new_static_mesh->base, name, parent);
+		new_static_mesh->base.type = ET_STATIC_MODEL;
+		model_init(&new_static_mesh->model, new_static_mesh, geometry_name, material_type);
 		// TODO: handle creating collision mesh for the model at creation
 	}
 	else
@@ -296,7 +297,7 @@ struct Static_Model* scene_static_mesh_create(struct Scene* scene, const char* n
 		log_error("scene:model_create", "Max model limit reached!");
 	}
 
-	return new_static_model;
+	return new_static_mesh;
 }
 
 struct Sound_Source* scene_sound_source_create(struct Scene* scene, const char* name, struct Entity* parent, const char* filename, int type, bool loop, bool play)
@@ -400,7 +401,7 @@ void scene_static_mesh_remove(struct Scene* scene, struct Static_Mesh* mesh)
 	if(mesh->collision.collision_shape) platform->physics.cs_remove(mesh->collision.collision_shape);
 	if(mesh->collision.rigidbody) platform->physics.body_remove(mesh->collision.rigidbody);
 
-	model_reset(&mesh->model);
+	model_reset(&mesh->model, mesh);
 	scene_entity_remove(scene, &mesh->base);
 }
 

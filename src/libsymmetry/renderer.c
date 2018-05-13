@@ -41,6 +41,18 @@ void renderer_init(struct Renderer* renderer)
 	glCullFace(GL_BACK);
     platform->windowresize_callback_set(on_framebuffer_size_change);
 	gui_init();
+
+	struct Hashmap* cvars = platform->config.get();
+	renderer->settings.fog.mode           = hashmap_int_get(cvars,   "fog_mode");
+	renderer->settings.fog.density        = hashmap_float_get(cvars, "fog_density");
+	renderer->settings.fog.start_dist     = hashmap_float_get(cvars, "fog_start_dist");
+	renderer->settings.fog.max_dist       = hashmap_float_get(cvars, "fog_max_dist");
+	renderer->settings.fog.color          = hashmap_vec3_get(cvars,  "fog_color");
+	renderer->settings.debug_draw_enabled = hashmap_bool_get(cvars,  "debug_draw_enabled");
+	renderer->settings.debug_draw_physics = hashmap_bool_get(cvars,  "debug_draw_physics");
+	renderer->settings.debug_draw_mode    = hashmap_int_get(cvars,   "debug_draw_mode");
+	renderer->settings.debug_draw_color   = hashmap_vec4_get(cvars,  "debug_draw_color");
+	renderer->settings.ambient_light      = hashmap_vec3_get(cvars,  "ambient_light");
 	
 	/* Quad geometry for final render */
 	vec3* vertices = array_new(vec3);
@@ -156,20 +168,17 @@ void renderer_draw(struct Renderer* renderer, struct Scene* scene)
 			{
 				/* for each material, get all the registered models and render them */
 				struct Material* material = &renderer->materials[i];
-				if(array_len(material->registered_models) == 0)
-					continue;
-
 				GL_CHECK(shader_bind(material->shader));
 
 				if(material->lit)	/* Set light information */
 				{
 					char uniform_name[MAX_UNIFORM_NAME_LEN];
 					memset(uniform_name, '\0', MAX_UNIFORM_NAME_LEN);
-					int light_count = 0;
+					int light_count = -1;
 					for(int i = 0; i < MAX_LIGHTS; i++)
 					{
 						struct Light* light = &scene->lights[i]; /* TODO: Cull lights according to camera frustum */
-						if(!light->base.active) continue;
+						if(!light->base.active && light->valid) continue;
 						light_count++;
 
 						vec3 light_pos = {0, 0, 0};
@@ -221,6 +230,7 @@ void renderer_draw(struct Renderer* renderer, struct Scene* scene)
 						memset(uniform_name, '\0', MAX_UNIFORM_NAME_LEN);
 					}
 
+					light_count++; // this variable is going to be used for looping an array so increase its length by one
 					GL_CHECK(shader_set_uniform(material->pipeline_params[MPP_TOTAL_LIGHTS].type, material->pipeline_params[MPP_TOTAL_LIGHTS].location, &light_count));
 					vec3 camera_pos = {0, 0, 0};
 					transform_get_absolute_position(&camera->base, &camera_pos);
@@ -237,10 +247,12 @@ void renderer_draw(struct Renderer* renderer, struct Scene* scene)
 				if(material->lit) GL_CHECK(shader_set_uniform(material->pipeline_params[MPP_VIEW_MAT].type, material->pipeline_params[MPP_VIEW_MAT].location, &camera->view_mat));
 
 		
-				for(int j = 0; j < array_len(material->registered_models); j++)
+				for(int j = 0; j < MAX_MATERIAL_REGISTERED_STATIC_MESHES; j++)
 				{
+					if(!material->registered_static_meshes[j]) continue;
+
 					/* for each registered model, set up uniforms and render */
-					struct Static_Mesh* mesh     = material->registered_models[i];
+					struct Static_Mesh* mesh     = material->registered_static_meshes[j];
 					struct Geometry*    geometry = geom_get(mesh->model.geometry_index);
 
 					/* Check if model is in frustum */
@@ -262,12 +274,12 @@ void renderer_draw(struct Renderer* renderer, struct Scene* scene)
 					/* set material params for the model */
 					for(int k = 0; k < MMP_MAX; k++)
 					{
-						switch(mesh->model.material_params[i].type)
+						switch(mesh->model.material_params[k].type)
 						{
-						case VT_INT:   GL_CHECK(shader_set_uniform(material->model_params[i].type, material->model_params[i].location, &mesh->model.material_params[i].val_int));   break;
-						case VT_FLOAT: GL_CHECK(shader_set_uniform(material->model_params[i].type, material->model_params[i].location, &mesh->model.material_params[i].val_float)); break;
-						case VT_VEC3:  GL_CHECK(shader_set_uniform(material->model_params[i].type, material->model_params[i].location, &mesh->model.material_params[i].val_vec3));  break;
-						case VT_VEC4:  GL_CHECK(shader_set_uniform(material->model_params[i].type, material->model_params[i].location, &mesh->model.material_params[i].val_vec4));  break;
+						case VT_INT:   GL_CHECK(shader_set_uniform(material->model_params[k].type, material->model_params[k].location, &mesh->model.material_params[k].val_int));   break;
+						case VT_FLOAT: GL_CHECK(shader_set_uniform(material->model_params[k].type, material->model_params[k].location, &mesh->model.material_params[k].val_float)); break;
+						case VT_VEC3:  GL_CHECK(shader_set_uniform(material->model_params[k].type, material->model_params[k].location, &mesh->model.material_params[k].val_vec3));  break;
+						case VT_VEC4:  GL_CHECK(shader_set_uniform(material->model_params[k].type, material->model_params[k].location, &mesh->model.material_params[k].val_vec4));  break;
 						}
 					}
 
@@ -279,6 +291,7 @@ void renderer_draw(struct Renderer* renderer, struct Scene* scene)
 					if(material->lit)
 					{
 						GL_CHECK(shader_set_uniform(material->pipeline_params[MPP_VIEW_MAT].type, material->pipeline_params[MPP_VIEW_MAT].location, &camera->view_mat));
+						GL_CHECK(shader_set_uniform(material->pipeline_params[MPP_MODEL_MAT].type, material->pipeline_params[MPP_MODEL_MAT].location, &mesh->base.transform.trans_mat));
 						mat4 inv_mat;
 						mat4_identity(&inv_mat);
 						mat4_inverse(&inv_mat, &mesh->base.transform.trans_mat);
@@ -437,7 +450,7 @@ void renderer_cleanup(struct Renderer* renderer)
 
 void on_framebuffer_size_change(int width, int height)
 {
-	struct Scene* scene = &game_state_get()->scene;
+	struct Scene* scene = game_state_get()->scene;
 	float aspect = (float)width / (float)height;
 	for(int i = 0; i < MAX_CAMERAS; i++)
 	{

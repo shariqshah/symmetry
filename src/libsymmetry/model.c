@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-void model_init(struct Model* model, const char* geometry_name, int material_type)
+void model_init(struct Model* model, struct Static_Mesh* mesh, const char* geometry_name, int material_type)
 {
 	assert(model && material_type > -1 && material_type < MAT_MAX);
 
@@ -32,14 +32,15 @@ void model_init(struct Model* model, const char* geometry_name, int material_typ
 	}
 
 	model->geometry_index = geo_index;
-	if(!material_register_model(model, material_type))
+	struct Material* material = &game_state_get()->renderer->materials[material_type];
+	if(!material_register_static_mesh(material, mesh))
 	{
 		log_error("model:create", "Unable to register model with Unshaded material, component not added");
-		model_reset(model);
+		model_reset(model, mesh);
 	}
 }
 
-void model_reset(struct Model* model)
+void model_reset(struct Model* model, struct Static_Mesh* mesh)
 {
 	assert(model);
 	geom_remove(model->geometry_index);
@@ -48,6 +49,6 @@ void model_reset(struct Model* model)
 	if(model->material)
 	{
 		struct Material* material = &renderer->materials[model->material->type];
-		material_unregister_model(material, model);
+		material_unregister_static_mesh(material, mesh);
 	}
 }

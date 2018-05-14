@@ -29,7 +29,11 @@ void scene_init(struct Scene* scene)
 	scene->player.base.type    = ET_PLAYER;
 
 	for(int i = 0; i < MAX_ENTITIES;      i++) entity_reset(&scene->entities[i], i);
-	for(int i = 0; i < MAX_LIGHTS;        i++) entity_reset(&scene->lights[i], i);
+	for(int i = 0; i < MAX_LIGHTS;        i++) 
+	{
+		entity_reset(&scene->lights[i], i);
+		scene->lights[i].type = ET_LIGHT;
+	}
 	for(int i = 0; i < MAX_STATIC_MESHES; i++) 
 	{
 		entity_reset(&scene->static_meshes[i], i);
@@ -288,7 +292,7 @@ struct Static_Model* scene_static_mesh_create(struct Scene* scene, const char* n
 	if(new_static_mesh)
 	{
 		entity_init(&new_static_mesh->base, name, parent);
-		new_static_mesh->base.type = ET_STATIC_MODEL;
+		new_static_mesh->base.type = ET_STATIC_MESH;
 		model_init(&new_static_mesh->model, new_static_mesh, geometry_name, material_type);
 		// TODO: handle creating collision mesh for the model at creation
 	}
@@ -497,6 +501,26 @@ struct Sound_Source* scene_sound_source_find(struct Scene* scene, const char* na
 	}
 
 	return sound_source;
+}
+
+struct Entity* scene_base_entity_get(struct Scene* scene, int id, int type)
+{
+	assert(scene && id != -1 && type < ET_MAX);
+
+	struct Entity* entity = NULL;
+
+	switch(type)
+	{
+	case ET_DEFAULT:      entity = &scene->entities[id];      break;
+	case ET_CAMERA:       entity = &scene->cameras[id];       break;
+	case ET_LIGHT:        entity = &scene->lights[id];        break;
+	case ET_STATIC_MESH:  entity = &scene->static_meshes[id]; break;
+	case ET_SOUND_SOURCE: entity = &scene->sound_sources[id]; break;
+	case ET_PLAYER:       entity = &scene->player;            break;
+	case ET_ROOT:         entity = &scene->root_entity;       break;
+	}
+
+	return entity;
 }
 
 void* scene_find(struct Scene* scene, const char* name)

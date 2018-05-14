@@ -37,6 +37,7 @@ void camera_reset(struct Camera* camera)
 
 void camera_init(struct Camera* camera, int width, int height)
 {
+	camera->base.type  = ET_CAMERA;
 	camera->fbo        = -1;
 	camera->render_tex = -1;
 	camera->depth_tex  = -1;

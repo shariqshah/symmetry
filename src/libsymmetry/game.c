@@ -33,10 +33,8 @@
 #include "im_render.h"
 
 #define UNUSED(a) (void)a
-#ifndef _MSC_VER
-#define MIN(a,b) ((a) < (b) ? (a) : (b))
-#define MAX(a,b) ((a) < (b) ? (b) : (a))
-#endif
+#define MIN_NUM(a,b) ((a) < (b) ? (a) : (b))
+#define MAX_NUM(a,b) ((a) < (b) ? (b) : (a))
 #define LEN(a) (sizeof(a)/sizeof(a)[0])
 
 
@@ -289,7 +287,7 @@ void scene_setup(void)
 
 	struct Light* light = scene_light_create(game_state->scene, "Test_Light", NULL, LT_POINT);
 	light->color.x = 1.f;
-	light->color.y = 0.f;
+	light->color.y = 1.f;
 	light->color.z = 1.f;
 	light->radius = 20.f;
 	vec3 light_pos = {0.f, 5.f, 0.f};
@@ -298,98 +296,6 @@ void scene_setup(void)
 
 void debug(float dt)
 {
-	//struct Entity* entity = entity_get(player_node);
-	float move_speed = 5.f, move_scale = 3.f, turn_speed = 50.f;
-	vec3 offset = {0, 0, 0};
-	float turn_up_down = 0.f;
-	float turn_left_right = 0.f;
-	float max_up_down = 60.f;
-	static float total_up_down_rot = 0.f;
-	vec3 rot_axis_up_down = {1, 0, 0};
-	vec3 rot_axis_left_right = {0, 1, 0};
-
-	/* Look around */
-	if(input_map_state_get("Turn_Up",    KS_PRESSED)) turn_up_down += turn_speed;
-	if(input_map_state_get("Turn_Down",  KS_PRESSED)) turn_up_down -= turn_speed;
-	if(input_map_state_get("Turn_Right", KS_PRESSED)) turn_left_right += turn_speed;
-	if(input_map_state_get("Turn_Left",  KS_PRESSED)) turn_left_right -= turn_speed;
-	
-	if(input_mousebutton_state_get(MSB_RIGHT, KS_PRESSED))
-	{
-        const float scale = 0.1f;
-        int cursor_lr, cursor_ud;
-        input_mouse_delta_get(&cursor_lr, &cursor_ud);
-        if(input_mouse_mode_get() != MM_RELATIVE)
-        {
-            input_mouse_mode_set(MM_RELATIVE);
-            cursor_lr = cursor_ud = 0;
-        }
-
-		turn_up_down = -cursor_ud * turn_speed * dt * scale;
-		turn_left_right = cursor_lr * turn_speed * dt * scale;
-//        log_message("ud : %d, lr : %d", cursor_ud, cursor_lr);
-	}
-	else
-	{
-		input_mouse_mode_set(MM_NORMAL);
-//        log_message("ud : %.3f, lr : %.3f", turn_up_down, turn_left_right);
-		turn_up_down *= dt;
-		turn_left_right *= dt;
-	}
-	
-	total_up_down_rot += turn_up_down;
-	if(total_up_down_rot >= max_up_down)
-	{
-		total_up_down_rot = max_up_down;
-		turn_up_down = 0.f;
-	}
-	else if(total_up_down_rot <= -max_up_down)
-	{
-		total_up_down_rot = -max_up_down;
-		turn_up_down = 0.f;
-	}
-	
-	if(turn_left_right != 0.f)
-	{
-		/*transform_rotate(player_entity, &rot_axis_left_right, -turn_left_right, TS_WORLD);
-		vec3 up = {0.f, 0.f, 0.f};
-		vec3 forward = {0.f, 0.f, 0.f};
-		vec3 lookat = {0.f, 0.f, 0.f};
-		transform_get_up(player_entity, &up);
-		transform_get_forward(player_entity, &forward);
-		transform_get_lookat(player_entity, &lookat);*/
-		/* log_message("Up : %s", tostr_vec3(&up)); */
-		/* log_message("FR : %s", tostr_vec3(&forward)); */
-	}
-	if(turn_up_down != 0.f)
-	{
-		/*transform_rotate(player_entity, &rot_axis_up_down, turn_up_down, TS_LOCAL);
-		vec3 up = {0.f, 0.f, 0.f};
-		vec3 forward = {0.f, 0.f, 0.f};
-		vec3 lookat = {0.f, 0.f, 0.f};
-		transform_get_up(player_entity, &up);
-		transform_get_forward(player_entity, &forward);
-		transform_get_lookat(player_entity, &lookat);*/
-		/* log_message("Up : %s", tostr_vec3(&up)); */
-		/* log_message("FR : %s", tostr_vec3(&forward)); */
-	}
-	
-	/* Movement */
-	if(input_map_state_get("Sprint",        KS_PRESSED)) move_speed *= move_scale;
-	if(input_map_state_get("Move_Forward",  KS_PRESSED)) offset.z   -= move_speed;
-	if(input_map_state_get("Move_Backward", KS_PRESSED)) offset.z   += move_speed;
-	if(input_map_state_get("Move_Left",     KS_PRESSED)) offset.x   -= move_speed;
-	if(input_map_state_get("Move_Right",    KS_PRESSED)) offset.x   += move_speed;
-	if(input_map_state_get("Move_Up",       KS_PRESSED)) offset.y   += move_speed;
-	if(input_map_state_get("Move_Down",     KS_PRESSED)) offset.y   -= move_speed;
-
-	vec3_scale(&offset, &offset, dt);
-	if(offset.x != 0 || offset.y != 0 || offset.z != 0)
-	{
-		//transform_translate(player_entity, &offset, TS_LOCAL);
- 		//log_message("Position : %s", tostr_vec3(&transform->position));
-	}
-
 	if(input_is_key_pressed(KEY_SPACE))
 	{
 		struct Entity* model = scene_find(game_state->scene, "Light_Ent");
@@ -491,7 +397,7 @@ void debug(float dt)
 	im_color.y = 0.f;
 	im_begin(im_position, im_rot, im_scale, im_color, GL_TRIANGLES);
 
-	float length = 200 * sin(dt);
+	float length = 200.f;
 
 	//Front
 	im_pos(0.f,  0.f,  0.f);
@@ -1023,7 +929,7 @@ void debug_gui(float dt)
                         if (nk_button_symbol(ctx, NK_SYMBOL_TRIANGLE_LEFT)) {
                             if (sel_date.tm_mon == 0) {
                                 sel_date.tm_mon = 11;
-                                sel_date.tm_year = MAX(0, sel_date.tm_year-1);
+                                sel_date.tm_year = MAX_NUM(0, sel_date.tm_year-1);
                             } else sel_date.tm_mon--;
                         }
                         nk_layout_row_push(ctx, 0.9f);

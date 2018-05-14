@@ -507,12 +507,13 @@ const char* entity_type_name_get(struct Entity* entity)
 	switch(entity->type)
 	{
 	case ET_NONE:         typename = "None";         break;
+	case ET_DEFAULT:      typename = "Default";      break;
 	case ET_CAMERA:       typename = "Camera";       break;
 	case ET_LIGHT:        typename = "Light";        break;
 	case ET_PLAYER:       typename = "Player";       break;
 	case ET_ROOT:         typename = "Root";         break;
 	case ET_SOUND_SOURCE: typename = "Sound Source"; break;
-	case ET_STATIC_MODEL:  typename = "Static Mesh";  break;
+	case ET_STATIC_MESH:  typename = "Static Mesh";  break;
 	default:              typename = "Unknown";      break;
 	};
 	return typename;
@@ -615,4 +616,11 @@ void entity_collision_shape_set(struct Entity* entity, struct Collision* collisi
 
 	collision->collision_shape = shape;
 	platform->physics.cs_data_set(shape, entity);
+}
+
+void entity_rename(struct Entity* entity, const char* new_name)
+{
+	assert(entity);
+	memset(entity->name, '\0', MAX_ENTITY_NAME_LEN);
+	snprintf(entity->name, MAX_ENTITY_NAME_LEN, new_name);
 }

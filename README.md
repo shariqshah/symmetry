@@ -156,6 +156,7 @@
 - ## TODO
 
 	- Remove model and replace all usages with static mesh
+	- Get editor camera speed and other settings from config file
 	- Re-Implement player logic
 	- Re-Implement saving/loading scene to/from files
 	- Bring back functionality and complete overhaul 
@@ -394,3 +395,5 @@
 	* Converted IM_Vertex array to only be used as temporary storage for vertices between begin and end calls
 	* Implemented Debug physics mesh drawing for box and sphere primitives
 	* Completed Phase 1 of codebase refactoring
+	* Improved editor camera handling
+	* Re-implemented showing all the entities in the editor

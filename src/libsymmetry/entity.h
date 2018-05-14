@@ -24,7 +24,7 @@ enum Entity_Type
 	ET_ROOT,
 	ET_CAMERA,
 	ET_LIGHT,
-	ET_STATIC_MODEL,
+	ET_STATIC_MESH,
 	ET_SOUND_SOURCE,
 	ET_MAX
 };
@@ -157,5 +157,6 @@ void           entity_rigidbody_on_move(Rigidbody body);
 void           entity_rigidbody_on_collision(Rigidbody body_A, Rigidbody body_B);
 void           entity_rigidbody_set(struct Entity* entity, struct Collision* collision, Rigidbody body);
 void           entity_collision_shape_set(struct Entity* entity, struct Collision* collision, Collision_Shape shape); // Only used for collision shapes like plane which can't have a rigidbody attached to collision shape
+void           entity_rename(struct Entity* entity, const char* new_name);
 
 #endif

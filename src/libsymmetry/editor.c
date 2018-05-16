@@ -77,7 +77,10 @@ void editor_init(void)
 	editor_state.camera_sprint_multiplier = 2.f;
 	debug_vars_list                       = array_new(struct Debug_Variable);
 	empty_indices                         = array_new(int);
+}
 
+void editor_init_camera(void)
+{
 	struct Camera* editor_camera = &game_state_get()->scene->cameras[CAM_EDITOR];
 	entity_rename(editor_camera, "Editor_Camera");
 	editor_camera->base.active = true;

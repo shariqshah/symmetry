@@ -27,6 +27,7 @@ void scene_init(struct Scene* scene);
 bool scene_load(struct Scene* scene, const char* filename, int dir_type);
 bool scene_save(struct Scene* scene, const char* filename, int dir_type);
 void scene_destroy(struct Scene* scene);
+void scene_update(struct Scene* scene, float dt);
 void scene_post_update(struct Scene* scene);
 
 struct Entity*       scene_entity_create(struct Scene* scene, const char* name, struct Entity* parent);
@@ -34,7 +35,6 @@ struct Light*        scene_light_create(struct Scene* scene, const char* name, s
 struct Camera*       scene_camera_create(struct Scene* scene, const char* name, struct Entity* parent, int width, int height);
 struct Static_Model* scene_static_mesh_create(struct Scene* scene, const char* name, struct Entity* parent, const char* geometry_name, int material_type);
 struct Sound_Source* scene_sound_source_create(struct Scene* scene, const char* name, struct Entity* parent, const char* filename, int type, bool loop, bool play);
-struct Player*       scene_player_get(struct Scene* scene);
 
 void scene_entity_remove(struct Scene* scene, struct Entity* entity);
 void scene_light_remove(struct Scene* scene, struct Light* light);

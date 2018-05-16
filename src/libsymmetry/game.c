@@ -40,12 +40,12 @@
 
 #define MAX_FRAME_TIME 0.5f
 
-static bool run(void);
-static void update(float dt, bool* window_should_close);
-static void render(void);
-static void debug(float dt);
-static void debug_gui(float dt);
-static void scene_setup(void);
+static bool game_run(void);
+static void game_update(float dt, bool* window_should_close);
+static void game_render(void);
+static void game_debug(float dt);
+static void game_debug_gui(float dt);
+static void game_scene_setup(void);
 static void on_box_move(Rigidbody body);
 static void on_collision_test(struct Entity* this_ent, struct Entity* other_ent, Rigidbody body, Rigidbody body2);
 
@@ -74,8 +74,6 @@ bool game_init(struct Window* window, struct Platform_Api* platform_api)
 	else
 	{
 		game_state->window = window;
-		game_state->player_node = NULL;
-		game_state->player_pitch_node = NULL;
 		game_state->is_initialized = false;
 		game_state->renderer = malloc(sizeof(*game_state->renderer));
 		game_state->scene = malloc(sizeof(*game_state->scene));
@@ -102,18 +100,18 @@ bool game_init(struct Window* window, struct Platform_Api* platform_api)
 		platform->physics.body_set_moved_callback(entity_rigidbody_on_move);
 		platform->physics.body_set_collision_callback(entity_rigidbody_on_collision);
 
-		scene_init(game_state->scene);
 		editor_init();
 		renderer_init(game_state->renderer);
+		scene_init(game_state->scene);
 	}
 	
 	/* Debug scene setup */
-	scene_setup();
+	game_scene_setup();
 	game_state->is_initialized = true;
-	return run();
+	return game_run();
 }
 
-void scene_setup(void)
+void game_scene_setup(void)
 {	
  //   struct Entity* player = scene_add_new("player", ET_CAMERA);
  //   game_state->player_node = player->id;
@@ -294,7 +292,7 @@ void scene_setup(void)
 	transform_translate(light, &light_pos, TS_WORLD);
 }
 
-void debug(float dt)
+void game_debug(float dt)
 {
 	if(input_is_key_pressed(KEY_SPACE))
 	{
@@ -460,7 +458,7 @@ void debug(float dt)
 	}
 }
 
-bool run(void)
+bool game_run(void)
 {
     uint32 last_time = platform->ticks_get();
 	bool   should_window_close = 0;
@@ -475,9 +473,9 @@ bool run(void)
         platform->poll_events(&should_window_close);
 		gui_input_end();
 		
-		update(delta_time, &should_window_close);
+		game_update(delta_time, &should_window_close);
 		platform->physics.step(delta_time);
-		render();
+		game_render();
         platform->window.swap_buffers(game_state->window);
 		scene_post_update(game_state->scene);
 		platform->sound.update_3d();
@@ -485,7 +483,7 @@ bool run(void)
     return true;
 }
 
-void update(float dt, bool* window_should_close)
+void game_update(float dt, bool* window_should_close)
 {	
 	if(input_is_key_pressed(KEY_ESCAPE))                      *window_should_close = true;
 	if(input_map_state_get("Editor_Toggle", KS_RELEASED))     editor_toggle();
@@ -498,14 +496,15 @@ void update(float dt, bool* window_should_close)
 		return;
 	}
 	
-	debug(dt);
+	game_debug(dt);
 	//debug_gui(dt);
+	scene_update(game_state->scene, dt);
 	editor_update(dt);
-	input_update();	/* This should always be the last thing. Probably
+	input_update();	/* This should always be the last thing(Why??). Probably
 					 * put this in post update? */
 }
 
-void debug_gui(float dt)
+void game_debug_gui(float dt)
 {
 	struct Gui_State* gui_state = gui_state_get();
 	struct nk_context* ctx = &gui_state->context;
@@ -1709,7 +1708,7 @@ void debug_gui(float dt)
 }
 
 
-void render(void)
+void game_render(void)
 {
 	renderer_draw(game_state->renderer, game_state->scene);
 }

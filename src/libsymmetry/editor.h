@@ -4,6 +4,7 @@
 #include "../common/linmath.h"
 
 void editor_init(void);
+void editor_init_camera(void);
 void editor_update(float dt);
 void editor_toggle(void);
 void editor_cleanup(void);

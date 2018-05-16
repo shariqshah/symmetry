@@ -18,21 +18,24 @@ void config_vars_init(void)
 {
 	cvars = hashmap_new();
 	/* Initialize with default values incase there is no config file */
-	hashmap_int_set(cvars,   "render_width",       1024);
-	hashmap_int_set(cvars,   "render_height",      768);
-	hashmap_int_set(cvars,   "fog_mode",           0);
-	hashmap_vec3_setf(cvars, "fog_color",          0.9f, 0.2f, 0.2f);
-	hashmap_float_set(cvars, "fog_density",        0.1);
-	hashmap_float_set(cvars, "fog_start_dist",     10.f);
-	hashmap_float_set(cvars, "fog_max_dist",       50.f);
-	hashmap_vec3_setf(cvars, "ambient_light",      0.1f, 0.1f, 0.1f);
-	hashmap_bool_set(cvars,  "msaa_enabled",       1);
-	hashmap_int_set(cvars,   "msaa_levels",        4);
-	hashmap_bool_set(cvars,  "debug_draw_enabled", true);
-	hashmap_bool_set(cvars,  "debug_draw_physics", true);
-    hashmap_int_set(cvars,  "video_driver_linux",  VD_WAYLAND);
-	hashmap_int_set(cvars,   "debug_draw_mode",    0);
-    hashmap_vec4_setf(cvars, "debug_draw_color",   1.f, 0.f, 0.f, 1.f);
+	hashmap_int_set(cvars,   "render_width",                 1024);
+	hashmap_int_set(cvars,   "render_height",                768);
+	hashmap_int_set(cvars,   "fog_mode",                     0);
+	hashmap_vec3_setf(cvars, "fog_color",                    0.9f, 0.2f, 0.2f);
+	hashmap_float_set(cvars, "fog_density",                  0.1);
+	hashmap_float_set(cvars, "fog_start_dist",               10.f);
+	hashmap_float_set(cvars, "fog_max_dist",                 50.f);
+	hashmap_vec3_setf(cvars, "ambient_light",                0.1f, 0.1f, 0.1f);
+	hashmap_bool_set(cvars,  "msaa_enabled",                 1);
+	hashmap_int_set(cvars,   "msaa_levels",                  4);
+	hashmap_bool_set(cvars,  "debug_draw_enabled",           true);
+	hashmap_bool_set(cvars,  "debug_draw_physics",           true);
+    hashmap_int_set(cvars,   "video_driver_linux",           VD_WAYLAND);
+	hashmap_int_set(cvars,   "debug_draw_mode",              0);
+    hashmap_vec4_setf(cvars, "debug_draw_color",             1.f, 0.f, 0.f, 1.f);
+	hashmap_float_set(cvars, "player_move_speed",            10.f);
+	hashmap_float_set(cvars, "player_move_speed_multiplier", 2.f);
+	hashmap_float_set(cvars, "player_turn_speed",            5.f);
 }
 
 void config_vars_cleanup(void)

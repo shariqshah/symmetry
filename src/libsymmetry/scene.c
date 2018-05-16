@@ -8,6 +8,7 @@
 #include "../common/parser.h"
 #include "model.h"
 #include "light.h"
+#include "player.h"
 
 #include <assert.h>
 #include <string.h>
@@ -21,12 +22,6 @@ void scene_init(struct Scene* scene)
 	scene->root_entity.active  = true;
 	scene->root_entity.id      = 0;
 	scene->root_entity.type    = ET_ROOT;
-
-	//Initialize player
-	entity_init(&scene->player, "Player", &scene->root_entity);
-	scene->player.base.active  = true;
-	scene->player.base.id      = 1;
-	scene->player.base.type    = ET_PLAYER;
 
 	for(int i = 0; i < MAX_ENTITIES;      i++) entity_reset(&scene->entities[i], i);
 	for(int i = 0; i < MAX_LIGHTS;        i++) 
@@ -52,6 +47,9 @@ void scene_init(struct Scene* scene)
 		scene->cameras[i].base.id = i;
 	}
 
+	player_init(&scene->player, scene);
+	editor_init_camera();
+
 	scene->active_camera_index = CAM_EDITOR;
 }
 
@@ -67,8 +65,14 @@ void scene_destroy(struct Scene* scene)
 	for(int i = 0; i < MAX_LIGHTS;        i++) scene_light_remove(scene, &scene->lights[i]);
 	for(int i = 0; i < MAX_STATIC_MESHES; i++) scene_static_mesh_remove(scene, &scene->static_meshes[i]);
 	for(int i = 0; i < MAX_SOUND_SOURCES; i++) scene_sound_source_remove(scene, &scene->sound_sources[i]);
+	player_destroy(&scene->player);
 	entity_reset(&scene->root_entity, 0);
 	scene->root_entity.active = false;
+}
+
+void scene_update(struct Scene* scene, float dt)
+{
+	player_update(&scene->player, scene, dt);
 }
 
 void scene_post_update(struct Scene* scene)
@@ -235,7 +239,7 @@ struct Light* scene_light_create(struct Scene* scene, const char* name, struct E
 
 	if(new_light)
 	{
-		entity_init(&new_light->base, name, parent);
+		entity_init(&new_light->base, name, parent ? parent : &scene->root_entity);
 		new_light->base.type = ET_LIGHT;
 		light_init(new_light, light_type);
 	}
@@ -263,7 +267,7 @@ struct Camera* scene_camera_create(struct Scene* scene, const char* name, struct
 
 	if(new_camera)
 	{
-		entity_init(&new_camera->base, name, parent);
+		entity_init(&new_camera->base, name, parent ? parent : &scene->root_entity);
 		new_camera->base.type = ET_CAMERA;
 		camera_init(new_camera, width, height);
 	}
@@ -291,7 +295,7 @@ struct Static_Model* scene_static_mesh_create(struct Scene* scene, const char* n
 
 	if(new_static_mesh)
 	{
-		entity_init(&new_static_mesh->base, name, parent);
+		entity_init(&new_static_mesh->base, name, parent ? parent : &scene->root_entity);
 		new_static_mesh->base.type = ET_STATIC_MESH;
 		model_init(&new_static_mesh->model, new_static_mesh, geometry_name, material_type);
 		// TODO: handle creating collision mesh for the model at creation
@@ -320,7 +324,7 @@ struct Sound_Source* scene_sound_source_create(struct Scene* scene, const char* 
 
 	if(new_sound_source)
 	{
-		entity_init(&new_sound_source->base, name, parent);
+		entity_init(&new_sound_source->base, name, parent ? parent : &scene->root_entity);
 		new_sound_source->base.type = ET_SOUND_SOURCE;
 		struct Entity* entity = &new_sound_source->base;
 
@@ -364,12 +368,6 @@ struct Sound_Source* scene_sound_source_create(struct Scene* scene, const char* 
 	}
 
 	return new_sound_source;
-}
-
-struct Player* scene_player_get(struct Scene* scene)
-{
-	assert(scene);
-	return &scene->player;
 }
 
 void scene_entity_remove(struct Scene* scene, struct Entity* entity)

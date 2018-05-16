@@ -20,8 +20,6 @@ struct Game_State
 {
 	bool             is_initialized;
 	struct Window*   window;
-	struct Player*   player_node;
-	struct Entity*   player_pitch_node;
 	struct Renderer* renderer;
 	struct Scene*    scene;
 };

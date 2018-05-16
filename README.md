@@ -155,6 +155,9 @@
 
 - ## TODO
 
+	- Switching between editor and game mode/cameras
+	- Player projectiles and sounds
+	- NPR and cross-hatching
 	- Remove model and replace all usages with static mesh
 	- Get editor camera speed and other settings from config file
 	- Re-Implement player logic
@@ -397,3 +400,4 @@
 	* Completed Phase 1 of codebase refactoring
 	* Improved editor camera handling
 	* Re-implemented showing all the entities in the editor
+	* Player init, update, visual representation and movement

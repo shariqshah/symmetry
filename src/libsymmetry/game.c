@@ -42,6 +42,7 @@
 
 static bool game_run(void);
 static void game_update(float dt, bool* window_should_close);
+static void game_post_update(float dt);
 static void game_render(void);
 static void game_debug(float dt);
 static void game_debug_gui(float dt);
@@ -75,6 +76,7 @@ bool game_init(struct Window* window, struct Platform_Api* platform_api)
 	{
 		game_state->window = window;
 		game_state->is_initialized = false;
+		game_state->game_mode = GAME_MODE_GAME;
 		game_state->renderer = malloc(sizeof(*game_state->renderer));
 		game_state->scene = malloc(sizeof(*game_state->scene));
 
@@ -103,8 +105,6 @@ bool game_init(struct Window* window, struct Platform_Api* platform_api)
 		editor_init();
 		renderer_init(game_state->renderer);
 		scene_init(game_state->scene);
-
-		game_state->game_mode = GM_GAME;
 	}
 	
 	/* Debug scene setup */
@@ -476,11 +476,9 @@ bool game_run(void)
 		gui_input_end();
 		
 		game_update(delta_time, &should_window_close);
-		platform->physics.step(delta_time);
+		game_post_update(delta_time);
 		game_render();
-        platform->window.swap_buffers(game_state->window);
-		scene_post_update(game_state->scene);
-		platform->sound.update_3d();
+		platform->window.swap_buffers(game_state->window);
 	}
     return true;
 }
@@ -488,10 +486,24 @@ bool game_run(void)
 void game_update(float dt, bool* window_should_close)
 {	
 	if(input_is_key_pressed(KEY_ESCAPE))                      *window_should_close = true;
-	if(input_map_state_get("Editor_Toggle", KS_RELEASED))     editor_toggle();
     if(input_map_state_get("Window_Fullscreen", KS_RELEASED)) platform->window.fullscreen_set(game_state->window, 1);
-    if(input_map_state_get("Window_Maximize", KS_RELEASED))   platform->window.fullscreen_set(game_state->window, 0);
-    if(input_map_state_get("Reload_Game_Lib", KS_RELEASED))
+    if(input_map_state_get("Window_Maximize",   KS_RELEASED)) platform->window.fullscreen_set(game_state->window, 0);
+	if(input_map_state_get("Editor_Toggle",     KS_RELEASED)) 
+	{
+		//editor_toggle();
+		if(game_state->game_mode == GAME_MODE_EDITOR)
+		{
+			game_state->game_mode = GAME_MODE_GAME;
+			game_state->scene->active_camera_index = CAM_GAME;
+		}
+		else if(game_state->game_mode == GAME_MODE_GAME)
+		{
+			game_state->game_mode = GAME_MODE_EDITOR;
+			game_state->scene->active_camera_index = CAM_EDITOR;
+		}
+	}
+
+    if(input_map_state_get("Reload_Game_Lib",   KS_RELEASED))
 	{
 		*window_should_close = true;
 		platform->reload_game_lib();
@@ -501,9 +513,21 @@ void game_update(float dt, bool* window_should_close)
 	//game_debug(dt);
 	//debug_gui(dt);
 	scene_update(game_state->scene, dt);
-	editor_update(dt);
-	input_update();	/* This should always be the last thing(Why??). Probably
-					 * put this in post update? */
+	if(game_state->game_mode == GAME_MODE_GAME)
+	{
+		platform->physics.step(dt);
+	}
+	else if(game_state->game_mode == GAME_MODE_EDITOR)
+	{
+		editor_update(dt);
+	}
+}
+
+void game_post_update(float dt)
+{
+	input_post_update();
+	scene_post_update(game_state->scene);
+	platform->sound.update_3d();
 }
 
 void game_debug_gui(float dt)

@@ -6,7 +6,6 @@
 void editor_init(void);
 void editor_init_camera(void);
 void editor_update(float dt);
-void editor_toggle(void);
 void editor_cleanup(void);
 int  editor_debugvar_slot_create(const char* name, int value_type);
 void editor_debugvar_slot_remove(int index);

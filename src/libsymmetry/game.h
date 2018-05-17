@@ -18,8 +18,8 @@ struct Player;
 
 enum Game_Mode
 {
-	GM_GAME = 0,
-	GM_EDITOR
+	GAME_MODE_GAME = 0,
+	GAME_MODE_EDITOR
 };
 
 struct Game_State

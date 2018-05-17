@@ -425,7 +425,7 @@ void input_mouse_delta_get(int* xpos, int* ypos); // Use with relative mouse mod
 void input_mouse_pos_set(int xpos, int ypos);
 void input_mouse_mode_set(enum Mouse_Mode mode);
 int  input_mouse_mode_get(void);
-void input_update(void);
+void input_post_update(void);
 bool input_map_state_get(const char* map_name, int state);
 bool input_map_create(const char* name, struct Key_Binding key_combination);
 bool input_map_keys_set(const char* name, struct Key_Binding key_combination);

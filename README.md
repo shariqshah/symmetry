@@ -156,6 +156,7 @@
 - ## TODO
 
 	- Switching between editor and game mode/cameras
+	- In-game scrollable console/log-viewer
 	- Player projectiles and sounds
 	- NPR and cross-hatching
 	- Remove model and replace all usages with static mesh

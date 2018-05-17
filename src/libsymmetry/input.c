@@ -361,7 +361,7 @@ bool input_mousebutton_state_get(uint button, int state_type)
 	return state_type == current_state ? true : false;
 }
 
-void input_update(void)
+void input_post_update(void)
 {
 	struct Variant* value = NULL;
 	char* key = NULL;

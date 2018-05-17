@@ -94,6 +94,9 @@ void editor_init_camera(void)
 	int render_width  = hashmap_int_get(config, "render_width");
 	int render_height = hashmap_int_get(config, "render_height");
 	camera_attach_fbo(editor_camera, render_width, render_height, true, true, true);
+
+	vec3 cam_pos = {5.f, 20.f, 50.f};
+	transform_translate(editor_camera, &cam_pos, TS_WORLD);
 }
 
 int editor_debugvar_slot_create(const char* name, int value_type)
@@ -543,11 +546,6 @@ void editor_update(float dt)
 		}
 		nk_end(context);
 	}
-}
-
-void editor_toggle(void)
-{
-	editor_state.enabled = !editor_state.enabled;
 }
 
 void editor_camera_update(float dt)

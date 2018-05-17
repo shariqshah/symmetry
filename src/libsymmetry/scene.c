@@ -9,6 +9,7 @@
 #include "model.h"
 #include "light.h"
 #include "player.h"
+#include "game.h"
 
 #include <assert.h>
 #include <string.h>
@@ -50,7 +51,7 @@ void scene_init(struct Scene* scene)
 	player_init(&scene->player, scene);
 	editor_init_camera();
 
-	scene->active_camera_index = CAM_EDITOR;
+	scene->active_camera_index = game_state_get()->game_mode == GAME_MODE_GAME ? CAM_GAME : CAM_EDITOR;
 }
 
 bool scene_load(struct Scene* scene, const char* filename, int dir_type);
@@ -72,7 +73,7 @@ void scene_destroy(struct Scene* scene)
 
 void scene_update(struct Scene* scene, float dt)
 {
-	player_update(&scene->player, scene, dt);
+	if(game_state_get()->game_mode == GAME_MODE_GAME) player_update(&scene->player, scene, dt);
 }
 
 void scene_post_update(struct Scene* scene)

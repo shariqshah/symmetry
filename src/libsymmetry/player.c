@@ -17,7 +17,7 @@ void player_init(struct Player* player, struct Scene* scene)
 	player->move_speed_multiplier = hashmap_int_get(config, "player_move_speed_multiplier");
 	player->turn_speed            = hashmap_int_get(config, "player_turn_speed");
 
-	player->mesh = scene_static_mesh_create(scene, "Player_Mesh", player, "default.pamesh", MAT_BLINN);
+	player->mesh = scene_static_mesh_create(scene, "Player_Mesh", player, "sphere.symbres", MAT_BLINN);
 
 	struct Camera* player_camera = &scene->cameras[CAM_GAME];
 	entity_rename(player_camera, "Player_Camera");
@@ -32,6 +32,12 @@ void player_init(struct Player* player, struct Scene* scene)
 	int render_height = hashmap_int_get(config, "render_height");
 	camera_attach_fbo(player_camera, render_width, render_height, true, true, true);
 	transform_parent_set(player_camera, player, true);
+
+	vec3 cam_translation = {0.f, 20.f, 2.f};
+	transform_translate(player_camera, &cam_translation, TS_LOCAL);
+
+	vec3 cam_axis = {-1.f, 0.f, 0.f};
+	transform_rotate(player_camera, &cam_axis, 85.f, TS_LOCAL);
 }
 
 void player_destroy(struct Player* player)

@@ -467,29 +467,6 @@ void renderer_clearcolor_set(float red, float green, float blue, float alpha)
 	glClearColor(red, green, blue, alpha);
 }
 
-int renderer_check_glerror(const char* context)
-{
-	int error = 1;
-	GLenum error_code = glGetError();
-	const char* error_string = "No Error";
-	switch(error_code)
-	{
-	case GL_INVALID_OPERATION: 			   error_string = "Invalid Operation"; 		       break;
-	case GL_NO_ERROR:		   			   error_string = "No Error";		  		       break;
-	case GL_INVALID_ENUM:	   			   error_string = "Invalid ENUM";	  		       break;
-	case GL_INVALID_VALUE:	   			   error_string = "Invalid Value";	  		       break;
-	case GL_INVALID_FRAMEBUFFER_OPERATION: error_string = "Invalid FrameBuffer Operation"; break;
-	case GL_OUT_OF_MEMORY:		           error_string = "Out of Memory";		           break;
-	}
-
-	if(error_code != GL_NO_ERROR)
-		log_error(context, error_string);
-	else
-		error = 0;
-
-	return error;
-}
-
 struct Material * renderer_material_get(int material_type)
 {
 	return NULL;

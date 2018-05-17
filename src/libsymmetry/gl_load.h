@@ -62,11 +62,10 @@ SYMMETRY_GL_LIST
 #endif
 
 
-#ifdef GL_DEBUG
-	#define GL_CHECK(expression) do { gl_check(#expression, __LINE__, __FILE__)} while(false)
+#ifdef GL_DEBUG_CONTEXT
+	#define GL_CHECK(expression) do { expression; gl_check_error(#expression, __LINE__, __FILE__);} while(false)
 #else
 	#define GL_CHECK(expression) (expression)
-
 #endif
 
 int  gl_load_library(void);

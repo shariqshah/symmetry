@@ -30,7 +30,8 @@ bool gl_load_extentions(void)
 {
     bool success = true;
 #ifdef USE_GLAD
-    if(!gladLoadGLLoader(platform->load_function_gl)) success = false;
+    if(!gladLoadGLLoader(platform->load_function_gl)) 
+		success = false;
 #else
 	
 #define GLE(ret, name, ...)												\
@@ -65,6 +66,4 @@ void gl_check_error(const char * expression, unsigned int line, const char * fil
 		log_error("GL", "(%s:%d:%s) : %s", file, line, expression, error_string);
 	else
 		error = 0;
-
-	return error;
 }

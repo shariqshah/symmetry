@@ -51,16 +51,14 @@ int framebuffer_create(int width, int height, bool has_depth, bool has_color, bo
 	{
 		glGenRenderbuffers(1, &depth_renderbuffer);
 		glBindRenderbuffer(GL_RENDERBUFFER, depth_renderbuffer);
-		glRenderbufferStorage(GL_RENDERBUFFER,
+		GL_CHECK(glRenderbufferStorage(GL_RENDERBUFFER,
 							  GL_DEPTH_COMPONENT,
 							  width,
-							  height);
-		renderer_check_glerror("framebuffer:create:depth_renderbuffer");
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER,
+							  height));
+		GL_CHECK(glFramebufferRenderbuffer(GL_FRAMEBUFFER,
 								  GL_DEPTH_ATTACHMENT,
 								  GL_RENDERBUFFER,
-								  depth_renderbuffer);
-		renderer_check_glerror("framebuffer:create:depth_renderbuffer");
+								  depth_renderbuffer));
 		glBindRenderbuffer(GL_RENDERBUFFER, 0);
 	}
 
@@ -68,26 +66,22 @@ int framebuffer_create(int width, int height, bool has_depth, bool has_color, bo
 	{
 		glGenRenderbuffers(1, &color_renderbuffer);
 		glBindRenderbuffer(GL_RENDERBUFFER, color_renderbuffer);
-		glRenderbufferStorage(GL_RENDERBUFFER,
+		GL_CHECK(glRenderbufferStorage(GL_RENDERBUFFER,
 							  GL_RGBA8,
 							  width,
-							  height);
-		renderer_check_glerror("framebuffer:create:color_renderbuffer");
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER,
+							  height));
+		GL_CHECK(glFramebufferRenderbuffer(GL_FRAMEBUFFER,
 								  GL_COLOR_ATTACHMENT0,
 								  GL_RENDERBUFFER,
-								  color_renderbuffer);
-		renderer_check_glerror("framebuffer:create:color_renderbuffer");
+								  color_renderbuffer));
 		glBindRenderbuffer(GL_RENDERBUFFER, 0);
 	}
 
-	glDrawBuffer(has_color ? GL_COLOR_ATTACHMENT0 : GL_NONE);
-	renderer_check_glerror("framebuffer:create");
+	GL_CHECK(glDrawBuffer(has_color ? GL_COLOR_ATTACHMENT0 : GL_NONE));
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if(status != GL_FRAMEBUFFER_COMPLETE)
 	{
 		log_error("framebuffer:create", "Framebuffer not created!");
-		renderer_check_glerror("framebuffer:create");
 	}
 	else
 	{
@@ -188,15 +182,13 @@ void framebuffer_texture_set(int index, int texture, enum Framebuffer_Attachment
 	if(texture == -1) return;
 	
 	GLint current_fbo = 0;
-	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
-	renderer_check_glerror("framebuffer:set_texture:glGet");
+	GL_CHECK(glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo));
 	framebuffer_bind(index);
-	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER,
+	GL_CHECK(glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER,
 						   gl_attachment,
 						   GL_TEXTURE_2D,
 						   texture_get_texture_handle(texture),
-						   0);
-	renderer_check_glerror("framebuffer:set_texture:glFramebuffertexture2d");
+						   0));
 	fbo->texture_attachments[attachment] = texture;
 	if(attachment == FA_COLOR_ATTACHMENT0) glDrawBuffer(GL_COLOR_ATTACHMENT0);
 	glBindFramebuffer(GL_FRAMEBUFFER, current_fbo);
@@ -223,19 +215,17 @@ void framebuffer_resize(int index, int width, int height)
 	width  -= (width % 2);
 	height -= (height % 2);
 	GLint current_fbo = 0;
-	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
-	renderer_check_glerror("framebuffer:resize:glGet");
+	GL_CHECK(glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo));
 	struct FBO* fbo = &fbo_list[index];
 	if(!fbo->resizeable) return;
 	framebuffer_bind(index);
 	if(fbo->depth_renderbuffer != 0)
 	{
 		glBindRenderbuffer(GL_RENDERBUFFER, fbo->depth_renderbuffer);
-		glRenderbufferStorage(GL_RENDERBUFFER,
+		GL_CHECK(glRenderbufferStorage(GL_RENDERBUFFER,
 							  GL_DEPTH_COMPONENT,
 							  width,
-							  height);
-		renderer_check_glerror("framebuffer:resize:depth_renderbuffer");
+							  height));
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER,
 								  GL_DEPTH_ATTACHMENT,
 								  GL_RENDERBUFFER,
@@ -246,11 +236,10 @@ void framebuffer_resize(int index, int width, int height)
 	if(fbo->color_renderbuffer != 0)
 	{
 		glBindRenderbuffer(GL_RENDERBUFFER, fbo->color_renderbuffer);
-		glRenderbufferStorage(GL_RENDERBUFFER,
+		GL_CHECK(glRenderbufferStorage(GL_RENDERBUFFER,
 							  GL_RGBA8,
 							  width,
-							  height);
-		renderer_check_glerror("framebuffer:resize:color_renderbuffer");
+							  height));
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER,
 								  GL_COLOR_ATTACHMENT0,
 								  GL_RENDERBUFFER,

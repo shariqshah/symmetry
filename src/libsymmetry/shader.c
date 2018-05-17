@@ -152,12 +152,11 @@ int shader_create(const char* vert_shader_name, const char* frag_shader_name)
 	glAttachShader(program, frag_shader);
 
 	// Bind attribute locations
-	glBindAttribLocation(program, ATTRIB_LOC_POSITION, "vPosition");
-	glBindAttribLocation(program, ATTRIB_LOC_NORMAL,   "vNormal");
-	glBindAttribLocation(program, ATRRIB_LOC_UV,       "vUV");
-	glBindAttribLocation(program, ATTRIB_LOC_COLOR,    "vColor");
-	renderer_check_glerror("shader:create");
-	glLinkProgram(program);
+	GL_CHECK(glBindAttribLocation(program, ATTRIB_LOC_POSITION, "vPosition"));
+	GL_CHECK(glBindAttribLocation(program, ATTRIB_LOC_NORMAL,   "vNormal"));
+	GL_CHECK(glBindAttribLocation(program, ATRRIB_LOC_UV,       "vUV"));
+	GL_CHECK(glBindAttribLocation(program, ATTRIB_LOC_COLOR,    "vColor"));
+	GL_CHECK(glLinkProgram(program));
 
 	GLint is_linked = 0;
 	glGetProgramiv(program, GL_LINK_STATUS, &is_linked);

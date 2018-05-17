@@ -48,7 +48,7 @@ static int* empty_indices;
 static int  load_img(FILE* file, GLubyte** image_data, int* width, int* height, int* fmt, int* internal_format);
 static void debug_write_tga(struct Tga_Header* header, GLubyte* image_data);
 static void copy_tga_pixel(GLubyte* source, GLubyte* dest, size_t bytes_per_pixel);
-static int  create_gl_texture(uint* out_handle, int width, int height, int format, int internal_format, int type, const void* data);
+static void create_gl_texture(uint* out_handle, int width, int height, int format, int internal_format, int type, const void* data);
 
 void texture_init(void)
 {
@@ -311,12 +311,9 @@ void texture_set_param(int index, int parameter, int value)
 		return;
 
 	GLint curr_texture = 0;
-	glGetIntegerv(GL_TEXTURE_BINDING_2D, &curr_texture);
-	renderer_check_glerror("texture:set_param:glGetIntegerv");
-	glBindTexture(GL_TEXTURE_2D, texture->handle);
-	renderer_check_glerror("texture:set_param:glBindTexture");
-	glTexParameteri(GL_TEXTURE_2D, parameter, value);
-	renderer_check_glerror("texture:set_param:glTexParameteri");
+	GL_CHECK(glGetIntegerv(GL_TEXTURE_BINDING_2D, &curr_texture));
+	GL_CHECK(glBindTexture(GL_TEXTURE_2D, texture->handle));
+	GL_CHECK(glTexParameteri(GL_TEXTURE_2D, parameter, value));
 	if(curr_texture != 0)
 		glBindTexture(GL_TEXTURE_2D, curr_texture);
 }
@@ -385,55 +382,41 @@ int texture_create(const char* name,
 	assert(texture_unit > -1 && texture_unit <= TU_SHADOWMAP4);
 	int index   = -1;
 	uint handle = 0;
-	int success = create_gl_texture(&handle, width, height, format, internal_format, type, data);
-	if(success)
+	create_gl_texture(&handle, width, height, format, internal_format, type, data);
+	struct Texture* new_tex = NULL;
+	if(array_len(empty_indices) > 0)
 	{
-		struct Texture* new_tex = NULL;
-		if(array_len(empty_indices) > 0)
-		{
-			index = *array_get_last(empty_indices, int);
-			array_pop(empty_indices);
-			new_tex = &texture_list[index];
-		}
-		else
-		{
-			new_tex = array_grow(texture_list, struct Texture);
-			index   = array_len(texture_list) - 1;
-		}
-		new_tex->name            = name ? str_new(name) : str_new("texture_%d", index);
-		new_tex->handle          = handle;
-		new_tex->ref_count       = 1;
-		new_tex->texture_unit    = texture_unit;
-		new_tex->format          = format;
-		new_tex->internal_format = internal_format;
-		new_tex->type            = type;
-	}
-	return index;
-}
-
-int create_gl_texture(uint*       out_handle,
-					  int         width,
-					  int         height,
-					  int         format,
-					  int         internal_format,
-					  int         type,
-					  const void* data)
-{
-	int success = 1;
-	glGenTextures(1, out_handle);
-	if(renderer_check_glerror("texture:create_gl_texture:glGentexture"))
-	{
-		success = 0;
+		index = *array_get_last(empty_indices, int);
+		array_pop(empty_indices);
+		new_tex = &texture_list[index];
 	}
 	else
 	{
-		glBindTexture(GL_TEXTURE_2D, *out_handle);
-		glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, format, type, data);
-		if(renderer_check_glerror("texture:create_gl_texture:glTexImage2d"))
-			success = 0;
-		glBindTexture(GL_TEXTURE_2D, 0);
+		new_tex = array_grow(texture_list, struct Texture);
+		index   = array_len(texture_list) - 1;
 	}
-	return success;
+	new_tex->name            = name ? str_new(name) : str_new("texture_%d", index);
+	new_tex->handle          = handle;
+	new_tex->ref_count       = 1;
+	new_tex->texture_unit    = texture_unit;
+	new_tex->format          = format;
+	new_tex->internal_format = internal_format;
+	new_tex->type            = type;
+	return index;
+}
+
+void create_gl_texture(uint*       out_handle,
+					  int          width,
+					  int          height,
+					  int          format,
+					  int          internal_format,
+					  int          type,
+					  const void*  data)
+{
+	GL_CHECK(glGenTextures(1, out_handle));
+	glBindTexture(GL_TEXTURE_2D, *out_handle);
+	GL_CHECK(glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, format, type, data));
+	glBindTexture(GL_TEXTURE_2D, 0);	
 }
 
 void texture_resize(int index, int width, int height, const void* data)
@@ -444,10 +427,8 @@ void texture_resize(int index, int width, int height, const void* data)
 	struct Texture* texture = &texture_list[index];
 
 	GLint curr_texture = 0;
-	glGetIntegerv(GL_TEXTURE_BINDING_2D, &curr_texture);
-	renderer_check_glerror("texture:set_param:glGetIntegerv");
-	glBindTexture(GL_TEXTURE_2D, texture->handle);
-	renderer_check_glerror("texture:set_param:glBindTexture");
+	GL_CHECK(glGetIntegerv(GL_TEXTURE_BINDING_2D, &curr_texture));
+	GL_CHECK(glBindTexture(GL_TEXTURE_2D, texture->handle));
 	glTexImage2D(GL_TEXTURE_2D,
 				 0,
 				 texture->internal_format,

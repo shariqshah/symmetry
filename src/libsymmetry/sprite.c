@@ -19,29 +19,22 @@ void sprite_batch_create(struct Sprite_Batch* batch, const char* texture_name, c
 
 	glGenBuffers(1, &batch->vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, batch->vbo);
-	glBufferData(GL_ARRAY_BUFFER,
+	GL_CHECK(glBufferData(GL_ARRAY_BUFFER,
 		         sizeof(struct Sprite_Vertex) * MAX_SPRITE_VERTICES * SPRITE_BATCH_SIZE,
 		         NULL,
-		         GL_STREAM_DRAW);
-	renderer_check_glerror("sprite_batch_create:glBufferData");
+		         GL_STREAM_DRAW));
 
 	// Position
-	glVertexAttribPointer(ATTRIB_LOC_POSITION, 2, GL_FLOAT, GL_FALSE, sizeof(struct Sprite_Vertex), 0); 
-	renderer_check_glerror("sprite_batch_create:glVertexAttribPointer");
-	glEnableVertexAttribArray(ATTRIB_LOC_POSITION);
-	renderer_check_glerror("sprite_batch_create:glEnableVertexAttribPointer");
+	GL_CHECK(glVertexAttribPointer(ATTRIB_LOC_POSITION, 2, GL_FLOAT, GL_FALSE, sizeof(struct Sprite_Vertex), 0)); 
+	GL_CHECK(glEnableVertexAttribArray(ATTRIB_LOC_POSITION));
 
 	// Uvs
-	glVertexAttribPointer(ATRRIB_LOC_UV, 2, GL_FLOAT, GL_FALSE, sizeof(struct Sprite_Vertex), sizeof(vec2));
-	renderer_check_glerror("sprite_batch_create:glVertexAttribPointer");
-	glEnableVertexAttribArray(ATRRIB_LOC_UV);
-	renderer_check_glerror("sprite_batch_create:glEnableVertexAttribPointer");
+	GL_CHECK(glVertexAttribPointer(ATRRIB_LOC_UV, 2, GL_FLOAT, GL_FALSE, sizeof(struct Sprite_Vertex), sizeof(vec2)));
+	GL_CHECK(glEnableVertexAttribArray(ATRRIB_LOC_UV));
 
 	// Color
-	glVertexAttribPointer(ATTRIB_LOC_COLOR, 4, GL_FLOAT, GL_FALSE, sizeof(struct Sprite_Vertex), sizeof(vec2) + sizeof(vec2));
-	renderer_check_glerror("sprite_batch_create:glVertexAttribPointer");
-	glEnableVertexAttribArray(ATTRIB_LOC_COLOR);
-	renderer_check_glerror("sprite_batch_create:glEnableVertexAttribPointer");
+	GL_CHECK(glVertexAttribPointer(ATTRIB_LOC_COLOR, 4, GL_FLOAT, GL_FALSE, sizeof(struct Sprite_Vertex), sizeof(vec2) + sizeof(vec2)));
+	GL_CHECK(glEnableVertexAttribArray(ATTRIB_LOC_COLOR));
 
 	//glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
@@ -62,6 +55,7 @@ void sprite_batch_create(struct Sprite_Batch* batch, const char* texture_name, c
 	}
 	batch->shader = shader;
 	batch->draw_mode = draw_mode;
+	batch->current_sprite_count = 0;
 }
 
 void sprite_batch_remove(struct Sprite_Batch * batch)
@@ -119,11 +113,10 @@ void sprite_batch_end(struct Sprite_Batch* batch)
 {
 	assert(batch);
 	glBindBuffer(GL_ARRAY_BUFFER, batch->vbo);
-	glBufferSubData(GL_ARRAY_BUFFER,
+	GL_CHECK(glBufferSubData(GL_ARRAY_BUFFER,
 					0,
 					sizeof(struct Sprite_Vertex) * MAX_SPRITE_VERTICES * batch->current_sprite_count,
-		            &batch->sprites[0]);
-	renderer_check_glerror("sprite_batch_end:glBufferSubData");
+		            &batch->sprites[0]));
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
@@ -134,8 +127,7 @@ void sprite_batch_render(struct Sprite_Batch* batch)
 	texture_bind(batch->texture);
 	glBindVertexArray(batch->vao);
 	
-	glDrawArrays(batch->draw_mode, 0, MAX_SPRITE_VERTICES * batch->current_sprite_count);
-	renderer_check_glerror("sprite_batch_render:glDrawArrays");
+	GL_CHECK(glDrawArrays(batch->draw_mode, 0, MAX_SPRITE_VERTICES * batch->current_sprite_count));
 
 	glBindVertexArray(0);
 	texture_unbind(batch->texture);

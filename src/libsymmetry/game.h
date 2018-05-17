@@ -16,9 +16,16 @@ struct Scene;
 struct Entity;
 struct Player;
 
+enum Game_Mode
+{
+	GM_GAME = 0,
+	GM_EDITOR
+};
+
 struct Game_State
 {
 	bool             is_initialized;
+	int              game_mode;
 	struct Window*   window;
 	struct Renderer* renderer;
 	struct Scene*    scene;

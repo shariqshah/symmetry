@@ -103,6 +103,8 @@ bool game_init(struct Window* window, struct Platform_Api* platform_api)
 		editor_init();
 		renderer_init(game_state->renderer);
 		scene_init(game_state->scene);
+
+		game_state->game_mode = GM_GAME;
 	}
 	
 	/* Debug scene setup */
@@ -496,7 +498,7 @@ void game_update(float dt, bool* window_should_close)
 		return;
 	}
 	
-	game_debug(dt);
+	//game_debug(dt);
 	//debug_gui(dt);
 	scene_update(game_state->scene, dt);
 	editor_update(dt);

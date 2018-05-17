@@ -123,7 +123,8 @@ void sprite_batch_end(struct Sprite_Batch* batch)
 void sprite_batch_render(struct Sprite_Batch* batch)
 {
 	assert(batch);
-	
+	if(batch->current_sprite_count == 0) return;
+
 	texture_bind(batch->texture);
 	glBindVertexArray(batch->vao);
 	

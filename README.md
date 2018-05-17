@@ -155,10 +155,15 @@
 
 - ## TODO
 
-	- Switching between editor and game mode/cameras
-	- In-game scrollable console/log-viewer
+	- Console log output
+	- Console coloured output
+	- Console commands
+	- Console fix bug when enabled in editor mode
+	- Console command history
+	- Console command help
 	- Player projectiles and sounds
 	- NPR and cross-hatching
+	- Move Gui_State and Editor_State into game_state and modify usage as needed
 	- Remove model and replace all usages with static mesh
 	- Get editor camera speed and other settings from config file
 	- Re-Implement player logic
@@ -402,3 +407,5 @@
 	* Improved editor camera handling
 	* Re-implemented showing all the entities in the editor
 	* Player init, update, visual representation and movement
+	* Switching between editor and game mode/cameras
+	* In-game basis for scrollable console/log-viewer

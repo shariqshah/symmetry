@@ -15,6 +15,8 @@ struct Renderer;
 struct Scene;
 struct Entity;
 struct Player;
+struct Console;
+struct Gui_State;
 
 enum Game_Mode
 {
@@ -24,11 +26,13 @@ enum Game_Mode
 
 struct Game_State
 {
-	bool             is_initialized;
-	int              game_mode;
-	struct Window*   window;
-	struct Renderer* renderer;
-	struct Scene*    scene;
+	bool              is_initialized;
+	int               game_mode;
+	struct Window*    window;
+	struct Renderer*  renderer;
+	struct Scene*     scene;
+	struct Console*   console;
+	struct Gui_State* gui;
 };
 
 

@@ -87,6 +87,7 @@ enum Keyboard_Key
 	KEY_8            = SDLK_8,
 	KEY_9            = SDLK_9,
 	KEY_BACKSPACE    = SDLK_BACKSPACE,
+	KEY_TILDE        = SDLK_BACKQUOTE,
 	KEY_TAB          = SDLK_TAB,
 	KEY_RETURN       = SDLK_RETURN,
 	KEY_RETURN2      = SDLK_RETURN2,

@@ -25,6 +25,7 @@
 #include "gui.h"
 #include "editor.h"
 #include "sprite.h"
+#include "console.h"
 #include "../common/string_utils.h"
 #include "../common/parser.h"
 #include "../common/hashmap.h"
@@ -53,9 +54,6 @@ static void on_collision_test(struct Entity* this_ent, struct Entity* other_ent,
 static struct Game_State* game_state = NULL;
 struct Platform_Api* platform = NULL;
 
-
-static int suz_id = 0;
-
 bool game_init(struct Window* window, struct Platform_Api* platform_api)
 {
     if(!platform_api)
@@ -77,8 +75,9 @@ bool game_init(struct Window* window, struct Platform_Api* platform_api)
 		game_state->window = window;
 		game_state->is_initialized = false;
 		game_state->game_mode = GAME_MODE_GAME;
-		game_state->renderer = malloc(sizeof(*game_state->renderer));
-		game_state->scene = malloc(sizeof(*game_state->scene));
+		game_state->renderer = calloc(1, sizeof(*game_state->renderer));
+		game_state->scene = calloc(1, sizeof(*game_state->scene));
+		game_state->console = calloc(1, sizeof(*game_state->console));
 
 		log_file_handle_set(platform->log.file_handle_get());
 		if(!gl_load_extentions())
@@ -96,6 +95,8 @@ bool game_init(struct Window* window, struct Platform_Api* platform_api)
 		shader_init();
 		texture_init();
 		framebuffer_init();
+		gui_init();
+		console_init(game_state->console);
 		geom_init();
 		platform->physics.init();
 		platform->physics.gravity_set(0.f, -9.8f, 0.f);
@@ -488,6 +489,7 @@ void game_update(float dt, bool* window_should_close)
 	if(input_is_key_pressed(KEY_ESCAPE))                      *window_should_close = true;
     if(input_map_state_get("Window_Fullscreen", KS_RELEASED)) platform->window.fullscreen_set(game_state->window, 1);
     if(input_map_state_get("Window_Maximize",   KS_RELEASED)) platform->window.fullscreen_set(game_state->window, 0);
+	if(input_map_state_get("Console_Toggle",    KS_RELEASED)) console_toggle(game_state->console);
 	if(input_map_state_get("Editor_Toggle",     KS_RELEASED)) 
 	{
 		//editor_toggle();
@@ -512,6 +514,7 @@ void game_update(float dt, bool* window_should_close)
 	
 	//game_debug(dt);
 	//debug_gui(dt);
+	console_update(game_state->console, gui_state_get(), dt);
 	scene_update(game_state->scene, dt);
 	if(game_state->game_mode == GAME_MODE_GAME)
 	{
@@ -1749,11 +1752,14 @@ void game_cleanup(void)
 			scene_destroy(game_state->scene);
 			input_cleanup();
 			renderer_cleanup(game_state->renderer);
+			gui_cleanup();
+			console_destroy(game_state->console);
             geom_cleanup();
 			framebuffer_cleanup();
 			texture_cleanup();
 			shader_cleanup();
 
+			free(game_state->console);
 			free(game_state->scene);
 			free(game_state->renderer);
 		}

@@ -40,7 +40,6 @@ void renderer_init(struct Renderer* renderer)
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
     platform->windowresize_callback_set(on_framebuffer_size_change);
-	gui_init();
 
 	struct Hashmap* cvars = platform->config.get();
 	renderer->settings.fog.mode           = hashmap_int_get(cvars,   "fog_mode");
@@ -441,7 +440,6 @@ void renderer_cleanup(struct Renderer* renderer)
 	im_cleanup();
 	sprite_batch_remove(renderer->sprite_batch);
 	free(renderer->sprite_batch);
-	gui_cleanup();
 	geom_remove(renderer->quad_geo);
 	framebuffer_remove(renderer->def_fbo);
 	texture_remove(renderer->def_albedo_tex);

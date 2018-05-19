@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 
+typedef void (*Log_Message_CB)(const char* message, va_list args);
+
 void  log_init(const char* log_file_name, const char* user_directory);
 void  log_cleanup(void);
 void  log_message(const char* message, ...);
@@ -12,5 +14,6 @@ void  log_to_stdout(const char* message, ...); /* Only use when logging is not i
 void  log_raw(const char* str, ...);
 FILE* log_file_handle_get(void);
 void  log_file_handle_set(FILE* file);
+void  log_message_callback_set(Log_Message_CB callback);
 
 #endif

@@ -155,8 +155,7 @@
 
 - ## TODO
 
-	- Console log output
-	- Console coloured output
+	- Console error/warning output
 	- Console commands
 	- Console fix bug when enabled in editor mode
 	- Console command history
@@ -166,6 +165,8 @@
 	- Move Gui_State and Editor_State into game_state and modify usage as needed
 	- Remove model and replace all usages with static mesh
 	- Get editor camera speed and other settings from config file
+	- Recompile Soloud on windows to use static sdl2 backend
+	- Figure out a way to reduce of remove snprintf calls from render code
 	- Re-Implement player logic
 	- Re-Implement saving/loading scene to/from files
 	- Bring back functionality and complete overhaul 
@@ -409,3 +410,4 @@
 	* Player init, update, visual representation and movement
 	* Switching between editor and game mode/cameras
 	* In-game basis for scrollable console/log-viewer
+	* Console log output

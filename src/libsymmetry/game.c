@@ -48,6 +48,7 @@ static void game_render(void);
 static void game_debug(float dt);
 static void game_debug_gui(float dt);
 static void game_scene_setup(void);
+static void game_on_log_message(const char* message, va_list args);
 static void on_box_move(Rigidbody body);
 static void on_collision_test(struct Entity* this_ent, struct Entity* other_ent, Rigidbody body, Rigidbody body2);
 
@@ -80,6 +81,8 @@ bool game_init(struct Window* window, struct Platform_Api* platform_api)
 		game_state->console = calloc(1, sizeof(*game_state->console));
 
 		log_file_handle_set(platform->log.file_handle_get());
+		log_message_callback_set(game_on_log_message);
+
 		if(!gl_load_extentions())
 		{
 			log_error("game:init", "Failed to load GL extentions");
@@ -1789,4 +1792,9 @@ void on_collision_test(struct Entity* this_ent, struct Entity* other_ent, Rigidb
 		//platform->physics.body_force_add(body, 0.f, -100.f, 0.f);
 	}
 	//platform->physics.body_force_add(body, 0.f, 500.f, 0.f);
+}
+
+void game_on_log_message(const char* message, va_list args)
+{
+	console_on_log_message(game_state->console, message, args);
 }

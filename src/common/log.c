@@ -29,12 +29,17 @@
 
 #endif
 
-static FILE* log_file = NULL;
+static void log_message_callback_stub(const char* message, va_list args);
+
+static FILE*          log_file         = NULL;
+static Log_Message_CB message_callback = log_message_callback_stub;
+
+#define MAX_LOG_FILE_PATH_LEN 512
 
 void log_init(const char* log_file_name, const char* user_directory)
 {
-	char log_file_path[512] = {'\0'};
-    snprintf(log_file_path, 512, "%s/%s", user_directory, log_file_name);
+	char log_file_path[MAX_LOG_FILE_PATH_LEN] = {'\0'};
+    snprintf(log_file_path, MAX_LOG_FILE_PATH_LEN, "%s/%s", user_directory, log_file_name);
 	log_file = fopen(log_file_path, "w");
 	if(!log_file)
 	{
@@ -62,7 +67,6 @@ void log_cleanup(void)
 		fclose(log_file);
 	}
 }
-
 
 void log_to_stdout(const char* message, ...)
 {
@@ -95,6 +99,7 @@ void log_message(const char* message, ...)
 	va_copy(file_list, console_list);
 	vfprintf(log_file, message, file_list);
 	vprintf(message, console_list);
+	message_callback(message, console_list);
 	va_end(console_list);
 	va_end(file_list);
 	printf("\n%s", COL_RESET);
@@ -142,4 +147,15 @@ FILE* log_file_handle_get(void)
 void  log_file_handle_set(FILE* file)
 {
     log_file = file;
+}
+
+void  log_message_callback_set(Log_Message_CB callback)
+{
+	if(callback)
+		message_callback = callback;
+}
+
+void log_message_callback_stub(const char* message, va_list args)
+{
+	// This is just a stub in-case no callback has been set
 }

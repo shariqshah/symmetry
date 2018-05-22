@@ -30,9 +30,13 @@
 #endif
 
 static void log_message_callback_stub(const char* message, va_list args);
+static void log_warning_callback_stub(const char* warning_message, va_list args);
+static void log_error_callback_stub(const char* context, const char* message, va_list args);
 
 static FILE*          log_file         = NULL;
 static Log_Message_CB message_callback = log_message_callback_stub;
+static Log_Warning_CB warning_callback = log_warning_callback_stub;
+static Log_Error_CB   error_callback   = log_error_callback_stub;
 
 #define MAX_LOG_FILE_PATH_LEN 512
 
@@ -116,6 +120,7 @@ void log_warning(const char* message, ...)
 	va_copy(file_list, console_list);
 	vfprintf(log_file, message, file_list);
 	vprintf(message, console_list);
+	warning_callback(message, console_list);
 	va_end(console_list);
 	va_end(file_list);
 	printf("\n");
@@ -132,6 +137,7 @@ void log_error(const char* context, const char* error, ...)
 	va_copy(file_list, console_list);
 	vfprintf(log_file, error, file_list);
 	vprintf(error, console_list);
+	error_callback(context, error, console_list);
 	va_end(console_list);
 	va_end(file_list);
 	printf("\n%s", COL_RESET);
@@ -144,18 +150,39 @@ FILE* log_file_handle_get(void)
     return log_file;
 }
 
-void  log_file_handle_set(FILE* file)
+void log_file_handle_set(FILE* file)
 {
     log_file = file;
 }
 
-void  log_message_callback_set(Log_Message_CB callback)
+void log_message_callback_set(Log_Message_CB callback)
 {
 	if(callback)
 		message_callback = callback;
 }
 
+void log_warning_callback_set(Log_Warning_CB callback)
+{
+	if(callback)
+		warning_callback = callback;
+}
+void log_error_callback_set(Log_Error_CB callback)
+{
+	if(callback)
+		error_callback = callback;
+}
+
 void log_message_callback_stub(const char* message, va_list args)
+{
+	// This is just a stub in-case no callback has been set
+}
+
+void log_warning_callback_stub(const char* warning_message, va_list args)
+{
+	// This is just a stub in-case no callback has been set
+}
+
+void log_error_callback_stub(const char* context, const char* message, va_list args)
 {
 	// This is just a stub in-case no callback has been set
 }

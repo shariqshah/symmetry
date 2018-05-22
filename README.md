@@ -155,7 +155,7 @@
 
 - ## TODO
 
-	- Console error/warning output
+	- Implement Auto scrolling to the bottom in console
 	- Console commands
 	- Console fix bug when enabled in editor mode
 	- Console command history
@@ -411,3 +411,4 @@
 	* Switching between editor and game mode/cameras
 	* In-game basis for scrollable console/log-viewer
 	* Console log output
+	* Console error/warning output

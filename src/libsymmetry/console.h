@@ -7,14 +7,30 @@
 #define MAX_CONSOLE_MESSAGE_LEN 256
 #define MAX_CONSOLE_MESSAGES 1024
 
+enum Console_Message_Type
+{
+	CMT_NONE = 0,
+	CMT_MESSAGE,
+	CMT_WARNING,
+	CMT_ERROR,
+	CMT_COMMAND,
+	CMT_MAX
+};
+
+struct Console_Message
+{
+	int  type;
+	char message[MAX_CONSOLE_MESSAGE_LEN];
+};
+
 struct Console
 {
-	bool  visible;
-	float text_region_height;
-	float line_height;
-	int   current_message_index;
-	char  console_command_text[MAX_CONSOLE_MESSAGE_LEN];
-	char  console_messages[MAX_CONSOLE_MESSAGES][MAX_CONSOLE_MESSAGE_LEN];
+	bool                   visible;
+	float                  text_region_height;
+	float                  line_height;
+	int                    current_message_index;
+	char                   console_command_text[MAX_CONSOLE_MESSAGE_LEN];
+	struct Console_Message console_messages[MAX_CONSOLE_MESSAGES];
 };
 
 void console_init(struct Console* console);
@@ -22,6 +38,8 @@ void console_toggle(struct Console* console);
 void console_update(struct Console* console, struct Gui_State* gui_state, float dt);
 void console_destroy(struct Console* console);
 void console_on_log_message(struct Console* console, const char* message, va_list args);
+void console_on_log_warning(struct Console* console, const char* warning_message, va_list args);
+void console_on_log_error(struct Console* console, const char* context, const char* error, va_list args);
 
 
 #endif

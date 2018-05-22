@@ -49,6 +49,8 @@ static void game_debug(float dt);
 static void game_debug_gui(float dt);
 static void game_scene_setup(void);
 static void game_on_log_message(const char* message, va_list args);
+static void game_on_log_warning(const char* warning_message, va_list args);
+static void game_on_log_error(const char* context, const char* error_message, va_list args);
 static void on_box_move(Rigidbody body);
 static void on_collision_test(struct Entity* this_ent, struct Entity* other_ent, Rigidbody body, Rigidbody body2);
 
@@ -82,6 +84,8 @@ bool game_init(struct Window* window, struct Platform_Api* platform_api)
 
 		log_file_handle_set(platform->log.file_handle_get());
 		log_message_callback_set(game_on_log_message);
+		log_warning_callback_set(game_on_log_warning);
+		log_error_callback_set(game_on_log_error);
 
 		if(!gl_load_extentions())
 		{
@@ -1797,4 +1801,14 @@ void on_collision_test(struct Entity* this_ent, struct Entity* other_ent, Rigidb
 void game_on_log_message(const char* message, va_list args)
 {
 	console_on_log_message(game_state->console, message, args);
+}
+
+void game_on_log_warning(const char* warning_message, va_list args)
+{
+	console_on_log_warning(game_state->console, warning_message, args);
+}
+
+void game_on_log_error(const char* context, const char* error_message, va_list args)
+{
+	console_on_log_error(game_state->console, context, error_message, args);
 }

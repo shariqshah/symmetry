@@ -155,7 +155,6 @@
 
 - ## TODO
 
-	- Implement Auto scrolling to the bottom in console
 	- Console commands
 	- Console fix bug when enabled in editor mode
 	- Console command history
@@ -185,6 +184,7 @@
 	    system and move textures/shaders/sounds/geometry etc to that and framebuffer/shaders to renderer
 	- Work on (yet another)entity refactor before moving on to serialization
 	- Implement cross-hatching shader
+	- Implement storing console's scroll location and restore it when console is toggled
 	- Update README's TODO section to reflect the current state of things and the things that are actually left to do
 	
 	- Implement collision/physics data serialization, read and write.
@@ -412,3 +412,4 @@
 	* In-game basis for scrollable console/log-viewer
 	* Console log output
 	* Console error/warning output
+	* Implemented Auto scrolling to the bottom in console

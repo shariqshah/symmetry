@@ -23,6 +23,7 @@ void console_init(struct Console* console)
 	console_message_color[CMT_NONE]    = nk_rgb(255, 0, 255);
 	
 	console->visible               = false;
+	console->scroll_to_bottom      = true;
 	console->text_region_height    = 22.f;
 	console->line_height           = 20.f;
 	console->current_message_index = -1;
@@ -37,6 +38,7 @@ void console_init(struct Console* console)
 
 void console_toggle(struct Console* console)
 {
+	if(!console->visible) console->scroll_to_bottom = true;
 	console->visible = !console->visible;
 }
 
@@ -54,16 +56,24 @@ void console_update(struct Console* console, struct Gui_State* gui_state, float 
 	if(nk_begin_titled(context, "Console", "Console", nk_recti(0, 0, win_width, half_height), NK_WINDOW_SCROLL_AUTO_HIDE))
 	{
 		nk_layout_row_dynamic(context, nk_window_get_height(context) - console->text_region_height * 2, 1);
-		if(nk_group_begin(context, "Log", NK_WINDOW_SCROLL_AUTO_HIDE))
+		if(nk_group_begin(context, "Log", NK_WINDOW_BORDER))
 		{
 			for(int i = 0; i <= console->current_message_index; i++)
 			{
 				nk_layout_row_dynamic(context, console->line_height, 1);
 				nk_labelf_colored(context, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, console_message_color[console->console_messages[i].type], console->console_messages[i].message);
 			}
+
+			if(console->scroll_to_bottom == true) // scroll console message area to the bottom if required
+			{
+				*context->current->layout->offset_y = context->current->layout->at_y;
+				console->scroll_to_bottom = false;
+			}
+			
 			nk_group_end(context);
 		}
 
+		//Edit-string/Textfield for command
 		nk_layout_row_dynamic(context, console->text_region_height, 1);
 		int edit_flags = NK_EDIT_GOTO_END_ON_ACTIVATE | NK_EDIT_FIELD | NK_EDIT_SIG_ENTER;
 		nk_edit_focus(context, edit_flags);
@@ -76,6 +86,7 @@ void console_update(struct Console* console, struct Gui_State* gui_state, float 
 			snprintf(console->console_messages[console->current_message_index].message, MAX_CONSOLE_MESSAGE_LEN, "> %s", console->console_command_text);
 			console->console_messages[console->current_message_index].type = CMT_COMMAND;
 			memset(console->console_command_text, '\0', MAX_CONSOLE_MESSAGE_LEN);
+			console->scroll_to_bottom = true;
 		}
 	}
 	nk_end(context);
@@ -101,6 +112,7 @@ void console_on_log_message(struct Console* console, const char* message, va_lis
 		console->current_message_index = 0;
 	vsnprintf(console->console_messages[console->current_message_index].message, MAX_CONSOLE_MESSAGE_LEN, message, args);
 	console->console_messages[console->current_message_index].type = CMT_MESSAGE;
+	console->scroll_to_bottom = true;
 }
 
 void console_on_log_warning(struct Console* console, const char* warning_message, va_list args)
@@ -109,6 +121,7 @@ void console_on_log_warning(struct Console* console, const char* warning_message
 		console->current_message_index = 0;
 	vsnprintf(console->console_messages[console->current_message_index].message, MAX_CONSOLE_MESSAGE_LEN, warning_message, args);
 	console->console_messages[console->current_message_index].type = CMT_WARNING;
+	console->scroll_to_bottom = true;
 }
 
 void console_on_log_error(struct Console* console, const char* context, const char* error, va_list args)
@@ -118,4 +131,5 @@ void console_on_log_error(struct Console* console, const char* context, const ch
 	int loc = snprintf(console->console_messages[console->current_message_index].message, MAX_CONSOLE_MESSAGE_LEN, "(%s)", context);
 	vsnprintf(console->console_messages[console->current_message_index].message + loc, MAX_CONSOLE_MESSAGE_LEN, error, args);
 	console->console_messages[console->current_message_index].type = CMT_ERROR;
+	console->scroll_to_bottom = true;
 }

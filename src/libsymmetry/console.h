@@ -26,6 +26,7 @@ struct Console_Message
 struct Console
 {
 	bool                   visible;
+	bool                   scroll_to_bottom;
 	float                  text_region_height;
 	float                  line_height;
 	int                    current_message_index;

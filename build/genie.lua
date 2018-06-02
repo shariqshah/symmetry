@@ -137,7 +137,7 @@ solution "Symmetry"
 
 	newaction {
 	   trigger = "build_addon",
-	   description = "Build blender addon into zip file that can be loaded into blender, needs zip installed and available on PATH",
+	   description = "Build blender addon into zip file that can be loaded into blender, needs zip installed and available on PATH(Only works on bash/nix-style shell for now)",
 	   execute = function ()
 	   		   local output = os.outputof("cd ../blender_addon && zip -r io_symmetry_exp.zip io_symmetry_exp/__init__.py io_symmetry_exp/exporter.py && mv io_symmetry_exp.zip ../build");
 			   printf("Output of blender addon build : \n%s\n", output)

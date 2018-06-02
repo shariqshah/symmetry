@@ -81,3 +81,65 @@ bool bv_intersect_frustum_point(vec4* frustum, const vec3* point)
 	}
 	return success;
 }
+
+bool bv_intersect_sphere_ray(struct Bounding_Sphere* sphere, vec3* sphere_abs_position, struct Ray* ray)
+{
+
+	vec3 center = {0.f};
+	vec3_add(&center, &sphere->center, sphere_abs_position);
+	float squared_radius = sphere->radius * sphere->radius;
+
+	vec3 centered_origin;
+	vec3_sub(&centered_origin, &ray->origin, &center);
+	float centered_origin_len_sqrd = vec3_len(&centered_origin);
+	centered_origin_len_sqrd *= centered_origin_len_sqrd;
+
+	//Check if ray originates inside the sphere
+	if(centered_origin_len_sqrd <= squared_radius)
+		return true;
+
+	// Calculate the intersection by quatratic equation'
+	float a = vec3_dot(&ray->direction, &ray->direction);
+	float b = 2.f * vec3_dot(&centered_origin, &ray->direction);
+	float c = vec3_dot(&centered_origin, &centered_origin) - squared_radius;
+	float d = b * b - 4.f * a * c;
+
+	//No solution
+	if(d < 0.f)
+		return false;
+
+	//Get the near solution
+	float d_sqrt = sqrtf(d);
+	float dist = (-b - d_sqrt) / (2.f * a);
+	if(dist >= 0.f)
+		return true;
+	else
+		return true;
+
+	//float tca = vec3_dot(&centered_origin, &ray->direction);
+	//if(tca < 0.0) return false;
+
+	//float L_dot = vec3_dot(&centered_origin, &centered_origin);
+	//float d2 = L_dot - (tca);
+	//float radius_sqr = sphere->radius * sphere->radius;
+
+	//if (d2 > radius_sqr) return false;
+	//float thc = sqrtf(radius_sqr - d2);
+	//float t0 = tca - thc;
+	//float t1 = tca + thc;
+
+	//if(t0 > t1)
+	//{
+	//	float temp = t0;
+	//	t0 = t1;
+	//	t1 = temp;
+	//}
+
+	//if(t0 < 0)
+	//{
+	//	t0 = t1;
+	//	if(t0 < 0) return false;
+	//}
+
+	//return true;
+}

@@ -34,8 +34,15 @@ enum Frustum_Planes
 	FP_NUM_PLANES
 };
 
-int bv_intersect_frustum_box(vec4* frustum, struct Bounding_Box* box, vec3* box_abs_position, vec3* box_abs_scale);
-int  bv_intersect_frustum_sphere(vec4* frustum, struct Bounding_Sphere* sphere, struct Transform* transform);
+struct Ray
+{
+	vec3 direction;
+	vec3 origin;
+};
+
+int  bv_intersect_frustum_box(vec4* frustum, struct Bounding_Box* box, vec3* box_abs_position, vec3* box_abs_scale);
+int  bv_intersect_frustum_sphere(vec4* frustum, struct Bounding_Sphere* sphere, vec3* sphere_abs_pos, vec3* sphere_abs_scale);
 bool bv_intersect_frustum_point(vec4* frustum, const vec3* point);
+bool bv_intersect_sphere_ray(struct Bounding_Sphere* sphere, vec3* sphere_abs_position, struct Ray* ray);
 
 #endif

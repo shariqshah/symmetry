@@ -10,6 +10,9 @@
 #define MAX_STATIC_MESHES 1024
 #define MAX_SOUND_SOURCES 128
 
+
+struct Ray;
+
 struct Scene
 {
 	struct Render_Settings renderer_profile;
@@ -52,6 +55,8 @@ struct Entity*       scene_base_entity_get(struct Scene* scene, int id, int type
 
 void scene_entity_parent_set(struct Scene* scene, struct Entity* entity, struct Entity* parent);
 void scene_entity_parent_reset(struct Scene* scene, struct Entity* entity); // Sets root entity as parent
+
+void scene_ray_intersect(struct Scene* scene, struct Ray* ray);
 
 //
 //void           scene_init(void);

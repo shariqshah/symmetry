@@ -363,9 +363,13 @@ int geom_render_in_frustum(int                      index,
 							struct Entity*          entity,
 							enum Geometry_Draw_Mode draw_mode)
 {
+	vec3 abs_pos, abs_scale;
+	transform_get_absolute_position(entity, &abs_pos);
+	transform_get_absolute_scale(entity, &abs_scale);
+
 	struct Geometry* geometry         = &geometry_list[index];
 	int              indices_rendered = 0;
-	int              intersection     = bv_intersect_frustum_sphere(frustum, &geometry->bounding_sphere, entity);
+	int              intersection     = bv_intersect_frustum_sphere(frustum, &geometry->bounding_sphere, &abs_pos, &abs_scale);
 	if(intersection == IT_INTERSECT || intersection == IT_INSIDE)
 	{
 		geom_render(index, draw_mode);

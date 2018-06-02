@@ -292,6 +292,26 @@ void game_scene_setup(void)
 	ground->model.material_params[MMP_SPECULAR_STRENGTH].val_float = 1.f;
 	vec3_fill(&ground->model.material_params[MMP_DIFFUSE_COL].val_vec3, 1.f, 1.f, 1.f);
 	
+	int num_suz = 50;
+	char suz_name[MAX_ENTITY_NAME_LEN];
+	vec3 suz_pos = {0.f};
+	for(int i = 0; i < num_suz; i++)
+	{
+		memset(&suz_name, '\0', MAX_ENTITY_NAME_LEN);
+		snprintf(&suz_name, MAX_ENTITY_NAME_LEN, "Suzanne_%d", i);
+		struct Static_Mesh* suzanne = scene_static_mesh_create(game_state->scene, suz_name, NULL, "sphere.symbres", MAT_BLINN);
+		suzanne->model.material_params[MMP_DIFFUSE_TEX].val_int = texture_create_from_file("white.tga", TU_DIFFUSE);
+		suzanne->model.material_params[MMP_DIFFUSE].val_float = 0.5f;
+		suzanne->model.material_params[MMP_SPECULAR].val_float = 1.f;
+		suzanne->model.material_params[MMP_SPECULAR_STRENGTH].val_float = 1.f;
+		vec3_fill(&suzanne->model.material_params[MMP_DIFFUSE_COL].val_vec3, 1.f, 0.f, 1.f);
+		suz_pos.x = i + 10.f;
+		suz_pos.y = 5.f;
+		suz_pos.z = i + 5.f;
+		transform_set_position(suzanne, &suz_pos);
+
+	}
+
 
 	struct Light* light = scene_light_create(game_state->scene, "Test_Light", NULL, LT_POINT);
 	light->color.x = 1.f;

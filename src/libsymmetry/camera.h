@@ -2,6 +2,7 @@
 #define CAMERA_H
 
 #include "../common/num_types.h"
+#include "../common/linmath.h"
 
 struct Camera;
 
@@ -16,6 +17,7 @@ void camera_attach_fbo(struct Camera* camera,
 					   bool           has_depth,
 					   bool           has_color,
 					   bool           resizeable);
+struct Ray camera_screen_coord_to_ray(struct Camera* camera, int mouse_x, int mouse_y);
 /* void camera_resize_all(int width, int height); */
 
 #endif

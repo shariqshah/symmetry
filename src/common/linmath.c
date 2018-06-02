@@ -269,10 +269,10 @@ void vec4_mul(vec4* res, vec4* v1, vec4* v4)
 void vec4_mul_mat4(vec4* res, vec4* val, mat4* mat)
 {
 	vec4 v;
-    v.x = val->x * mat->mat[0] + val->y * mat->mat[4] + val->z * mat->mat[8] + mat->mat[12];
-    v.y = val->x * mat->mat[1] + val->y * mat->mat[5] + val->z * mat->mat[9] + mat->mat[14];
-    v.z = val->x * mat->mat[2] + val->y * mat->mat[6] + val->z * mat->mat[10] + mat->mat[14];
-    v.w = val->x * mat->mat[2] + val->y * mat->mat[6] + val->w * mat->mat[10] + mat->mat[14];
+    v.x = val->x * mat->mat[0] + val->y * mat->mat[4] + val->z * mat->mat[8]  + val->w * mat->mat[12];
+    v.y = val->x * mat->mat[1] + val->y * mat->mat[5] + val->z * mat->mat[9]  + val->w * mat->mat[13];
+    v.z = val->x * mat->mat[2] + val->y * mat->mat[6] + val->z * mat->mat[10] + val->w * mat->mat[14];
+    v.w = val->x * mat->mat[3] + val->y * mat->mat[7] + val->z * mat->mat[11] + val->w * mat->mat[15];
     res->x = v.x;
     res->y = v.y;
     res->z = v.z;

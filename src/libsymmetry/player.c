@@ -4,6 +4,8 @@
 #include "../common/utils.h"
 #include "transform.h"
 #include "../common/common.h"
+#include "camera.h"
+#include "bounding_volumes.h"
 
 void player_init(struct Player* player, struct Scene* scene)
 {
@@ -64,5 +66,16 @@ void player_update(struct Player* player, struct Scene* scene, float dt)
 	if(offset.x != 0 || offset.y != 0 || offset.z != 0)
 	{
 		transform_translate(player, &offset, TS_LOCAL);
+	}
+
+	/* Aiming and Projectiles*/
+	if(input_mousebutton_state_get(MSB_RIGHT, KS_PRESSED))
+	{
+		int mouse_x = 0, mouse_y = 0;
+		platform->mouse_position_get(&mouse_x, &mouse_y);
+		struct Ray ray = camera_screen_coord_to_ray(player->camera_node, mouse_x, mouse_y);
+		log_message("Ray: %.3f, %.3f, %.3f", ray.direction.x, ray.direction.y, ray.direction.z);
+
+		scene_ray_intersect(scene, &ray);
 	}
 }

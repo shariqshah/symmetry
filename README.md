@@ -155,11 +155,13 @@
 
 - ## TODO
 
+	- Improve bounding sphere calculation
+	- Screen mouse coordinates to world-coordinates for aiming
+	- Player projectiles and sounds
 	- Console commands
 	- Console fix bug when enabled in editor mode
 	- Console command history
 	- Console command help
-	- Player projectiles and sounds
 	- NPR and cross-hatching
 	- Move Gui_State and Editor_State into game_state and modify usage as needed
 	- Remove model and replace all usages with static mesh
@@ -413,3 +415,4 @@
 	* Console log output
 	* Console error/warning output
 	* Implemented Auto scrolling to the bottom in console
+	* Implemented screen coordinate to ray conversion and ray-sphere collision

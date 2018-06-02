@@ -202,3 +202,65 @@ static void update_frustum(struct Camera* camera)
 		vec4_scale(&camera->frustum[i], &camera->frustum[i], (1.f / length));
 	}
 }
+
+struct Ray camera_screen_coord_to_ray(struct Camera* camera, int mouse_x, int mouse_y)
+{
+	struct Ray ray;
+
+	int win_width = 0, win_height = 0;
+	struct Game_State* game_state = game_state_get();
+	platform->window.get_size(game_state->window, &win_width, &win_height);
+
+	float normalized_x = (2.f * (float)mouse_x) / (float)win_width - 1.f;
+	float normalized_y = 1.f - (2.f * (float)mouse_y) / (float)win_height;
+
+	vec3 near_point = {0.f};
+	vec3 far_point = {0.f};
+
+	mat4 inverse_view_proj_mat;
+	mat4_identity(&inverse_view_proj_mat);
+	mat4_inverse(&inverse_view_proj_mat, &camera->view_proj_mat);
+
+	//Project the near point
+	quat rot_near = {normalized_x, normalized_y, 0.f, 1.f};
+	vec4_mul_mat4(&rot_near, &rot_near, &inverse_view_proj_mat);
+	near_point.x = rot_near.x / rot_near.w;
+	near_point.y = rot_near.y / rot_near.w;
+	near_point.z = rot_near.z / rot_near.w;
+
+	//Project far point
+	quat rot_far = {normalized_x, normalized_y, 1.f, 1.f};
+	vec4_mul_mat4(&rot_far, &rot_far, &inverse_view_proj_mat);
+	far_point.x = rot_far.x / rot_far.w;
+	far_point.y = rot_far.y / rot_far.w;
+	far_point.z = rot_far.z / rot_far.w;
+
+	vec3_sub(&ray.direction, &far_point, &near_point);
+	vec3_norm(&ray.direction, &ray.direction);
+
+	transform_get_absolute_position(&camera->base, &ray.origin);
+	
+	return ray;
+
+	/*vec4 clip_coords = {normalized_x, normalized_y, -1.f, 1.f};
+	vec4 ray_eye = {0.f};
+
+	mat4 inverse_proj_mat;
+	mat4_identity(&inverse_proj_mat);
+	mat4_inverse(&inverse_proj_mat, &camera->proj_mat);
+	vec4_mul_mat4(&ray_eye, &clip_coords, &inverse_proj_mat);
+
+	ray_eye.z = -1.f;
+	ray_eye.w = 0.f;
+
+	vec4 ray_world = {0.f};
+	mat4 inverse_view_mat;
+	mat4_identity(&inverse_view_mat);
+	mat4_inverse(&inverse_view_mat, &camera->view_mat);
+	vec4_mul_mat4(&ray_world, &ray_eye, &inverse_view_mat);
+
+	vec3 world_coords = {ray_world.x, ray_world.y, ray_world.z};
+	vec3_norm(&world_coords, &world_coords);
+
+	return world_coords;*/
+}

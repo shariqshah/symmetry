@@ -10,6 +10,8 @@
 #include "light.h"
 #include "player.h"
 #include "game.h"
+#include "bounding_volumes.h"
+#include "geometry.h"
 
 #include <assert.h>
 #include <string.h>
@@ -553,6 +555,44 @@ void scene_entity_parent_set(struct Scene* scene, struct Entity* entity, struct 
 	transform_parent_set(entity, parent, true);
 }
 
+
+void scene_ray_intersect(struct Scene* scene, struct Ray* ray)
+{
+	for(int i = 0; i < MAX_STATIC_MESHES; i++)
+	{
+		struct Static_Mesh* mesh = &scene->static_meshes[i];
+		if(!mesh->base.active) continue;
+		vec3 abs_pos = {0.f};
+		transform_get_absolute_position(mesh, &abs_pos);
+
+		struct Geometry* geometry = geom_get(mesh->model.geometry_index);
+		if(bv_intersect_sphere_ray(&geometry->bounding_sphere, &abs_pos, ray))
+		{
+			log_message("Ray intersected with %s", &mesh->base.name);
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool scene_load(const char* filename, int directory_type)
 {
  //   FILE* entity_file = platform->file.open(directory_type, filename, "r");

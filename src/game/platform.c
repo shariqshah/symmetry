@@ -347,7 +347,7 @@ int platform_mousebutton_state_get(uint button)
 {
 	int pressed = 0;
 	uint32 current_button_state = SDL_GetMouseState(NULL, NULL);
-	if((current_button_state & SDL_BUTTON(button)) > 0) pressed = 1;
+	if((current_button_state & SDL_BUTTON(button))) pressed = 1;
 	return pressed;
 }
 

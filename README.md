@@ -155,6 +155,7 @@
 
 - ## TODO
 
+	- Fix mouse button press/release behaviour by investigating how sdl handles mouse release or by explicitly caching mouse state by using event callbacks recieved when a mousebutton release event is reported by sdl
 	- Improve bounding sphere calculation
 	- Screen mouse coordinates to world-coordinates for aiming
 	- Player projectiles and sounds

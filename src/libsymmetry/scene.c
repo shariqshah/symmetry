@@ -555,9 +555,13 @@ void scene_entity_parent_set(struct Scene* scene, struct Entity* entity, struct 
 	transform_parent_set(entity, parent, true);
 }
 
-
-void scene_ray_intersect(struct Scene* scene, struct Ray* ray)
+void scene_ray_intersect(struct Scene* scene, struct Ray* ray, struct Raycast_Result* out_results)
 {
+	assert(out_results);
+
+	memset(&out_results[0], '\0', sizeof(struct Entity*) * MAX_RAYCAST_ENTITIES_INTERSECT);
+	out_results->num_entities_intersected = 0;
+
 	for(int i = 0; i < MAX_STATIC_MESHES; i++)
 	{
 		struct Static_Mesh* mesh = &scene->static_meshes[i];
@@ -568,7 +572,8 @@ void scene_ray_intersect(struct Scene* scene, struct Ray* ray)
 		struct Geometry* geometry = geom_get(mesh->model.geometry_index);
 		if(bv_intersect_sphere_ray(&geometry->bounding_sphere, &abs_pos, ray))
 		{
-			log_message("Ray intersected with %s", &mesh->base.name);
+			out_results->entities_intersected[out_results->num_entities_intersected] = &mesh->base;
+			out_results->num_entities_intersected++;
 		}
 	}
 }

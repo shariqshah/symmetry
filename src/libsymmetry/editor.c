@@ -19,6 +19,7 @@
 #include "../common/num_types.h"
 #include "../common/string_utils.h"
 #include "../common/common.h"
+#include "bounding_volumes.h"
 #include "input.h"
 #include "scene.h"
 
@@ -584,9 +585,37 @@ void editor_camera_update(float dt)
 	else
 	{
 		input_mouse_mode_set(MM_NORMAL);
-		//log_message("ud : %.3f, lr : %.3f", turn_up_down, turn_left_right);
 		turn_up_down *= dt;
 		turn_left_right *= dt;
+
+		//Picking
+		//If we're not looking around then allow picking
+		if(input_mousebutton_state_get(MSB_LEFT, KS_RELEASED))
+		{
+			int mouse_x = 0, mouse_y = 0;
+			platform->mouse_position_get(&mouse_x, &mouse_y);
+			struct Ray ray = camera_screen_coord_to_ray(editor_camera, mouse_x, mouse_y);
+			//log_message("Ray: %.3f, %.3f, %.3f", ray.direction.x, ray.direction.y, ray.direction.z);
+
+			struct Scene* scene = game_state_get()->scene;
+			struct Raycast_Result ray_result;
+			scene_ray_intersect(scene, &ray, &ray_result);
+
+			if(ray_result.num_entities_intersected > 0)
+			{
+				//For now, just select the first entity that is intersected
+				struct Entity* intersected_entity = ray_result.entities_intersected[0];
+
+				if(editor_state.selected_entity && editor_state.selected_entity != intersected_entity)
+				{
+					editor_state.selected_entity->editor_selected = false;
+					editor_state.selected_entity = NULL;
+				}
+
+				intersected_entity->editor_selected = true;
+				editor_state.selected_entity = intersected_entity;
+			}
+		}
 	}
 
 	total_up_down_rot += turn_up_down;

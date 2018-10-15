@@ -91,7 +91,7 @@ bool gui_init(void)
     platform->textinput_callback_set(&gui_handle_textinput_event);
 	//gui_font_set("Ubuntu-R.ttf", 14);
 	//gui_font_set("FiraSans-Regular.ttf", 14);
-	gui_font_set("roboto_condensed.ttf", 16);
+	gui_font_set("roboto_condensed.ttf", 18);
 //	gui_theme_set(GT_RED);
     gui_theme_set(GT_DEFAULT);
 	success = true;
@@ -113,10 +113,10 @@ void gui_upload_atlas(const void *image, int width, int height)
 
 void gui_cleanup(void)
 {
-	nk_font_atlas_clear(&gui_state->atlas);
+    nk_font_atlas_clear(&gui_state->atlas);
     nk_free(&gui_state->context);
-	shader_remove(gui_state->shader);
-	texture_remove(gui_state->font_tex);
+    shader_remove(gui_state->shader);
+    texture_remove(gui_state->font_tex);
     glDeleteBuffers(1, &gui_state->vbo);
     glDeleteBuffers(1, &gui_state->ebo);
     nk_buffer_free(&gui_state->cmds);
@@ -128,13 +128,13 @@ void gui_render(enum nk_anti_aliasing AA)
     int width, height;
     int display_width, display_height;
     struct nk_vec2 scale;
-	mat4 gui_mat;
+    mat4 gui_mat;
 	
-	mat4_identity(&gui_mat);
-	struct Game_State* game_state = game_state_get();
+    mat4_identity(&gui_mat);
+    struct Game_State* game_state = game_state_get();
     platform->window.get_size(game_state->window, &width, &height);
     platform->window.get_drawable_size(game_state->window, &display_width, &display_height);
-	mat4_ortho(&gui_mat, 0, display_width, display_height, 0, -100, 100);
+    mat4_ortho(&gui_mat, 0.f, display_width, display_height, 0.f, -100.f, 100.f);
 
     scale.x = (float)display_width/(float)width;
     scale.y = (float)display_height/(float)height;
@@ -149,9 +149,9 @@ void gui_render(enum nk_anti_aliasing AA)
     glEnable(GL_SCISSOR_TEST);
 
     /* setup program */
-	shader_bind(gui_state->shader);
+    shader_bind(gui_state->shader);
     glUniform1i(gui_state->uniform_tex, 0);
-	shader_set_uniform(UT_MAT4, gui_state->uniform_proj, &gui_mat);
+    shader_set_uniform(UT_MAT4, gui_state->uniform_proj, &gui_mat);
     {
         /* convert from command queue into draw list and draw to screen */
         const struct nk_draw_command *cmd;
@@ -173,7 +173,7 @@ void gui_render(enum nk_anti_aliasing AA)
             /* fill convert configuration */
             struct nk_convert_config config;
             static const struct nk_draw_vertex_layout_element vertex_layout[] =
-			{
+	    {
                 {NK_VERTEX_POSITION, NK_FORMAT_FLOAT, NK_OFFSETOF(struct Gui_Vertex, pos)},
                 {NK_VERTEX_TEXCOORD, NK_FORMAT_FLOAT, NK_OFFSETOF(struct Gui_Vertex, uv)},
                 {NK_VERTEX_COLOR, NK_FORMAT_R8G8B8A8, NK_OFFSETOF(struct Gui_Vertex, col)},

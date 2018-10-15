@@ -241,26 +241,4 @@ struct Ray camera_screen_coord_to_ray(struct Camera* camera, int mouse_x, int mo
 	transform_get_absolute_position(&camera->base, &ray.origin);
 	
 	return ray;
-
-	/*vec4 clip_coords = {normalized_x, normalized_y, -1.f, 1.f};
-	vec4 ray_eye = {0.f};
-
-	mat4 inverse_proj_mat;
-	mat4_identity(&inverse_proj_mat);
-	mat4_inverse(&inverse_proj_mat, &camera->proj_mat);
-	vec4_mul_mat4(&ray_eye, &clip_coords, &inverse_proj_mat);
-
-	ray_eye.z = -1.f;
-	ray_eye.w = 0.f;
-
-	vec4 ray_world = {0.f};
-	mat4 inverse_view_mat;
-	mat4_identity(&inverse_view_mat);
-	mat4_inverse(&inverse_view_mat, &camera->view_mat);
-	vec4_mul_mat4(&ray_world, &ray_eye, &inverse_view_mat);
-
-	vec3 world_coords = {ray_world.x, ray_world.y, ray_world.z};
-	vec3_norm(&world_coords, &world_coords);
-
-	return world_coords;*/
 }

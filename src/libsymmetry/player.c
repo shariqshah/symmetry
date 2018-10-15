@@ -76,6 +76,7 @@ void player_update(struct Player* player, struct Scene* scene, float dt)
 		struct Ray ray = camera_screen_coord_to_ray(player->camera_node, mouse_x, mouse_y);
 		log_message("Ray: %.3f, %.3f, %.3f", ray.direction.x, ray.direction.y, ray.direction.z);
 
-		scene_ray_intersect(scene, &ray);
+		struct Raycast_Result ray_result;
+		scene_ray_intersect(scene, &ray, &ray_result);
 	}
 }

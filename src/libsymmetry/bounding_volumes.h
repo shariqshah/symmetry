@@ -4,6 +4,8 @@
 #include "../common/linmath.h"
 #include "../common/num_types.h"
 
+#define MAX_RAYCAST_ENTITIES_INTERSECT 256
+
 struct Bounding_Box
 {
 	vec3 min;
@@ -38,6 +40,12 @@ struct Ray
 {
 	vec3 direction;
 	vec3 origin;
+};
+
+struct Raycast_Result
+{
+	struct Entity* entities_intersected[MAX_RAYCAST_ENTITIES_INTERSECT];
+	int            num_entities_intersected;
 };
 
 int  bv_intersect_frustum_box(vec4* frustum, struct Bounding_Box* box, vec3* box_abs_position, vec3* box_abs_scale);

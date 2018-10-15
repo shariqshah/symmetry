@@ -30,9 +30,9 @@ static struct Hashmap_Entry* hashmap_entry_new(struct Hashmap* hashmap, const ch
 	{
 		if(strncmp(key, hashmap->buckets[index][i].key, HASH_MAX_KEY_LEN) == 0)
 		{
-			new_entry = &hashmap->buckets[index][i];
-			if(new_entry->key) free(new_entry->key);
-			break;
+		    new_entry = &hashmap->buckets[index][i];
+		    if(new_entry->key) free(new_entry->key);
+		    break;
 		}
 	}
 	if(!new_entry) new_entry = array_grow(hashmap->buckets[index], struct Hashmap_Entry);
@@ -352,7 +352,7 @@ void hashmap_copy(struct Hashmap* from, struct Hashmap* to)
 {
 	struct Variant* from_val = NULL;
 	char* from_key = NULL;
-
+    
 	HASHMAP_FOREACH(from, from_key, from_val)
 	{
 		hashmap_value_set(to, from_key, from_val);

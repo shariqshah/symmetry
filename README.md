@@ -163,6 +163,7 @@
 	- Console fix bug when enabled in editor mode
 	- Console command history
 	- Console command help
+	- Space partitioning and scene handling
 	- NPR and cross-hatching
 	- Move Gui_State and Editor_State into game_state and modify usage as needed
 	- Remove model and replace all usages with static mesh

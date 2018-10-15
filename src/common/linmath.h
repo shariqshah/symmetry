@@ -11,7 +11,7 @@ i'll make my own additions like SIMD etc later on.
 
 /* conversions */
 #ifndef M_PI
-    #define M_PI		        3.14159265358979323846
+    #define M_PI		        3.14159265358979323846f
 #endif
 #define EPSILON             0.0001
 #define TO_RADIANS(degrees) ((degrees * M_PI) / 180.0)
@@ -132,5 +132,6 @@ void  quat_mul_vec3(vec3* res, const quat* q, const vec3* v);
 void  quat_assign(quat* res, const quat* val);
 void  quat_identity(quat* res);
 void  quat_fill(quat* res, float x, float y, float z, float w);
+void  quat_mul_mat4(quat* res, quat* val, mat4* mat);
 
 #endif

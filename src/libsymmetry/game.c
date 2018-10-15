@@ -67,503 +67,503 @@ bool game_init(struct Window* window, struct Platform_Api* platform_api)
 
     platform = malloc(sizeof(*platform));
     memcpy(platform, platform_api, sizeof(*platform_api));
-	game_state = malloc(sizeof(*game_state));
-	if(!game_state)
+    game_state = malloc(sizeof(*game_state));
+    if(!game_state)
+    {
+	log_error("game:init", "Out of memory, failed to allocate game_state");
+	return 0;
+    }
+    else
+    {
+	game_state->window = window;
+	game_state->is_initialized = false;
+	game_state->game_mode = GAME_MODE_GAME;
+	game_state->renderer = calloc(1, sizeof(*game_state->renderer));
+	game_state->scene = calloc(1, sizeof(*game_state->scene));
+	game_state->console = calloc(1, sizeof(*game_state->console));
+
+	log_file_handle_set(platform->log.file_handle_get());
+	log_message_callback_set(game_on_log_message);
+	log_warning_callback_set(game_on_log_warning);
+	log_error_callback_set(game_on_log_error);
+
+	if(!gl_load_extentions())
 	{
-		log_error("game:init", "Out of memory, failed to allocate game_state");
-		return 0;
+	    log_error("game:init", "Failed to load GL extentions");
+	    return false;
 	}
 	else
 	{
-		game_state->window = window;
-		game_state->is_initialized = false;
-		game_state->game_mode = GAME_MODE_GAME;
-		game_state->renderer = calloc(1, sizeof(*game_state->renderer));
-		game_state->scene = calloc(1, sizeof(*game_state->scene));
-		game_state->console = calloc(1, sizeof(*game_state->console));
-
-		log_file_handle_set(platform->log.file_handle_get());
-		log_message_callback_set(game_on_log_message);
-		log_warning_callback_set(game_on_log_warning);
-		log_error_callback_set(game_on_log_error);
-
-		if(!gl_load_extentions())
-		{
-			log_error("game:init", "Failed to load GL extentions");
-			return false;
-		}
-		else
-		{
-			log_message("Loaded GL extentions");
-		}
-
-
-		input_init();
-		shader_init();
-		texture_init();
-		framebuffer_init();
-		gui_init();
-		console_init(game_state->console);
-		geom_init();
-		platform->physics.init();
-		platform->physics.gravity_set(0.f, -9.8f, 0.f);
-		platform->physics.body_set_moved_callback(entity_rigidbody_on_move);
-		platform->physics.body_set_collision_callback(entity_rigidbody_on_collision);
-
-		editor_init();
-		renderer_init(game_state->renderer);
-		scene_init(game_state->scene);
+	    log_message("Loaded GL extentions");
 	}
+
+
+	input_init();
+	shader_init();
+	texture_init();
+	framebuffer_init();
+	gui_init();
+	console_init(game_state->console);
+	geom_init();
+	platform->physics.init();
+	platform->physics.gravity_set(0.f, -9.8f, 0.f);
+	platform->physics.body_set_moved_callback(entity_rigidbody_on_move);
+	platform->physics.body_set_collision_callback(entity_rigidbody_on_collision);
+
+	editor_init();
+	renderer_init(game_state->renderer);
+	scene_init(game_state->scene);
+    }
 	
-	/* Debug scene setup */
-	game_scene_setup();
-	game_state->is_initialized = true;
-	return game_run();
+    /* Debug scene setup */
+    game_scene_setup();
+    game_state->is_initialized = true;
+    return game_run();
 }
 
 void game_scene_setup(void)
 {	
- //   struct Entity* player = scene_add_new("player", ET_CAMERA);
- //   game_state->player_node = player->id;
- //   vec3 viewer_pos = {10, 5, 100};
- //   transform_set_position(player, &viewer_pos);
- //   int render_width, render_height;
-	//struct Hashmap* config = platform->config.get();
-	//render_width  = hashmap_int_get(config, "render_width");
-	//render_height = hashmap_int_get(config, "render_height");
- //   camera_create(player, render_width, render_height);
- //   camera_attach_fbo(player, render_width, render_height, 1, 1, 1);
- //   vec4_fill(&player->camera.clear_color, 0.3f, 0.6f, 0.9f, 1.0f);
+    //   struct Entity* player = scene_add_new("player", ET_CAMERA);
+    //   game_state->player_node = player->id;
+    //   vec3 viewer_pos = {10, 5, 100};
+    //   transform_set_position(player, &viewer_pos);
+    //   int render_width, render_height;
+    //struct Hashmap* config = platform->config.get();
+    //render_width  = hashmap_int_get(config, "render_width");
+    //render_height = hashmap_int_get(config, "render_height");
+    //   camera_create(player, render_width, render_height);
+    //   camera_attach_fbo(player, render_width, render_height, 1, 1, 1);
+    //   vec4_fill(&player->camera.clear_color, 0.3f, 0.6f, 0.9f, 1.0f);
 
- //   vec4 color = {1.f, 1.f, 1.f, 1.f };
- //   struct Entity* new_ent = scene_add_new("Model_Entity", ET_STATIC_MESH);
- //   vec3 position = {0, 0, -5};
- //   transform_translate(new_ent, &position, TS_WORLD);
- //   new_ent->renderable = true;
- //   model_create(new_ent, "default.pamesh", "Blinn_Phong");
- //   model_set_material_param(new_ent, "diffuse_color", &color);
- //   int tex = texture_create_from_file("white.tga", TU_DIFFUSE);
- //   model_set_material_param(new_ent, "diffuse_texture", &tex);
- //   vec3 scale = {1, 1, 1};
- //   transform_scale(new_ent, &scale);
+    //   vec4 color = {1.f, 1.f, 1.f, 1.f };
+    //   struct Entity* new_ent = scene_add_new("Model_Entity", ET_STATIC_MESH);
+    //   vec3 position = {0, 0, -5};
+    //   transform_translate(new_ent, &position, TS_WORLD);
+    //   new_ent->renderable = true;
+    //   model_create(new_ent, "default.pamesh", "Blinn_Phong");
+    //   model_set_material_param(new_ent, "diffuse_color", &color);
+    //   int tex = texture_create_from_file("white.tga", TU_DIFFUSE);
+    //   model_set_material_param(new_ent, "diffuse_texture", &tex);
+    //   vec3 scale = {1, 1, 1};
+    //   transform_scale(new_ent, &scale);
 
- //   /* struct Entity* sound_ent = scene_add_as_child("Sound_ENT", ET_SOUND_SOURCE, new_ent->id); */
- //   /* struct Sound_Source* sound_source = &sound_ent->sound_source; */
- //   /* platform->sound.source_create(true, 1, &sound_source->source_handle, &sound_source->buffer_handles[0]); */
- //   /* platform->sound.source_load_wav(sound_source->source_handle, */
- //   /*                                 sound_source->buffer_handles[0], */
- //   /*                                 "BigExplosion.wav"); */
- //   /* //sound_source_relative_set(source, true); */
- //   /* platform->sound.source_volume_set(sound_source->source_handle, 1.f); */
- //   /* platform->sound.source_loop_set(sound_source->source_handle, true); */
- //   /* platform->sound.source_play(sound_source->source_handle); */
+    //   /* struct Entity* sound_ent = scene_add_as_child("Sound_ENT", ET_SOUND_SOURCE, new_ent->id); */
+    //   /* struct Sound_Source* sound_source = &sound_ent->sound_source; */
+    //   /* platform->sound.source_create(true, 1, &sound_source->source_handle, &sound_source->buffer_handles[0]); */
+    //   /* platform->sound.source_load_wav(sound_source->source_handle, */
+    //   /*                                 sound_source->buffer_handles[0], */
+    //   /*                                 "BigExplosion.wav"); */
+    //   /* //sound_source_relative_set(source, true); */
+    //   /* platform->sound.source_volume_set(sound_source->source_handle, 1.f); */
+    //   /* platform->sound.source_loop_set(sound_source->source_handle, true); */
+    //   /* platform->sound.source_play(sound_source->source_handle); */
 
- //   int parent_node = new_ent->id;
- //   int num_suz = 50;
- //   srand(time(NULL));
- //   for(int i = 0; i < num_suz; i++)
- //   {
- //       int x = rand() % num_suz;
- //       int y = rand() % num_suz;
- //       int z = rand() % num_suz;
- //       x++; y++; z++;
- //       struct Entity* suz = scene_add_as_child("Suzanne", ET_STATIC_MESH, parent_node);
- //       //struct Entity* suz = scene_add_new("Suzanne", ET_STATIC_MESH);
- //       suz->renderable = true;
- //       model_create(suz, "default.pamesh", "Blinn_Phong");
- //       model_set_material_param(suz, "diffuse_color", &color);
- //       float spec_str = 80.f;
- //       model_set_material_param(suz, "specular_strength", &spec_str);
- //       vec3 s_pos = {x, 0, z};
- //       transform_translate(suz, &s_pos, TS_WORLD);
- //   }
+    //   int parent_node = new_ent->id;
+    //   int num_suz = 50;
+    //   srand(time(NULL));
+    //   for(int i = 0; i < num_suz; i++)
+    //   {
+    //       int x = rand() % num_suz;
+    //       int y = rand() % num_suz;
+    //       int z = rand() % num_suz;
+    //       x++; y++; z++;
+    //       struct Entity* suz = scene_add_as_child("Suzanne", ET_STATIC_MESH, parent_node);
+    //       //struct Entity* suz = scene_add_new("Suzanne", ET_STATIC_MESH);
+    //       suz->renderable = true;
+    //       model_create(suz, "default.pamesh", "Blinn_Phong");
+    //       model_set_material_param(suz, "diffuse_color", &color);
+    //       float spec_str = 80.f;
+    //       model_set_material_param(suz, "specular_strength", &spec_str);
+    //       vec3 s_pos = {x, 0, z};
+    //       transform_translate(suz, &s_pos, TS_WORLD);
+    //   }
 
 
- //   struct Entity* ground = scene_add_new("Ground", ET_STATIC_MESH);
- //   ground->renderable = true;
- //   model_create(ground, "default.pamesh", "Blinn_Phong");
- //   model_set_material_param(ground, "diffuse_color", &color);
- //   int white_tex = texture_create_from_file("white.tga", TU_DIFFUSE);
- //   model_set_material_param(ground, "diffuse_texture", &white_tex);
- //   float spec_str = 80.f;
- //   model_set_material_param(ground, "specular_strength", &spec_str);
- //   vec3 pos = {0, -5, 0};
- //   vec3 scale_ground = {400.f, 2.f, 400.f};
- //   transform_set_position(ground, &pos);
- //   transform_scale(ground, &scale_ground);
+    //   struct Entity* ground = scene_add_new("Ground", ET_STATIC_MESH);
+    //   ground->renderable = true;
+    //   model_create(ground, "default.pamesh", "Blinn_Phong");
+    //   model_set_material_param(ground, "diffuse_color", &color);
+    //   int white_tex = texture_create_from_file("white.tga", TU_DIFFUSE);
+    //   model_set_material_param(ground, "diffuse_texture", &white_tex);
+    //   float spec_str = 80.f;
+    //   model_set_material_param(ground, "specular_strength", &spec_str);
+    //   vec3 pos = {0, -5, 0};
+    //   vec3 scale_ground = {400.f, 2.f, 400.f};
+    //   transform_set_position(ground, &pos);
+    //   transform_scale(ground, &scale_ground);
 
- //   /* struct Entity* screen = scene_add_new("Screen", NULL); */
- //   /* struct Model* screen_model = entity_component_add(screen, C_MODEL, NULL, NULL); */
- //   /* screen_model->geometry_index = geom_find("Quad"); */
- //   /* struct Entity* screen_camera = scene_add_as_child("Screen_Camera", NULL, screen->node); */
- //   /* struct Transform* screen_camera_tran = entity_component_get(screen_camera, C_TRANSFORM); */
- //   /* transform_rotate(screen_camera_tran, &UNIT_Y, 180.f, TS_WORLD); */
- //   /* struct Camera* cam = entity_component_add(screen_camera, C_CAMERA, 50, 50); */
- //   /* cam->nearz = 0.1f; */
- //   /* cam->farz  = 50.f; */
- //   /* camera_update_proj(cam); */
- //   /* camera_attach_fbo(cam, 128, 128, 1, 1, 0); */
- //   /* model_set_material_param(screen_model, "diffuse_color", &color); */
- //   /* model_set_material_param(screen_model, "diffuse_texture", &cam->render_tex); */
+    //   /* struct Entity* screen = scene_add_new("Screen", NULL); */
+    //   /* struct Model* screen_model = entity_component_add(screen, C_MODEL, NULL, NULL); */
+    //   /* screen_model->geometry_index = geom_find("Quad"); */
+    //   /* struct Entity* screen_camera = scene_add_as_child("Screen_Camera", NULL, screen->node); */
+    //   /* struct Transform* screen_camera_tran = entity_component_get(screen_camera, C_TRANSFORM); */
+    //   /* transform_rotate(screen_camera_tran, &UNIT_Y, 180.f, TS_WORLD); */
+    //   /* struct Camera* cam = entity_component_add(screen_camera, C_CAMERA, 50, 50); */
+    //   /* cam->nearz = 0.1f; */
+    //   /* cam->farz  = 50.f; */
+    //   /* camera_update_proj(cam); */
+    //   /* camera_attach_fbo(cam, 128, 128, 1, 1, 0); */
+    //   /* model_set_material_param(screen_model, "diffuse_color", &color); */
+    //   /* model_set_material_param(screen_model, "diffuse_texture", &cam->render_tex); */
 
- //   const int MAX_LIGHTS = 10;
- //   for(int i = 0; i < MAX_LIGHTS; i++)
- //   {
- //       int x = rand() % MAX_LIGHTS;
- //       int z = rand() % MAX_LIGHTS;
- //       x++; z++;
- //       struct Entity* light_ent = scene_add_new("Light_Ent", ET_LIGHT);
- //       vec3 lt_pos = {x * 20, 0, z * 20};
- //       transform_set_position(light_ent, &lt_pos);
- //       light_create(light_ent, LT_POINT);
- //       vec3_fill(&light_ent->light.color, 1.f / (float)x, 1.f / ((rand() % 10) + 1.f), 1.f / (float)z);
- //       light_ent->light.intensity = 1.f;
- //   }
+    //   const int MAX_LIGHTS = 10;
+    //   for(int i = 0; i < MAX_LIGHTS; i++)
+    //   {
+    //       int x = rand() % MAX_LIGHTS;
+    //       int z = rand() % MAX_LIGHTS;
+    //       x++; z++;
+    //       struct Entity* light_ent = scene_add_new("Light_Ent", ET_LIGHT);
+    //       vec3 lt_pos = {x * 20, 0, z * 20};
+    //       transform_set_position(light_ent, &lt_pos);
+    //       light_create(light_ent, LT_POINT);
+    //       vec3_fill(&light_ent->light.color, 1.f / (float)x, 1.f / ((rand() % 10) + 1.f), 1.f / (float)z);
+    //       light_ent->light.intensity = 1.f;
+    //   }
 
-	/////* log_message("Sizeof Entity : %d", sizeof(struct Entity)); */
+    /////* log_message("Sizeof Entity : %d", sizeof(struct Entity)); */
 
-	/////* struct Entity* light_ent = entity_find("Ground"); */
-	/////* entity_save(light_ent, "ground.ent", DT_INSTALL); */
+    /////* struct Entity* light_ent = entity_find("Ground"); */
+    /////* entity_save(light_ent, "ground.ent", DT_INSTALL); */
 
- //   struct Entity* suz = entity_find("Suzanne");
- //   struct Entity* sound_ent = scene_add_as_child("Sound_Ent", ET_SOUND_SOURCE, suz->id);
- //   struct Sound_Source* sound_source = &sound_ent->sound_source;
-	//sound_source->source_filename = str_new("sounds/teh_beatz.wav");
- //   sound_source->type             = ST_WAV;
- //   sound_source->attenuation_type = SA_INVERSE;
- //   sound_source->rolloff_factor   = 0.95f;
- //   sound_source->loop             = true;
- //   sound_source->volume           = 0.5f;
- //   sound_source->min_distance     = 1.f;
- //   sound_source->max_distance     = 10.f;
- //   sound_source->playing          = true;
+    //   struct Entity* suz = entity_find("Suzanne");
+    //   struct Entity* sound_ent = scene_add_as_child("Sound_Ent", ET_SOUND_SOURCE, suz->id);
+    //   struct Sound_Source* sound_source = &sound_ent->sound_source;
+    //sound_source->source_filename = str_new("sounds/teh_beatz.wav");
+    //   sound_source->type             = ST_WAV;
+    //   sound_source->attenuation_type = SA_INVERSE;
+    //   sound_source->rolloff_factor   = 0.95f;
+    //   sound_source->loop             = true;
+    //   sound_source->volume           = 0.5f;
+    //   sound_source->min_distance     = 1.f;
+    //   sound_source->max_distance     = 10.f;
+    //   sound_source->playing          = true;
 
- //   sound_source->source_instance  = 0;
- //   sound_source->source           = NULL;
+    //   sound_source->source_instance  = 0;
+    //   sound_source->source           = NULL;
 
- //   entity_apply_sound_params(sound_ent);
+    //   entity_apply_sound_params(sound_ent);
 
- //   scene_save("test_scene.symtres", DIRT_INSTALL);
+    //   scene_save("test_scene.symtres", DIRT_INSTALL);
 
-  //  if(scene_load("test_scene.symtres", DIRT_INSTALL))
-  //  {
-  //      log_message("Scene loaded!");
-  //      struct Entity* player = entity_find("player");
-  //      game_state->player_node = player->id;
+    //  if(scene_load("test_scene.symtres", DIRT_INSTALL))
+    //  {
+    //      log_message("Scene loaded!");
+    //      struct Entity* player = entity_find("player");
+    //      game_state->player_node = player->id;
 
-		//struct Entity* suz = entity_find("Model_Entity");
-		//suz_id = suz->id;
-  //      /*struct Camera* camera = &player->camera;
-  //      camera->ortho = true;
-  //      camera->farz  = 500.f;
-  //      camera->nearz = -500.f;
-  //      camera_update_proj(player);*/
-  //  }
+    //struct Entity* suz = entity_find("Model_Entity");
+    //suz_id = suz->id;
+    //      /*struct Camera* camera = &player->camera;
+    //      camera->ortho = true;
+    //      camera->farz  = 500.f;
+    //      camera->nearz = -500.f;
+    //      camera_update_proj(player);*/
+    //  }
 
-	//platform->physics.cs_plane_create(0, 1, 0, 0);
-	////Rigidbody box = platform->physics.body_box_create(2.5, 2.5, 2.5);
-	//Rigidbody box = platform->physics.body_sphere_create(3.5);
-	///*platform->physics.body_position_set(box, 0.f, 50.f, 0.f);
-	//platform->physics.body_mass_set(box, 10.f);*/
-	///*platform->physics.body_data_set(box, (void*)suz_id);*/
-	////platform->physics.body_force_add(box, -100.f, 0.f, 0.f);
-	//struct Entity* suz = entity_find("Model_Entity");
-	//entity_rigidbody_set(suz, box);
-	//suz->collision.on_collision = &on_collision_test;
+    //platform->physics.cs_plane_create(0, 1, 0, 0);
+    ////Rigidbody box = platform->physics.body_box_create(2.5, 2.5, 2.5);
+    //Rigidbody box = platform->physics.body_sphere_create(3.5);
+    ///*platform->physics.body_position_set(box, 0.f, 50.f, 0.f);
+    //platform->physics.body_mass_set(box, 10.f);*/
+    ///*platform->physics.body_data_set(box, (void*)suz_id);*/
+    ////platform->physics.body_force_add(box, -100.f, 0.f, 0.f);
+    //struct Entity* suz = entity_find("Model_Entity");
+    //entity_rigidbody_set(suz, box);
+    //suz->collision.on_collision = &on_collision_test;
 
-	//Rigidbody sphere = platform->physics.body_sphere_create(3.5f);
-	//struct Entity* sphere_ent = entity_find("Sphere_Ent");
-	//entity_rigidbody_set(sphere_ent, sphere);
+    //Rigidbody sphere = platform->physics.body_sphere_create(3.5f);
+    //struct Entity* sphere_ent = entity_find("Sphere_Ent");
+    //entity_rigidbody_set(sphere_ent, sphere);
 
-	////Collision_Shape plane = platform->physics.cs_plane_create(0, 1, 0, 0);
-	//Rigidbody ground_box = platform->physics.body_box_create(10, 5, 10);
-	//platform->physics.body_position_set(ground_box, 0.f, 0.f, 0.f);
-	///*platform->physics.body_kinematic_set(ground_box);*/
-	//struct Entity* ground = entity_find("Ground");
-	////entity_collision_shape_set(ground, plane);
-	//entity_rigidbody_set(ground, ground_box);
+    ////Collision_Shape plane = platform->physics.cs_plane_create(0, 1, 0, 0);
+    //Rigidbody ground_box = platform->physics.body_box_create(10, 5, 10);
+    //platform->physics.body_position_set(ground_box, 0.f, 0.f, 0.f);
+    ///*platform->physics.body_kinematic_set(ground_box);*/
+    //struct Entity* ground = entity_find("Ground");
+    ////entity_collision_shape_set(ground, plane);
+    //entity_rigidbody_set(ground, ground_box);
 
-	struct Static_Mesh* ground = scene_static_mesh_create(game_state->scene, "Ground_Mesh", NULL, "default.pamesh", MAT_BLINN);
-	vec3 scale = {200.f, 1.f, 200.f};
-	transform_scale(ground, &scale);
-	ground->model.material_params[MMP_DIFFUSE_TEX].val_int = texture_create_from_file("white.tga", TU_DIFFUSE);
-	ground->model.material_params[MMP_DIFFUSE].val_float = 0.5f;
-	ground->model.material_params[MMP_SPECULAR].val_float = 1.f;
-	ground->model.material_params[MMP_SPECULAR_STRENGTH].val_float = 1.f;
-	vec3_fill(&ground->model.material_params[MMP_DIFFUSE_COL].val_vec3, 1.f, 1.f, 1.f);
+    struct Static_Mesh* ground = scene_static_mesh_create(game_state->scene, "Ground_Mesh", NULL, "default.pamesh", MAT_BLINN);
+    vec3 scale = {200.f, 1.f, 200.f};
+    transform_scale(ground, &scale);
+    ground->model.material_params[MMP_DIFFUSE_TEX].val_int = texture_create_from_file("white.tga", TU_DIFFUSE);
+    ground->model.material_params[MMP_DIFFUSE].val_float = 0.5f;
+    ground->model.material_params[MMP_SPECULAR].val_float = 1.f;
+    ground->model.material_params[MMP_SPECULAR_STRENGTH].val_float = 1.f;
+    vec3_fill(&ground->model.material_params[MMP_DIFFUSE_COL].val_vec3, 1.f, 1.f, 1.f);
 	
-	int num_suz = 50;
-	char suz_name[MAX_ENTITY_NAME_LEN];
-	vec3 suz_pos = {0.f};
-	for(int i = 0; i < num_suz; i++)
-	{
-		memset(&suz_name, '\0', MAX_ENTITY_NAME_LEN);
-		snprintf(&suz_name, MAX_ENTITY_NAME_LEN, "Suzanne_%d", i);
-		struct Static_Mesh* suzanne = scene_static_mesh_create(game_state->scene, suz_name, NULL, "sphere.symbres", MAT_BLINN);
-		suzanne->model.material_params[MMP_DIFFUSE_TEX].val_int = texture_create_from_file("white.tga", TU_DIFFUSE);
-		suzanne->model.material_params[MMP_DIFFUSE].val_float = 0.5f;
-		suzanne->model.material_params[MMP_SPECULAR].val_float = 1.f;
-		suzanne->model.material_params[MMP_SPECULAR_STRENGTH].val_float = 1.f;
-		vec3_fill(&suzanne->model.material_params[MMP_DIFFUSE_COL].val_vec3, 1.f, 0.f, 1.f);
-		suz_pos.x = i + 10.f;
-		suz_pos.y = 5.f;
-		suz_pos.z = i + 5.f;
-		transform_set_position(suzanne, &suz_pos);
+    int num_suz = 50;
+    char suz_name[MAX_ENTITY_NAME_LEN];
+    vec3 suz_pos = {0.f};
+    for(int i = 0; i < num_suz; i++)
+    {
+	memset(&suz_name, '\0', MAX_ENTITY_NAME_LEN);
+	snprintf(&suz_name[0], MAX_ENTITY_NAME_LEN, "Suzanne_%d", i);
+	struct Static_Mesh* suzanne = scene_static_mesh_create(game_state->scene, suz_name, NULL, "sphere.symbres", MAT_BLINN);
+	suzanne->model.material_params[MMP_DIFFUSE_TEX].val_int = texture_create_from_file("white.tga", TU_DIFFUSE);
+	suzanne->model.material_params[MMP_DIFFUSE].val_float = 0.5f;
+	suzanne->model.material_params[MMP_SPECULAR].val_float = 1.f;
+	suzanne->model.material_params[MMP_SPECULAR_STRENGTH].val_float = 1.f;
+	vec3_fill(&suzanne->model.material_params[MMP_DIFFUSE_COL].val_vec3, 1.f, 0.f, 1.f);
+	suz_pos.x = i + 10.f;
+	suz_pos.y = 5.f;
+	suz_pos.z = i + 5.f;
+	transform_set_position(suzanne, &suz_pos);
 
-	}
+    }
 
 
-	struct Light* light = scene_light_create(game_state->scene, "Test_Light", NULL, LT_POINT);
-	light->color.x = 1.f;
-	light->color.y = 1.f;
-	light->color.z = 1.f;
-	light->radius = 20.f;
-	vec3 light_pos = {0.f, 5.f, 0.f};
-	transform_translate(light, &light_pos, TS_WORLD);
+    struct Light* light = scene_light_create(game_state->scene, "Test_Light", NULL, LT_POINT);
+    light->color.x = 1.f;
+    light->color.y = 1.f;
+    light->color.z = 1.f;
+    light->radius  = 20;
+    vec3 light_pos = {0.f, 5.f, 0.f};
+    transform_translate(light, &light_pos, TS_WORLD);
 }
 
 void game_debug(float dt)
 {
-	if(input_is_key_pressed(KEY_SPACE))
-	{
-		struct Entity* model = scene_find(game_state->scene, "Light_Ent");
-		vec3 x_axis = {0, 1, 0};
-		transform_rotate(model, &x_axis, 25.f * dt, TS_WORLD);
-	}
-
-	if(input_is_key_pressed(KEY_M))
-	{
-		struct Entity* model = scene_find(game_state->scene, "Model_Entity");
-		//vec3 y_axis = {0, 0, 1};
-		//transform_rotate(mod_tran, &y_axis, 25.f * dt, TS_LOCAL);
-		vec3 amount = {0, 0, -5 * dt};
-		transform_translate(model, &amount, TS_LOCAL);
-	}
-
-	if(input_is_key_pressed(KEY_N))
-	{
-		struct Entity* model = scene_find(game_state->scene, "Model_Entity");
-		/* vec3 y_axis = {0, 0, 1}; */
-		/* transform_rotate(mod_tran, &y_axis, 25.f * dt, TS_WORLD); */
-		vec3 amount = {0, 0, 5 * dt};
-		transform_translate(model, &amount, TS_LOCAL);
-	}
-
-	/*struct Entity* model = scene_find("Model_Entity");
+    if(input_is_key_pressed(KEY_SPACE))
+    {
+	struct Entity* model = scene_find(game_state->scene, "Light_Ent");
 	vec3 x_axis = {0, 1, 0};
-    transform_rotate(model, &x_axis, 50.f * dt, TS_WORLD);
+	transform_rotate(model, &x_axis, 25.f * dt, TS_WORLD);
+    }
+
+    if(input_is_key_pressed(KEY_M))
+    {
+	struct Entity* model = scene_find(game_state->scene, "Model_Entity");
+	//vec3 y_axis = {0, 0, 1};
+	//transform_rotate(mod_tran, &y_axis, 25.f * dt, TS_LOCAL);
 	vec3 amount = {0, 0, -5 * dt};
-	transform_translate(model, &amount, TS_LOCAL);*/
+	transform_translate(model, &amount, TS_LOCAL);
+    }
 
-	struct Sprite_Batch* batch = game_state->renderer->sprite_batch;
+    if(input_is_key_pressed(KEY_N))
+    {
+	struct Entity* model = scene_find(game_state->scene, "Model_Entity");
+	/* vec3 y_axis = {0, 0, 1}; */
+	/* transform_rotate(mod_tran, &y_axis, 25.f * dt, TS_WORLD); */
+	vec3 amount = {0, 0, 5 * dt};
+	transform_translate(model, &amount, TS_LOCAL);
+    }
 
-	sprite_batch_begin(batch);
-	static struct Sprite sprite;
+    /*struct Entity* model = scene_find("Model_Entity");
+      vec3 x_axis = {0, 1, 0};
+      transform_rotate(model, &x_axis, 50.f * dt, TS_WORLD);
+      vec3 amount = {0, 0, -5 * dt};
+      transform_translate(model, &amount, TS_LOCAL);*/
 
-	sprite.vertices[0].position.x = 0.f;  sprite.vertices[0].position.y = 0.f;  
-	sprite.vertices[1].position.x = 50.f; sprite.vertices[1].position.y = 0.f; 
-	sprite.vertices[2].position.x = 0.f;  sprite.vertices[2].position.y = 50.f; 
-	sprite.vertices[3].position.x = 0.f;  sprite.vertices[3].position.y = 50.f; 
-	sprite.vertices[4].position.x = 50.f; sprite.vertices[4].position.y = 50.f;
-	sprite.vertices[5].position.x = 50.f; sprite.vertices[5].position.y = 0.f; 
+    struct Sprite_Batch* batch = game_state->renderer->sprite_batch;
 
-	sprite.vertices[0].uv.x = 0.f; sprite.vertices[0].uv.y = 0.f;
-	sprite.vertices[1].uv.x = 1.f; sprite.vertices[1].uv.y = 0.f;
-	sprite.vertices[2].uv.x = 0.f; sprite.vertices[2].uv.y = 1.f;
-	sprite.vertices[3].uv.x = 0.f; sprite.vertices[3].uv.y = 1.f;
-	sprite.vertices[4].uv.x = 1.f; sprite.vertices[4].uv.y = 1.f;
-	sprite.vertices[5].uv.x = 1.f; sprite.vertices[5].uv.y = 0.f;
+    sprite_batch_begin(batch);
+    static struct Sprite sprite;
 
-	sprite.vertices[0].color.x = 0.f; sprite.vertices[0].color.y = 0.f; sprite.vertices[0].color.z = 0.f; sprite.vertices[0].color.w = 1.f;
-	sprite.vertices[1].color.x = 1.f; sprite.vertices[1].color.y = 0.f; sprite.vertices[1].color.z = 0.f; sprite.vertices[1].color.w = 1.f;
-	sprite.vertices[2].color.x = 0.f; sprite.vertices[2].color.y = 1.f; sprite.vertices[2].color.z = 0.f; sprite.vertices[2].color.w = 1.f;
-	sprite.vertices[3].color.x = 1.f; sprite.vertices[3].color.y = 1.f; sprite.vertices[3].color.z = 0.f; sprite.vertices[3].color.w = 1.f;
-	sprite.vertices[4].color.x = 1.f; sprite.vertices[4].color.y = 1.f; sprite.vertices[4].color.z = 0.f; sprite.vertices[4].color.w = 1.f;
-	sprite.vertices[5].color.x = 1.f; sprite.vertices[5].color.y = 1.f; sprite.vertices[5].color.z = 0.f; sprite.vertices[5].color.w = 1.f;
+    sprite.vertices[0].position.x = 0.f;  sprite.vertices[0].position.y = 0.f;  
+    sprite.vertices[1].position.x = 50.f; sprite.vertices[1].position.y = 0.f; 
+    sprite.vertices[2].position.x = 0.f;  sprite.vertices[2].position.y = 50.f; 
+    sprite.vertices[3].position.x = 0.f;  sprite.vertices[3].position.y = 50.f; 
+    sprite.vertices[4].position.x = 50.f; sprite.vertices[4].position.y = 50.f;
+    sprite.vertices[5].position.x = 50.f; sprite.vertices[5].position.y = 0.f; 
 
-	sprite_batch_add_sprite(batch, &sprite);
+    sprite.vertices[0].uv.x = 0.f; sprite.vertices[0].uv.y = 0.f;
+    sprite.vertices[1].uv.x = 1.f; sprite.vertices[1].uv.y = 0.f;
+    sprite.vertices[2].uv.x = 0.f; sprite.vertices[2].uv.y = 1.f;
+    sprite.vertices[3].uv.x = 0.f; sprite.vertices[3].uv.y = 1.f;
+    sprite.vertices[4].uv.x = 1.f; sprite.vertices[4].uv.y = 1.f;
+    sprite.vertices[5].uv.x = 1.f; sprite.vertices[5].uv.y = 0.f;
 
-	sprite_batch_end(batch);
+    sprite.vertices[0].color.x = 0.f; sprite.vertices[0].color.y = 0.f; sprite.vertices[0].color.z = 0.f; sprite.vertices[0].color.w = 1.f;
+    sprite.vertices[1].color.x = 1.f; sprite.vertices[1].color.y = 0.f; sprite.vertices[1].color.z = 0.f; sprite.vertices[1].color.w = 1.f;
+    sprite.vertices[2].color.x = 0.f; sprite.vertices[2].color.y = 1.f; sprite.vertices[2].color.z = 0.f; sprite.vertices[2].color.w = 1.f;
+    sprite.vertices[3].color.x = 1.f; sprite.vertices[3].color.y = 1.f; sprite.vertices[3].color.z = 0.f; sprite.vertices[3].color.w = 1.f;
+    sprite.vertices[4].color.x = 1.f; sprite.vertices[4].color.y = 1.f; sprite.vertices[4].color.z = 0.f; sprite.vertices[4].color.w = 1.f;
+    sprite.vertices[5].color.x = 1.f; sprite.vertices[5].color.y = 1.f; sprite.vertices[5].color.z = 0.f; sprite.vertices[5].color.w = 1.f;
 
-	//Raycast test
-	if(input_is_key_pressed(KEY_R))
-	{
-		/*Collision_Shape ray = platform->physics.cs_ray_create(20.f, true, true);
-		vec3 position = {0.f, 0.f, 0.f};
-		vec3 direction = {0.f, 0.f, 0.f};
-		transform_get_absolute_forward(player_entity, &direction);
-		transform_get_absolute_position(player_entity, &position);
-		struct Raycast_Hit hit;
-		if(platform->physics.cs_ray_cast(ray, &hit, position.x, position.y, position.z, direction.x, direction.y, direction.z))
-		{
-			struct Entity* entity_hit = entity_get(hit.entity_id);
-			log_message("Ray hit %s", entity_hit->name);
-		}
-		else
-		{
-			log_message("Ray didn't hit anything!");
-		}
-		platform->physics.cs_remove(ray);*/
-	}
+    sprite_batch_add_sprite(batch, &sprite);
 
-	// Immediate geometry test
-	vec3 im_position = { 0.f, 20.f, 0.f };
-	vec3 im_scale    = { 1.f, 1.f, 1.f };
-	quat im_rot      = { 0.f, 0.f, 0.f, 1.f };
-	vec4 im_color    = { 0.f, 1.f, 1.f, 1.f };
-	quat_identity(&im_rot);
-	im_begin(im_position, im_rot, im_scale, im_color, GL_LINES);
+    sprite_batch_end(batch);
 
-	im_pos(0.f, 0.f, 0.f);
-	im_pos(100.f, 100.f, 10.f);
+    //Raycast test
+    if(input_is_key_pressed(KEY_R))
+    {
+	/*Collision_Shape ray = platform->physics.cs_ray_create(20.f, true, true);
+	  vec3 position = {0.f, 0.f, 0.f};
+	  vec3 direction = {0.f, 0.f, 0.f};
+	  transform_get_absolute_forward(player_entity, &direction);
+	  transform_get_absolute_position(player_entity, &position);
+	  struct Raycast_Hit hit;
+	  if(platform->physics.cs_ray_cast(ray, &hit, position.x, position.y, position.z, direction.x, direction.y, direction.z))
+	  {
+	  struct Entity* entity_hit = entity_get(hit.entity_id);
+	  log_message("Ray hit %s", entity_hit->name);
+	  }
+	  else
+	  {
+	  log_message("Ray didn't hit anything!");
+	  }
+	  platform->physics.cs_remove(ray);*/
+    }
 
-	im_end();
+    // Immediate geometry test
+    vec3 im_position = { 0.f, 20.f, 0.f };
+    vec3 im_scale    = { 1.f, 1.f, 1.f };
+    quat im_rot      = { 0.f, 0.f, 0.f, 1.f };
+    vec4 im_color    = { 0.f, 1.f, 1.f, 1.f };
+    quat_identity(&im_rot);
+    im_begin(im_position, im_rot, im_scale, im_color, GL_LINES);
 
-	im_position.x = -10;
+    im_pos(0.f, 0.f, 0.f);
+    im_pos(100.f, 100.f, 10.f);
 
-	im_color.x = 1.f;
-	im_color.y = 0.f;
-	im_begin(im_position, im_rot, im_scale, im_color, GL_TRIANGLES);
+    im_end();
 
-	float length = 200.f;
+    im_position.x = -10;
 
-	//Front
-	im_pos(0.f,  0.f,  0.f);
-	im_pos(0.f,  length, 0.f);
-	im_pos(length, length, 0.f);
-	im_pos(length, length, 0.f);
-	im_pos(length,  0.f, 0.f);
-	im_pos( 0.f,  0.f, 0.f);
+    im_color.x = 1.f;
+    im_color.y = 0.f;
+    im_begin(im_position, im_rot, im_scale, im_color, GL_TRIANGLES);
 
-	//Back
-	im_pos(0.f,  0.f,  length);
-	im_pos(0.f,  length, length);
-	im_pos(length, length, length);
-	im_pos(length, length, length);
-	im_pos(length,  0.f, length);
-	im_pos( 0.f,  0.f, length);
+    float length = 200.f;
 
-	//Left
-	im_pos(0.f,  0.f,  0.f);
-	im_pos(0.f,  0.f, length);
-	im_pos(0.f,  length, length);
-	im_pos(0.f,  length, length);
-	im_pos(0.f, length, 0.f);
-	im_pos(0.f,  0.f, length);
+    //Front
+    im_pos(0.f,  0.f,  0.f);
+    im_pos(0.f,  length, 0.f);
+    im_pos(length, length, 0.f);
+    im_pos(length, length, 0.f);
+    im_pos(length,  0.f, 0.f);
+    im_pos( 0.f,  0.f, 0.f);
 
-	//Right
-	im_pos(length,  0.f,  0.f);
-	im_pos(length,  0.f, length);
-	im_pos(length,  length, length);
-	im_pos(length,  length, length);
-	im_pos(length, length, 0.f);
-	im_pos(length,  0.f, length);
+    //Back
+    im_pos(0.f,  0.f,  length);
+    im_pos(0.f,  length, length);
+    im_pos(length, length, length);
+    im_pos(length, length, length);
+    im_pos(length,  0.f, length);
+    im_pos( 0.f,  0.f, length);
 
-	im_end();
+    //Left
+    im_pos(0.f,  0.f,  0.f);
+    im_pos(0.f,  0.f, length);
+    im_pos(0.f,  length, length);
+    im_pos(0.f,  length, length);
+    im_pos(0.f, length, 0.f);
+    im_pos(0.f,  0.f, length);
 
-	im_position.x = -30.f;
-	im_begin(im_position, im_rot, im_scale, im_color, GL_LINES);
+    //Right
+    im_pos(length,  0.f,  0.f);
+    im_pos(length,  0.f, length);
+    im_pos(length,  length, length);
+    im_pos(length,  length, length);
+    im_pos(length, length, 0.f);
+    im_pos(length,  0.f, length);
 
-	im_pos(0.f, 0.f, 0.f);
-	im_pos(0.f, 0.f, 10.f);
+    im_end();
 
-	im_pos(0.f, 0.f, 10.f);
-	im_pos(0.f, 10.f, 10.f);
+    im_position.x = -30.f;
+    im_begin(im_position, im_rot, im_scale, im_color, GL_LINES);
 
-	im_pos(0.f, 10.f, 10.f);
-	im_pos(0.f, 10.f, 0.f);
+    im_pos(0.f, 0.f, 0.f);
+    im_pos(0.f, 0.f, 10.f);
 
-	im_pos(0.f, 10.f, 0.f);
-	im_pos(0.f, 0.f, 0.f);
+    im_pos(0.f, 0.f, 10.f);
+    im_pos(0.f, 10.f, 10.f);
 
-	im_end();
+    im_pos(0.f, 10.f, 10.f);
+    im_pos(0.f, 10.f, 0.f);
 
-	vec4 prim_color = {1.f, 1.f, 0.f, 1.f};
-	im_box(5.f, 2.f, 10.f, im_position, im_rot, prim_color, GDM_TRIANGLES);
+    im_pos(0.f, 10.f, 0.f);
+    im_pos(0.f, 0.f, 0.f);
 
-	for(int i = 0; i < 10; i++)
-	{
-		im_position.x += i * 2.f;
-		im_sphere(2.f, im_position, im_rot, prim_color, GDM_TRIANGLES);
-	}
+    im_end();
+
+    vec4 prim_color = {1.f, 1.f, 0.f, 1.f};
+    im_box(5.f, 2.f, 10.f, im_position, im_rot, prim_color, GDM_TRIANGLES);
+
+    for(int i = 0; i < 10; i++)
+    {
+	im_position.x += i * 2.f;
+	im_sphere(2.f, im_position, im_rot, prim_color, GDM_TRIANGLES);
+    }
 }
 
 bool game_run(void)
 {
     uint32 last_time = platform->ticks_get();
-	bool   should_window_close = 0;
-	while(!should_window_close)
-	{
+    bool   should_window_close = 0;
+    while(!should_window_close)
+    {
         uint32 curr_time = platform->ticks_get();
-		float delta_time = (float)(curr_time - last_time) / 1000.f;
-		last_time = curr_time;
-		if(delta_time > MAX_FRAME_TIME) delta_time = (1.f / 60.f); /* To deal with resuming from breakpoint we artificially set delta time */
+	float delta_time = (float)(curr_time - last_time) / 1000.f;
+	last_time = curr_time;
+	if(delta_time > MAX_FRAME_TIME) delta_time = (1.f / 60.f); /* To deal with resuming from breakpoint we artificially set delta time */
 
-		gui_input_begin();
+	gui_input_begin();
         platform->poll_events(&should_window_close);
-		gui_input_end();
+	gui_input_end();
 		
-		game_update(delta_time, &should_window_close);
-		game_post_update(delta_time);
-		game_render();
-		platform->window.swap_buffers(game_state->window);
-	}
+	game_update(delta_time, &should_window_close);
+	game_post_update(delta_time);
+	game_render();
+	platform->window.swap_buffers(game_state->window);
+    }
     return true;
 }
 
 void game_update(float dt, bool* window_should_close)
 {	
-	if(input_is_key_pressed(KEY_ESCAPE))                      *window_should_close = true;
+    if(input_is_key_pressed(KEY_ESCAPE))                      *window_should_close = true;
     if(input_map_state_get("Window_Fullscreen", KS_RELEASED)) platform->window.fullscreen_set(game_state->window, 1);
     if(input_map_state_get("Window_Maximize",   KS_RELEASED)) platform->window.fullscreen_set(game_state->window, 0);
-	if(input_map_state_get("Console_Toggle",    KS_RELEASED)) console_toggle(game_state->console);
-	if(input_map_state_get("Editor_Toggle",     KS_RELEASED)) 
+    if(input_map_state_get("Console_Toggle",    KS_RELEASED)) console_toggle(game_state->console);
+    if(input_map_state_get("Editor_Toggle",     KS_RELEASED)) 
+    {
+	//editor_toggle();
+	if(game_state->game_mode == GAME_MODE_EDITOR)
 	{
-		//editor_toggle();
-		if(game_state->game_mode == GAME_MODE_EDITOR)
-		{
-			game_state->game_mode = GAME_MODE_GAME;
-			game_state->scene->active_camera_index = CAM_GAME;
-		}
-		else if(game_state->game_mode == GAME_MODE_GAME)
-		{
-			game_state->game_mode = GAME_MODE_EDITOR;
-			game_state->scene->active_camera_index = CAM_EDITOR;
-		}
+	    game_state->game_mode = GAME_MODE_GAME;
+	    game_state->scene->active_camera_index = CAM_GAME;
 	}
+	else if(game_state->game_mode == GAME_MODE_GAME)
+	{
+	    game_state->game_mode = GAME_MODE_EDITOR;
+	    game_state->scene->active_camera_index = CAM_EDITOR;
+	}
+    }
 
     if(input_map_state_get("Reload_Game_Lib",   KS_RELEASED))
-	{
-		*window_should_close = true;
-		platform->reload_game_lib();
-		return;
-	}
+    {
+	*window_should_close = true;
+	platform->reload_game_lib();
+	return;
+    }
 	
-	//game_debug(dt);
-	//debug_gui(dt);
-	console_update(game_state->console, gui_state_get(), dt);
-	scene_update(game_state->scene, dt);
-	if(game_state->game_mode == GAME_MODE_GAME)
-	{
-		platform->physics.step(dt);
-	}
-	else if(game_state->game_mode == GAME_MODE_EDITOR)
-	{
-		editor_update(dt);
-	}
+    //game_debug(dt);
+    //debug_gui(dt);
+    console_update(game_state->console, gui_state_get(), dt);
+    scene_update(game_state->scene, dt);
+    if(game_state->game_mode == GAME_MODE_GAME)
+    {
+	platform->physics.step(dt);
+    }
+    else if(game_state->game_mode == GAME_MODE_EDITOR)
+    {
+	editor_update(dt);
+    }
 }
 
 void game_post_update(float dt)
 {
-	input_post_update();
-	scene_post_update(game_state->scene);
-	platform->sound.update_3d();
+    input_post_update();
+    scene_post_update(game_state->scene);
+    platform->sound.update_3d();
 }
 
 void game_debug_gui(float dt)
 {
-	struct Gui_State* gui_state = gui_state_get();
-	struct nk_context* ctx = &gui_state->context;
+    struct Gui_State* gui_state = gui_state_get();
+    struct nk_context* ctx = &gui_state->context;
 	
     /* window flags */
     static int show_menu = nk_true;
@@ -1001,27 +1001,27 @@ void game_debug_gui(float dt)
 
                         /* good old week day formula (double because precision) */
                         {int year_n = (sel_date.tm_mon < 2) ? year-1: year;
-							int y = year_n % 100;
-							int c = year_n / 100;
-							int y4 = (int)((float)y / 4);
-							int c4 = (int)((float)c / 4);
-							int m = (int)(2.6 * (double)(((sel_date.tm_mon + 10) % 12) + 1) - 0.2);
-							int week_day = (((1 + m + y + y4 + c4 - 2 * c) % 7) + 7) % 7;
+			    int y = year_n % 100;
+			    int c = year_n / 100;
+			    int y4 = (int)((float)y / 4);
+			    int c4 = (int)((float)c / 4);
+			    int m = (int)(2.6 * (double)(((sel_date.tm_mon + 10) % 12) + 1) - 0.2);
+			    int week_day = (((1 + m + y + y4 + c4 - 2 * c) % 7) + 7) % 7;
 
-							/* weekdays  */
-							nk_layout_row_dynamic(ctx, 35, 7);
-							for (i = 0; i < (int)LEN(week_days); ++i)
-								nk_label(ctx, week_days[i], NK_TEXT_CENTERED);
+			    /* weekdays  */
+			    nk_layout_row_dynamic(ctx, 35, 7);
+			    for (i = 0; i < (int)LEN(week_days); ++i)
+				nk_label(ctx, week_days[i], NK_TEXT_CENTERED);
 
-							/* days  */
-							if (week_day > 0) nk_spacing(ctx, week_day);
-							for (i = 1; i <= days; ++i) {
-								sprintf(buffer, "%d", i);
-								if (nk_button_label(ctx, buffer)) {
-									sel_date.tm_mday = i;
-									nk_combo_close(ctx);
-								}
-							}}
+			    /* days  */
+			    if (week_day > 0) nk_spacing(ctx, week_day);
+			    for (i = 1; i <= days; ++i) {
+				sprintf(buffer, "%d", i);
+				if (nk_button_label(ctx, buffer)) {
+				    sel_date.tm_mday = i;
+				    nk_combo_close(ctx);
+				}
+			    }}
                         nk_combo_end(ctx);
                     }
                 }
@@ -1628,7 +1628,7 @@ void game_debug_gui(float dt)
                     bounds = nk_widget_bounds(ctx);
                     nk_spacing(ctx, 1);
                     if ((nk_input_is_mouse_hovering_rect(in, bounds) ||
-						 nk_input_is_mouse_prev_hovering_rect(in, bounds)) &&
+			 nk_input_is_mouse_prev_hovering_rect(in, bounds)) &&
                         nk_input_is_mouse_down(in, NK_BUTTON_LEFT))
                     {
                         a = row_layout[0] + in->mouse.delta.x;
@@ -1651,7 +1651,7 @@ void game_debug_gui(float dt)
                     bounds = nk_widget_bounds(ctx);
                     nk_spacing(ctx, 1);
                     if ((nk_input_is_mouse_hovering_rect(in, bounds) ||
-						 nk_input_is_mouse_prev_hovering_rect(in, bounds)) &&
+			 nk_input_is_mouse_prev_hovering_rect(in, bounds)) &&
                         nk_input_is_mouse_down(in, NK_BUTTON_LEFT))
                     {
                         b = (row_layout[2] + in->mouse.delta.x);
@@ -1707,7 +1707,7 @@ void game_debug_gui(float dt)
                     bounds = nk_widget_bounds(ctx);
                     nk_spacing(ctx, 1);
                     if ((nk_input_is_mouse_hovering_rect(in, bounds) ||
-						 nk_input_is_mouse_prev_hovering_rect(in, bounds)) &&
+			 nk_input_is_mouse_prev_hovering_rect(in, bounds)) &&
                         nk_input_is_mouse_down(in, NK_BUTTON_LEFT))
                     {
                         a = a + in->mouse.delta.y;
@@ -1732,7 +1732,7 @@ void game_debug_gui(float dt)
                         nk_layout_row_dynamic(ctx, 8, 1);
                         bounds = nk_widget_bounds(ctx);
                         if ((nk_input_is_mouse_hovering_rect(in, bounds) ||
-							 nk_input_is_mouse_prev_hovering_rect(in, bounds)) &&
+			     nk_input_is_mouse_prev_hovering_rect(in, bounds)) &&
                             nk_input_is_mouse_down(in, NK_BUTTON_LEFT))
                         {
                             b = b + in->mouse.delta.y;
@@ -1766,69 +1766,69 @@ void game_debug_gui(float dt)
 
 void game_render(void)
 {
-	renderer_draw(game_state->renderer, game_state->scene);
+    renderer_draw(game_state->renderer, game_state->scene);
 }
 
 void game_cleanup(void)
 {
-	if(game_state)
+    if(game_state)
+    {
+	if(game_state->is_initialized)
 	{
-		if(game_state->is_initialized)
-		{
-			editor_cleanup();
-			scene_destroy(game_state->scene);
-			input_cleanup();
-			renderer_cleanup(game_state->renderer);
-			gui_cleanup();
-			console_destroy(game_state->console);
+	    editor_cleanup();
+	    scene_destroy(game_state->scene);
+	    input_cleanup();
+	    renderer_cleanup(game_state->renderer);
+	    gui_cleanup();
+	    console_destroy(game_state->console);
             geom_cleanup();
-			framebuffer_cleanup();
-			texture_cleanup();
-			shader_cleanup();
+	    framebuffer_cleanup();
+	    texture_cleanup();
+	    shader_cleanup();
 
-			free(game_state->console);
-			free(game_state->scene);
-			free(game_state->renderer);
-		}
-		free(game_state);
-		game_state = NULL;
+	    free(game_state->console);
+	    free(game_state->scene);
+	    free(game_state->renderer);
 	}
+	free(game_state);
+	game_state = NULL;
+    }
 
-	if(platform)
-	{
-		platform->physics.cleanup();
-		free(platform);
-	}
+    if(platform)
+    {
+	platform->physics.cleanup();
+	free(platform);
+    }
 }
 
 struct Game_State* game_state_get(void)
 {
-	return game_state;
+    return game_state;
 }
 
 void on_collision_test(struct Entity* this_ent, struct Entity* other_ent, Rigidbody body, Rigidbody body2)
 {
-	float y = this_ent->transform.position.y;
-	if(y < 10.f)
-	{
-		//vec3 translation = {0.f, 50.f, 0.f};
-		//transform_translate(this_ent, &translation, TS_WORLD);
-		//platform->physics.body_force_add(body, 0.f, -100.f, 0.f);
-	}
-	//platform->physics.body_force_add(body, 0.f, 500.f, 0.f);
+    float y = this_ent->transform.position.y;
+    if(y < 10.f)
+    {
+	//vec3 translation = {0.f, 50.f, 0.f};
+	//transform_translate(this_ent, &translation, TS_WORLD);
+	//platform->physics.body_force_add(body, 0.f, -100.f, 0.f);
+    }
+    //platform->physics.body_force_add(body, 0.f, 500.f, 0.f);
 }
 
 void game_on_log_message(const char* message, va_list args)
 {
-	console_on_log_message(game_state->console, message, args);
+    console_on_log_message(game_state->console, message, args);
 }
 
 void game_on_log_warning(const char* warning_message, va_list args)
 {
-	console_on_log_warning(game_state->console, warning_message, args);
+    console_on_log_warning(game_state->console, warning_message, args);
 }
 
 void game_on_log_error(const char* context, const char* error_message, va_list args)
 {
-	console_on_log_error(game_state->console, context, error_message, args);
+    console_on_log_error(game_state->console, context, error_message, args);
 }

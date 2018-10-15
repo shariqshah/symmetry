@@ -2,8 +2,8 @@
  ((string-equal system-type "windows-nt") ; Microsoft Windows
   (progn
 	((c-mode .
-			 ((company-clang-arguments . ("-IE:/Projects/symmerty/include" "-IE:\\Projects\\symmerty\\third_party\\windows\\SDL2-2.0.5\\include"))
-			  (flycheck-clang-include-path  . ("E:/Projects/symmerty/include")))
+			 ((company-clang-arguments . ("-IW:/include"))
+			  (flycheck-clang-include-path  . ("W:/include")))
 			 ) 
 	 ((c++-mode . ((mode . c))))
 	 )

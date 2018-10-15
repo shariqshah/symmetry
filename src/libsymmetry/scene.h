@@ -15,15 +15,15 @@ struct Ray;
 
 struct Scene
 {
-	struct Render_Settings renderer_profile;
-	struct Entity          root_entity;
-	struct Player          player;
-	struct Entity          entities[MAX_ENTITIES];
-	struct Static_Mesh     static_meshes[MAX_STATIC_MESHES];
-	struct Camera          cameras[MAX_CAMERAS];
-	struct Light           lights[MAX_LIGHTS];
-	struct Sound_Source    sound_sources[MAX_SOUND_SOURCES];
-	int                    active_camera_index;
+    struct Render_Settings renderer_profile;
+    struct Entity          root_entity;
+    struct Player          player;
+    struct Entity          entities[MAX_ENTITIES];
+    struct Static_Mesh     static_meshes[MAX_STATIC_MESHES];
+    struct Camera          cameras[MAX_CAMERAS];
+    struct Light           lights[MAX_LIGHTS];
+    struct Sound_Source    sound_sources[MAX_SOUND_SOURCES];
+    int                    active_camera_index;
 };
 
 void scene_init(struct Scene* scene);
@@ -36,7 +36,7 @@ void scene_post_update(struct Scene* scene);
 struct Entity*       scene_entity_create(struct Scene* scene, const char* name, struct Entity* parent);
 struct Light*        scene_light_create(struct Scene* scene, const char* name, struct Entity* parent, int light_type);
 struct Camera*       scene_camera_create(struct Scene* scene, const char* name, struct Entity* parent, int width, int height);
-struct Static_Model* scene_static_mesh_create(struct Scene* scene, const char* name, struct Entity* parent, const char* geometry_name, int material_type);
+struct Static_Mesh*  scene_static_mesh_create(struct Scene* scene, const char* name, struct Entity* parent, const char* geometry_name, int material_type);
 struct Sound_Source* scene_sound_source_create(struct Scene* scene, const char* name, struct Entity* parent, const char* filename, int type, bool loop, bool play);
 
 void scene_entity_remove(struct Scene* scene, struct Entity* entity);

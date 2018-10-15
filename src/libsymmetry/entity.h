@@ -18,137 +18,137 @@ typedef void (*Collision_CB)(struct Entity* this_entity, struct Entity* other_en
 
 enum Entity_Type
 {
-	ET_NONE,
-	ET_DEFAULT,
-	ET_PLAYER,
-	ET_ROOT,
-	ET_CAMERA,
-	ET_LIGHT,
-	ET_STATIC_MESH,
-	ET_SOUND_SOURCE,
-	ET_MAX
+    ET_NONE,
+    ET_DEFAULT,
+    ET_PLAYER,
+    ET_ROOT,
+    ET_CAMERA,
+    ET_LIGHT,
+    ET_STATIC_MESH,
+    ET_SOUND_SOURCE,
+    ET_MAX
 };
 
 enum LightType
 {
-	LT_SPOT  = 0,
-	LT_DIR,
-	LT_POINT,
-	LT_INVALID,
-	LT_MAX
+    LT_SPOT  = 0,
+    LT_DIR,
+    LT_POINT,
+    LT_INVALID,
+    LT_MAX
 };
 
 enum Camera_Type
 {
-	CAM_EDITOR = 0,
-	CAM_GAME,
-	CAM_MAX
+    CAM_EDITOR = 0,
+    CAM_GAME,
+    CAM_MAX
 };
 
 struct Transform
 {
-	vec3            position;
-	vec3            scale;
-	quat            rotation;
-	mat4            trans_mat;
-	bool            is_modified;
-	bool            sync_physics;
-	struct Entity*  parent;
-	struct Entity** children;
+    vec3            position;
+    vec3            scale;
+    quat            rotation;
+    mat4            trans_mat;
+    bool            is_modified;
+    bool            sync_physics;
+    struct Entity*  parent;
+    struct Entity** children;
 };
 
 struct Entity
 {
-	int              id;
-	int              type;
-	char             name[MAX_ENTITY_NAME_LEN];
-	bool             marked_for_deletion;
-	bool             active;
-	bool             editor_selected;
-	struct Transform transform;
+    int              id;
+    int              type;
+    char             name[MAX_ENTITY_NAME_LEN];
+    bool             marked_for_deletion;
+    bool             active;
+    bool             editor_selected;
+    struct Transform transform;
 };
 
 struct Model
 {
-	int              geometry_index;
-	struct Material* material;
-	struct Variant   material_params[MMP_MAX];
+    int              geometry_index;
+    struct Material* material;
+    struct Variant   material_params[MMP_MAX];
 };
 
 struct Sound_Source
 {
-	struct Entity               base;
-	int                         type;
-	bool                        playing;
-	bool                        loop;
+    struct Entity               base;
+    int                         type;
+    bool                        playing;
+    bool                        loop;
     uint                        source_instance;
-	float                       min_distance;
-	float                       max_distance;
-	float                       rolloff_factor;
-	float                       volume;
-	int                         attenuation_type;
-	struct Sound_Source_Buffer* source_buffer; // Handle to the file from which the sound is loaded and played
+    float                       min_distance;
+    float                       max_distance;
+    float                       rolloff_factor;
+    float                       volume;
+    int                         attenuation_type;
+    struct Sound_Source_Buffer* source_buffer; // Handle to the file from which the sound is loaded and played
 };
 
 struct Camera
 {
-	struct Entity base;
-	mat4          proj_mat;
-	mat4          view_mat;
-	mat4          view_proj_mat;
-	float         fov;
-	float         aspect_ratio;
-	float         nearz;
-	float         farz;
-	float         zoom;
-	bool          ortho;
-	int           fbo;
-	int           render_tex;
-	int           depth_tex;
-	vec4          clear_color;
-	vec4          frustum[6];
-	bool          resizeable;
+    struct Entity base;
+    mat4          proj_mat;
+    mat4          view_mat;
+    mat4          view_proj_mat;
+    float         fov;
+    float         aspect_ratio;
+    float         nearz;
+    float         farz;
+    float         zoom;
+    bool          ortho;
+    int           fbo;
+    int           render_tex;
+    int           depth_tex;
+    vec4          clear_color;
+    vec4          frustum[6];
+    bool          resizeable;
 };
 
 struct Light
 {
-	struct Entity base;
-	float         outer_angle;
-	float         inner_angle;
-	float         falloff;
-	float         intensity;
-	vec3          color;
-	bool          cast_shadow;
-	bool          pcf_enabled;
-	bool          valid;        
-	int           type;
-	int           radius; 
-	int           shadow_map[4];
-	float         depth_bias;
+    struct Entity base;
+    float         outer_angle;
+    float         inner_angle;
+    float         falloff;
+    float         intensity;
+    vec3          color;
+    bool          cast_shadow;
+    bool          pcf_enabled;
+    bool          valid;        
+    int           type;
+    int           radius; 
+    int           shadow_map[4];
+    float         depth_bias;
 };
 
 struct Collision
 {
-	Rigidbody       rigidbody;
-	Collision_Shape collision_shape;
-	Collision_CB    on_collision;
+    Rigidbody       rigidbody;
+    Collision_Shape collision_shape;
+    Collision_CB    on_collision;
 };
 
 struct Static_Mesh
 {
-	struct Entity    base;
-	struct Model     model;
-	struct Collision collision;
+    struct Entity    base;
+    struct Model     model;
+    struct Collision collision;
 };
 
 struct Player
 {
-	struct Entity       base;
-	struct Static_Mesh* mesh;
-	struct Camera*      camera_node;
-	float               move_speed;
-	float               move_speed_multiplier;
-	float               turn_speed;
+    struct Entity       base;
+    struct Static_Mesh* mesh;
+    struct Camera*      camera_node;
+    float               move_speed;
+    float               move_speed_multiplier;
+    float               turn_speed;
 };
 
 void           entity_init(struct Entity* entity, const char* name, struct Entity* parent);

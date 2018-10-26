@@ -155,6 +155,11 @@
 
 - ## TODO
 
+	- String data-type that is based on array implementation
+	- Remove all malloc calls/free and move them into custom memory allocator/deallocator functions that only tag/track usage for now
+	- Rethink/remove the game executable and game library split.
+	- Remove all previous build system files and implement cross-compilation to windows in current build system or move to a build system that supports it as a first-class citizen 
+	- Refactor all global application state into 'Application_Context' struct. A single global instance of which is available everywhere
 	- Fix mouse button press/release behaviour by investigating how sdl handles mouse release or by explicitly caching mouse state by using event callbacks recieved when a mousebutton release event is reported by sdl
 	- Improve bounding sphere calculation
 	- Screen mouse coordinates to world-coordinates for aiming
@@ -164,7 +169,6 @@
 	- Console command history
 	- Console command help
 	- Space partitioning and scene handling
-	- NPR and cross-hatching
 	- Move Gui_State and Editor_State into game_state and modify usage as needed
 	- Remove model and replace all usages with static mesh
 	- Get editor camera speed and other settings from config file

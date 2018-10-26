@@ -207,7 +207,7 @@ struct Sound_Source_Buffer* sound_source_create(const char* filename, int type)
 	}
 
 	long size = 0L;
-	char* memory = io_file_read(DIRT_INSTALL, filename, "rb", &size);
+	unsigned char* memory = io_file_read(DIRT_INSTALL, filename, "rb", &size);
 
 	source = malloc(sizeof(*source));
 	if(!source)

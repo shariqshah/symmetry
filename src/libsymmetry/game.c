@@ -70,49 +70,49 @@ bool game_init(struct Window* window, struct Platform_Api* platform_api)
     game_state = malloc(sizeof(*game_state));
     if(!game_state)
     {
-	log_error("game:init", "Out of memory, failed to allocate game_state");
-	return 0;
+		log_error("game:init", "Out of memory, failed to allocate game_state");
+		return 0;
     }
     else
     {
-	game_state->window = window;
-	game_state->is_initialized = false;
-	game_state->game_mode = GAME_MODE_GAME;
-	game_state->renderer = calloc(1, sizeof(*game_state->renderer));
-	game_state->scene = calloc(1, sizeof(*game_state->scene));
-	game_state->console = calloc(1, sizeof(*game_state->console));
+		game_state->window = window;
+		game_state->is_initialized = false;
+		game_state->game_mode = GAME_MODE_GAME;
+		game_state->renderer = calloc(1, sizeof(*game_state->renderer));
+		game_state->scene = calloc(1, sizeof(*game_state->scene));
+		game_state->console = calloc(1, sizeof(*game_state->console));
 
-	log_file_handle_set(platform->log.file_handle_get());
-	log_message_callback_set(game_on_log_message);
-	log_warning_callback_set(game_on_log_warning);
-	log_error_callback_set(game_on_log_error);
+		log_file_handle_set(platform->log.file_handle_get());
+		log_message_callback_set(game_on_log_message);
+		log_warning_callback_set(game_on_log_warning);
+		log_error_callback_set(game_on_log_error);
 
-	if(!gl_load_extentions())
-	{
-	    log_error("game:init", "Failed to load GL extentions");
-	    return false;
-	}
-	else
-	{
-	    log_message("Loaded GL extentions");
-	}
+		if(!gl_load_extentions())
+		{
+			log_error("game:init", "Failed to load GL extentions");
+			return false;
+		}
+		else
+		{
+			log_message("Loaded GL extentions");
+		}
 
 
-	input_init();
-	shader_init();
-	texture_init();
-	framebuffer_init();
-	gui_init();
-	console_init(game_state->console);
-	geom_init();
-	platform->physics.init();
-	platform->physics.gravity_set(0.f, -9.8f, 0.f);
-	platform->physics.body_set_moved_callback(entity_rigidbody_on_move);
-	platform->physics.body_set_collision_callback(entity_rigidbody_on_collision);
+		input_init();
+		shader_init();
+		texture_init();
+		framebuffer_init();
+		gui_init();
+		console_init(game_state->console);
+		geom_init();
+		platform->physics.init();
+		platform->physics.gravity_set(0.f, -9.8f, 0.f);
+		platform->physics.body_set_moved_callback(entity_rigidbody_on_move);
+		platform->physics.body_set_collision_callback(entity_rigidbody_on_collision);
 
-	editor_init();
-	renderer_init(game_state->renderer);
-	scene_init(game_state->scene);
+		editor_init();
+		renderer_init(game_state->renderer);
+		scene_init(game_state->scene);
     }
 	
     /* Debug scene setup */
@@ -297,18 +297,18 @@ void game_scene_setup(void)
     vec3 suz_pos = {0.f};
     for(int i = 0; i < num_suz; i++)
     {
-	memset(&suz_name, '\0', MAX_ENTITY_NAME_LEN);
-	snprintf(&suz_name[0], MAX_ENTITY_NAME_LEN, "Suzanne_%d", i);
-	struct Static_Mesh* suzanne = scene_static_mesh_create(game_state->scene, suz_name, NULL, "sphere.symbres", MAT_BLINN);
-	suzanne->model.material_params[MMP_DIFFUSE_TEX].val_int = texture_create_from_file("white.tga", TU_DIFFUSE);
-	suzanne->model.material_params[MMP_DIFFUSE].val_float = 0.5f;
-	suzanne->model.material_params[MMP_SPECULAR].val_float = 1.f;
-	suzanne->model.material_params[MMP_SPECULAR_STRENGTH].val_float = 1.f;
-	vec3_fill(&suzanne->model.material_params[MMP_DIFFUSE_COL].val_vec3, 1.f, 0.f, 1.f);
-	suz_pos.x = i + 10.f;
-	suz_pos.y = 5.f;
-	suz_pos.z = i + 5.f;
-	transform_set_position(suzanne, &suz_pos);
+		memset(&suz_name, '\0', MAX_ENTITY_NAME_LEN);
+		snprintf(&suz_name[0], MAX_ENTITY_NAME_LEN, "Suzanne_%d", i);
+		struct Static_Mesh* suzanne = scene_static_mesh_create(game_state->scene, suz_name, NULL, "sphere.symbres", MAT_BLINN);
+		suzanne->model.material_params[MMP_DIFFUSE_TEX].val_int = texture_create_from_file("white.tga", TU_DIFFUSE);
+		suzanne->model.material_params[MMP_DIFFUSE].val_float = 0.5f;
+		suzanne->model.material_params[MMP_SPECULAR].val_float = 1.f;
+		suzanne->model.material_params[MMP_SPECULAR_STRENGTH].val_float = 1.f;
+		vec3_fill(&suzanne->model.material_params[MMP_DIFFUSE_COL].val_vec3, 1.f, 0.f, 1.f);
+		suz_pos.x = i + 10.f;
+		suz_pos.y = 5.f;
+		suz_pos.z = i + 5.f;
+		transform_set_position(suzanne, &suz_pos);
 
     }
 
@@ -326,27 +326,27 @@ void game_debug(float dt)
 {
     if(input_is_key_pressed(KEY_SPACE))
     {
-	struct Entity* model = scene_find(game_state->scene, "Light_Ent");
-	vec3 x_axis = {0, 1, 0};
-	transform_rotate(model, &x_axis, 25.f * dt, TS_WORLD);
+		struct Entity* model = scene_find(game_state->scene, "Light_Ent");
+		vec3 x_axis = {0, 1, 0};
+		transform_rotate(model, &x_axis, 25.f * dt, TS_WORLD);
     }
 
     if(input_is_key_pressed(KEY_M))
     {
-	struct Entity* model = scene_find(game_state->scene, "Model_Entity");
-	//vec3 y_axis = {0, 0, 1};
-	//transform_rotate(mod_tran, &y_axis, 25.f * dt, TS_LOCAL);
-	vec3 amount = {0, 0, -5 * dt};
-	transform_translate(model, &amount, TS_LOCAL);
+		struct Entity* model = scene_find(game_state->scene, "Model_Entity");
+		//vec3 y_axis = {0, 0, 1};
+		//transform_rotate(mod_tran, &y_axis, 25.f * dt, TS_LOCAL);
+		vec3 amount = {0, 0, -5 * dt};
+		transform_translate(model, &amount, TS_LOCAL);
     }
 
     if(input_is_key_pressed(KEY_N))
     {
-	struct Entity* model = scene_find(game_state->scene, "Model_Entity");
-	/* vec3 y_axis = {0, 0, 1}; */
-	/* transform_rotate(mod_tran, &y_axis, 25.f * dt, TS_WORLD); */
-	vec3 amount = {0, 0, 5 * dt};
-	transform_translate(model, &amount, TS_LOCAL);
+		struct Entity* model = scene_find(game_state->scene, "Model_Entity");
+		/* vec3 y_axis = {0, 0, 1}; */
+		/* transform_rotate(mod_tran, &y_axis, 25.f * dt, TS_WORLD); */
+		vec3 amount = {0, 0, 5 * dt};
+		transform_translate(model, &amount, TS_LOCAL);
     }
 
     /*struct Entity* model = scene_find("Model_Entity");
@@ -388,22 +388,22 @@ void game_debug(float dt)
     //Raycast test
     if(input_is_key_pressed(KEY_R))
     {
-	/*Collision_Shape ray = platform->physics.cs_ray_create(20.f, true, true);
-	  vec3 position = {0.f, 0.f, 0.f};
-	  vec3 direction = {0.f, 0.f, 0.f};
-	  transform_get_absolute_forward(player_entity, &direction);
-	  transform_get_absolute_position(player_entity, &position);
-	  struct Raycast_Hit hit;
-	  if(platform->physics.cs_ray_cast(ray, &hit, position.x, position.y, position.z, direction.x, direction.y, direction.z))
-	  {
-	  struct Entity* entity_hit = entity_get(hit.entity_id);
-	  log_message("Ray hit %s", entity_hit->name);
-	  }
-	  else
-	  {
-	  log_message("Ray didn't hit anything!");
-	  }
-	  platform->physics.cs_remove(ray);*/
+		/*Collision_Shape ray = platform->physics.cs_ray_create(20.f, true, true);
+		  vec3 position = {0.f, 0.f, 0.f};
+		  vec3 direction = {0.f, 0.f, 0.f};
+		  transform_get_absolute_forward(player_entity, &direction);
+		  transform_get_absolute_position(player_entity, &position);
+		  struct Raycast_Hit hit;
+		  if(platform->physics.cs_ray_cast(ray, &hit, position.x, position.y, position.z, direction.x, direction.y, direction.z))
+		  {
+		  struct Entity* entity_hit = entity_get(hit.entity_id);
+		  log_message("Ray hit %s", entity_hit->name);
+		  }
+		  else
+		  {
+		  log_message("Ray didn't hit anything!");
+		  }
+		  platform->physics.cs_remove(ray);*/
     }
 
     // Immediate geometry test
@@ -483,8 +483,8 @@ void game_debug(float dt)
 
     for(int i = 0; i < 10; i++)
     {
-	im_position.x += i * 2.f;
-	im_sphere(2.f, im_position, im_rot, prim_color, GDM_TRIANGLES);
+		im_position.x += i * 2.f;
+		im_sphere(2.f, im_position, im_rot, prim_color, GDM_TRIANGLES);
     }
 }
 
@@ -495,18 +495,18 @@ bool game_run(void)
     while(!should_window_close)
     {
         uint32 curr_time = platform->ticks_get();
-	float delta_time = (float)(curr_time - last_time) / 1000.f;
-	last_time = curr_time;
-	if(delta_time > MAX_FRAME_TIME) delta_time = (1.f / 60.f); /* To deal with resuming from breakpoint we artificially set delta time */
+		float delta_time = (float)(curr_time - last_time) / 1000.f;
+		last_time = curr_time;
+		if(delta_time > MAX_FRAME_TIME) delta_time = (1.f / 60.f); /* To deal with resuming from breakpoint we artificially set delta time */
 
-	gui_input_begin();
+		gui_input_begin();
         platform->poll_events(&should_window_close);
-	gui_input_end();
+		gui_input_end();
 		
-	game_update(delta_time, &should_window_close);
-	game_post_update(delta_time);
-	game_render();
-	platform->window.swap_buffers(game_state->window);
+		game_update(delta_time, &should_window_close);
+		game_post_update(delta_time);
+		game_render();
+		platform->window.swap_buffers(game_state->window);
     }
     return true;
 }
@@ -519,24 +519,24 @@ void game_update(float dt, bool* window_should_close)
     if(input_map_state_get("Console_Toggle",    KS_RELEASED)) console_toggle(game_state->console);
     if(input_map_state_get("Editor_Toggle",     KS_RELEASED)) 
     {
-	//editor_toggle();
-	if(game_state->game_mode == GAME_MODE_EDITOR)
-	{
-	    game_state->game_mode = GAME_MODE_GAME;
-	    game_state->scene->active_camera_index = CAM_GAME;
-	}
-	else if(game_state->game_mode == GAME_MODE_GAME)
-	{
-	    game_state->game_mode = GAME_MODE_EDITOR;
-	    game_state->scene->active_camera_index = CAM_EDITOR;
-	}
+		//editor_toggle();
+		if(game_state->game_mode == GAME_MODE_EDITOR)
+		{
+			game_state->game_mode = GAME_MODE_GAME;
+			game_state->scene->active_camera_index = CAM_GAME;
+		}
+		else if(game_state->game_mode == GAME_MODE_GAME)
+		{
+			game_state->game_mode = GAME_MODE_EDITOR;
+			game_state->scene->active_camera_index = CAM_EDITOR;
+		}
     }
 
     if(input_map_state_get("Reload_Game_Lib",   KS_RELEASED))
     {
-	*window_should_close = true;
-	platform->reload_game_lib();
-	return;
+		*window_should_close = true;
+		platform->reload_game_lib();
+		return;
     }
 	
     //game_debug(dt);
@@ -545,11 +545,11 @@ void game_update(float dt, bool* window_should_close)
     scene_update(game_state->scene, dt);
     if(game_state->game_mode == GAME_MODE_GAME)
     {
-	platform->physics.step(dt);
+		platform->physics.step(dt);
     }
     else if(game_state->game_mode == GAME_MODE_EDITOR)
     {
-	editor_update(dt);
+		editor_update(dt);
     }
 }
 
@@ -1001,27 +1001,27 @@ void game_debug_gui(float dt)
 
                         /* good old week day formula (double because precision) */
                         {int year_n = (sel_date.tm_mon < 2) ? year-1: year;
-			    int y = year_n % 100;
-			    int c = year_n / 100;
-			    int y4 = (int)((float)y / 4);
-			    int c4 = (int)((float)c / 4);
-			    int m = (int)(2.6 * (double)(((sel_date.tm_mon + 10) % 12) + 1) - 0.2);
-			    int week_day = (((1 + m + y + y4 + c4 - 2 * c) % 7) + 7) % 7;
+							int y = year_n % 100;
+							int c = year_n / 100;
+							int y4 = (int)((float)y / 4);
+							int c4 = (int)((float)c / 4);
+							int m = (int)(2.6 * (double)(((sel_date.tm_mon + 10) % 12) + 1) - 0.2);
+							int week_day = (((1 + m + y + y4 + c4 - 2 * c) % 7) + 7) % 7;
 
-			    /* weekdays  */
-			    nk_layout_row_dynamic(ctx, 35, 7);
-			    for (i = 0; i < (int)LEN(week_days); ++i)
-				nk_label(ctx, week_days[i], NK_TEXT_CENTERED);
+							/* weekdays  */
+							nk_layout_row_dynamic(ctx, 35, 7);
+							for (i = 0; i < (int)LEN(week_days); ++i)
+								nk_label(ctx, week_days[i], NK_TEXT_CENTERED);
 
-			    /* days  */
-			    if (week_day > 0) nk_spacing(ctx, week_day);
-			    for (i = 1; i <= days; ++i) {
-				sprintf(buffer, "%d", i);
-				if (nk_button_label(ctx, buffer)) {
-				    sel_date.tm_mday = i;
-				    nk_combo_close(ctx);
-				}
-			    }}
+							/* days  */
+							if (week_day > 0) nk_spacing(ctx, week_day);
+							for (i = 1; i <= days; ++i) {
+								sprintf(buffer, "%d", i);
+								if (nk_button_label(ctx, buffer)) {
+									sel_date.tm_mday = i;
+									nk_combo_close(ctx);
+								}
+							}}
                         nk_combo_end(ctx);
                     }
                 }
@@ -1628,7 +1628,7 @@ void game_debug_gui(float dt)
                     bounds = nk_widget_bounds(ctx);
                     nk_spacing(ctx, 1);
                     if ((nk_input_is_mouse_hovering_rect(in, bounds) ||
-			 nk_input_is_mouse_prev_hovering_rect(in, bounds)) &&
+						 nk_input_is_mouse_prev_hovering_rect(in, bounds)) &&
                         nk_input_is_mouse_down(in, NK_BUTTON_LEFT))
                     {
                         a = row_layout[0] + in->mouse.delta.x;
@@ -1651,7 +1651,7 @@ void game_debug_gui(float dt)
                     bounds = nk_widget_bounds(ctx);
                     nk_spacing(ctx, 1);
                     if ((nk_input_is_mouse_hovering_rect(in, bounds) ||
-			 nk_input_is_mouse_prev_hovering_rect(in, bounds)) &&
+						 nk_input_is_mouse_prev_hovering_rect(in, bounds)) &&
                         nk_input_is_mouse_down(in, NK_BUTTON_LEFT))
                     {
                         b = (row_layout[2] + in->mouse.delta.x);
@@ -1707,7 +1707,7 @@ void game_debug_gui(float dt)
                     bounds = nk_widget_bounds(ctx);
                     nk_spacing(ctx, 1);
                     if ((nk_input_is_mouse_hovering_rect(in, bounds) ||
-			 nk_input_is_mouse_prev_hovering_rect(in, bounds)) &&
+						 nk_input_is_mouse_prev_hovering_rect(in, bounds)) &&
                         nk_input_is_mouse_down(in, NK_BUTTON_LEFT))
                     {
                         a = a + in->mouse.delta.y;
@@ -1732,7 +1732,7 @@ void game_debug_gui(float dt)
                         nk_layout_row_dynamic(ctx, 8, 1);
                         bounds = nk_widget_bounds(ctx);
                         if ((nk_input_is_mouse_hovering_rect(in, bounds) ||
-			     nk_input_is_mouse_prev_hovering_rect(in, bounds)) &&
+							 nk_input_is_mouse_prev_hovering_rect(in, bounds)) &&
                             nk_input_is_mouse_down(in, NK_BUTTON_LEFT))
                         {
                             b = b + in->mouse.delta.y;
@@ -1773,31 +1773,31 @@ void game_cleanup(void)
 {
     if(game_state)
     {
-	if(game_state->is_initialized)
-	{
-	    editor_cleanup();
-	    scene_destroy(game_state->scene);
-	    input_cleanup();
-	    renderer_cleanup(game_state->renderer);
-	    gui_cleanup();
-	    console_destroy(game_state->console);
+		if(game_state->is_initialized)
+		{
+			editor_cleanup();
+			scene_destroy(game_state->scene);
+			input_cleanup();
+			renderer_cleanup(game_state->renderer);
+			gui_cleanup();
+			console_destroy(game_state->console);
             geom_cleanup();
-	    framebuffer_cleanup();
-	    texture_cleanup();
-	    shader_cleanup();
+			framebuffer_cleanup();
+			texture_cleanup();
+			shader_cleanup();
 
-	    free(game_state->console);
-	    free(game_state->scene);
-	    free(game_state->renderer);
-	}
-	free(game_state);
-	game_state = NULL;
+			free(game_state->console);
+			free(game_state->scene);
+			free(game_state->renderer);
+		}
+		free(game_state);
+		game_state = NULL;
     }
 
     if(platform)
     {
-	platform->physics.cleanup();
-	free(platform);
+		platform->physics.cleanup();
+		free(platform);
     }
 }
 
@@ -1811,9 +1811,9 @@ void on_collision_test(struct Entity* this_ent, struct Entity* other_ent, Rigidb
     float y = this_ent->transform.position.y;
     if(y < 10.f)
     {
-	//vec3 translation = {0.f, 50.f, 0.f};
-	//transform_translate(this_ent, &translation, TS_WORLD);
-	//platform->physics.body_force_add(body, 0.f, -100.f, 0.f);
+		//vec3 translation = {0.f, 50.f, 0.f};
+		//transform_translate(this_ent, &translation, TS_WORLD);
+		//platform->physics.body_force_add(body, 0.f, -100.f, 0.f);
     }
     //platform->physics.body_force_add(body, 0.f, 500.f, 0.f);
 }

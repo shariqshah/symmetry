@@ -68,6 +68,7 @@ solution "Symmetry"
 		configuration "linux"
 			includedirs	{"../include/linux/sdl2/", "../include/common/soloud/", "../include/linux/"}
 			libdirs {"../lib/linux/sdl2/", "../lib/linux/soloud/", "../lib/linux/ode/"}
+			linkoptions {"'-Wl,-rpath,$$ORIGIN'"}
 			links {"SDL2", "m", "ode", "pthread"}
 
 		configuration {"windows", "vs2017"}

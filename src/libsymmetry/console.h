@@ -7,6 +7,8 @@
 #define MAX_CONSOLE_MESSAGE_LEN 256
 #define MAX_CONSOLE_MESSAGES 1024
 
+struct Gui_State;
+
 enum Console_Message_Type
 {
 	CMT_NONE = 0,

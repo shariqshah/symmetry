@@ -10,8 +10,8 @@
 #define MAX_STATIC_MESHES 1024
 #define MAX_SOUND_SOURCES 128
 
-
 struct Ray;
+struct Raycast_Result;
 
 struct Scene
 {

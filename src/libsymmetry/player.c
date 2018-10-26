@@ -8,6 +8,7 @@
 #include "bounding_volumes.h"
 #include "../common/hashmap.h"
 #include "../common/log.h"
+#include "entity.h"
 
 void player_init(struct Player* player, struct Scene* scene)
 {

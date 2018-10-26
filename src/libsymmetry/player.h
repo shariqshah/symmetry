@@ -2,6 +2,7 @@
 #define PLAYER_H
 
 struct Player;
+struct Scene;
 
 void player_init(struct Player* player, struct Scene* scene);
 void player_destroy(struct Player* player);

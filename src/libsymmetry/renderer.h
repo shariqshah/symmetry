@@ -6,6 +6,7 @@
 #include "material.h"
 
 struct Sprite_Batch;
+struct Scene;
 
 enum Fog_Mode
 {

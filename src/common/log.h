@@ -2,6 +2,7 @@
 #define LOG_H
 
 #include <stdio.h>
+#include <stdarg.h>
 
 typedef void (*Log_Message_CB)(const char* message, va_list args);
 typedef void (*Log_Warning_CB)(const char* warning_message, va_list args);

@@ -567,77 +567,77 @@ void editor_camera_update(float dt)
 
     if(input_mousebutton_state_get(MSB_RIGHT, KS_PRESSED))
     {
-	const float scale = 0.1f;
-	int cursor_lr, cursor_ud;
-	input_mouse_delta_get(&cursor_lr, &cursor_ud);
-	if(input_mouse_mode_get() != MM_RELATIVE)
-	{
-	    input_mouse_mode_set(MM_RELATIVE);
-	    cursor_lr = cursor_ud = 0;
-	}
+		const float scale = 0.1f;
+		int cursor_lr, cursor_ud;
+		input_mouse_delta_get(&cursor_lr, &cursor_ud);
+		if(input_mouse_mode_get() != MM_RELATIVE)
+		{
+			input_mouse_mode_set(MM_RELATIVE);
+			cursor_lr = cursor_ud = 0;
+		}
 
-	turn_up_down = -cursor_ud * turn_speed * dt * scale;
-	turn_left_right = cursor_lr * turn_speed * dt * scale;
-	//log_message("ud : %d, lr : %d", cursor_ud, cursor_lr);
+		turn_up_down = -cursor_ud * turn_speed * dt * scale;
+		turn_left_right = cursor_lr * turn_speed * dt * scale;
+		//log_message("ud : %d, lr : %d", cursor_ud, cursor_lr);
     }
     else
     {
-	input_mouse_mode_set(MM_NORMAL);
-	turn_up_down *= dt;
-	turn_left_right *= dt;
+		input_mouse_mode_set(MM_NORMAL);
+		turn_up_down *= dt;
+		turn_left_right *= dt;
 
-	//Picking
-	//If we're not looking around then allow picking
-	if(input_mousebutton_state_get(MSB_LEFT, KS_RELEASED))
-	{
-	    log_message("editor picking");
-	    int mouse_x = 0, mouse_y = 0;
-	    platform->mouse_position_get(&mouse_x, &mouse_y);
-	    struct Ray ray = camera_screen_coord_to_ray(editor_camera, mouse_x, mouse_y);
-	    //log_message("Ray: %.3f, %.3f, %.3f", ray.direction.x, ray.direction.y, ray.direction.z);
+		//Picking
+		//If we're not looking around then allow picking
+		/* if(input_mousebutton_state_get(MSB_LEFT, KS_RELEASED)) */
+		/* { */
+		/* 	log_message("editor picking"); */
+		/* 	int mouse_x = 0, mouse_y = 0; */
+		/* 	platform->mouse_position_get(&mouse_x, &mouse_y); */
+		/* 	struct Ray ray = camera_screen_coord_to_ray(editor_camera, mouse_x, mouse_y); */
+		/* 	//log_message("Ray: %.3f, %.3f, %.3f", ray.direction.x, ray.direction.y, ray.direction.z); */
 
-	    struct Scene* scene = game_state_get()->scene;
-	    struct Raycast_Result ray_result;
-	    scene_ray_intersect(scene, &ray, &ray_result);
+		/* 	struct Scene* scene = game_state_get()->scene; */
+		/* 	struct Raycast_Result ray_result; */
+		/* 	scene_ray_intersect(scene, &ray, &ray_result); */
 
-	    if(ray_result.num_entities_intersected > 0)
-	    {
-		//For now, just select the first entity that is intersected
-		struct Entity* intersected_entity = ray_result.entities_intersected[0];
+		/* 	if(ray_result.num_entities_intersected > 0) */
+		/* 	{ */
+		/* 		//For now, just select the first entity that is intersected */
+		/* 		struct Entity* intersected_entity = ray_result.entities_intersected[0]; */
 
-		if(editor_state.selected_entity && editor_state.selected_entity != intersected_entity)
-		{
-		    editor_state.selected_entity->editor_selected = false;
-		    editor_state.selected_entity = NULL;
-		}
+		/* 		if(editor_state.selected_entity && editor_state.selected_entity != intersected_entity) */
+		/* 		{ */
+		/* 			editor_state.selected_entity->editor_selected = false; */
+		/* 			editor_state.selected_entity = NULL; */
+		/* 		} */
 
-		intersected_entity->editor_selected = true;
-		editor_state.selected_entity = intersected_entity;
-	    }
-	}
+		/* 		intersected_entity->editor_selected = true; */
+		/* 		editor_state.selected_entity = intersected_entity; */
+		/* 	} */
+		/* } */
     }
 
     total_up_down_rot += turn_up_down;
     if(total_up_down_rot >= max_up_down)
     {
-	total_up_down_rot = max_up_down;
-	turn_up_down = 0.f;
+		total_up_down_rot = max_up_down;
+		turn_up_down = 0.f;
     }
     else if(total_up_down_rot <= -max_up_down)
     {
-	total_up_down_rot = -max_up_down;
-	turn_up_down = 0.f;
+		total_up_down_rot = -max_up_down;
+		turn_up_down = 0.f;
     }
 
     if(turn_left_right != 0.f)
     {
-	transform_rotate(editor_camera, &rot_axis_left_right, -turn_left_right, TS_WORLD);
+		transform_rotate(editor_camera, &rot_axis_left_right, -turn_left_right, TS_WORLD);
     }
 
     if(turn_up_down != 0.f)
     {
-	//transform_rotate(editor_camera, &rot_axis_up_down, turn_up_down, TS_LOCAL);
-	transform_rotate(editor_camera, &rot_axis_up_down, turn_up_down, TS_LOCAL);
+		//transform_rotate(editor_camera, &rot_axis_up_down, turn_up_down, TS_LOCAL);
+		transform_rotate(editor_camera, &rot_axis_up_down, turn_up_down, TS_LOCAL);
     }
 
     /* Movement */
@@ -652,8 +652,8 @@ void editor_camera_update(float dt)
     vec3_scale(&offset, &offset, dt);
     if(offset.x != 0 || offset.y != 0 || offset.z != 0)
     {
-	transform_translate(editor_camera, &offset, TS_LOCAL);
-	//log_message("Position : %s", tostr_vec3(&transform->position));
+		transform_translate(editor_camera, &offset, TS_LOCAL);
+		//log_message("Position : %s", tostr_vec3(&transform->position));
     }
 }
 

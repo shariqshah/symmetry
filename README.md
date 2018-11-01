@@ -162,6 +162,7 @@
 	- Refactor all global application state into 'Application_Context' struct. A single global instance of which is available everywhere
 	- Fix mouse button press/release behaviour by investigating how sdl handles mouse release or by explicitly caching mouse state by using event callbacks recieved when a mousebutton release event is reported by sdl
 	- Improve bounding sphere calculation
+	- Change the way lights are set as uniforms to remove snprintf calls per frame for every light attribute
 	- Screen mouse coordinates to world-coordinates for aiming
 	- Player projectiles and sounds
 	- Console commands

@@ -14,11 +14,11 @@ static struct Platform_Api platform_api;
 static struct Window*      window        = NULL;
 static bool                reload_game   = false;
 #if defined(_MSC_VER)
-static const char*         lib_name      = "libSymmetry.dll";
-static const char*         lib_copy_name = "libSymmetry.copy.dll";
+static const char*         lib_name      = "Symmetry_Game.dll";
+static const char*         lib_copy_name = "Symmetry_Game.copy.dll";
 #elif defined(__MINGW32__) || defined(__MINGW64__)
-static const char*         lib_name      = "libSymmetry.dll";
-static const char*         lib_copy_name = "libSymmetry.copy.dll";
+static const char*         lib_name      = "Symmetry_Game.dll";
+static const char*         lib_copy_name = "Symmetry_Game.copy.dll";
 #endif
 
 void*           game_lib_handle = NULL;
@@ -303,7 +303,7 @@ bool game_lib_load(void)
 	
     game_lib_handle = platform_load_library("libSymmetry.copy");
 #else
-	game_lib_handle = platform_load_library("Symmetry");
+	game_lib_handle = platform_load_library("Symmetry_Game");
 #endif
     if(!game_lib_handle)
     {

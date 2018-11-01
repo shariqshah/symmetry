@@ -8,6 +8,8 @@
 #include "../common/log.h"
 #include "geometry.h"
 
+#include <string.h>
+
 #define MAX_IM_VERTICES 2048
 #define MAX_IM_GEOMETRIES (MAX_IM_VERTICES / 2)
 

@@ -20,5 +20,6 @@ void  log_file_handle_set(FILE* file);
 void  log_message_callback_set(Log_Message_CB callback);
 void  log_warning_callback_set(Log_Warning_CB callback);
 void  log_error_callback_set(Log_Error_CB callback);
+void  log_reset_all_callbacks(void);
 
 #endif

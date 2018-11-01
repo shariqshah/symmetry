@@ -184,5 +184,12 @@ void log_warning_callback_stub(const char* warning_message, va_list args)
 
 void log_error_callback_stub(const char* context, const char* message, va_list args)
 {
-	// This is just a stub in-case no callback has been set
+    // This is just a stub in-case no callback has been set
+}
+
+void log_reset_all_callbacks(void)
+{
+    message_callback = log_message_callback_stub;
+    warning_callback = log_warning_callback_stub;
+    error_callback   = log_error_callback_stub;
 }

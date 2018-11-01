@@ -278,6 +278,7 @@ void cleanup(void)
 	if(game.cleanup) game.cleanup();
 	if(game_lib_handle) platform_unload_library(game_lib_handle);
     if(window) window_destroy(window);
+    log_reset_all_callbacks(); // Now that the game library has been unloaded, reset all callbacks to stubs so we don't crash on exit
     sound_cleanup();
     platform_unload_gl();
     platform_cleanup();
@@ -301,7 +302,7 @@ bool game_lib_load(void)
 		return false;
 	}
 	
-    game_lib_handle = platform_load_library("libSymmetry.copy");
+    game_lib_handle = platform_load_library("Symmetry_Game.copy");
 #else
 	game_lib_handle = platform_load_library("Symmetry_Game");
 #endif

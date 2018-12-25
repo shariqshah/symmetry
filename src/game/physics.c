@@ -508,7 +508,8 @@ void physics_cs_rotation_set(Collision_Shape shape, float x, float y, float z, f
 Collision_Shape physics_cs_ray_create(float length, bool first_contact, bool backface_cull)
 {
     dGeomID ray = dCreateRay(Physics.space, length);
-    dGeomRaySetParams(ray, first_contact, backface_cull);
+	dGeomRaySetBackfaceCull(ray, backface_cull);
+	dGeomRaySetFirstContact(ray, first_contact);
     return ray;
 }
 

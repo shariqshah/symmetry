@@ -14,59 +14,56 @@ else()
   endif()
 endif()
 
-
-if(WIN32)
-  set(CURRENT_PLATFORM windows)
-  include_directories(${CMAKE_SOURCE_DIR}/include/common
-	${CMAKE_SOURCE_DIR}/include/common/soloud
-	${CMAKE_SOURCE_DIR}/include/windows/sdl2
-	${CMAKE_SOURCE_DIR}/include/windows)
-  
-  set(SDL2_LIB_FILE ${CMAKE_SOURCE_DIR}/lib/windows/sdl2/SDL2.dll)
-  set(SOLOUD_LIB_FILE ${CMAKE_SOURCE_DIR}/lib/windows/soloud/soloud_x64.dll)
-  set(ODE_LIB_FILE ${CMAKE_SOURCE_DIR}/lib/windows/ode/ode_double.dll)
-
-#   target_link_libraries(${PROJECT_NAME} openal sdl2 winmm.lib imm32.lib version.lib)
-#   set(CMAKE_C_FLAGS_DEBUG /MTd)
-#   set(CMAKE_C_FLAGS_RELEASE /MT)
-  
-elseif(UNIX AND NOT APPLE)
-  set(CURRENT_PLATFORM linux)
-  include_directories(${CMAKE_SOURCE_DIR}/include/common
-	${CMAKE_SOURCE_DIR}/include/common/soloud
-	${CMAKE_SOURCE_DIR}/include/linux/sdl2
-	${CMAKE_SOURCE_DIR}/include/linux)
-  
-  set(SDL2_LIB_FILE ${CMAKE_SOURCE_DIR}/lib/linux/sdl2/libSDL2.so)
-  set(SOLOUD_LIB_FILE ${CMAKE_SOURCE_DIR}/lib/linux/soloud/libsoloud_x64.so)
-  set(ODE_LIB_FILE ${CMAKE_SOURCE_DIR}/lib/linux/ode/libode.so)
-else()
-  message(FATAL_ERROR "Unsupported Platform! Currently only Windows and Linux supported")  
-endif(WIN32)
-
-
-
 ################################################################
 # Setup external libs
 ################################################################
 
-set(SDL2_LIB_DIR ${CMAKE_SOURCE_DIR}/lib/${CURRENT_PLATFORM}/sdl2)
-set(ODE_LIB_DIR ${CMAKE_SOURCE_DIR}/lib/${CURRENT_PLATFORM}/ode)
-set(SOLOUD_LIB_DIR ${CMAKE_SOURCE_DIR}/lib/${CURRENT_PLATFORM}/soloud)
-
-file(GLOB SDL2_LIB_FILES "${SDL2_LIB_DIR}/*")
-file(GLOB ODE_LIB_FILES "${ODE_LIB_DIR}/*")
-file(GLOB SOLOUD_LIB_FILES "${SOLOUD_LIB_DIR}/*")
-
 add_library(SDL2 SHARED IMPORTED)
-set_target_properties(SDL2 PROPERTIES IMPORTED_LOCATION ${SDL2_LIB_FILE})
-
 add_library(SOLOUD SHARED IMPORTED)
-set_target_properties(SOLOUD PROPERTIES IMPORTED_LOCATION ${SOLOUD_LIB_FILE})
-
 add_library(ODE SHARED IMPORTED)
-set_target_properties(ODE PROPERTIES IMPORTED_LOCATION ${ODE_LIB_FILE})
 
+if(WIN32)
+	include_directories(${CMAKE_SOURCE_DIR}/include/common
+		${CMAKE_SOURCE_DIR}/include/common/soloud
+		${CMAKE_SOURCE_DIR}/include/windows/sdl2
+		${CMAKE_SOURCE_DIR}/include/windows)
+
+	set(SDL2_LIB_FILE ${CMAKE_SOURCE_DIR}/lib/windows/sdl2/SDL2.dll)
+	set(SOLOUD_LIB_FILE ${CMAKE_SOURCE_DIR}/lib/windows/soloud/soloud_x64.dll)
+	set(ODE_LIB_FILE ${CMAKE_SOURCE_DIR}/lib/windows/ode/ode_double.dll)
+
+	set_target_properties(SDL2 PROPERTIES IMPORTED_LOCATION ${SDL2_LIB_FILE})
+	set_target_properties(SDL2 PROPERTIES IMPORTED_IMPLIB ${CMAKE_SOURCE_DIR}/lib/windows/sdl2/SDL2.lib)
+
+	set_target_properties(SOLOUD PROPERTIES IMPORTED_LOCATION ${SOLOUD_LIB_FILE})
+	set_target_properties(SOLOUD PROPERTIES IMPORTED_IMPLIB ${CMAKE_SOURCE_DIR}/lib/windows/soloud/soloud_x64.lib)
+
+	set_target_properties(ODE PROPERTIES IMPORTED_LOCATION ${ODE_LIB_FILE})
+	set_target_properties(ODE PROPERTIES IMPORTED_IMPLIB ${CMAKE_SOURCE_DIR}/lib/windows/ode/ode_double.lib)
+
+	set(SDL2_LIB_FILES ${SDL2_LIB_FILE})
+	set(ODE_LIB_FILES ${ODE_LIB_FILE})
+	set(SOLOUD_LIB_FILES ${SOLOUD_LIB_FILE})
+	
+elseif(UNIX AND NOT APPLE)
+	include_directories(${CMAKE_SOURCE_DIR}/include/common
+		${CMAKE_SOURCE_DIR}/include/common/soloud
+		${CMAKE_SOURCE_DIR}/include/linux/sdl2
+		${CMAKE_SOURCE_DIR}/include/linux)
+
+  set(SDL2_LIB_FILE ${CMAKE_SOURCE_DIR}/lib/linux/sdl2/libSDL2.so)
+  set(SOLOUD_LIB_FILE ${CMAKE_SOURCE_DIR}/lib/linux/soloud/libsoloud_x64.so)
+  set(ODE_LIB_FILE ${CMAKE_SOURCE_DIR}/lib/linux/ode/libode.so)
+	
+  set_target_properties(SDL2 PROPERTIES IMPORTED_LOCATION ${SDL2_LIB_FILE})
+  set_target_properties(SOLOUD PROPERTIES IMPORTED_LOCATION ${SOLOUD_LIB_FILE})
+  set_target_properties(ODE PROPERTIES IMPORTED_LOCATION ${ODE_LIB_FILE})
+	
+	file(GLOB SDL2_LIB_FILES "${CMAKE_SOURCE_DIR}/lib/linux/sdl2/*")
+	file(GLOB ODE_LIB_FILES "${CMAKE_SOURCE_DIR}/lib/linux/ode/*")
+	file(GLOB SOLOUD_LIB_FILES "${CMAKE_SOURCE_DIR}/lib/linux/soloud/*")
+	
+endif(WIN32)
 
 
 
@@ -178,15 +175,19 @@ add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_HEADERS} ${EXECUTABLE_SOURCES} ${
 target_include_directories(${EXECUTABLE_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
 target_compile_definitions(${EXECUTABLE_NAME} PUBLIC -DGAME $<$<CONFIG:DEBUG>: -DGL_DEBUG_CONTEXT>)
 target_link_libraries(${EXECUTABLE_NAME} SDL2 ODE SOLOUD)
-set_target_properties(${EXECUTABLE_NAME} PROPERTIES LINK_FLAGS "'-Wl,-rpath,$ORIGIN/lib' -Wl,--no-undefined")
-target_compile_options(${EXECUTABLE_NAME} PUBLIC -Wall --std=c99)
 
-find_library(LIB_M m REQUIRED)
-find_library(LIB_RT rt REQUIRED)
-find_library(LIB_PTHREAD pthread REQUIRED)
-find_library(LIB_SNDIO sndio REQUIRED)
-target_link_libraries(${EXECUTABLE_NAME} ${LIB_M} ${LIB_RT} ${LIB_PTHREAD} ${LIB_SNDIO})
+if(WIN32)
+	target_compile_definitions(${EXECUTABLE_NAME} PUBLIC -D_CRT_SECURE_NO_WARNINGS)
+elseif(UNIX AND NOT APPLE)
 
+	set_target_properties(${EXECUTABLE_NAME} PROPERTIES LINK_FLAGS "'-Wl,-rpath,$ORIGIN/lib' -Wl,--no-undefined")
+	target_compile_options(${EXECUTABLE_NAME} PUBLIC -Wall --std=c99)
+
+	find_library(LIB_M m REQUIRED)
+	find_library(LIB_RT rt REQUIRED)
+	find_library(LIB_PTHREAD pthread REQUIRED)
+	target_link_libraries(${EXECUTABLE_NAME} ${LIB_M} ${LIB_RT} ${LIB_PTHREAD})
+endif(WIN32)
 
 ################################################################
 # Game Library
@@ -196,26 +197,46 @@ set(GAME_LIB_NAME "${PROJECT_NAME}_Game")
 add_library(${GAME_LIB_NAME} SHARED ${GAME_LIB_HEADERS} ${GAME_LIB_SOURCES} ${COMMON_HEADERS} ${COMMON_SOURCES})
 target_include_directories(${GAME_LIB_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
 target_compile_definitions(${GAME_LIB_NAME} PUBLIC -DGAME_LIB -DUSE_GLAD $<$<CONFIG:DEBUG>: -DGL_DEBUG_CONTEXT>)
-target_compile_options(${GAME_LIB_NAME} PUBLIC -Wall --std=c99)
+
+if(WIN32)
+	target_compile_definitions(${GAME_LIB_NAME} PUBLIC -D_CRT_SECURE_NO_WARNINGS)
+elseif(UNIX AND NOT APPLE)
+	target_compile_options(${GAME_LIB_NAME} PUBLIC -Wall --std=c99)
+endif(WIN32)
 
 
 ################################################################
 # Post build
 ################################################################
 
-add_custom_command(
-	TARGET ${EXECUTABLE_NAME}
-	POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_SOURCE_DIR}/assets ${CMAKE_BINARY_DIR}/assets)
+message(STATUS " MESSAGE ${RUNTIME_OUTPUT_DIRECTORY}")
+message(STATUS " CMAKE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}")
+message(STATUS " RESUME HERE!!!! ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+
 
 add_custom_command(
+		TARGET ${EXECUTABLE_NAME}
+		POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_SOURCE_DIR}/assets/ ${CMAKE_BINARY_DIR}/assets)
+		
+if(WIN32)
+	add_custom_command(
 	TARGET ${EXECUTABLE_NAME}
 	POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/lib/
-	COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SDL2_LIB_FILES} ${CMAKE_BINARY_DIR}/lib/
-	COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ODE_LIB_FILES} ${CMAKE_BINARY_DIR}/lib/
-	COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SOLOUD_LIB_FILES} ${CMAKE_BINARY_DIR}/lib/
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SDL2_LIB_FILES} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ODE_LIB_FILES} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SOLOUD_LIB_FILES} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}
 	COMMENT "Copying libraries...")
+elseif(UNIX AND NOT APPLE)
+	add_custom_command(
+		TARGET ${EXECUTABLE_NAME}
+		POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/lib/
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SDL2_LIB_FILES} ${CMAKE_BINARY_DIR}/lib/
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ODE_LIB_FILES} ${CMAKE_BINARY_DIR}/lib/
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SOLOUD_LIB_FILES} ${CMAKE_BINARY_DIR}/lib/
+		COMMENT "Copying libraries...")
+endif()
 
 
 ################################################################

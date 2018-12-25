@@ -130,7 +130,7 @@ struct Parser* parser_load_objects(FILE* file, const char* filename)
 		/* Opening brace and closing brace */
 		char c = ' ';
 		size_t line_len = strnlen(line_buffer, MAX_LINE_LEN);
-		size_t seek_amount = line_len - type_str_len;
+		long seek_amount = line_len - type_str_len;
 		fseek(file, -seek_amount, SEEK_CUR);
 		while(!feof(file))
 		{

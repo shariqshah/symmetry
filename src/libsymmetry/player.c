@@ -66,20 +66,20 @@ void player_update(struct Player* player, struct Scene* scene, float dt)
     if(input_map_state_get("Move_Down",     KS_PRESSED)) offset.y   -= move_speed;
 
     vec3_scale(&offset, &offset, dt);
-    if(offset.x != 0 || offset.y != 0 || offset.z != 0)
-    {
-	transform_translate(player, &offset, TS_LOCAL);
-    }
+	if(offset.x != 0 || offset.y != 0 || offset.z != 0)
+	{
+		transform_translate(player, &offset, TS_LOCAL);
+	}
 
-    /* Aiming and Projectiles*/
-    if(input_mousebutton_state_get(MSB_RIGHT, KS_PRESSED))
-    {
-	int mouse_x = 0, mouse_y = 0;
-	platform->mouse_position_get(&mouse_x, &mouse_y);
-	struct Ray ray = camera_screen_coord_to_ray(player->camera_node, mouse_x, mouse_y);
-	log_message("Ray: %.3f, %.3f, %.3f", ray.direction.x, ray.direction.y, ray.direction.z);
+	/* Aiming and Projectiles*/
+	if(input_mousebutton_state_get(MSB_RIGHT, KS_PRESSED))
+	{
+		int mouse_x = 0, mouse_y = 0;
+		platform->mouse_position_get(&mouse_x, &mouse_y);
+		struct Ray ray = camera_screen_coord_to_ray(player->camera_node, mouse_x, mouse_y);
+		log_message("Ray: %.3f, %.3f, %.3f", ray.direction.x, ray.direction.y, ray.direction.z);
 
-	struct Raycast_Result ray_result;
-	scene_ray_intersect(scene, &ray, &ray_result);
-    }
+		struct Raycast_Result ray_result;
+		scene_ray_intersect(scene, &ray, &ray_result);
+	}
 }

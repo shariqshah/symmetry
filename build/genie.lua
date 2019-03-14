@@ -116,13 +116,10 @@ solution "Symmetry"
 	project "Library"
 		kind "SharedLib"
 		language "C"
-		targetname "Symmetry"
+		targetname "Symmetry_Game"
 		defines {"GAME_LIB", "USE_GLAD"}
 		includedirs {"../include/common"}
 		files { "../src/common/**.c", "../src/common/**.h", "../src/libsymmetry/**.h", "../src/libsymmetry/**.c" }
-
-		configuration "windows"
-			targetname "libSymmetry"
 			
 		configuration {"windows", "vs2017"}
 			includedirs {"../include/windows/sdl2/"}

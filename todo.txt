@@ -1,5 +1,4 @@
 Todo:
-	- Migrate from bitbucket to github and from mercurial back to git
 	- Add warning to genie build script when running on windows and WindowsSdkVersion cannot be found. This happens when the script is not run from vcvarsall command prompt
 	? Rethink/remove the game executable and game library split.
 	- Refactor all global application state into 'Application_Context' struct. A single global instance of which is available everywhere
@@ -191,3 +190,4 @@ Done:
 	* Split todo and readme into two files
 	* Replace all renderer_check_gl calls with GL_CHECK macro
 	* Fixed Console bug when enabled in editor mode
+	* Migrated from bitbucket to github and from mercurial back to git

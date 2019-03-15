@@ -1,4 +1,5 @@
 Todo:
+	- Migrate from bitbucket to github and from mercurial back to git
 	- Add warning to genie build script when running on windows and WindowsSdkVersion cannot be found. This happens when the script is not run from vcvarsall command prompt
 	? Rethink/remove the game executable and game library split.
 	- Refactor all global application state into 'Application_Context' struct. A single global instance of which is available everywhere
@@ -62,9 +63,8 @@ Bugs:
 	- Better handling of wav format checking at load time
 	- Fix light rotation/direction bugs
 	- Fix lights type not being correctly saved/loaded from file
-	- Console fix bug when enabled in editor mode
 	- Fix mouse button press/release behaviour by investigating how sdl handles mouse release or by explicitly caching mouse state by using event callbacks recieved when a mousebutton release event is reported by sdl
-
+	- Fix culling
 
 Done:
 	* Input
@@ -190,3 +190,4 @@ Done:
 	* Implemented screen coordinate to ray conversion and ray-sphere collision
 	* Split todo and readme into two files
 	* Replace all renderer_check_gl calls with GL_CHECK macro
+	* Fixed Console bug when enabled in editor mode

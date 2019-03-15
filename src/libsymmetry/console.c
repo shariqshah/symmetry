@@ -29,11 +29,11 @@ void console_init(struct Console* console)
     console->current_message_index = -1;
 
     memset(console->console_command_text, '\0', MAX_CONSOLE_MESSAGE_LEN);
-    for(int i = 0; i < MAX_CONSOLE_MESSAGES; i++)
-    {
-	memset(console->console_messages[i].message, '\0', MAX_CONSOLE_MESSAGE_LEN);
-	console->console_messages[i].type = CMT_NONE;
-    }
+	for(int i = 0; i < MAX_CONSOLE_MESSAGES; i++)
+	{
+		memset(console->console_messages[i].message, '\0', MAX_CONSOLE_MESSAGE_LEN);
+		console->console_messages[i].type = CMT_NONE;
+	}
 }
 
 void console_toggle(struct Console* console)
@@ -68,8 +68,7 @@ void console_update(struct Console* console, struct Gui_State* gui_state, float 
 			{
 				*context->current->layout->offset_y = (nk_uint)context->current->layout->at_y;
 				console->scroll_to_bottom = false;
-			}
-			
+			}	
 			nk_group_end(context);
 		}
 
@@ -100,36 +99,36 @@ void console_destroy(struct Console* console)
 int console_filter(const struct nk_text_edit *box, nk_rune unicode)
 {
     NK_UNUSED(box);
-    if(unicode > 128 || unicode == 96) // Ignore tilde or anything other than ascii
-	return nk_false;
-    else 
-	return nk_true;
+	if(unicode > 128 || unicode == 96) // Ignore tilde or anything other than ascii
+		return nk_false;
+	else
+		return nk_true;
 }
 
 void console_on_log_message(struct Console* console, const char* message, va_list args)
 {
-    /* if(++console->current_message_index >= MAX_CONSOLE_MESSAGES) */
-	/* console->current_message_index = 0; */
-    /* vsnprintf(console->console_messages[console->current_message_index].message, MAX_CONSOLE_MESSAGE_LEN, message, args); */
-    /* console->console_messages[console->current_message_index].type = CMT_MESSAGE; */
-    /* console->scroll_to_bottom = true; */
+	if(++console->current_message_index >= MAX_CONSOLE_MESSAGES)
+		console->current_message_index = 0;
+	vsnprintf(console->console_messages[console->current_message_index].message, MAX_CONSOLE_MESSAGE_LEN, message, args);
+	console->console_messages[console->current_message_index].type = CMT_MESSAGE;
+	console->scroll_to_bottom = true;
 }
 
 void console_on_log_warning(struct Console* console, const char* warning_message, va_list args)
 {
-    /* if(++console->current_message_index >= MAX_CONSOLE_MESSAGES) */
-	/* 	console->current_message_index = 0; */
-    /* vsnprintf(console->console_messages[console->current_message_index].message, MAX_CONSOLE_MESSAGE_LEN, warning_message, args); */
-    /* console->console_messages[console->current_message_index].type = CMT_WARNING; */
-    /* console->scroll_to_bottom = true; */
+	if(++console->current_message_index >= MAX_CONSOLE_MESSAGES)
+		console->current_message_index = 0;
+	vsnprintf(console->console_messages[console->current_message_index].message, MAX_CONSOLE_MESSAGE_LEN, warning_message, args);
+	console->console_messages[console->current_message_index].type = CMT_WARNING;
+	console->scroll_to_bottom = true;
 }
 
 void console_on_log_error(struct Console* console, const char* context, const char* error, va_list args)
 {
-    /* if(++console->current_message_index >= MAX_CONSOLE_MESSAGES) */
-	/* 	console->current_message_index = 0; */
-    /* int loc = snprintf(console->console_messages[console->current_message_index].message, MAX_CONSOLE_MESSAGE_LEN, "(%s)", context); */
-    /* vsnprintf(console->console_messages[console->current_message_index].message + loc, MAX_CONSOLE_MESSAGE_LEN - loc, error, args); */
-    /* console->console_messages[console->current_message_index].type = CMT_ERROR; */
-    /* console->scroll_to_bottom = true; */
+	if(++console->current_message_index >= MAX_CONSOLE_MESSAGES)
+		console->current_message_index = 0;
+	int loc = snprintf(console->console_messages[console->current_message_index].message, MAX_CONSOLE_MESSAGE_LEN, "(%s)", context);
+	vsnprintf(console->console_messages[console->current_message_index].message + loc, MAX_CONSOLE_MESSAGE_LEN - loc, error, args);
+	console->console_messages[console->current_message_index].type = CMT_ERROR;
+	console->scroll_to_bottom = true;
 }

@@ -42,6 +42,13 @@ This will generate a visual studio 2017 solution in the *build/vs2017* folder wh
   make all
   ```
 
+  This will build the debug configuration by default and it's output will be in *build/gmake/debug* folder. You can then run the game by,
+
+  ```bash
+  cd debug
+  ./Symmetry
+  ```
+
 ## License
 
 All the code in this repository is under GPLv3, see LICENSE for more information
@@ -127,6 +134,9 @@ All the code in this repository is under GPLv3, see LICENSE for more information
       variant value like, health or ammo etc. But, how to save/load all of that?
 
 - ### Materials
+
   *TODO*
+
 - ### Mesh/Geometry
+
   *TODO*

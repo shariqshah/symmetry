@@ -1,7 +1,16 @@
 #ifndef FILE_IO_H
 #define FILE_IO_H
 
-#include "../common/common.h"
+#include <stdbool.h>
+#include <stdio.h>
+
+enum Directory_Type
+{
+	DIRT_USER,		 /* User directory or preferences directory */
+	DIRT_INSTALL,	 /* Directory where the game's assets are, usually alongside the game's executable where the game is installed */
+	DIRT_EXECUTABLE, /* Directory where the game's executable is located */
+	DIRT_COUNT
+};
 
 void  io_file_init(const char* install_dir, const char* user_dir);
 void  io_file_cleanup(void);

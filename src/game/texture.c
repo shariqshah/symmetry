@@ -5,7 +5,7 @@
 #include "../common/num_types.h"
 #include "renderer.h"
 #include "gl_load.h"
-#include "../common/common.h"
+#include "../system/file_io.h"
 
 #include <assert.h>
 #include <string.h>
@@ -68,7 +68,7 @@ int texture_create_from_file(const char* filename, int texture_unit)
 	}
 	/* If texture not already loaded then try to load it */
 	char* full_path = str_new("textures/%s", filename);
-    FILE* file = platform->file.open(DIRT_INSTALL, full_path, "rb");
+    FILE* file = io_file_open(DIRT_INSTALL, full_path, "rb");
 	int img_load_success = -1;
 	
 	if(file)

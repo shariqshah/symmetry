@@ -1,7 +1,8 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include "common.h"
+#include <stdio.h>
+#include <stdbool.h>
 
 enum Parser_Object_Type
 {

@@ -145,16 +145,6 @@ void log_error(const char* context, const char* error, ...)
 	fflush(log_file);
 }
 
-FILE* log_file_handle_get(void)
-{
-    return log_file;
-}
-
-void log_file_handle_set(FILE* file)
-{
-    log_file = file;
-}
-
 void log_message_callback_set(Log_Message_CB callback)
 {
 	if(callback)

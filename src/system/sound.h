@@ -3,6 +3,20 @@
 
 #include "../common/num_types.h"
 
+enum Sound_Source_Type
+{
+	ST_WAV = 0,
+	ST_WAV_STREAM
+};
+
+enum Sound_Attenuation_Type
+{
+	SA_NONE = 0,   // No attenuation
+	SA_INVERSE,    // Inverse distance attenuation model
+	SA_LINEAR,     // Linear distance attenuation model
+	SA_EXPONENTIAL // Exponential distance attenuation model
+};
+
 struct Sound_Source_Buffer;
 
 bool sound_init(void);

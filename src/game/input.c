@@ -6,10 +6,11 @@
 #include "../common/log.h"
 #include "gui.h"
 #include "../common/string_utils.h"
-#include "../common/common.h"
 #include "../common/hashmap.h"
 #include "../common/variant.h"
 #include "../common/parser.h"
+#include "../system/platform.h"
+#include "../system/file_io.h"
 
 static void input_on_key(int key, int scancode, int state, int repeat, int mod_ctrl, int mod_shift, int mod_alt);
 static void input_on_mousebutton(int button, int state, int x, int y, int8 num_clicks);
@@ -20,10 +21,10 @@ static struct Hashmap* key_bindings = NULL;
 
 void input_init(void)
 {
-    platform->keyboard_callback_set(&input_on_key);
-    platform->mousebutton_callback_set(&input_on_mousebutton);
-    platform->mousemotion_callback_set(&input_on_mousemotion);
-    platform->mousewheel_callback_set(&input_on_mousewheel);
+    platform_keyboard_callback_set(&input_on_key);
+    platform_mousebutton_callback_set(&input_on_mousebutton);
+    platform_mousemotion_callback_set(&input_on_mousemotion);
+    platform_mousewheel_callback_set(&input_on_mousewheel);
 	
 	key_bindings = hashmap_new();
 
@@ -43,7 +44,6 @@ void input_init(void)
 	struct Key_Binding console_toggle_keys = {KEY_TILDE,  KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
 	struct Key_Binding win_fullscr_keys    = {KEY_F11,    KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
 	struct Key_Binding win_max_keys        = {KEY_F12,    KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
-	struct Key_Binding reload_game_keys    = {KEY_F5,     KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
 	input_map_create("Move_Forward",      forward_keys);
 	input_map_create("Move_Backward",     backward_keys);
 	input_map_create("Move_Up",           up_keys);
@@ -59,7 +59,6 @@ void input_init(void)
 	input_map_create("Console_Toggle",    console_toggle_keys);
 	input_map_create("Window_Fullscreen", win_fullscr_keys);
 	input_map_create("Window_Maximize",   win_max_keys);
-	input_map_create("Reload_Game_Lib",   reload_game_keys);
 
 	if(!input_keybinds_load("keybindings.symtres", DIRT_USER))
 	{
@@ -89,7 +88,7 @@ void input_cleanup(void)
 
 bool input_keybinds_load(const char* filename, int directory_type)
 {
-    FILE* key_file = platform->file.open(directory_type, filename, "rb");
+    FILE* key_file = io_file_open(directory_type, filename, "rb");
 	if(!key_file)
 	{
 		log_error("input:keybinds_load", "Could not open %s", filename);
@@ -121,7 +120,7 @@ bool input_keybinds_load(const char* filename, int directory_type)
 		if(hashmap_value_exists(object->data, "name")) name_temp = hashmap_str_get(object->data, "name");
 		if(hashmap_value_exists(object->data, "key_primary"))   
 		{
-			int key = platform->key_from_name(hashmap_str_get(object->data, "key_primary"));
+			int key = platform_key_from_name(hashmap_str_get(object->data, "key_primary"));
 			if(key != KEY_UNKNOWN)
 			{
 				key_binding.key_primary = key;
@@ -130,7 +129,7 @@ bool input_keybinds_load(const char* filename, int directory_type)
 
 		if(hashmap_value_exists(object->data, "key_secondary")) 
 		{
-			int key = platform->key_from_name(hashmap_str_get(object->data, "key_secondary"));
+			int key = platform_key_from_name(hashmap_str_get(object->data, "key_secondary"));
 			if(key != KEY_UNKNOWN)
 			{
 				key_binding.key_secondary = key;
@@ -212,12 +211,12 @@ bool input_keybinds_save(const char* filename, int directory_type)
 		bool mods_secondary_alt   = ((key_binding->mods_secondary & KMD_ALT)   == KMD_ALT)   ? true : false;
 
 		hashmap_str_set(object->data, "name", key);
-		hashmap_str_set(object->data, "key_primary", key_binding->key_primary == KEY_NONE ? "NONE" : platform->key_name_get(key_binding->key_primary));
+		hashmap_str_set(object->data, "key_primary", key_binding->key_primary == KEY_NONE ? "NONE" : platform_key_name_get(key_binding->key_primary));
 		hashmap_bool_set(object->data, "mods_primary_ctrl",  mods_primary_ctrl);
 		hashmap_bool_set(object->data, "mods_primary_shift", mods_primary_shift);
 		hashmap_bool_set(object->data, "mods_primary_alt",   mods_primary_alt);
 
-		hashmap_str_set(object->data, "key_secondary", key_binding->key_secondary == KEY_NONE ? "NONE" : platform->key_name_get(key_binding->key_secondary));
+		hashmap_str_set(object->data, "key_secondary", key_binding->key_secondary == KEY_NONE ? "NONE" : platform_key_name_get(key_binding->key_secondary));
 		hashmap_bool_set(object->data, "mods_secondary_ctrl",  mods_secondary_ctrl);
 		hashmap_bool_set(object->data, "mods_secondary_shift", mods_secondary_shift);
 		hashmap_bool_set(object->data, "mods_secondary_alt",   mods_secondary_alt);
@@ -227,7 +226,7 @@ bool input_keybinds_save(const char* filename, int directory_type)
 
 
 	bool write_success = false;
-	FILE* key_file = platform->file.open(directory_type, filename, "w");
+	FILE* key_file = io_file_open(directory_type, filename, "w");
 	if(!key_file)
 	{
 		log_error("input:keybinds_save", "Could not open %s", filename);
@@ -265,12 +264,12 @@ void input_on_mousewheel(int x, int y)
 void input_mouse_pos_get(int* xpos, int* ypos)
 {
 	assert(xpos && ypos);
-    platform->mouse_position_get(xpos, ypos);
+    platform_mouse_position_get(xpos, ypos);
 }
 
 void input_mouse_pos_set(int xpos, int ypos)
 {
-    platform->mouse_global_position_set(xpos, ypos);
+    platform_mouse_global_position_set(xpos, ypos);
 }
 
 void input_on_key(int key, int scancode, int state, int repeat, int mod_ctrl, int mod_shift, int mod_alt)
@@ -315,7 +314,7 @@ void input_on_mousebutton(int button, int state, int x, int y, int8 num_clicks)
 
 void input_mouse_mode_set(enum Mouse_Mode mode)
 {
-    platform->mouse_relative_mode_set(mode == MM_NORMAL ? 0 : 1);
+    platform_mouse_relative_mode_set(mode == MM_NORMAL ? 0 : 1);
 }
 
 bool input_map_state_get(const char* name, int state)
@@ -354,12 +353,12 @@ bool input_map_create(const char* name, struct Key_Binding key_combination)
 
 bool input_is_key_pressed(int key)
 {
-    return platform->is_key_pressed(key);
+    return platform_is_key_pressed(key);
 }
 
 bool input_mousebutton_state_get(uint button, int state_type)
 {
-    int current_state = platform->mousebutton_state_get(button);
+    int current_state = platform_mousebutton_state_get(button);
 	return state_type == current_state ? true : false;
 }
 
@@ -428,12 +427,12 @@ bool input_map_name_set(const char* name, const char* new_name)
 int input_mouse_mode_get(void)
 {
 	int mouse_mode = MM_NORMAL;
-    if(platform->mouse_relative_mode_get()) mouse_mode = MM_RELATIVE;
+    if(platform_mouse_relative_mode_get()) mouse_mode = MM_RELATIVE;
 	return mouse_mode;
 }
 
 void input_mouse_delta_get(int* xpos, int* ypos)
 {
-    platform->mouse_delta_get(xpos, ypos);
+    platform_mouse_delta_get(xpos, ypos);
 }
 

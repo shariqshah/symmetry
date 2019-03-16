@@ -4,7 +4,7 @@
 #include "../common/log.h"
 #include "renderer.h"
 #include "transform.h"
-#include "../common/common.h"
+#include "../system/file_io.h"
 #include "gl_load.h"
 
 #include <stdlib.h>
@@ -229,7 +229,7 @@ static int load_from_file(struct Geometry* geometry, const char* filename)
 	int success = 1;
 	char* full_path = str_new("models/%s", filename);
 			
-    FILE* file = platform->file.open(DIRT_INSTALL, full_path, "rb");
+    FILE* file = io_file_open(DIRT_INSTALL, full_path, "rb");
 	free(full_path);
 	if(file)
 	{				

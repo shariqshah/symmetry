@@ -15,7 +15,7 @@ struct Window
 {
     void*         sdl_window;
     SDL_GLContext gl_context;
-    int           is_fullscreen;
+    bool          is_fullscreen;
 };
 
 struct Platform_State
@@ -106,14 +106,14 @@ struct Window* window_create(const char* title, int width, int height, int msaa,
     return new_window;
 }
 
-int window_fullscreen_set(struct Window* window, int fullscreen)
+bool window_fullscreen_set(struct Window* window, bool fullscreen)
 {
-    int success = 0;
+	int success = false;
     int rc = SDL_SetWindowFullscreen(window->sdl_window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
     if(rc == 0)
     {
-		window->is_fullscreen = fullscreen ? 1 : 0;
-		success = 1;
+		window->is_fullscreen = fullscreen;
+		success = true;
 		log_message("Window set to %s mode", fullscreen ? "fullscreen" : "windowed");
 		int w, h;
 		window_get_size(window, &w, &h);

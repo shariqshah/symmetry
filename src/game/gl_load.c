@@ -1,7 +1,6 @@
 #include "gl_load.h"
 #include "../common/log.h"
-#include "../common/common.h"
-
+#include "../system/platform.h"
 
 #ifndef USE_GLAD
 
@@ -30,7 +29,7 @@ bool gl_load_extentions(void)
 {
     bool success = true;
 #ifdef USE_GLAD
-    if(!gladLoadGLLoader(platform->load_function_gl)) 
+    if(!gladLoadGLLoader(platform_load_function_gl)) 
 		success = false;
 #else
 	

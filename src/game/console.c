@@ -2,7 +2,7 @@
 #include "gui.h"
 #include "game.h"
 #include "../common/log.h"
-#include "../common/common.h"
+#include "../system/platform.h"
 
 #include <assert.h>
 #include <string.h>
@@ -50,7 +50,7 @@ void console_update(struct Console* console, struct Gui_State* gui_state, float 
     struct Game_State* game_state = game_state_get();
 
     int win_width = 0, win_height = 0;
-    platform->window.get_drawable_size(game_state->window, &win_width, &win_height);
+    window_get_drawable_size(game_state->window, &win_width, &win_height);
     int half_height = win_height / 2;
 
     if(nk_begin_titled(context, "Console", "Console", nk_recti(0, 0, win_width, half_height), NK_WINDOW_SCROLL_AUTO_HIDE))

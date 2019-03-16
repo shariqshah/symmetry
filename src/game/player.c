@@ -3,12 +3,13 @@
 #include "input.h"
 #include "../common/utils.h"
 #include "transform.h"
-#include "../common/common.h"
 #include "camera.h"
 #include "bounding_volumes.h"
 #include "../common/hashmap.h"
 #include "../common/log.h"
 #include "entity.h"
+#include "../system/config_vars.h"
+
 
 void player_init(struct Player* player, struct Scene* scene)
 {
@@ -17,7 +18,7 @@ void player_init(struct Player* player, struct Scene* scene)
     player->base.id      = 1;
     player->base.type    = ET_PLAYER;
 
-    struct Hashmap* config = platform->config.get();
+    struct Hashmap* config = config_vars_get();
     player->move_speed            = hashmap_int_get(config, "player_move_speed");
     player->move_speed_multiplier = hashmap_int_get(config, "player_move_speed_multiplier");
     player->turn_speed            = hashmap_int_get(config, "player_turn_speed");
@@ -75,7 +76,7 @@ void player_update(struct Player* player, struct Scene* scene, float dt)
 	if(input_mousebutton_state_get(MSB_RIGHT, KS_PRESSED))
 	{
 		int mouse_x = 0, mouse_y = 0;
-		platform->mouse_position_get(&mouse_x, &mouse_y);
+		platform_mouse_position_get(&mouse_x, &mouse_y);
 		struct Ray ray = camera_screen_coord_to_ray(player->camera_node, mouse_x, mouse_y);
 		log_message("Ray: %.3f, %.3f, %.3f", ray.direction.x, ray.direction.y, ray.direction.z);
 

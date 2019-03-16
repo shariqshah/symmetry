@@ -1,7 +1,30 @@
 #ifndef PHYSICS_H
 #define PHYSICS_H
 
-#include "../common/common.h"
+#include <stdbool.h>
+
+typedef void* Rigidbody;
+typedef void* Collision_Shape;
+typedef void(*RigidbodyMoveCB)(Rigidbody);
+typedef void(*RigidbodyColCB)(Rigidbody, Rigidbody);
+
+enum Collision_Shape_Type
+{
+	CST_BOX = 0,
+	CST_SPHERE,
+	CST_CYLINDER,
+	CST_CAPSULE,
+	CST_PLANE,
+	CST_TRIMESH,
+	CST_UNKNOWN
+};
+
+struct Raycast_Hit
+{
+	int  entity_id;
+	float normal_x, normal_y, normal_z;
+};
+
 
 void physics_init(void);
 void physics_cleanup(void);

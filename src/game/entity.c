@@ -11,9 +11,10 @@
 #include "framebuffer.h"
 #include "scene.h"
 #include "../common/variant.h"
-#include "../common/common.h"
 #include "../common/parser.h"
 #include "../common/hashmap.h"
+#include "../system/file_io.h"
+#include "../system/physics.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -196,7 +197,7 @@ bool entity_write(struct Entity* entity, struct Parser_Object* object)
 
 bool entity_save(struct Entity* entity, const char* filename, int directory_type)
 {
-    FILE* entity_file = platform->file.open(directory_type, filename, "w");
+    FILE* entity_file = io_file_open(directory_type, filename, "w");
 	if(!entity_file)
 	{
 		log_error("entity:save", "Failed to open entity file %s for writing");
@@ -453,7 +454,7 @@ struct Entity* entity_read(struct Parser_Object* object)
 
 bool entity_load(const char* filename, int directory_type)
 {
-    FILE* entity_file = platform->file.open(directory_type, filename, "rb");
+    FILE* entity_file = io_file_open(directory_type, filename, "rb");
 	if(!entity_file)
 	{
 		log_error("entity:load", "Failed to open entity file %s for reading", filename);
@@ -521,12 +522,12 @@ const char* entity_type_name_get(struct Entity* entity)
 
 void entity_rigidbody_on_move(Rigidbody body)
 {
-	struct Entity* entity = platform->physics.body_data_get(body);
+	struct Entity* entity = physics_body_data_get(body);
 	vec3 pos = {0.f};
 	quat rot = {0.f};
 
-	platform->physics.body_position_get(body, &pos.x, &pos.y, &pos.z);
-	platform->physics.body_rotation_get(body, &rot.x, &rot.y, &rot.z, &rot.w);
+	physics_body_position_get(body, &pos.x, &pos.y, &pos.z);
+	physics_body_rotation_get(body, &rot.x, &rot.y, &rot.z, &rot.w);
 
 	quat_assign(&entity->transform.rotation, &rot);
 	transform_set_position(entity, &pos);
@@ -540,12 +541,12 @@ void entity_rigidbody_on_collision(Rigidbody body_A, Rigidbody body_B)
 
 	if(body_A) 
 	{
-		ent_A = platform->physics.body_data_get(body_A);
+		ent_A = physics_body_data_get(body_A);
 	}
 
 	if(body_B) 
 	{
-		ent_B = platform->physics.body_data_get(body_B);
+		ent_B = physics_body_data_get(body_B);
 	}
 
 	//if(ent_A && ent_A->collision.on_collision)
@@ -573,27 +574,27 @@ void entity_rigidbody_set(struct Entity * entity, struct Collision* collision, R
 	{
 		if(collision->rigidbody)
 		{
-			platform->physics.body_remove(collision->rigidbody);
+			physics_body_remove(collision->rigidbody);
 		}
 		else if(collision->collision_shape)
 		{
-			platform->physics.cs_remove(collision->collision_shape);
+			physics_cs_remove(collision->collision_shape);
 		}
 		collision->rigidbody = NULL;
 		collision->collision_shape = NULL;
 	}
 
 	collision->rigidbody       = body;
-	collision->collision_shape = platform->physics.body_cs_get(body);
+	collision->collision_shape = physics_body_cs_get(body);
 
 	vec3 abs_pos = {0.f, 0.f,  0.f};
 	quat abs_rot = {0.f, 0.f, 0.f, 1.f};
 	transform_get_absolute_position(entity, &abs_pos);
 	transform_get_absolute_rot(entity, &abs_rot);
 
-	platform->physics.body_rotation_set(body, abs_rot.x, abs_rot.y, abs_rot.z, abs_rot.w);
-	platform->physics.body_position_set(body, abs_pos.x, abs_pos.y, abs_pos.z);
-	platform->physics.body_data_set(body, entity);
+	physics_body_rotation_set(body, abs_rot.x, abs_rot.y, abs_rot.z, abs_rot.w);
+	physics_body_position_set(body, abs_pos.x, abs_pos.y, abs_pos.z);
+	physics_body_data_set(body, entity);
 }
 
 void entity_collision_shape_set(struct Entity* entity, struct Collision* collision, Collision_Shape shape)
@@ -604,18 +605,18 @@ void entity_collision_shape_set(struct Entity* entity, struct Collision* collisi
 	{
 		if(collision->rigidbody)
 		{
-			platform->physics.body_remove(collision->rigidbody);
+			physics_body_remove(collision->rigidbody);
 		}
 		else if(collision->collision_shape)
 		{
-			platform->physics.cs_remove(collision->collision_shape);
+			physics_cs_remove(collision->collision_shape);
 		}
 		collision->rigidbody = NULL;
 		collision->collision_shape = NULL;
 	}
 
 	collision->collision_shape = shape;
-	platform->physics.cs_data_set(shape, entity);
+	physics_cs_data_set(shape, entity);
 }
 
 void entity_rename(struct Entity* entity, const char* new_name)

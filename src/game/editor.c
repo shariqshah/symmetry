@@ -19,10 +19,12 @@
 #include "../common/variant.h"
 #include "../common/num_types.h"
 #include "../common/string_utils.h"
-#include "../common/common.h"
 #include "bounding_volumes.h"
 #include "input.h"
 #include "scene.h"
+#include "../system/file_io.h"
+#include "../system/config_vars.h"
+#include "../system/platform.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -91,7 +93,7 @@ void editor_init_camera(void)
     editor_camera->clear_color.z = 0.9f;
     editor_camera->clear_color.w = 1.f;
 
-    struct Hashmap* config = platform->config.get();
+    struct Hashmap* config = config_vars_get();
     int render_width  = hashmap_int_get(config, "render_width");
     int render_height = hashmap_int_get(config, "render_height");
     camera_attach_fbo(editor_camera, render_width, render_height, true, true, true);
@@ -183,7 +185,7 @@ void editor_update(float dt)
 	struct Gui_State*  gui_state  = gui_state_get();
 	struct nk_context* context    = &gui_state->context;
 	int win_width = 0, win_height = 0;
-	platform->window.get_drawable_size(game_state->window, &win_width, &win_height);
+	window_get_drawable_size(game_state->window, &win_width, &win_height);
 	int half_width = win_width / 2, half_height = win_height / 2;
 	static int window_flags = NK_WINDOW_BORDER |
 		                      NK_WINDOW_CLOSABLE |
@@ -221,7 +223,7 @@ void editor_update(float dt)
 			if(nk_button_label(context, "Render Settings"))
 				editor_state.renderer_settings_window = !editor_state.renderer_settings_window;
 			if(nk_button_label(context, "Save config"))
-				platform->config.save("config.symtres", DIRT_USER);
+				config_vars_save("config.symtres", DIRT_USER);
 			nk_spacing(context, 1);
 			nk_labelf(context, NK_TEXT_ALIGN_RIGHT | NK_TEXT_ALIGN_MIDDLE, "FPS : %.d", fps);
 		}

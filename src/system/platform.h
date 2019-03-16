@@ -1,7 +1,15 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-#include "../common/common.h"
+#include <stdbool.h>
+#include "../common/num_types.h"
+
+typedef void(*Keyboard_Event_Func)     (int key, int scancode, int state, int repeat, int mod_ctrl, int mod_shift, int mod_alt);
+typedef void(*Mousebutton_Event_Func)  (int button, int state, int x, int y, int8 num_clicks);
+typedef void(*Mousemotion_Event_Func)  (int x, int y, int xrel, int yrel);
+typedef void(*Mousewheel_Event_Func)   (int x, int y);
+typedef void(*Windowresize_Event_Func) (int x, int y);
+typedef void(*Textinput_Event_Func)    (const char* text);
 
 enum Video_Drivers_Linux
 {
@@ -23,7 +31,7 @@ void           window_set_size(struct Window* window, int width, int height);
 void           window_get_size(struct Window* window, int* out_width, int* out_height);
 void           window_get_drawable_size(struct Window* window, int* out_width, int* out_height);
 void           window_swap_buffers(struct Window* window);
-int            window_fullscreen_set(struct Window* window, int fullscreen);
+bool           window_fullscreen_set(struct Window* window, bool fullscreen);
 
 // Platform functions
 bool        platform_init(void);

@@ -30,7 +30,8 @@
 #include "../common/parser.h"
 #include "../common/hashmap.h"
 #include "../common/variant.h"
-#include "../common/common.h"
+#include "../system/physics.h"
+#include "../system/platform.h"
 #include "im_render.h"
 
 #define UNUSED(a) (void)a
@@ -41,7 +42,6 @@
 
 #define MAX_FRAME_TIME 0.5f
 
-static bool game_run(void);
 static void game_update(float dt, bool* window_should_close);
 static void game_post_update(float dt);
 static void game_render(void);
@@ -55,23 +55,14 @@ static void on_box_move(Rigidbody body);
 static void on_collision_test(struct Entity* this_ent, struct Entity* other_ent, Rigidbody body, Rigidbody body2);
 
 static struct Game_State* game_state = NULL;
-struct Platform_Api* platform = NULL;
 
-bool game_init(struct Window* window, struct Platform_Api* platform_api)
+bool game_init(struct Window* window)
 {
-    if(!platform_api)
-    {
-        log_error("game:init", "Platform api not passed in!");
-        return false;
-    }
-
-    platform = malloc(sizeof(*platform));
-    memcpy(platform, platform_api, sizeof(*platform_api));
     game_state = malloc(sizeof(*game_state));
     if(!game_state)
     {
 		log_error("game:init", "Out of memory, failed to allocate game_state");
-		return 0;
+		return false;
     }
     else
     {
@@ -82,7 +73,6 @@ bool game_init(struct Window* window, struct Platform_Api* platform_api)
 		game_state->scene = calloc(1, sizeof(*game_state->scene));
 		game_state->console = calloc(1, sizeof(*game_state->console));
 
-		log_file_handle_set(platform->log.file_handle_get());
 		log_message_callback_set(game_on_log_message);
 		log_warning_callback_set(game_on_log_warning);
 		log_error_callback_set(game_on_log_error);
@@ -105,10 +95,10 @@ bool game_init(struct Window* window, struct Platform_Api* platform_api)
 		gui_init();
 		console_init(game_state->console);
 		geom_init();
-		platform->physics.init();
-		platform->physics.gravity_set(0.f, -9.8f, 0.f);
-		platform->physics.body_set_moved_callback(entity_rigidbody_on_move);
-		platform->physics.body_set_collision_callback(entity_rigidbody_on_collision);
+		physics_init();
+		physics_gravity_set(0.f, -9.8f, 0.f);
+		physics_body_set_moved_callback(entity_rigidbody_on_move);
+		physics_body_set_collision_callback(entity_rigidbody_on_collision);
 
 		editor_init();
 		renderer_init(game_state->renderer);
@@ -118,7 +108,7 @@ bool game_init(struct Window* window, struct Platform_Api* platform_api)
     /* Debug scene setup */
     game_scene_setup();
     game_state->is_initialized = true;
-    return game_run();
+	return game_state->is_initialized;
 }
 
 void game_scene_setup(void)
@@ -490,23 +480,23 @@ void game_debug(float dt)
 
 bool game_run(void)
 {
-    uint32 last_time = platform->ticks_get();
-    bool   should_window_close = 0;
+    uint32 last_time = platform_ticks_get();
+	bool   should_window_close = false;
     while(!should_window_close)
     {
-        uint32 curr_time = platform->ticks_get();
+        uint32 curr_time = platform_ticks_get();
 		float delta_time = (float)(curr_time - last_time) / 1000.f;
 		last_time = curr_time;
 		if(delta_time > MAX_FRAME_TIME) delta_time = (1.f / 60.f); /* To deal with resuming from breakpoint we artificially set delta time */
 
 		gui_input_begin();
-        platform->poll_events(&should_window_close);
+        platform_poll_events(&should_window_close);
 		gui_input_end();
 		
 		game_update(delta_time, &should_window_close);
 		game_post_update(delta_time);
 		game_render();
-		platform->window.swap_buffers(game_state->window);
+		window_swap_buffers(game_state->window);
     }
     return true;
 }
@@ -514,8 +504,8 @@ bool game_run(void)
 void game_update(float dt, bool* window_should_close)
 {	
     if(input_is_key_pressed(KEY_ESCAPE))                      *window_should_close = true;
-    if(input_map_state_get("Window_Fullscreen", KS_RELEASED)) platform->window.fullscreen_set(game_state->window, 1);
-    if(input_map_state_get("Window_Maximize",   KS_RELEASED)) platform->window.fullscreen_set(game_state->window, 0);
+    if(input_map_state_get("Window_Fullscreen", KS_RELEASED)) window_fullscreen_set(game_state->window, true);
+    if(input_map_state_get("Window_Maximize",   KS_RELEASED)) window_fullscreen_set(game_state->window, false);
     if(input_map_state_get("Console_Toggle",    KS_RELEASED)) console_toggle(game_state->console);
     if(input_map_state_get("Editor_Toggle",     KS_RELEASED)) 
     {
@@ -531,13 +521,6 @@ void game_update(float dt, bool* window_should_close)
 			game_state->scene->active_camera_index = CAM_EDITOR;
 		}
     }
-
-    if(input_map_state_get("Reload_Game_Lib",   KS_RELEASED))
-    {
-		*window_should_close = true;
-		platform->reload_game_lib();
-		return;
-    }
 	
     //game_debug(dt);
     //game_debug_gui(dt);
@@ -545,7 +528,7 @@ void game_update(float dt, bool* window_should_close)
     scene_update(game_state->scene, dt);
     if(game_state->game_mode == GAME_MODE_GAME)
     {
-		platform->physics.step(dt);
+		physics_step(dt);
     }
     else if(game_state->game_mode == GAME_MODE_EDITOR)
     {
@@ -557,7 +540,7 @@ void game_post_update(float dt)
 {
     input_post_update();
     scene_post_update(game_state->scene);
-    platform->sound.update_3d();
+    sound_update_3d();
 }
 
 void game_debug_gui(float dt)
@@ -1908,11 +1891,7 @@ void game_cleanup(void)
 		game_state = NULL;
     }
 
-    if(platform)
-    {
-		platform->physics.cleanup();
-		free(platform);
-    }
+	physics_cleanup();
 }
 
 struct Game_State* game_state_get(void)

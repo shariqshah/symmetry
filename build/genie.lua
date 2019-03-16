@@ -58,26 +58,28 @@ solution "Symmetry"
 	-------------------------
 	-- Game
 	-------------------------
-	project "Game"
+	project "Symmetry"
 		kind "ConsoleApp"
 		targetname "Symmetry"
 		language "C"
-		files { "../src/common/**.c", "../src/common/**.h", "../src/game/**.c", "../src/game/**.h"}
-		defines {"GAME"}
-
+		files { "../src/common/**.c", "../src/common/**.h", "../src/system/**.c", "../src/system/**.h", "../src/game/**.h", "../src/game/**.c"}
+		includedirs {"../include/common"}
+		defines {"USE_GLAD"}
+		
 		configuration "linux"
-			includedirs	{"../include/linux/sdl2/", "../include/common/soloud/", "../include/linux/"}
-			libdirs {"../lib/linux/sdl2/", "../lib/linux/soloud/", "../lib/linux/ode/"}
-			linkoptions {"'-Wl,-rpath,$$ORIGIN'"}
-			links {"SDL2", "m", "ode", "pthread"}
+		    includedirs {"../include/linux/sdl2/", "../include/common/soloud/", "../include/linux/"}
+		    libdirs {"../lib/linux/sdl2/", "../lib/linux/soloud/", "../lib/linux/ode/"}
+		    linkoptions {"'-Wl,-rpath,$$ORIGIN'"}
+		    links {"SDL2", "m", "ode", "pthread"}
 
 		configuration {"windows", "vs2017"}
-		   includedirs	{"../include/windows/sdl2/", "../include/common/soloud/", "../include/windows/"}
-		   libdirs {"../lib/windows/sdl2/", "../lib/windows/soloud/", "../lib/windows/ode/"}
-		   links {"SDL2"}
+		    includedirs	{"../include/windows/sdl2/", "../include/common/soloud/", "../include/windows/"}
+		    libdirs {"../lib/windows/sdl2/", "../lib/windows/soloud/", "../lib/windows/ode/"}
+		    links {"SDL2"}
 			
 		configuration "Debug"
-			links {"soloud_x64_d"}
+		    links {"soloud_x64_d"}
+		    defines {"GL_DEBUG_CONTEXT"}
 		
 		configuration "Release"
 			links {"soloud_x64"}
@@ -90,7 +92,6 @@ solution "Symmetry"
 				"copy ..\\..\\lib\\windows\\ode\\ode_double.dll release\\ /Y",
 				"xcopy ..\\..\\assets ..\\..\\bin\\assets /s /e /h /i /y /d",
 				"copy release\\Symmetry.exe ..\\..\\bin\\ /Y",
-				"copy release\\libSymmetry.dll ..\\..\\bin\\ /Y",
 				"copy release\\SDL2.dll ..\\..\\bin\\ /Y",
 				"copy release\\soloud_x64.dll ..\\..\\bin\\ /Y",
 				"copy release\\ode_double.dll ..\\..\\bin\\ /Y",
@@ -110,28 +111,6 @@ solution "Symmetry"
 				"mklink /D debug\\assets ..\\..\\..\\assets"
 			}
 			links {"ode_doubled"}
-	-------------------------
-	-- libSymmetry
-	-------------------------
-	project "Library"
-		kind "SharedLib"
-		language "C"
-		targetname "Symmetry_Game"
-		defines {"GAME_LIB", "USE_GLAD"}
-		includedirs {"../include/common"}
-		files { "../src/common/**.c", "../src/common/**.h", "../src/libsymmetry/**.h", "../src/libsymmetry/**.c" }
-			
-		configuration {"windows", "vs2017"}
-			includedirs {"../include/windows/sdl2/"}
-			flags "NoImportLib"
-
-
-		configuration {"linux"}
-			includedirs {"../include/linux/sdl2/"}
-		
-		configuration "Debug"
-			defines {"GL_DEBUG_CONTEXT"}
-
 
 	newaction {
 	   trigger = "build_addon",

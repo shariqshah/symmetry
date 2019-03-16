@@ -21,7 +21,8 @@
 #include "sprite.h"
 #include "im_render.h"
 #include "../common/variant.h"
-#include "../common/common.h"
+#include "../system/platform.h"
+#include "../system/config_vars.h"
 #include "scene.h"
 
 #include <string.h>
@@ -39,9 +40,9 @@ void renderer_init(struct Renderer* renderer)
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
-    platform->windowresize_callback_set(on_framebuffer_size_change);
+    platform_windowresize_callback_set(on_framebuffer_size_change);
 
-    struct Hashmap* cvars = platform->config.get();
+    struct Hashmap* cvars = config_vars_get();
     renderer->settings.fog.mode           = hashmap_int_get(cvars,   "fog_mode");
     renderer->settings.fog.density        = hashmap_float_get(cvars, "fog_density");
     renderer->settings.fog.start_dist     = hashmap_float_get(cvars, "fog_start_dist");
@@ -85,7 +86,7 @@ void renderer_init(struct Renderer* renderer)
 
     int width = -1, height = -1;
     struct Game_State* game_state = game_state_get();
-    platform->window.get_size(game_state->window, &width, &height);
+    window_get_size(game_state->window, &width, &height);
     renderer->def_albedo_tex = texture_create("def_albedo_texture",
 											  TU_DIFFUSE,
 											  width, height,
@@ -327,7 +328,7 @@ void renderer_draw(struct Renderer* renderer, struct Scene* scene)
     struct Camera* active_camera = &scene->cameras[scene->active_camera_index];
     int width, height;
     struct Game_State* game_state = game_state_get();
-    platform->window.get_size(game_state->window, &width, &height);
+    window_get_size(game_state->window, &width, &height);
     glViewport(0, 0, width, height);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     shader_bind(renderer->composition_shader);
@@ -338,7 +339,7 @@ void renderer_draw(struct Renderer* renderer, struct Scene* scene)
     shader_unbind();
 
     /* Debug Render */
-    struct Hashmap* cvars = platform->config.get();
+    struct Hashmap* cvars = config_vars_get();
     if(hashmap_bool_get(cvars, "debug_draw_enabled"))
     {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -378,28 +379,28 @@ void renderer_draw(struct Renderer* renderer, struct Scene* scene)
 			quat rot = {0.f, 0.f, 0.f, 1.f };
 			if(mesh->collision.rigidbody)
 			{
-				platform->physics.body_position_get(mesh->collision.rigidbody, &pos.x, &pos.y, &pos.z);
-				platform->physics.body_rotation_get(mesh->collision.rigidbody, &rot.x, &rot.y, &rot.z, &rot.w);
+				physics_body_position_get(mesh->collision.rigidbody, &pos.x, &pos.y, &pos.z);
+				physics_body_rotation_get(mesh->collision.rigidbody, &rot.x, &rot.y, &rot.z, &rot.w);
 			}
 			else
 			{
-				platform->physics.cs_position_get(mesh->collision.collision_shape, &pos.x, &pos.y, &pos.z);
-				platform->physics.cs_rotation_get(mesh->collision.collision_shape, &rot.x, &rot.y, &rot.z, &rot.w);
+				physics_cs_position_get(mesh->collision.collision_shape, &pos.x, &pos.y, &pos.z);
+				physics_cs_rotation_get(mesh->collision.collision_shape, &rot.x, &rot.y, &rot.z, &rot.w);
 			}
 
-			int collision_shape_type = platform->physics.cs_type_get(mesh->collision.collision_shape);
+			int collision_shape_type = physics_cs_type_get(mesh->collision.collision_shape);
 			switch(collision_shape_type)
 			{
 			case CST_SPHERE:
 			{
-				float radius = platform->physics.cs_sphere_radius_get(mesh->collision.collision_shape);
+				float radius = physics_cs_sphere_radius_get(mesh->collision.collision_shape);
 				im_sphere(radius, pos, rot, physics_draw_color, GDM_TRIANGLES);
 			}
 			break;
 			case CST_BOX:
 			{
 				float x = 0.f, y = 0.f, z = 0.f;
-				platform->physics.cs_box_params_get(mesh->collision.collision_shape, &x, &y, &z);
+				physics_cs_box_params_get(mesh->collision.collision_shape, &x, &y, &z);
 				im_box(x, y, z, pos, rot, physics_draw_color, GDM_TRIANGLES);
 			};
 			break;
@@ -419,7 +420,7 @@ void renderer_draw(struct Renderer* renderer, struct Scene* scene)
 		mat4_identity(&ortho_mat);
 		int width, height;
 		struct Game_State* game_state = game_state_get();
-		platform->window.get_size(game_state->window, &width, &height);
+		window_get_size(game_state->window, &width, &height);
 
 		mat4_ortho(&ortho_mat, 0.f, (float)width, (float)height, 0.f, -10.f, 10.f);
 		shader_set_uniform_mat4(renderer->sprite_batch->shader, "mvp", &ortho_mat);

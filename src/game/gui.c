@@ -8,7 +8,8 @@
 #include "input.h"
 #include "renderer.h"
 #include "../common/string_utils.h"
-#include "../common/common.h"
+#include "../system/platform.h"
+#include "../system/file_io.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -88,7 +89,7 @@ bool gui_init(void)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    platform->textinput_callback_set(&gui_handle_textinput_event);
+    platform_textinput_callback_set(&gui_handle_textinput_event);
 	//gui_font_set("Ubuntu-R.ttf", 14);
 	//gui_font_set("FiraSans-Regular.ttf", 14);
 	gui_font_set("roboto_condensed.ttf", 18);
@@ -132,8 +133,8 @@ void gui_render(enum nk_anti_aliasing AA)
 	
     mat4_identity(&gui_mat);
     struct Game_State* game_state = game_state_get();
-    platform->window.get_size(game_state->window, &width, &height);
-    platform->window.get_drawable_size(game_state->window, &display_width, &display_height);
+    window_get_size(game_state->window, &width, &height);
+    window_get_drawable_size(game_state->window, &display_width, &display_height);
     mat4_ortho(&gui_mat, 0.f, display_width, display_height, 0.f, -100.f, 100.f);
 
     scale.x = (float)display_width/(float)width;
@@ -226,7 +227,7 @@ void gui_render(enum nk_anti_aliasing AA)
 
 void gui_handle_clipbard_paste(nk_handle usr, struct nk_text_edit *edit)
 {
-    char *text = platform->clipboard_text_get();
+    char *text = platform_clipboard_text_get();
     if(text)
 	{
 		nk_textedit_paste(edit, text, nk_strlen(text));
@@ -244,7 +245,7 @@ void gui_handle_clipbard_copy(nk_handle usr, const char *text, int len)
     if (!str) return;
     memcpy(str, text, (size_t)len);
     str[len] = '\0';
-    platform->clipboard_text_set(str);
+    platform_clipboard_text_set(str);
     free(str);
 }
 
@@ -372,7 +373,7 @@ void gui_font_set(const char* font_name, float font_size)
 	struct nk_font_atlas* atlas = &gui_state->atlas;
 	long size = 0;
 	char* font_file_name = str_new("fonts/%s", font_name);
-    char* font_data = platform->file.read(DIRT_INSTALL, font_file_name, "rb", &size);
+    char* font_data = io_file_read(DIRT_INSTALL, font_file_name, "rb", &size);
 	free(font_file_name);
 	if(!font_data)
 	{

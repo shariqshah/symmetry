@@ -3,14 +3,7 @@
 
 #include <stdbool.h>
 
-#if defined(_MSC_VER)
-	#define SYMMETRY_EXPORT __declspec(dllexport)
-#else
-	#define SYMMETRY_EXPORT
-#endif
-
 struct Window;
-struct Platform_Api;
 struct Renderer;
 struct Scene;
 struct Entity;
@@ -36,8 +29,9 @@ struct Game_State
 };
 
 
-struct Game_State*   game_state_get(void);
-SYMMETRY_EXPORT bool game_init(struct Window* window, struct Platform_Api* platform_api);
-SYMMETRY_EXPORT void game_cleanup(void);
+struct Game_State* game_state_get(void);
+bool               game_init(struct Window* window);
+bool               game_run(void);
+void               game_cleanup(void);
 
 #endif

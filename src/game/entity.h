@@ -3,7 +3,8 @@
 
 #include "../common/linmath.h"
 #include "../common/num_types.h"
-#include "../common/common.h"
+#include "../system/physics.h"
+#include "../system/sound.h"
 #include "material.h"
 
 #define MAX_ENTITY_NAME_LEN 128

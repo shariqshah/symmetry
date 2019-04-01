@@ -65,7 +65,6 @@ Bugs:
 	- Better handling of wav format checking at load time
 	- Fix light rotation/direction bugs
 	- Fix lights type not being correctly saved/loaded from file
-	- Fix mouse button press/release behaviour by investigating how sdl handles mouse release or by explicitly caching mouse state by using event callbacks recieved when a mousebutton release event is reported by sdl
 	- Fix culling
 
 Done:
@@ -196,3 +195,4 @@ Done:
 	* Migrated from bitbucket to github and from mercurial back to git
 	* Removed the game executable and game library split.
 	* Event Subsystem
+	* Fixed mouse button press/release behaviour by using event callbacks for editor mouse picking

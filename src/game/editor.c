@@ -25,6 +25,7 @@
 #include "../system/file_io.h"
 #include "../system/config_vars.h"
 #include "../system/platform.h"
+#include "event.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,6 +39,7 @@ struct Editor_State
 {
     bool           enabled;
     bool           renderer_settings_window;
+	bool           camera_looking_around;
     struct Entity* selected_entity;
     int            top_panel_height;
     float          camera_turn_speed;
@@ -55,25 +57,27 @@ static struct Editor_State    editor_state;
 static struct Debug_Variable* debug_vars_list = NULL;
 static int*                   empty_indices   = NULL;
 
+static void editor_on_mousebutton(const struct Event* event);
 static void editor_camera_update(float dt);
 static void editor_show_entity_in_list(struct nk_context* context, struct Scene* scene, struct Entity* entity);
 static void editor_widget_color_combov3(struct nk_context* context, vec3* color, int width, int height);
 static void editor_widget_color_combov4(struct nk_context* context, vec4* color, int width, int height);
 static bool editor_widget_v3(struct nk_context* context,
-			     vec3*              value,
-			     const char*        name_x,
-			     const char*        name_y,
-			     const char*        name_z,
-			     float              min,
-			     float              max,
-			     float              step,
-			     float              inc_per_pixel,
-			     int                row_height);
+			                 vec3*              value,
+			                 const char*        name_x,
+			                 const char*        name_y,
+			                 const char*        name_z,
+			                 float              min,
+			                 float              max,
+			                 float              step,
+			                 float              inc_per_pixel,
+			                 int                row_height);
 
 void editor_init(void)
 {
     editor_state.enabled                  = true;
     editor_state.renderer_settings_window = false;
+	editor_state.camera_looking_around    = false;
     editor_state.selected_entity          = NULL;
     editor_state.top_panel_height         = 20;
     editor_state.camera_turn_speed        = 50.f;
@@ -81,6 +85,9 @@ void editor_init(void)
     editor_state.camera_sprint_multiplier = 2.f;
     debug_vars_list                       = array_new(struct Debug_Variable);
     empty_indices                         = array_new(int);
+
+	event_manager_subscribe(game_state_get()->event_manager, EVT_MOUSEBUTTON_PRESSED, &editor_on_mousebutton);
+	event_manager_subscribe(game_state_get()->event_manager, EVT_MOUSEBUTTON_RELEASED, &editor_on_mousebutton);
 }
 
 void editor_init_camera(void)
@@ -550,17 +557,51 @@ void editor_update(float dt)
 	}
 }
 
+void editor_on_mousebutton(const struct Event* event)
+{
+	assert(event->type == EVT_MOUSEBUTTON_PRESSED || event->type == EVT_MOUSEBUTTON_RELEASED);
+
+	if(event->mousebutton.button == MSB_LEFT && event->type == EVT_MOUSEBUTTON_RELEASED && !editor_state.camera_looking_around)
+	{
+		log_message("Editor Picking");
+		struct Camera* editor_camera = &game_state_get()->scene->cameras[CAM_EDITOR];
+		int mouse_x = 0, mouse_y = 0;
+		platform_mouse_position_get(&mouse_x, &mouse_y);
+		struct Ray ray = camera_screen_coord_to_ray(editor_camera, mouse_x, mouse_y);
+		//log_message("Ray: %.3f, %.3f, %.3f", ray.direction.x, ray.direction.y, ray.direction.z); 
+
+		struct Scene* scene = game_state_get()->scene;
+		struct Raycast_Result ray_result;
+		scene_ray_intersect(scene, &ray, &ray_result);
+
+		if(ray_result.num_entities_intersected > 0)
+		{
+			//For now, just select the first entity that is intersected 
+			struct Entity* intersected_entity = ray_result.entities_intersected[0];
+
+			if(editor_state.selected_entity && editor_state.selected_entity != intersected_entity)
+			{
+				editor_state.selected_entity->editor_selected = false;
+				editor_state.selected_entity = NULL;
+			}
+
+			intersected_entity->editor_selected = true;
+			editor_state.selected_entity = intersected_entity;
+		}
+	}
+}
+
 void editor_camera_update(float dt)
 {
     struct Camera* editor_camera = &game_state_get()->scene->cameras[CAM_EDITOR];
     static float total_up_down_rot = 0.f;
-    float move_speed      = editor_state.camera_move_speed, turn_speed = editor_state.camera_turn_speed;
-    float turn_up_down    = 0.f;
-    float turn_left_right = 0.f;
-    float max_up_down     = 60.f;
-	vec3 offset              = { 0, 0, 0 };
-	vec3 rot_axis_up_down    = { 1, 0, 0 };
-	vec3 rot_axis_left_right = { 0, 1, 0 };
+    float move_speed          = editor_state.camera_move_speed, turn_speed = editor_state.camera_turn_speed;
+    float turn_up_down        = 0.f;
+    float turn_left_right     = 0.f;
+    float max_up_down         = 60.f;
+	vec3  offset              = { 0, 0, 0 };
+	vec3  rot_axis_up_down    = { 1, 0, 0 };
+	vec3  rot_axis_left_right = { 0, 1, 0 };
 
     /* Look around */
     if(input_map_state_get("Turn_Up",    KS_PRESSED)) turn_up_down    += turn_speed;
@@ -570,6 +611,7 @@ void editor_camera_update(float dt)
 
     if(input_mousebutton_state_get(MSB_RIGHT, KS_PRESSED))
     {
+		editor_state.camera_looking_around = true;
 		const float scale = 0.1f;
 		int cursor_lr, cursor_ud;
 		input_mouse_delta_get(&cursor_lr, &cursor_ud);
@@ -581,46 +623,18 @@ void editor_camera_update(float dt)
 
 		turn_up_down = -cursor_ud * turn_speed * dt * scale;
 		turn_left_right = cursor_lr * turn_speed * dt * scale;
-		//log_message("ud : %d, lr : %d", cursor_ud, cursor_lr);
     }
     else
     {
 		input_mouse_mode_set(MM_NORMAL);
 		turn_up_down *= dt;
 		turn_left_right *= dt;
-
-		//Picking
-		//If we're not looking around then allow picking
-		if(input_mousebutton_state_get(MSB_LEFT, KS_RELEASED))
+		if(editor_state.camera_looking_around)
 		{
-			log_message("editor picking");
-			//int mouse_x = 0, mouse_y = 0;
-			//platform_mouse_position_get(&mouse_x, &mouse_y);
-			//struct Ray ray = camera_screen_coord_to_ray(editor_camera, mouse_x, mouse_y);
-			////log_message("Ray: %.3f, %.3f, %.3f", ray.direction.x, ray.direction.y, ray.direction.z); 
-
-			//struct Scene* scene = game_state_get()->scene;
-			//struct Raycast_Result ray_result;
-			//scene_ray_intersect(scene, &ray, &ray_result);
-
-			//if(ray_result.num_entities_intersected > 0)
-			//{
-			//	//For now, just select the first entity that is intersected 
-			//	struct Entity* intersected_entity = ray_result.entities_intersected[0];
-
-			//	if(editor_state.selected_entity && editor_state.selected_entity != intersected_entity)
-			//	{
-			//		editor_state.selected_entity->editor_selected = false;
-			//		editor_state.selected_entity = NULL;
-			//	}
-
-			//	intersected_entity->editor_selected = true;
-			//	editor_state.selected_entity = intersected_entity;
-			//}
-		}
-		else if(input_mousebutton_state_get(MSB_LEFT, KS_PRESSED))
-		{
-			log_message("mouse pressed");
+			int width = 0, height = 0;
+			window_get_drawable_size(game_state_get()->window, &width, &height);
+			platform_mouse_position_set(game_state_get()->window, width / 2, height / 2);
+			editor_state.camera_looking_around = false;
 		}
     }
 
@@ -741,6 +755,8 @@ void editor_widget_color_combov4(struct nk_context* context, vec4* color, int wi
 
 void editor_cleanup(void)
 {
+	event_manager_unsubscribe(game_state_get()->event_manager, EVT_MOUSEBUTTON_PRESSED, &editor_on_mousebutton);
+	event_manager_unsubscribe(game_state_get()->event_manager, EVT_MOUSEBUTTON_RELEASED, &editor_on_mousebutton);
     for(int i = 0; i < array_len(debug_vars_list); i++)
 	editor_debugvar_slot_remove(i);
     array_free(debug_vars_list);

@@ -4,13 +4,6 @@
 #include <stdbool.h>
 #include "../common/num_types.h"
 
-typedef void(*Keyboard_Event_Func)     (int key, int scancode, int state, int repeat, int mod_ctrl, int mod_shift, int mod_alt);
-typedef void(*Mousebutton_Event_Func)  (int button, int state, int x, int y, int8 num_clicks);
-typedef void(*Mousemotion_Event_Func)  (int x, int y, int xrel, int yrel);
-typedef void(*Mousewheel_Event_Func)   (int x, int y);
-typedef void(*Windowresize_Event_Func) (int x, int y);
-typedef void(*Textinput_Event_Func)    (const char* text);
-
 enum Video_Drivers_Linux
 {
     VD_X11 = 0,
@@ -37,13 +30,6 @@ bool           window_fullscreen_set(struct Window* window, bool fullscreen);
 bool        platform_init(void);
 bool        platform_init_video(void);
 void        platform_cleanup(void);
-void        platform_poll_events(bool *out_quit);
-void        platform_keyboard_callback_set(Keyboard_Event_Func func);
-void        platform_mousebutton_callback_set(Mousebutton_Event_Func func);
-void        platform_mousemotion_callback_set(Mousemotion_Event_Func func);
-void        platform_mousewheel_callback_set(Mousewheel_Event_Func func);
-void        platform_windowresize_callback_set(Windowresize_Event_Func func);
-void        platform_textinput_callback_set(Textinput_Event_Func func);
 int         platform_is_key_pressed(int key);
 int         platform_mousebutton_state_get(uint button);
 void        platform_mouse_position_get(int* x, int* y);

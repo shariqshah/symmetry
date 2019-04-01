@@ -18,7 +18,7 @@ void cleanup(void);
 
 int main(int argc, char** args)
 {
-    if(!init(window))
+    if(!init())
     {
 		log_to_stdout("ERR:(Main) Could not initialize");
     }

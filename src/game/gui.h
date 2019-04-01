@@ -45,10 +45,6 @@ enum Gui_Theme
 bool  			  gui_init(void);
 void 			  gui_cleanup(void);
 void 			  gui_render(enum nk_anti_aliasing AA);
-void 			  gui_handle_mousewheel_event(int x, int y);
-void 			  gui_handle_mousemotion_event(int x, int y, int xrel, int yrel);
-void 			  gui_handle_mousebutton_event(int button, int state, int x, int y);
-void 			  gui_handle_keyboard_event(int key, int state, int mod_ctrl, int mod_shift);
 void              gui_input_begin(void);
 void              gui_input_end(void);
 void              gui_font_set(const char* font_name, float font_height);

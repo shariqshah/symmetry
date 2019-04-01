@@ -16,9 +16,6 @@
 
 //static void input_on_key(int key, int scancode, int state, int repeat, int mod_ctrl, int mod_shift, int mod_alt);
 static void input_on_key(const struct Event* event);
-static void input_on_mousebutton(int button, int state, int x, int y, int8 num_clicks);
-static void input_on_mousemotion(int x, int y, int xrel, int yrel);
-static void input_on_mousewheel(int x, int y);
 
 static struct Hashmap* key_bindings = NULL;
 
@@ -27,11 +24,7 @@ void input_init(void)
 	struct Event_Manager* event_manager = game_state_get()->event_manager;
 	event_manager_subscribe(event_manager, EVT_KEY_PRESSED, &input_on_key);
 	event_manager_subscribe(event_manager, EVT_KEY_RELEASED, &input_on_key);
-    //platform_keyboard_callback_set(&input_on_key);
-    platform_mousebutton_callback_set(&input_on_mousebutton);
-    platform_mousemotion_callback_set(&input_on_mousemotion);
-    platform_mousewheel_callback_set(&input_on_mousewheel);
-	
+
 	key_bindings = hashmap_new();
 
 	/* Default keys for fallback */
@@ -256,18 +249,6 @@ bool input_keybinds_save(const char* filename, int directory_type)
 	return write_success;
 }
 
-void input_on_mousemotion(int x, int y, int xrel, int yrel)
-{
-	/* TODO: This is temporary. After proper event loop is added this code should not be here */
-	gui_handle_mousemotion_event(x, y, xrel, yrel);
-}
-
-void input_on_mousewheel(int x, int y)
-{
-	/* TODO: This is temporary. After proper event loop is added this code should not be here */
-	gui_handle_mousewheel_event(x, y);
-}
-
 void input_mouse_pos_get(int* xpos, int* ypos)
 {
 	assert(xpos && ypos);
@@ -313,18 +294,6 @@ void input_on_key(const struct Event* event)
 			break;
 		}
 	}
-
-	/* TODO: This is temporary. After proper event loop is added this code should not be here */
-	gui_handle_keyboard_event(key, state, mod_ctrl, mod_shift);
-}
-
-void input_on_mousebutton(int button, int state, int x, int y, int8 num_clicks)
-{
-	/* Probably add 'mouse maps', same as input maps for keyboard but with buttons.
-	   Do we even need that?
-	*/
-	/* TODO: This is temporary. After proper event loop is added this code should not be here */
-	gui_handle_mousebutton_event(button, state, x, y);
 }
 
 void input_mouse_mode_set(enum Mouse_Mode mode)

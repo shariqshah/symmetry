@@ -10,6 +10,7 @@
 #include "../common/string_utils.h"
 #include "../system/platform.h"
 #include "../system/file_io.h"
+#include "event.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -23,9 +24,14 @@ struct Gui_Vertex
 #define MAX_GUI_VERTEX_MEMORY  512 * 1024
 #define MAX_GUI_ELEMENT_MEMORY 128 * 1024
 
-static void gui_handle_clipbard_copy(nk_handle usr, const char *text, int len);
-static void gui_handle_clipbard_paste(nk_handle usr, struct nk_text_edit *edit);
-static void gui_handle_textinput_event(const char* text);
+static void gui_on_clipbard_copy(nk_handle usr, const char *text, int len);
+static void gui_on_clipbard_paste(nk_handle usr, struct nk_text_edit *edit);
+static void gui_on_textinput(const struct Event* event);
+static void gui_on_mousewheel(const struct Event* event);
+static void gui_on_mousemotion(const struct Event* event);
+static void gui_on_mousebutton(const struct Event* event);
+static void gui_on_key(const struct Event* event);
+
 static void gui_upload_atlas(const void *image, int width, int height);
 static void gui_font_set_default(void);
 
@@ -43,8 +49,8 @@ bool gui_init(void)
 	
 	nk_init_default(&gui_state->context, 0);
 	nk_buffer_init_default(&gui_state->cmds);
-    gui_state->context.clip.copy     = gui_handle_clipbard_copy;
-    gui_state->context.clip.paste    = gui_handle_clipbard_paste;
+    gui_state->context.clip.copy     = gui_on_clipbard_copy;
+    gui_state->context.clip.paste    = gui_on_clipbard_paste;
     gui_state->context.clip.userdata = nk_handle_ptr(0);
 	gui_state->current_font          = NULL;
 	gui_state->shader                = shader_create("gui.vert", "gui.frag");
@@ -63,9 +69,9 @@ bool gui_init(void)
     {
         /* buffer setup */
         GLsizei vs = sizeof(struct Gui_Vertex);
-        size_t vp = offsetof(struct Gui_Vertex, pos);
-        size_t vt = offsetof(struct Gui_Vertex, uv);
-        size_t vc = offsetof(struct Gui_Vertex, col);
+        size_t  vp = offsetof(struct Gui_Vertex, pos);
+        size_t  vt = offsetof(struct Gui_Vertex, uv);
+        size_t  vc = offsetof(struct Gui_Vertex, col);
 
         glGenBuffers(1, &gui_state->vbo);
         glGenBuffers(1, &gui_state->ebo);
@@ -89,12 +95,21 @@ bool gui_init(void)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    platform_textinput_callback_set(&gui_handle_textinput_event);
 	//gui_font_set("Ubuntu-R.ttf", 14);
 	//gui_font_set("FiraSans-Regular.ttf", 14);
 	gui_font_set("roboto_condensed.ttf", 18);
 //	gui_theme_set(GT_RED);
     gui_theme_set(GT_DEFAULT);
+
+	struct Event_Manager* event_manager = game_state_get()->event_manager;
+	event_manager_subscribe(event_manager, EVT_KEY_PRESSED, &gui_on_key);
+	event_manager_subscribe(event_manager, EVT_KEY_RELEASED, &gui_on_key);
+	event_manager_subscribe(event_manager, EVT_MOUSEBUTTON_PRESSED, &gui_on_mousebutton);
+	event_manager_subscribe(event_manager, EVT_MOUSEBUTTON_RELEASED, &gui_on_mousebutton);
+	event_manager_subscribe(event_manager, EVT_MOUSEMOTION, &gui_on_mousemotion);
+	event_manager_subscribe(event_manager, EVT_MOUSEWHEEL, &gui_on_mousewheel);
+	event_manager_subscribe(event_manager, EVT_TEXT_INPUT, &gui_on_textinput);
+
 	success = true;
 	return success;
 }
@@ -114,6 +129,14 @@ void gui_upload_atlas(const void *image, int width, int height)
 
 void gui_cleanup(void)
 {
+	struct Event_Manager* event_manager = game_state_get()->event_manager;
+	event_manager_unsubscribe(event_manager, EVT_KEY_PRESSED, &gui_on_key);
+	event_manager_unsubscribe(event_manager, EVT_KEY_RELEASED, &gui_on_key);
+	event_manager_unsubscribe(event_manager, EVT_MOUSEBUTTON_PRESSED, &gui_on_mousebutton);
+	event_manager_unsubscribe(event_manager, EVT_MOUSEBUTTON_RELEASED, &gui_on_mousebutton);
+	event_manager_unsubscribe(event_manager, EVT_MOUSEMOTION, &gui_on_mousemotion);
+	event_manager_unsubscribe(event_manager, EVT_MOUSEWHEEL, &gui_on_mousewheel);
+
     nk_font_atlas_clear(&gui_state->atlas);
     nk_free(&gui_state->context);
     shader_remove(gui_state->shader);
@@ -225,7 +248,7 @@ void gui_render(enum nk_anti_aliasing AA)
     glDisable(GL_SCISSOR_TEST);
 }
 
-void gui_handle_clipbard_paste(nk_handle usr, struct nk_text_edit *edit)
+void gui_on_clipbard_paste(nk_handle usr, struct nk_text_edit *edit)
 {
     char *text = platform_clipboard_text_get();
     if(text)
@@ -236,7 +259,7 @@ void gui_handle_clipbard_paste(nk_handle usr, struct nk_text_edit *edit)
     (void)usr;
 }
 
-void gui_handle_clipbard_copy(nk_handle usr, const char *text, int len)
+void gui_on_clipbard_copy(nk_handle usr, const char *text, int len)
 {
     char *str = 0;
     (void)usr;
@@ -249,10 +272,15 @@ void gui_handle_clipbard_copy(nk_handle usr, const char *text, int len)
     free(str);
 }
 
-void gui_handle_keyboard_event(int key, int state, int mod_ctrl, int mod_shift)
+void gui_on_key(const struct Event* event)
 {
-    struct nk_context *ctx = &gui_state->context;
-	int down               = (state == KS_PRESSED);
+	assert(event->type == EVT_KEY_PRESSED || event->type == EVT_KEY_RELEASED);
+
+	int                key      = event->key.key;
+	bool               mod_ctrl = event->key.mod_ctrl;
+    struct nk_context* ctx      = &gui_state->context;
+
+	int down = event->type == EVT_KEY_PRESSED ? 1 : 0;
 	
 	if (key == KEY_RSHIFT || key == KEY_LSHIFT)
 		nk_input_key(ctx, NK_KEY_SHIFT, down);
@@ -315,18 +343,29 @@ void gui_handle_keyboard_event(int key, int state, int mod_ctrl, int mod_shift)
 	}
 }
 
-void gui_handle_mousebutton_event(int button, int state, int x, int y)
+void gui_on_mousebutton(const struct Event* event)
 {
-	int down = state == KS_PRESSED;
-	struct nk_context *ctx = &gui_state->context;
+	assert(event->type == EVT_MOUSEBUTTON_PRESSED || event->type == EVT_MOUSEBUTTON_RELEASED);
+
+	int                button = event->mousebutton.button;
+	int                x      = event->mousebutton.x;
+	int                y      = event->mousebutton.y;
+	int                down   = event->type == EVT_MOUSEBUTTON_PRESSED ? 1 : 0;
+	struct nk_context* ctx    = &gui_state->context;
+
 	if(button == MSB_LEFT)   nk_input_button(ctx, NK_BUTTON_LEFT,   x, y, down);
 	if(button == MSB_MIDDLE) nk_input_button(ctx, NK_BUTTON_MIDDLE, x, y, down);
 	if(button == MSB_RIGHT)	 nk_input_button(ctx, NK_BUTTON_RIGHT,  x, y, down);
 }
 
-void gui_handle_mousemotion_event(int x, int y, int xrel, int yrel)
+void gui_on_mousemotion(const struct Event* event)
 {
-	struct nk_context *ctx = &gui_state->context;
+	int                x    = event->mousemotion.x;
+	int                y    = event->mousemotion.y;
+	int                xrel = event->mousemotion.xrel;
+	int                yrel = event->mousemotion.yrel;
+	struct nk_context* ctx  = &gui_state->context;
+
 	if(ctx->input.mouse.grabbed)
 	{
 		int prev_x = (int)ctx->input.mouse.prev.x, prev_y = (int)ctx->input.mouse.prev.y;
@@ -338,17 +377,19 @@ void gui_handle_mousemotion_event(int x, int y, int xrel, int yrel)
 	}
 }
 
-void gui_handle_textinput_event(const char* text)
+void gui_on_textinput(const struct Event* event)
 {
 	struct nk_context *ctx = &gui_state->context;
 	nk_glyph glyph;
-	memcpy(glyph, text, NK_UTF_SIZE);
+	memcpy(glyph, event->text_input.text, NK_UTF_SIZE);
 	nk_input_glyph(ctx, glyph);
 }
 
-void gui_handle_mousewheel_event(int x, int y)
+void gui_on_mousewheel(const struct Event* event)
 {
-	struct nk_context *ctx = &gui_state->context;
+	int                x   = event->mousewheel.x;
+	int                y   = event->mousewheel.y;
+	struct nk_context* ctx = &gui_state->context;
 	nk_input_scroll(ctx, nk_vec2(x, y));
 }
 

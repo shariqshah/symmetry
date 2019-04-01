@@ -17,7 +17,9 @@ enum Event_Types
 	EVT_MOUSEBUTTON_PRESSED,
 	EVT_MOUSEBUTTON_RELEASED,
 	EVT_MOUSEMOTION,
+	EVT_MOUSEWHEEL,
 	EVT_WINDOW_RESIZED,
+	EVT_TEXT_INPUT,
 	EVT_MAX
 };
 
@@ -32,11 +34,38 @@ struct Key_Event
 	bool mod_alt;
 };
 
-struct Player_Damage_Event
+struct Mousemotion_Event
 {
-	int  damage;
-	int  enemy;
-	vec3 direction;
+	int x;
+	int y;
+	int xrel;
+	int yrel;
+};
+
+struct Mousewheel_Event
+{
+	int x;
+	int y;
+};
+
+struct Mousebutton_Event
+{
+	int button;
+	int state;
+	int num_clicks;
+	int x;
+	int y;
+};
+
+struct Text_Input_Event
+{
+	char text[32];
+};
+
+struct Window_Resized_Event
+{
+	int width;
+	int height;
 };
 
 struct Event
@@ -44,8 +73,12 @@ struct Event
 	int type;
 	union
 	{
-		struct Player_Damage_Event player_damage;
-		struct Key_Event           key;
+		struct Key_Event            key;
+		struct Mousewheel_Event     mousewheel;
+		struct Mousebutton_Event    mousebutton;
+		struct Mousemotion_Event    mousemotion;
+		struct Text_Input_Event     text_input;
+		struct Window_Resized_Event window_resize;
 	};
 };
 
@@ -61,39 +94,6 @@ struct Event_Manager
 	struct Event_Subscription event_subsciptions[MAX_EVENT_SUBSCRIPTIONS];
 	uint32                    sdl_event_id;
 };
-
-////Event subsciption example
-//void player_init()
-//{
-//	struct Event_Manager* event_manager = game_state_get()->event_manager;
-//	event_manager_subscribe(event_manager, EVT_PLAYER_DAMAGE, &on_player_damage);
-//}
-//
-////Event unsubscribe example
-//void player_cleanup()
-//{
-//	struct Event_Manager* event_manager = game_state_get()->event_manager;
-//	event_manager_unsubscribe(event_manager, EVT_PLAYER_DAMANGE, &on_player_damage);
-//}
-//
-////Event recieve example usage
-//void on_player_damage(struct Event* event_data)
-//{
-//	struct Player_Damage_Event* player_damage_event = &event_data->player_damage;
-//	damage_player(player_damage_event->damage, player_damage_event->direction);
-//}
-//
-////Event send example usage
-//void enemy_tick()
-//{
-//	struct Event_Manager* event_manager = game_state-get()->event_manager;
-//	struct Event* new_event = event_manager_create_new_event(event_manager);
-//	new_event->type = EVT_PLAYER_DAMAGE;
-//	new_event->player_damage.damage = 20;
-//	new_event->player_damage.enemy = enemy_id;
-//	event_manager_send_event(event_manager, new_event);
-//}
-//
 
 void          event_manager_init(struct Event_Manager* event_manager);
 void          event_manager_subscribe(struct Event_Manager* event_manager, int event_type, Event_Handler subscriber);

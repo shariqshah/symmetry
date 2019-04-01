@@ -24,13 +24,14 @@
 #include "../system/platform.h"
 #include "../system/config_vars.h"
 #include "scene.h"
+#include "event.h"
 
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 
-void on_framebuffer_size_change(int width, int height);
+static void renderer_on_framebuffer_size_changed(const struct Event* event);
 
 void renderer_init(struct Renderer* renderer)
 {
@@ -40,7 +41,7 @@ void renderer_init(struct Renderer* renderer)
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
-    platform_windowresize_callback_set(on_framebuffer_size_change);
+	event_manager_subscribe(game_state_get()->event_manager, EVT_WINDOW_RESIZED, &renderer_on_framebuffer_size_changed);
 
     struct Hashmap* cvars = config_vars_get();
     renderer->settings.fog.mode           = hashmap_int_get(cvars,   "fog_mode");
@@ -448,8 +449,11 @@ void renderer_cleanup(struct Renderer* renderer)
     texture_remove(renderer->def_depth_tex);
 }
 
-void on_framebuffer_size_change(int width, int height)
+void renderer_on_framebuffer_size_changed(const struct Event* event)
 {
+	int width  = event->window_resize.width;
+	int height = event->window_resize.height;
+
     struct Scene* scene = game_state_get()->scene;
     float aspect = (float)width / (float)height;
     for(int i = 0; i < MAX_CAMERAS; i++)
@@ -467,7 +471,7 @@ void renderer_clearcolor_set(float red, float green, float blue, float alpha)
     glClearColor(red, green, blue, alpha);
 }
 
-struct Material * renderer_material_get(int material_type)
+struct Material* renderer_material_get(int material_type)
 {
     return NULL;
 }

@@ -18,19 +18,6 @@ struct Window
     bool          is_fullscreen;
 };
 
-struct Platform_State
-{
-    Keyboard_Event_Func     on_keyboard_func;
-    Mousebutton_Event_Func  on_mousebutton_func;
-    Mousemotion_Event_Func  on_mousemotion_func;
-    Mousewheel_Event_Func   on_mousewheel_func;
-    Windowresize_Event_Func on_windowresize_func;
-    Textinput_Event_Func    on_textinput_func;
-};
-
-/* TODO: Find a better way to handle internal state */
-static struct Platform_State* platform_state = NULL;
-
 struct Window* window_create(const char* title, int width, int height, int msaa, int msaa_levels)
 {
     struct Window* new_window = NULL;
@@ -183,25 +170,7 @@ bool platform_init(void)
 		if(SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "SDL Init failed", SDL_GetError(), NULL) != 0)
 			log_to_stdout("platform_init", "SDL Init failed : %s", SDL_GetError());
     }
-    else
-    {
-		platform_state = malloc(sizeof(*platform_state));
-		if(!platform_state)
-		{
-			if(SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Allocation Failure", "Memory allocation failed, out of memory!", NULL) != 0)
-				log_to_stdout("platform_init", "Could not create platform state, out of memory");
-            success = false;
-		}
-		else
-		{
-			platform_state->on_keyboard_func     = NULL;
-			platform_state->on_mousebutton_func  = NULL;
-			platform_state->on_mousemotion_func  = NULL;
-			platform_state->on_mousewheel_func   = NULL;
-			platform_state->on_textinput_func    = NULL;
-			platform_state->on_windowresize_func = NULL;
-		}
-    }
+
     return success;
 }
 
@@ -234,106 +203,8 @@ bool platform_init_video()
 
 void platform_cleanup(void)
 {
-    if(platform_state) free(platform_state);
-    platform_state = NULL;
     SDL_VideoQuit();
     SDL_Quit();
-}
-
-void platform_poll_events(bool* out_quit)
-{
-    static SDL_Event event;
-    while(SDL_PollEvent(&event) != 0)
-    {
-		switch(event.type)
-		{
-		case SDL_QUIT:
-			*out_quit = 1;
-			break;
-		case SDL_KEYDOWN: case SDL_KEYUP:
-		{
-			int scancode  = event.key.keysym.scancode;
-			int key       = event.key.keysym.sym;
-			int state     = event.key.state;
-			int repeat    = event.key.repeat;
-			int mod_ctrl  = (event.key.keysym.mod & KMOD_CTRL)  ? 1 : 0;
-			int mod_shift = (event.key.keysym.mod & KMOD_SHIFT) ? 1 : 0;
-			int mod_alt   = (event.key.keysym.mod & KMOD_ALT)   ? 1 : 0;
-			platform_state->on_keyboard_func(key, scancode, state, repeat, mod_ctrl, mod_shift, mod_alt);
-			//log_message("Key name : %s", SDL_GetKeyName(key));
-			break;
-		}
-		case SDL_MOUSEBUTTONDOWN: case SDL_MOUSEBUTTONUP:
-		{
-			int button     = event.button.button;
-			int state      = event.button.state;
-			int num_clicks = event.button.clicks;
-			int x          = event.button.x;
-			int y          = event.button.y;
-			platform_state->on_mousebutton_func(button, state, x, y, num_clicks);
-			break;
-		}
-		case SDL_MOUSEMOTION:
-		{
-			int xrel = event.motion.xrel;
-			int yrel = event.motion.yrel;
-			int x    = event.motion.x;
-			int y    = event.motion.y;
-			platform_state->on_mousemotion_func(x, y, xrel, yrel);
-			break;
-		}
-		case SDL_MOUSEWHEEL:
-		{
-			int x = event.wheel.x;
-			int y = event.wheel.y;
-			platform_state->on_mousewheel_func(x, y);
-			break;
-		}
-		case SDL_TEXTINPUT:
-		{
-			platform_state->on_textinput_func(event.text.text);
-			break;
-		}
-		case SDL_WINDOWEVENT:
-		{
-			if(event.window.event == SDL_WINDOWEVENT_RESIZED)
-			{
-				platform_state->on_windowresize_func(event.window.data1, event.window.data2);
-			}
-		}
-		break;
-		}
-    }
-}
-
-void platform_keyboard_callback_set(Keyboard_Event_Func func)
-{
-    platform_state->on_keyboard_func = func;
-}
-
-void platform_mousebutton_callback_set(Mousebutton_Event_Func func)
-{
-    platform_state->on_mousebutton_func = func;
-}
-
-void platform_mousemotion_callback_set(Mousemotion_Event_Func func)
-{
-    platform_state->on_mousemotion_func = func;
-}
-
-void platform_mousewheel_callback_set(Mousewheel_Event_Func func)
-{
-    platform_state->on_mousewheel_func = func;
-}
-
-void platform_textinput_callback_set(Textinput_Event_Func func)
-{
-    platform_state->on_textinput_func = func;
-}
-
-void platform_windowresize_callback_set(Windowresize_Event_Func func)
-{
-    platform_state->on_windowresize_func = func;
 }
 
 int platform_is_key_pressed(int key)

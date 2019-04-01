@@ -148,46 +148,58 @@ void event_manager_poll_events(struct Event_Manager* event_manager, bool* out_qu
 			new_event->key.mod_shift = (event.key.keysym.mod & KMOD_SHIFT) ? true : false;
 			new_event->key.mod_alt   = (event.key.keysym.mod & KMOD_ALT) ? true : false;
 			event_manager_send_event(event_manager, new_event);
-			//platform_state->on_keyboard_func(key, scancode, state, repeat, mod_ctrl, mod_shift, mod_alt);
 			//log_message("Key name : %s", SDL_GetKeyName(key));
 			break;
 		}
 		case SDL_MOUSEBUTTONDOWN: case SDL_MOUSEBUTTONUP:
 		{
-			int button = event.button.button;
-			int state = event.button.state;
-			int num_clicks = event.button.clicks;
-			int x = event.button.x;
-			int y = event.button.y;
-			//platform_state->on_mousebutton_func(button, state, x, y, num_clicks);
+			struct Event* new_event = event_manager_create_new_event(event_manager);
+			new_event->type = event.type == SDL_MOUSEBUTTONDOWN ? EVT_MOUSEBUTTON_PRESSED : EVT_MOUSEBUTTON_RELEASED;
+			new_event->mousebutton.button     = event.button.button;
+			new_event->mousebutton.state      = event.button.state;
+			new_event->mousebutton.num_clicks = event.button.clicks;
+			new_event->mousebutton.x          = event.button.x;
+			new_event->mousebutton.y          = event.button.y;
+			event_manager_send_event(event_manager, new_event);
 			break;
 		}
 		case SDL_MOUSEMOTION:
 		{
-			int xrel = event.motion.xrel;
-			int yrel = event.motion.yrel;
-			int x = event.motion.x;
-			int y = event.motion.y;
-			//platform_state->on_mousemotion_func(x, y, xrel, yrel);
+			struct Event* new_event = event_manager_create_new_event(event_manager);
+			new_event->type = EVT_MOUSEMOTION;
+			new_event->mousemotion.xrel = event.motion.xrel;
+			new_event->mousemotion.yrel = event.motion.yrel;
+			new_event->mousemotion.x    = event.motion.x;
+			new_event->mousemotion.y    = event.motion.y;
+			event_manager_send_event(event_manager, new_event);
 			break;
 		}
 		case SDL_MOUSEWHEEL:
 		{
-			int x = event.wheel.x;
-			int y = event.wheel.y;
-			//platform_state->on_mousewheel_func(x, y);
+			struct Event* new_event = event_manager_create_new_event(event_manager);
+			new_event->type = EVT_MOUSEWHEEL;
+			new_event->mousewheel.x = event.wheel.x;
+			new_event->mousewheel.y = event.wheel.y;
+			event_manager_send_event(event_manager, new_event);
 			break;
 		}
 		case SDL_TEXTINPUT:
 		{
-			//platform_state->on_textinput_func(event.text.text);
+			struct Event* new_event = event_manager_create_new_event(event_manager);
+			new_event->type = EVT_TEXT_INPUT;
+			memcpy(new_event->text_input.text, event.text.text, 32);
+			event_manager_send_event(event_manager, new_event);
 			break;
 		}
 		case SDL_WINDOWEVENT:
 		{
 			if(event.window.event == SDL_WINDOWEVENT_RESIZED)
 			{
-				//platform_state->on_windowresize_func(event.window.data1, event.window.data2);
+				struct Event* new_event = event_manager_create_new_event(event_manager);
+				new_event->type = EVT_WINDOW_RESIZED;
+				new_event->window_resize.width = event.window.data1;
+				new_event->window_resize.height = event.window.data2;
+				event_manager_send_event(event_manager, new_event);
 			}
 		}
 		break;
@@ -216,8 +228,6 @@ void event_manager_poll_events(struct Event_Manager* event_manager, bool* out_qu
 	}
 }
 
-
-
 void event_manager_cleanup(struct Event_Manager* event_manager)
 {
 
@@ -235,7 +245,9 @@ const char* event_name_get(int event_type)
 	case EVT_MOUSEBUTTON_PRESSED:  return "Mousebutton Pressed";
 	case EVT_MOUSEBUTTON_RELEASED: return "Mousebutton Released";
 	case EVT_MOUSEMOTION:          return "Mouse Motion";
+	case EVT_MOUSEWHEEL:           return "Mouse Wheel";
 	case EVT_WINDOW_RESIZED:       return "Window Resized";
+	case EVT_TEXT_INPUT:           return "Text Input";
 	case EVT_MAX:                  return "Max Number of Events";
 	default: return "Invalid event_type";
 	}

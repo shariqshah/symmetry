@@ -33,6 +33,7 @@
 #include "../system/physics.h"
 #include "../system/platform.h"
 #include "im_render.h"
+#include "event.h"
 
 #define UNUSED(a) (void)a
 #define MIN_NUM(a,b) ((a) < (b) ? (a) : (b))
@@ -66,12 +67,13 @@ bool game_init(struct Window* window)
     }
     else
     {
-		game_state->window = window;
+		game_state->window         = window;
 		game_state->is_initialized = false;
-		game_state->game_mode = GAME_MODE_GAME;
-		game_state->renderer = calloc(1, sizeof(*game_state->renderer));
-		game_state->scene = calloc(1, sizeof(*game_state->scene));
-		game_state->console = calloc(1, sizeof(*game_state->console));
+		game_state->game_mode      = GAME_MODE_GAME;
+		game_state->renderer       = calloc(1, sizeof(*game_state->renderer));
+		game_state->scene          = calloc(1, sizeof(*game_state->scene));
+		game_state->console        = calloc(1, sizeof(*game_state->console));
+		game_state->event_manager  = calloc(1, sizeof(*game_state->event_manager));
 
 		log_message_callback_set(game_on_log_message);
 		log_warning_callback_set(game_on_log_warning);
@@ -87,7 +89,8 @@ bool game_init(struct Window* window)
 			log_message("Loaded GL extentions");
 		}
 
-
+		
+		event_manager_init(game_state->event_manager);
 		input_init();
 		shader_init();
 		texture_init();
@@ -490,7 +493,8 @@ bool game_run(void)
 		if(delta_time > MAX_FRAME_TIME) delta_time = (1.f / 60.f); /* To deal with resuming from breakpoint we artificially set delta time */
 
 		gui_input_begin();
-        platform_poll_events(&should_window_close);
+        //platform_poll_events(&should_window_close);
+		event_manager_poll_events(game_state->event_manager, &should_window_close);
 		gui_input_end();
 		
 		game_update(delta_time, &should_window_close);
@@ -1882,10 +1886,12 @@ void game_cleanup(void)
 			framebuffer_cleanup();
 			texture_cleanup();
 			shader_cleanup();
+			event_manager_cleanup(game_state->event_manager);
 
 			free(game_state->console);
 			free(game_state->scene);
 			free(game_state->renderer);
+			free(game_state->event_manager);
 		}
 		free(game_state);
 		game_state = NULL;

@@ -11,8 +11,11 @@
 #include "../common/parser.h"
 #include "../system/platform.h"
 #include "../system/file_io.h"
+#include "event.h"
+#include "game.h"
 
-static void input_on_key(int key, int scancode, int state, int repeat, int mod_ctrl, int mod_shift, int mod_alt);
+//static void input_on_key(int key, int scancode, int state, int repeat, int mod_ctrl, int mod_shift, int mod_alt);
+static void input_on_key(const struct Event* event);
 static void input_on_mousebutton(int button, int state, int x, int y, int8 num_clicks);
 static void input_on_mousemotion(int x, int y, int xrel, int yrel);
 static void input_on_mousewheel(int x, int y);
@@ -21,7 +24,10 @@ static struct Hashmap* key_bindings = NULL;
 
 void input_init(void)
 {
-    platform_keyboard_callback_set(&input_on_key);
+	struct Event_Manager* event_manager = game_state_get()->event_manager;
+	event_manager_subscribe(event_manager, EVT_KEY_PRESSED, &input_on_key);
+	event_manager_subscribe(event_manager, EVT_KEY_RELEASED, &input_on_key);
+    //platform_keyboard_callback_set(&input_on_key);
     platform_mousebutton_callback_set(&input_on_mousebutton);
     platform_mousemotion_callback_set(&input_on_mousemotion);
     platform_mousewheel_callback_set(&input_on_mousewheel);
@@ -76,6 +82,7 @@ void input_init(void)
 
 void input_cleanup(void)
 {
+	event_manager_unsubscribe(game_state_get()->event_manager, EVT_KEY_PRESSED, &input_on_key);
 	char* key = NULL;
 	struct Variant* value = NULL;
 	HASHMAP_FOREACH(key_bindings, key, value)
@@ -272,8 +279,16 @@ void input_mouse_pos_set(int xpos, int ypos)
     platform_mouse_global_position_set(xpos, ypos);
 }
 
-void input_on_key(int key, int scancode, int state, int repeat, int mod_ctrl, int mod_shift, int mod_alt)
+void input_on_key(const struct Event* event)
 {
+	assert(event->type == EVT_KEY_PRESSED || event->type == EVT_KEY_RELEASED);
+
+	int  key       = event->key.key;
+	int  state     = event->key.state;
+	bool mod_ctrl  = event->key.mod_ctrl;
+	bool mod_shift = event->key.mod_shift;;
+	bool mod_alt   = event->key.mod_alt;;
+
 	int mods = KMD_NONE;
 	if(mod_ctrl)  mods |= KMD_CTRL;
 	if(mod_shift) mods |= KMD_SHIFT;
@@ -287,14 +302,14 @@ void input_on_key(int key, int scancode, int state, int repeat, int mod_ctrl, in
 		//Check with primary key
 		if(key_binding->key_primary == key && (key_binding->mods_primary & mods) == key_binding->mods_primary)
 		{
-			key_binding->state = state;
+			key_binding->state = event->type == EVT_KEY_PRESSED ? KS_PRESSED : KS_RELEASED;
 			break;
 		}
 
 		//If not, then check with secondary key
 		if(key_binding->key_secondary == key && (key_binding->mods_secondary & mods) == key_binding->mods_secondary)
 		{
-			key_binding->state = state;
+			key_binding->state = event->type == EVT_KEY_PRESSED ? KS_PRESSED : KS_RELEASED;
 			break;
 		}
 	}

@@ -591,33 +591,37 @@ void editor_camera_update(float dt)
 
 		//Picking
 		//If we're not looking around then allow picking
-		/* if(input_mousebutton_state_get(MSB_LEFT, KS_RELEASED)) */
-		/* { */
-		/* 	log_message("editor picking"); */
-		/* 	int mouse_x = 0, mouse_y = 0; */
-		/* 	platform->mouse_position_get(&mouse_x, &mouse_y); */
-		/* 	struct Ray ray = camera_screen_coord_to_ray(editor_camera, mouse_x, mouse_y); */
-		/* 	//log_message("Ray: %.3f, %.3f, %.3f", ray.direction.x, ray.direction.y, ray.direction.z); */
+		if(input_mousebutton_state_get(MSB_LEFT, KS_RELEASED))
+		{
+			log_message("editor picking");
+			//int mouse_x = 0, mouse_y = 0;
+			//platform_mouse_position_get(&mouse_x, &mouse_y);
+			//struct Ray ray = camera_screen_coord_to_ray(editor_camera, mouse_x, mouse_y);
+			////log_message("Ray: %.3f, %.3f, %.3f", ray.direction.x, ray.direction.y, ray.direction.z); 
 
-		/* 	struct Scene* scene = game_state_get()->scene; */
-		/* 	struct Raycast_Result ray_result; */
-		/* 	scene_ray_intersect(scene, &ray, &ray_result); */
+			//struct Scene* scene = game_state_get()->scene;
+			//struct Raycast_Result ray_result;
+			//scene_ray_intersect(scene, &ray, &ray_result);
 
-		/* 	if(ray_result.num_entities_intersected > 0) */
-		/* 	{ */
-		/* 		//For now, just select the first entity that is intersected */
-		/* 		struct Entity* intersected_entity = ray_result.entities_intersected[0]; */
+			//if(ray_result.num_entities_intersected > 0)
+			//{
+			//	//For now, just select the first entity that is intersected 
+			//	struct Entity* intersected_entity = ray_result.entities_intersected[0];
 
-		/* 		if(editor_state.selected_entity && editor_state.selected_entity != intersected_entity) */
-		/* 		{ */
-		/* 			editor_state.selected_entity->editor_selected = false; */
-		/* 			editor_state.selected_entity = NULL; */
-		/* 		} */
+			//	if(editor_state.selected_entity && editor_state.selected_entity != intersected_entity)
+			//	{
+			//		editor_state.selected_entity->editor_selected = false;
+			//		editor_state.selected_entity = NULL;
+			//	}
 
-		/* 		intersected_entity->editor_selected = true; */
-		/* 		editor_state.selected_entity = intersected_entity; */
-		/* 	} */
-		/* } */
+			//	intersected_entity->editor_selected = true;
+			//	editor_state.selected_entity = intersected_entity;
+			//}
+		}
+		else if(input_mousebutton_state_get(MSB_LEFT, KS_PRESSED))
+		{
+			log_message("mouse pressed");
+		}
     }
 
     total_up_down_rot += turn_up_down;

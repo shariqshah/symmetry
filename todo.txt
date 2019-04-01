@@ -1,4 +1,5 @@
 Todo:
+	- Ray picking for editor
 	- Add warning to genie build script when running on windows and WindowsSdkVersion cannot be found. This happens when the script is not run from vcvarsall command prompt
 	- Improve README and add a screenshot to make the repository ready for making it public 
 	- Refactor all global application state into 'Application_Context' struct. A single global instance of which is available everywhere
@@ -42,7 +43,6 @@ Todo:
 	- Ogg format loading and playback
 	- Sound streaming
 	- Implment missing sound source properties (inner/outer cone, getting sound source data)
-	- Ray picking for editor
 	- Shadow maps
 	- Print processor stats and machine capabilites RAM etc on every run to log.
 	- Do input maps really need to be queried by their string names?
@@ -56,6 +56,9 @@ Todo:
 	- Array based string type comptible with cstring(char*)
 	- ???
 	- Profit!
+
+Improvements:
+	- Better naming semantics for examples, init/deinit for initialization and cleanup and create/destroy when memory is allocated or deallocated
 
 
 Bugs:

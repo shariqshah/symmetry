@@ -75,7 +75,6 @@ solution "Symmetry"
 		configuration {"windows", "vs2017"}
 		    includedirs	{"../include/windows/sdl2/", "../include/common/soloud/", "../include/windows/"}
 		    libdirs {"../lib/windows/sdl2/", "../lib/windows/soloud/", "../lib/windows/ode/"}
-		    links {"SDL2"}
 			
 		configuration "Debug"
 		    links {"soloud_x64_d"}
@@ -98,19 +97,19 @@ solution "Symmetry"
 				"rmdir release\\assets",
 				"mklink /D release\\assets ..\\..\\..\\assets"
 			}
-			links {"ode_double"}
+			links {"ode_double", "SDL2"}
 			
 		configuration {"windows", "Debug", "vs2017"}
 			postbuildcommands 
 			{
-				"copy ..\\..\\lib\\windows\\sdl2\\SDL2.dll debug\\ /Y",
+				"copy ..\\..\\lib\\windows\\sdl2\\SDL2d.dll debug\\ /Y",
 				"copy ..\\..\\lib\\windows\\soloud\\soloud_x64_d.dll debug\\ /Y",
 				"copy ..\\..\\lib\\windows\\ode\\ode_doubled.dll debug\\ /Y",
 				"copy ..\\..\\lib\\windows\\ode\\ode_doubled.pdb debug\\ /Y",
 				"rmdir debug\\assets",
 				"mklink /D debug\\assets ..\\..\\..\\assets"
 			}
-			links {"ode_doubled"}
+			links {"ode_doubled", "SDL2d"}
 
 	newaction {
 	   trigger = "build_addon",

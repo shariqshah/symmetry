@@ -11,6 +11,7 @@ struct Player;
 struct Console;
 struct Gui_State;
 struct Event_Manager;
+struct Editor;
 
 enum Game_Mode
 {
@@ -28,6 +29,7 @@ struct Game_State
 	struct Console*       console;
 	struct Gui_State*     gui;
 	struct Event_Manager* event_manager;
+	struct Editor*        editor;
 };
 
 

@@ -410,6 +410,32 @@ void renderer_draw(struct Renderer* renderer, struct Scene* scene)
 		}
     }
 
+	//Editor related rendering
+	editor_render(game_state->editor, active_camera);
+	if(game_state->editor->selected_entity)
+	{
+		if(game_state->editor->selected_entity->type == ET_STATIC_MESH)
+		{
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			shader_bind(renderer->debug_shader);
+			{
+				static mat4 mvp;
+				shader_set_uniform_vec4(renderer->debug_shader, "debug_color", &game_state->editor->selected_entity_colour);
+				struct Static_Mesh* mesh = (struct Static_Mesh*)game_state->editor->selected_entity;
+				struct Model*     model     = &mesh->model;
+				struct Transform* transform = &mesh->base.transform;
+				int               geometry  = model->geometry_index;
+				mat4_identity(&mvp);
+				mat4_mul(&mvp, &active_camera->view_proj_mat, &transform->trans_mat);
+				shader_set_uniform_mat4(renderer->debug_shader, "mvp", &mvp);
+				geom_render(geometry, GDM_LINES);
+			}
+			shader_unbind();
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+		}
+	}
+
     //Immediate mode geometry render
     im_render(active_camera);
 

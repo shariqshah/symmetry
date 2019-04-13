@@ -26,6 +26,8 @@
 #include "../system/config_vars.h"
 #include "../system/platform.h"
 #include "event.h"
+#include "im_render.h"
+#include "geometry.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,31 +37,19 @@
 #include <limits.h>
 #include <math.h>
 
-struct Editor_State
-{
-    bool           enabled;
-    bool           renderer_settings_window;
-	bool           camera_looking_around;
-    struct Entity* selected_entity;
-    int            top_panel_height;
-    float          camera_turn_speed;
-    float          camera_move_speed;
-    float          camera_sprint_multiplier;
-};
-
 struct Debug_Variable
 {
     struct Variant data;
     char*          name;
 };
 
-static struct Editor_State    editor_state;
+
 static struct Debug_Variable* debug_vars_list = NULL;
 static int*                   empty_indices   = NULL;
 
 static void editor_on_mousebutton(const struct Event* event);
-static void editor_camera_update(float dt);
-static void editor_show_entity_in_list(struct nk_context* context, struct Scene* scene, struct Entity* entity);
+static void editor_camera_update(struct Editor* editor, float dt);
+static void editor_show_entity_in_list(struct Editor* editor, struct nk_context* context, struct Scene* scene, struct Entity* entity);
 static void editor_widget_color_combov3(struct nk_context* context, vec3* color, int width, int height);
 static void editor_widget_color_combov4(struct nk_context* context, vec4* color, int width, int height);
 static bool editor_widget_v3(struct nk_context* context,
@@ -73,24 +63,25 @@ static bool editor_widget_v3(struct nk_context* context,
 			                 float              inc_per_pixel,
 			                 int                row_height);
 
-void editor_init(void)
+void editor_init(struct Editor* editor)
 {
-    editor_state.enabled                  = true;
-    editor_state.renderer_settings_window = false;
-	editor_state.camera_looking_around    = false;
-    editor_state.selected_entity          = NULL;
-    editor_state.top_panel_height         = 20;
-    editor_state.camera_turn_speed        = 50.f;
-    editor_state.camera_move_speed        = 20.f;
-    editor_state.camera_sprint_multiplier = 2.f;
+    editor->enabled                  = true;
+    editor->renderer_settings_window = false;
+	editor->camera_looking_around    = false;
+    editor->selected_entity          = NULL;
+    editor->top_panel_height         = 20;
+    editor->camera_turn_speed        = 50.f;
+    editor->camera_move_speed        = 20.f;
+    editor->camera_sprint_multiplier = 2.f;
+	vec4_fill(&editor->selected_entity_colour, 0.f, 1.f, 0.f, 1.f);
     debug_vars_list                       = array_new(struct Debug_Variable);
     empty_indices                         = array_new(int);
-
+	
 	event_manager_subscribe(game_state_get()->event_manager, EVT_MOUSEBUTTON_PRESSED, &editor_on_mousebutton);
 	event_manager_subscribe(game_state_get()->event_manager, EVT_MOUSEBUTTON_RELEASED, &editor_on_mousebutton);
 }
 
-void editor_init_camera(void)
+void editor_init_camera(struct Editor* editor)
 {
     struct Camera* editor_camera = &game_state_get()->scene->cameras[CAM_EDITOR];
     entity_rename(editor_camera, "Editor_Camera");
@@ -109,25 +100,46 @@ void editor_init_camera(void)
     transform_translate(editor_camera, &cam_pos, TS_WORLD);
 }
 
+void editor_render(struct Editor* editor, struct Camera * active_camera)
+{
+	//Get the selected entity if any, see if it has a mesh and render it in the selected entity colour
+	if(editor->selected_entity)
+	{
+		if(editor->selected_entity->type == ET_STATIC_MESH)
+		{
+			struct Static_Mesh* mesh = (struct Static_Mesh*)editor->selected_entity;
+			struct Geometry* geom = geom_get(mesh->model.geometry_index);
+			vec3 abs_pos;
+			vec3 abs_scale;
+			quat abs_rot;
+			transform_get_absolute_position(mesh, &abs_pos);
+			transform_get_absolute_scale(mesh, &abs_scale);
+			transform_get_absolute_rot(mesh, &abs_rot);
+			im_box(geom->bounding_box.max.x, geom->bounding_box.max.y, geom->bounding_box.max.z, abs_pos, abs_rot, editor->selected_entity_colour, GDM_TRIANGLES);
+
+		}
+	}
+}
+
 int editor_debugvar_slot_create(const char* name, int value_type)
 {
-    int index = -1;
-    struct Debug_Variable* debug_var = NULL;
-    if(array_len(empty_indices) > 0)
-    {
-	index = *array_get_last(empty_indices, int);
-	array_pop(empty_indices);
-	debug_var = &debug_vars_list[index];
-    }
-    else
-    {
-	debug_var = array_grow(debug_vars_list, struct Debug_Variable);
-	index = array_len(debug_vars_list) - 1;
-    }
-    debug_var->name      = str_new(name);
-    debug_var->data.type = value_type;
-	
-    return index;
+	int index = -1;
+	struct Debug_Variable* debug_var = NULL;
+	if(array_len(empty_indices) > 0)
+	{
+		index = *array_get_last(empty_indices, int);
+		array_pop(empty_indices);
+		debug_var = &debug_vars_list[index];
+	}
+	else
+	{
+		debug_var = array_grow(debug_vars_list, struct Debug_Variable);
+		index = array_len(debug_vars_list) - 1;
+	}
+	debug_var->name = str_new(name);
+	debug_var->data.type = value_type;
+
+	return index;
 }
 
 void editor_debugvar_slot_remove(int index)
@@ -182,11 +194,11 @@ void editor_debugvar_slot_set_quat(int index, quat* value)
     variant_assign_quat(&debug_vars_list[index].data, value);
 }
 
-void editor_update(float dt)
+void editor_update(struct Editor* editor, float dt)
 {
-	if(!editor_state.enabled) return;
+	if(!editor->enabled) return;
 
-	editor_camera_update(dt);
+	editor_camera_update(editor, dt);
 
 	struct Game_State* game_state = game_state_get();
 	struct Gui_State*  gui_state  = gui_state_get();
@@ -210,7 +222,7 @@ void editor_update(float dt)
 		context->style.window.fixed_background = default_background;
 
 		/* Top Panel */
-		nk_layout_row_dynamic(context, editor_state.top_panel_height + 10.f, 1);
+		nk_layout_row_dynamic(context, editor->top_panel_height + 10.f, 1);
 		nk_group_begin(context, "Menubar", NK_WINDOW_NO_SCROLLBAR);
 		{
 			static float top_panel_ratios[] = { 0.1f, 0.1f, 0.7f, 0.1f };
@@ -226,9 +238,9 @@ void editor_update(float dt)
 				frames = 0;
 			}
 
-			nk_layout_row(context, NK_DYNAMIC, editor_state.top_panel_height, sizeof(top_panel_ratios) / sizeof(float), top_panel_ratios);
+			nk_layout_row(context, NK_DYNAMIC, editor->top_panel_height, sizeof(top_panel_ratios) / sizeof(float), top_panel_ratios);
 			if(nk_button_label(context, "Render Settings"))
-				editor_state.renderer_settings_window = !editor_state.renderer_settings_window;
+				editor->renderer_settings_window = !editor->renderer_settings_window;
 			if(nk_button_label(context, "Save config"))
 				config_vars_save("config.symtres", DIRT_USER);
 			nk_spacing(context, 1);
@@ -237,7 +249,7 @@ void editor_update(float dt)
 		nk_group_end(context);
 
 		static float main_editor_ratios[] = { 0.2f, 0.6f, 0.2f };
-		nk_layout_row(context, NK_DYNAMIC, win_height - editor_state.top_panel_height, sizeof(main_editor_ratios) / sizeof(float), main_editor_ratios);
+		nk_layout_row(context, NK_DYNAMIC, win_height - editor->top_panel_height, sizeof(main_editor_ratios) / sizeof(float), main_editor_ratios);
 		/* Left */
 		if(nk_group_begin(context, "Editor Left", NK_WINDOW_SCROLL_AUTO_HIDE))
 		{
@@ -249,10 +261,10 @@ void editor_update(float dt)
 				if(nk_group_begin(context, "Entity Name", NK_WINDOW_SCROLL_AUTO_HIDE))
 				{
 
-					for(int i = 0; i < MAX_ENTITIES; i++)      editor_show_entity_in_list(context, scene, &scene->entities[i]);
-					for(int i = 0; i < MAX_CAMERAS; i++)       editor_show_entity_in_list(context, scene, &scene->cameras[i]);
-					for(int i = 0; i < MAX_LIGHTS; i++)        editor_show_entity_in_list(context, scene, &scene->lights[i]);
-					for(int i = 0; i < MAX_STATIC_MESHES; i++) editor_show_entity_in_list(context, scene, &scene->static_meshes[i]);
+					for(int i = 0; i < MAX_ENTITIES; i++)      editor_show_entity_in_list(editor, context, scene, &scene->entities[i]);
+					for(int i = 0; i < MAX_CAMERAS; i++)       editor_show_entity_in_list(editor, context, scene, &scene->cameras[i]);
+					for(int i = 0; i < MAX_LIGHTS; i++)        editor_show_entity_in_list(editor, context, scene, &scene->lights[i]);
+					for(int i = 0; i < MAX_STATIC_MESHES; i++) editor_show_entity_in_list(editor, context, scene, &scene->static_meshes[i]);
 
 					nk_group_end(context);
 				}
@@ -294,10 +306,10 @@ void editor_update(float dt)
 			if(nk_tree_push(context, NK_TREE_TAB, "Inspector", NK_MAXIMIZED))
 			{
 				const int row_height = 18;
-				if(editor_state.selected_entity)
+				if(editor->selected_entity)
 				{
 					struct Scene* scene = game_state_get()->scene;
-					struct Entity* entity = editor_state.selected_entity;
+					struct Entity* entity = editor->selected_entity;
 
 					struct Entity* parent_ent = entity->transform.parent;
 					nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Name", NK_TEXT_ALIGN_LEFT); nk_label(context, entity->name, NK_TEXT_ALIGN_RIGHT);
@@ -477,7 +489,7 @@ void editor_update(float dt)
     context->style.window.padding = default_padding;
 
     /* Render Settings Window */
-	if(editor_state.renderer_settings_window)
+	if(editor->renderer_settings_window)
 	{
 		const int row_height = 25;
 		if(nk_begin_titled(context, "Renderer_Settings_Window", "Renderer Settings", nk_rect(half_width, half_height, 300, 350), window_flags))
@@ -551,7 +563,7 @@ void editor_update(float dt)
 		}
 		else
 		{
-			editor_state.renderer_settings_window = 0;
+			editor->renderer_settings_window = 0;
 		}
 		nk_end(context);
 	}
@@ -561,7 +573,8 @@ void editor_on_mousebutton(const struct Event* event)
 {
 	assert(event->type == EVT_MOUSEBUTTON_PRESSED || event->type == EVT_MOUSEBUTTON_RELEASED);
 
-	if(event->mousebutton.button == MSB_LEFT && event->type == EVT_MOUSEBUTTON_RELEASED && !editor_state.camera_looking_around)
+	struct Editor* editor = game_state_get()->editor;
+	if(event->mousebutton.button == MSB_LEFT && event->type == EVT_MOUSEBUTTON_RELEASED && !editor->camera_looking_around)
 	{
 		log_message("Editor Picking");
 		struct Camera* editor_camera = &game_state_get()->scene->cameras[CAM_EDITOR];
@@ -579,23 +592,23 @@ void editor_on_mousebutton(const struct Event* event)
 			//For now, just select the first entity that is intersected 
 			struct Entity* intersected_entity = ray_result.entities_intersected[0];
 
-			if(editor_state.selected_entity && editor_state.selected_entity != intersected_entity)
+			if(editor->selected_entity && editor->selected_entity != intersected_entity)
 			{
-				editor_state.selected_entity->editor_selected = false;
-				editor_state.selected_entity = NULL;
+				editor->selected_entity->editor_selected = false;
+				editor->selected_entity = NULL;
 			}
 
 			intersected_entity->editor_selected = true;
-			editor_state.selected_entity = intersected_entity;
+			editor->selected_entity = intersected_entity;
 		}
 	}
 }
 
-void editor_camera_update(float dt)
+void editor_camera_update(struct Editor* editor, float dt)
 {
     struct Camera* editor_camera = &game_state_get()->scene->cameras[CAM_EDITOR];
     static float total_up_down_rot = 0.f;
-    float move_speed          = editor_state.camera_move_speed, turn_speed = editor_state.camera_turn_speed;
+    float move_speed          = editor->camera_move_speed, turn_speed = editor->camera_turn_speed;
     float turn_up_down        = 0.f;
     float turn_left_right     = 0.f;
     float max_up_down         = 60.f;
@@ -611,7 +624,7 @@ void editor_camera_update(float dt)
 
     if(input_mousebutton_state_get(MSB_RIGHT, KS_PRESSED))
     {
-		editor_state.camera_looking_around = true;
+		editor->camera_looking_around = true;
 		const float scale = 0.1f;
 		int cursor_lr, cursor_ud;
 		input_mouse_delta_get(&cursor_lr, &cursor_ud);
@@ -629,12 +642,12 @@ void editor_camera_update(float dt)
 		input_mouse_mode_set(MM_NORMAL);
 		turn_up_down *= dt;
 		turn_left_right *= dt;
-		if(editor_state.camera_looking_around)
+		if(editor->camera_looking_around)
 		{
 			int width = 0, height = 0;
 			window_get_drawable_size(game_state_get()->window, &width, &height);
 			platform_mouse_position_set(game_state_get()->window, width / 2, height / 2);
-			editor_state.camera_looking_around = false;
+			editor->camera_looking_around = false;
 		}
     }
 
@@ -662,7 +675,7 @@ void editor_camera_update(float dt)
     }
 
     /* Movement */
-    if(input_map_state_get("Sprint",        KS_PRESSED)) move_speed *= editor_state.camera_sprint_multiplier;
+    if(input_map_state_get("Sprint",        KS_PRESSED)) move_speed *= editor->camera_sprint_multiplier;
     if(input_map_state_get("Move_Forward",  KS_PRESSED)) offset.z   -= move_speed;
     if(input_map_state_get("Move_Backward", KS_PRESSED)) offset.z   += move_speed;
     if(input_map_state_get("Move_Left",     KS_PRESSED)) offset.x   -= move_speed;
@@ -753,7 +766,7 @@ void editor_widget_color_combov4(struct nk_context* context, vec4* color, int wi
 	}
 }
 
-void editor_cleanup(void)
+void editor_cleanup(struct Editor* editor)
 {
 	event_manager_unsubscribe(game_state_get()->event_manager, EVT_MOUSEBUTTON_PRESSED, &editor_on_mousebutton);
 	event_manager_unsubscribe(game_state_get()->event_manager, EVT_MOUSEBUTTON_RELEASED, &editor_on_mousebutton);
@@ -777,26 +790,26 @@ bool editor_widget_v3(struct nk_context* context, vec3* value, const char* name_
 }
 
 
-void editor_show_entity_in_list(struct nk_context* context, struct Scene* scene, struct Entity* entity)
+void editor_show_entity_in_list(struct Editor* editor, struct nk_context* context, struct Scene* scene, struct Entity* entity)
 {
 	if(!entity->active) return;
 
 	nk_layout_row_dynamic(context, 20, 1);
 	if(nk_selectable_label(context, entity->name, NK_TEXT_ALIGN_LEFT, &entity->editor_selected))
 	{
-		if(editor_state.selected_entity && editor_state.selected_entity != entity)
+		if(editor->selected_entity && editor->selected_entity != entity)
 		{
-			editor_state.selected_entity->editor_selected = false;
-			editor_state.selected_entity = NULL;
+			editor->selected_entity->editor_selected = false;
+			editor->selected_entity = NULL;
 		}
-		else if(editor_state.selected_entity && editor_state.selected_entity == entity && !entity->editor_selected)
+		else if(editor->selected_entity && editor->selected_entity == entity && !entity->editor_selected)
 		{
-			editor_state.selected_entity = NULL;
+			editor->selected_entity = NULL;
 		}
 
 		if(entity->editor_selected)
 		{
-			editor_state.selected_entity = entity;
+			editor->selected_entity = entity;
 		}
 	}
 }

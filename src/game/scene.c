@@ -53,7 +53,7 @@ void scene_init(struct Scene* scene)
 	}
 
 	player_init(&scene->player, scene);
-	editor_init_camera();
+	editor_init_camera(game_state_get()->editor);
 
 	scene->active_camera_index = game_state_get()->game_mode == GAME_MODE_GAME ? CAM_GAME : CAM_EDITOR;
 }

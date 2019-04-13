@@ -73,6 +73,7 @@ bool game_init(struct Window* window)
 		game_state->renderer       = calloc(1, sizeof(*game_state->renderer));
 		game_state->scene          = calloc(1, sizeof(*game_state->scene));
 		game_state->console        = calloc(1, sizeof(*game_state->console));
+		game_state->editor         = calloc(1, sizeof(*game_state->editor));
 		game_state->event_manager  = calloc(1, sizeof(*game_state->event_manager));
 
 		log_message_callback_set(game_on_log_message);
@@ -103,7 +104,7 @@ bool game_init(struct Window* window)
 		physics_body_set_moved_callback(entity_rigidbody_on_move);
 		physics_body_set_collision_callback(entity_rigidbody_on_collision);
 
-		editor_init();
+		editor_init(game_state->editor);
 		renderer_init(game_state->renderer);
 		scene_init(game_state->scene);
     }
@@ -292,7 +293,7 @@ void game_scene_setup(void)
     {
 		memset(&suz_name, '\0', MAX_ENTITY_NAME_LEN);
 		snprintf(&suz_name[0], MAX_ENTITY_NAME_LEN, "Suzanne_%d", i);
-		struct Static_Mesh* suzanne = scene_static_mesh_create(game_state->scene, suz_name, NULL, "sphere.symbres", MAT_BLINN);
+		struct Static_Mesh* suzanne = scene_static_mesh_create(game_state->scene, suz_name, NULL, "suzanne.symbres", MAT_BLINN);
 		suzanne->model.material_params[MMP_DIFFUSE_TEX].val_int = texture_create_from_file("white.tga", TU_DIFFUSE);
 		suzanne->model.material_params[MMP_DIFFUSE].val_float = 0.5f;
 		suzanne->model.material_params[MMP_SPECULAR].val_float = 1.f;
@@ -536,7 +537,7 @@ void game_update(float dt, bool* window_should_close)
     }
     else if(game_state->game_mode == GAME_MODE_EDITOR)
     {
-		editor_update(dt);
+		editor_update(game_state->editor, dt);
     }
 }
 
@@ -1876,7 +1877,7 @@ void game_cleanup(void)
     {
 		if(game_state->is_initialized)
 		{
-			editor_cleanup();
+			editor_cleanup(game_state->editor);
 			scene_destroy(game_state->scene);
 			input_cleanup();
 			renderer_cleanup(game_state->renderer);

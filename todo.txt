@@ -68,6 +68,7 @@ Bugs:
 	- Fix light rotation/direction bugs
 	- Fix lights type not being correctly saved/loaded from file
 	- Fix culling
+	- Fix bounding boxes not aligning in editor
 
 Done:
 	* Input
@@ -200,3 +201,4 @@ Done:
 	* Fixed mouse button press/release behaviour by using event callbacks for editor mouse picking
 	* Ray picking for editor
 	* Highlight entity selected in editor in a specific color
+	* Deselect selected entity in editor when nothing is hit on click and an entity is already selected

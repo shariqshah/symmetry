@@ -601,6 +601,15 @@ void editor_on_mousebutton(const struct Event* event)
 			intersected_entity->editor_selected = true;
 			editor->selected_entity = intersected_entity;
 		}
+		else
+		{
+			//Deselect the currently selected entity if nothing was found
+			if(editor->selected_entity)
+			{
+				editor->selected_entity->editor_selected = false;
+				editor->selected_entity = NULL;
+			}
+		}
 	}
 }
 

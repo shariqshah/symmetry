@@ -74,6 +74,7 @@ bool game_init(struct Window* window)
 		game_state->scene          = calloc(1, sizeof(*game_state->scene));
 		game_state->console        = calloc(1, sizeof(*game_state->console));
 		game_state->editor         = calloc(1, sizeof(*game_state->editor));
+		game_state->gui            = calloc(1, sizeof(*game_state->gui));
 		game_state->event_manager  = calloc(1, sizeof(*game_state->event_manager));
 
 		log_message_callback_set(game_on_log_message);
@@ -96,7 +97,7 @@ bool game_init(struct Window* window)
 		shader_init();
 		texture_init();
 		framebuffer_init();
-		gui_init();
+		gui_init(game_state->gui);
 		console_init(game_state->console);
 		geom_init();
 		physics_init();
@@ -493,10 +494,10 @@ bool game_run(void)
 		last_time = curr_time;
 		if(delta_time > MAX_FRAME_TIME) delta_time = (1.f / 60.f); /* To deal with resuming from breakpoint we artificially set delta time */
 
-		gui_input_begin();
+		gui_input_begin(game_state->gui);
         //platform_poll_events(&should_window_close);
 		event_manager_poll_events(game_state->event_manager, &should_window_close);
-		gui_input_end();
+		gui_input_end(game_state->gui);
 		
 		game_update(delta_time, &should_window_close);
 		game_post_update(delta_time);
@@ -529,7 +530,7 @@ void game_update(float dt, bool* window_should_close)
 	
     //game_debug(dt);
     //game_debug_gui(dt);
-    console_update(game_state->console, gui_state_get(), dt);
+    console_update(game_state->console, game_state->gui, dt);
     scene_update(game_state->scene, dt);
     if(game_state->game_mode == GAME_MODE_GAME)
     {
@@ -550,7 +551,7 @@ void game_post_update(float dt)
 
 void game_debug_gui(float dt)
 {
-    struct Gui_State* gui_state = gui_state_get();
+    struct Gui* gui_state = gui_state_get();
     struct nk_context* ctx = &gui_state->context;
 	
 	/* window flags */
@@ -1881,7 +1882,7 @@ void game_cleanup(void)
 			scene_destroy(game_state->scene);
 			input_cleanup();
 			renderer_cleanup(game_state->renderer);
-			gui_cleanup();
+			gui_cleanup(game_state->gui);
 			console_destroy(game_state->console);
             geom_cleanup();
 			framebuffer_cleanup();
@@ -1889,10 +1890,12 @@ void game_cleanup(void)
 			shader_cleanup();
 			event_manager_cleanup(game_state->event_manager);
 
+			free(game_state->editor);
 			free(game_state->console);
 			free(game_state->scene);
 			free(game_state->renderer);
 			free(game_state->event_manager);
+			free(game_state->gui);
 		}
 		free(game_state);
 		game_state = NULL;

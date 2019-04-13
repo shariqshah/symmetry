@@ -42,7 +42,7 @@ void console_toggle(struct Console* console)
     if(console->visible) console->scroll_to_bottom = true;
 }
 
-void console_update(struct Console* console, struct Gui_State* gui_state, float dt)
+void console_update(struct Console* console, struct Gui* gui_state, float dt)
 {
     if(!console->visible) return;
 

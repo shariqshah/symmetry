@@ -9,7 +9,7 @@ struct Scene;
 struct Entity;
 struct Player;
 struct Console;
-struct Gui_State;
+struct Gui;
 struct Event_Manager;
 struct Editor;
 
@@ -27,7 +27,7 @@ struct Game_State
 	struct Renderer*      renderer;
 	struct Scene*         scene;
 	struct Console*       console;
-	struct Gui_State*     gui;
+	struct Gui*     gui;
 	struct Event_Manager* event_manager;
 	struct Editor*        editor;
 };

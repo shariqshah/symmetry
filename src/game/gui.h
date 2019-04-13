@@ -14,7 +14,7 @@
 #include "gl_load.h"
 #include "../common/num_types.h"
 
-struct Gui_State
+struct Gui
 {
     struct nk_buffer            cmds;
     struct nk_draw_null_texture null;
@@ -42,13 +42,12 @@ enum Gui_Theme
 	GT_DARK
 };
 
-bool  			  gui_init(void);
-void 			  gui_cleanup(void);
-void 			  gui_render(enum nk_anti_aliasing AA);
-void              gui_input_begin(void);
-void              gui_input_end(void);
-void              gui_font_set(const char* font_name, float font_height);
-void              gui_theme_set(enum Gui_Theme theme);
-struct Gui_State* gui_state_get(void);
+bool gui_init(struct Gui* gui);
+void gui_cleanup(struct Gui* gui);
+void gui_render(struct Gui* gui, enum nk_anti_aliasing AA);
+void gui_input_begin(struct Gui* gui);
+void gui_input_end(struct Gui* gui);
+void gui_font_set(struct Gui* gui, const char* font_name, float font_height);
+void gui_theme_set(struct Gui* gui, enum Gui_Theme theme);
 	
 #endif

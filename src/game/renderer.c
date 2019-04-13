@@ -428,11 +428,20 @@ void renderer_draw(struct Renderer* renderer, struct Scene* scene)
 				mat4_identity(&mvp);
 				mat4_mul(&mvp, &active_camera->view_proj_mat, &transform->trans_mat);
 				shader_set_uniform_mat4(renderer->debug_shader, "mvp", &mvp);
-				geom_render(geometry, GDM_LINES);
+				geom_render(geometry, GDM_TRIANGLES);
 			}
 			shader_unbind();
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+		}
+		else
+		{
+			//For now just draw a placeholder sphere just to visually denote that the entity is selected
+			vec3 abs_pos;
+			quat abs_rot;
+			transform_get_absolute_position(game_state->editor->selected_entity, &abs_pos);
+			transform_get_absolute_rot(game_state->editor->selected_entity, &abs_rot);
+			im_sphere(1.f, abs_pos, abs_rot, game_state->editor->selected_entity_colour, GDM_TRIANGLES);
 		}
 	}
 
@@ -457,7 +466,7 @@ void renderer_draw(struct Renderer* renderer, struct Scene* scene)
     shader_unbind();
 
     /* Render UI */
-    gui_render(NK_ANTI_ALIASING_ON);
+    gui_render(game_state->gui, NK_ANTI_ALIASING_ON);
 }
 
 void renderer_cleanup(struct Renderer* renderer)

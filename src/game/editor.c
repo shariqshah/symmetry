@@ -28,6 +28,7 @@
 #include "event.h"
 #include "im_render.h"
 #include "geometry.h"
+#include "gui.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -69,7 +70,7 @@ void editor_init(struct Editor* editor)
     editor->renderer_settings_window = false;
 	editor->camera_looking_around    = false;
     editor->selected_entity          = NULL;
-    editor->top_panel_height         = 20;
+    editor->top_panel_height         = 30;
     editor->camera_turn_speed        = 50.f;
     editor->camera_move_speed        = 20.f;
     editor->camera_sprint_multiplier = 2.f;
@@ -102,23 +103,24 @@ void editor_init_camera(struct Editor* editor)
 
 void editor_render(struct Editor* editor, struct Camera * active_camera)
 {
+	//Disabling this for now until better handling of bounding box and scale of the entity is implemented
 	//Get the selected entity if any, see if it has a mesh and render it in the selected entity colour
-	if(editor->selected_entity)
-	{
-		if(editor->selected_entity->type == ET_STATIC_MESH)
-		{
-			struct Static_Mesh* mesh = (struct Static_Mesh*)editor->selected_entity;
-			struct Geometry* geom = geom_get(mesh->model.geometry_index);
-			vec3 abs_pos;
-			vec3 abs_scale;
-			quat abs_rot;
-			transform_get_absolute_position(mesh, &abs_pos);
-			transform_get_absolute_scale(mesh, &abs_scale);
-			transform_get_absolute_rot(mesh, &abs_rot);
-			im_box(geom->bounding_box.max.x, geom->bounding_box.max.y, geom->bounding_box.max.z, abs_pos, abs_rot, editor->selected_entity_colour, GDM_TRIANGLES);
+	// if(editor->selected_entity)
+	// {
+	// 	if(editor->selected_entity->type == ET_STATIC_MESH)
+	// 	{
+	// 		struct Static_Mesh* mesh = (struct Static_Mesh*)editor->selected_entity;
+	// 		struct Geometry* geom = geom_get(mesh->model.geometry_index);
+	// 		vec3 abs_pos;
+	// 		vec3 abs_scale;
+	// 		quat abs_rot;
+	// 		transform_get_absolute_position(mesh, &abs_pos);
+	// 		transform_get_absolute_scale(mesh, &abs_scale);
+	// 		transform_get_absolute_rot(mesh, &abs_rot);
+	// 		im_box(geom->bounding_box.max.x, geom->bounding_box.max.y, geom->bounding_box.max.z, abs_pos, abs_rot, editor->selected_entity_colour, GDM_TRIANGLES);
 
-		}
-	}
+	// 	}
+	// }
 }
 
 int editor_debugvar_slot_create(const char* name, int value_type)
@@ -201,8 +203,7 @@ void editor_update(struct Editor* editor, float dt)
 	editor_camera_update(editor, dt);
 
 	struct Game_State* game_state = game_state_get();
-	struct Gui_State*  gui_state  = gui_state_get();
-	struct nk_context* context    = &gui_state->context;
+	struct nk_context* context    = &game_state->gui->context;
 	int win_width = 0, win_height = 0;
 	window_get_drawable_size(game_state->window, &win_width, &win_height);
 	int half_width = win_width / 2, half_height = win_height / 2;
@@ -212,17 +213,11 @@ void editor_update(struct Editor* editor, float dt)
 		                      NK_WINDOW_SCROLL_AUTO_HIDE |
 		                      NK_WINDOW_SCALABLE;
 
-	/* Main enacapsulating window */
-	struct nk_style_item default_background = context->style.window.fixed_background;
-	struct nk_vec2 default_padding = context->style.window.padding;
-	context->style.window.padding = nk_vec2(0.f, 0.f);
-	context->style.window.fixed_background = nk_style_item_hide();
-	if(nk_begin(context, "Editor", nk_recti(0, 0, win_width, win_height), NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BACKGROUND))
+   
+	/* Top Panel */
+	if(nk_begin(context, "Top Panel", nk_recti(0, 0, win_width, editor->top_panel_height), NK_WINDOW_NO_SCROLLBAR))
 	{
-		context->style.window.fixed_background = default_background;
-
-		/* Top Panel */
-		nk_layout_row_dynamic(context, editor->top_panel_height + 10.f, 1);
+		nk_layout_row_dynamic(context, editor->top_panel_height, 1);
 		nk_group_begin(context, "Menubar", NK_WINDOW_NO_SCROLLBAR);
 		{
 			static float top_panel_ratios[] = { 0.1f, 0.1f, 0.7f, 0.1f };
@@ -247,246 +242,252 @@ void editor_update(struct Editor* editor, float dt)
 			nk_labelf(context, NK_TEXT_ALIGN_RIGHT | NK_TEXT_ALIGN_MIDDLE, "FPS : %.d", fps);
 		}
 		nk_group_end(context);
+	}
+	nk_end(context);
 
-		static float main_editor_ratios[] = { 0.2f, 0.6f, 0.2f };
-		nk_layout_row(context, NK_DYNAMIC, win_height - editor->top_panel_height, sizeof(main_editor_ratios) / sizeof(float), main_editor_ratios);
-		/* Left */
-		if(nk_group_begin(context, "Editor Left", NK_WINDOW_SCROLL_AUTO_HIDE))
+
+	/* Left */
+	if(nk_begin(context, "Editor Left", nk_recti(0, editor->top_panel_height, 300, 700), window_flags))
+	{
+		/* Entities List */
+		struct Scene* scene = game_state_get()->scene;
+		if(nk_tree_push(context, NK_TREE_TAB, "Entities", NK_MAXIMIZED))
 		{
-			/* Entities List */
-			struct Scene* scene = game_state_get()->scene;
-			if(nk_tree_push(context, NK_TREE_TAB, "Entities", NK_MAXIMIZED))
+			nk_layout_row_dynamic(context, 250, 1);
+			if(nk_group_begin(context, "Entity Name", NK_WINDOW_SCROLL_AUTO_HIDE))
 			{
-				nk_layout_row_dynamic(context, 250, 1);
-				if(nk_group_begin(context, "Entity Name", NK_WINDOW_SCROLL_AUTO_HIDE))
-				{
 
-					for(int i = 0; i < MAX_ENTITIES; i++)      editor_show_entity_in_list(editor, context, scene, &scene->entities[i]);
-					for(int i = 0; i < MAX_CAMERAS; i++)       editor_show_entity_in_list(editor, context, scene, &scene->cameras[i]);
-					for(int i = 0; i < MAX_LIGHTS; i++)        editor_show_entity_in_list(editor, context, scene, &scene->lights[i]);
-					for(int i = 0; i < MAX_STATIC_MESHES; i++) editor_show_entity_in_list(editor, context, scene, &scene->static_meshes[i]);
+				for(int i = 0; i < MAX_ENTITIES; i++)      editor_show_entity_in_list(editor, context, scene, &scene->entities[i]);
+				for(int i = 0; i < MAX_CAMERAS; i++)       editor_show_entity_in_list(editor, context, scene, &scene->cameras[i]);
+				for(int i = 0; i < MAX_LIGHTS; i++)        editor_show_entity_in_list(editor, context, scene, &scene->lights[i]);
+				for(int i = 0; i < MAX_STATIC_MESHES; i++) editor_show_entity_in_list(editor, context, scene, &scene->static_meshes[i]);
 
-					nk_group_end(context);
-				}
-				nk_tree_pop(context);
+				nk_group_end(context);
 			}
-
-			/* Debug Variables */
-			if(nk_tree_push(context, NK_TREE_TAB, "Debug Variables", NK_MAXIMIZED))
-			{
-				static char variant_str[MAX_VARIANT_STR_LEN] = { '\0' };
-				nk_layout_row_dynamic(context, 250, 1);
-				if(nk_group_begin(context, "Name", NK_WINDOW_SCROLL_AUTO_HIDE))
-				{
-					for(int i = 0; i < array_len(debug_vars_list); i++)
-					{
-						struct Debug_Variable* debug_var = &debug_vars_list[i];
-						if(debug_var->data.type == VT_NONE) continue;
-						nk_layout_row_dynamic(context, 20, 2);
-						nk_label(context, debug_var->name, NK_TEXT_ALIGN_LEFT);
-						variant_to_str(&debug_var->data, variant_str, MAX_VARIANT_STR_LEN);
-						nk_label(context, variant_str, NK_TEXT_ALIGN_RIGHT);
-						memset(variant_str, '\0', MAX_VARIANT_STR_LEN);
-					}
-					nk_group_end(context);
-				}
-				nk_tree_pop(context);
-			}
-
-			nk_group_end(context);
+			nk_tree_pop(context);
 		}
 
-		/* Empty Space in the center */
-		nk_spacing(context, 1);
-
-		/* Right */
-		if(nk_group_begin(context, "Editor Right", NK_WINDOW_NO_SCROLLBAR))
+		/* Debug Variables */
+		if(nk_tree_push(context, NK_TREE_TAB, "Debug Variables", NK_MAXIMIZED))
 		{
-			/* Entity Inspector */
-			if(nk_tree_push(context, NK_TREE_TAB, "Inspector", NK_MAXIMIZED))
+			static char variant_str[MAX_VARIANT_STR_LEN] = { '\0' };
+			nk_layout_row_dynamic(context, 250, 1);
+			if(nk_group_begin(context, "Name", NK_WINDOW_SCROLL_AUTO_HIDE))
 			{
-				const int row_height = 18;
-				if(editor->selected_entity)
+				for(int i = 0; i < array_len(debug_vars_list); i++)
 				{
-					struct Scene* scene = game_state_get()->scene;
-					struct Entity* entity = editor->selected_entity;
+					struct Debug_Variable* debug_var = &debug_vars_list[i];
+					if(debug_var->data.type == VT_NONE) continue;
+					nk_layout_row_dynamic(context, 20, 2);
+					nk_label(context, debug_var->name, NK_TEXT_ALIGN_LEFT);
+					variant_to_str(&debug_var->data, variant_str, MAX_VARIANT_STR_LEN);
+					nk_label(context, variant_str, NK_TEXT_ALIGN_RIGHT);
+					memset(variant_str, '\0', MAX_VARIANT_STR_LEN);
+				}
+				nk_group_end(context);
+			}
+			nk_tree_pop(context);
+		}
+	}
+	nk_end(context);
 
-					struct Entity* parent_ent = entity->transform.parent;
-					nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Name", NK_TEXT_ALIGN_LEFT); nk_label(context, entity->name, NK_TEXT_ALIGN_RIGHT);
-					nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "ID", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%d", entity->id);
-					nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Selected", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%s", entity->editor_selected ? "True" : "False");
-					nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Entity Type", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%s", entity_type_name_get(entity));
-					nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Parent Name", NK_TEXT_ALIGN_LEFT); nk_label(context, parent_ent ? parent_ent->name : "NONE", NK_TEXT_ALIGN_RIGHT);
+	/* Right */
+	if(nk_begin(context, "Editor Right", nk_recti(win_width - 300, editor->top_panel_height, 400, 700), window_flags))
+	{
+		/* Entity Inspector */
+		if(nk_tree_push(context, NK_TREE_TAB, "Inspector", NK_MAXIMIZED))
+		{
+			const int row_height = 18;
+			if(editor->selected_entity)
+			{
+				struct Scene* scene = game_state_get()->scene;
+				struct Entity* entity = editor->selected_entity;
 
-					/* Transform */
+				struct Entity* parent_ent = entity->transform.parent;
+				nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Name", NK_TEXT_ALIGN_LEFT); nk_label(context, entity->name, NK_TEXT_ALIGN_RIGHT);
+				nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "ID", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%d", entity->id);
+				nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Selected", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%s", entity->editor_selected ? "True" : "False");
+				nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Entity Type", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%s", entity_type_name_get(entity));
+				nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Parent Name", NK_TEXT_ALIGN_LEFT); nk_label(context, parent_ent ? parent_ent->name : "NONE", NK_TEXT_ALIGN_RIGHT);
+
+				/* Transform */
+				{
+					nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Position", NK_TEXT_ALIGN_CENTERED);
+					vec3 abs_pos = { 0.f, 0.f, 0.f };
+					transform_get_absolute_position(entity, &abs_pos);
+					if(editor_widget_v3(context, &abs_pos, "#X", "#Y", "#Z", -FLT_MAX, FLT_MAX, 5.f, 1.f, row_height)) transform_set_position(entity, &abs_pos);
+
+					nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Rotation", NK_TEXT_ALIGN_CENTERED);
+					quat abs_rot = { 0.f, 0.f, 0.f, 1.f };
+					transform_get_absolute_rot(entity, &abs_rot);
+					vec3 rot_angles = { 0.f, 0.f, 0.f };
+					rot_angles.x = TO_DEGREES(quat_get_pitch(&abs_rot));
+					rot_angles.y = TO_DEGREES(quat_get_yaw(&abs_rot));
+					rot_angles.z = TO_DEGREES(quat_get_roll(&abs_rot));
+					vec3 curr_rot = { rot_angles.x, rot_angles.y, rot_angles.z };
+
+					nk_layout_row_dynamic(context, row_height, 1); nk_property_float(context, "#X", -FLT_MAX, &curr_rot.x, FLT_MAX, 5.f, 1.f);
+					nk_layout_row_dynamic(context, row_height, 1); nk_property_float(context, "#Y", -FLT_MAX, &curr_rot.y, FLT_MAX, 5.f, 1.f);
+					nk_layout_row_dynamic(context, row_height, 1); nk_property_float(context, "#Z", -FLT_MAX, &curr_rot.z, FLT_MAX, 5.f, 1.f);
+
+					vec3 delta = { 0.f, 0.f, 0.f };
+					vec3_sub(&delta, &rot_angles, &curr_rot);
+
+					vec3 AXIS_X = { 1.f, 0.f, 0.f };
+					vec3 AXIS_Y = { 0.f, 1.f, 0.f };
+					vec3 AXIS_Z = { 0.f, 0.f, 1.f };
+
+					const float epsilon = 0.0001f;
+					if(fabsf(delta.x) > epsilon) transform_rotate(entity, &AXIS_X, delta.x, TS_WORLD);
+					if(fabsf(delta.y) > epsilon) transform_rotate(entity, &AXIS_Y, delta.y, TS_WORLD);
+					if(fabsf(delta.z) > epsilon) transform_rotate(entity, &AXIS_Z, delta.z, TS_WORLD);
+
+					nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Scale", NK_TEXT_ALIGN_CENTERED);
+					vec3 abs_scale = { 0.f, 0.f, 0.f };
+					transform_get_absolute_scale(entity, &abs_scale);
+					if(editor_widget_v3(context, &abs_scale, "#X", "#Y", "#Z", 0.1f, FLT_MAX, 1.f, 0.1f, row_height))
 					{
-						nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Position", NK_TEXT_ALIGN_CENTERED);
-						vec3 abs_pos = { 0.f, 0.f, 0.f };
-						transform_get_absolute_position(entity, &abs_pos);
-						if(editor_widget_v3(context, &abs_pos, "#X", "#Y", "#Z", -FLT_MAX, FLT_MAX, 5.f, 1.f, row_height)) transform_set_position(entity, &abs_pos);
-
-						nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Rotation", NK_TEXT_ALIGN_CENTERED);
-						quat abs_rot = { 0.f, 0.f, 0.f, 1.f };
-						transform_get_absolute_rot(entity, &abs_rot);
-						vec3 rot_angles = { 0.f, 0.f, 0.f };
-						rot_angles.x = TO_DEGREES(quat_get_pitch(&abs_rot));
-						rot_angles.y = TO_DEGREES(quat_get_yaw(&abs_rot));
-						rot_angles.z = TO_DEGREES(quat_get_roll(&abs_rot));
-						vec3 curr_rot = { rot_angles.x, rot_angles.y, rot_angles.z };
-
-						nk_layout_row_dynamic(context, row_height, 1); nk_property_float(context, "#X", -FLT_MAX, &curr_rot.x, FLT_MAX, 5.f, 1.f);
-						nk_layout_row_dynamic(context, row_height, 1); nk_property_float(context, "#Y", -FLT_MAX, &curr_rot.y, FLT_MAX, 5.f, 1.f);
-						nk_layout_row_dynamic(context, row_height, 1); nk_property_float(context, "#Z", -FLT_MAX, &curr_rot.z, FLT_MAX, 5.f, 1.f);
-
-						vec3 delta = { 0.f, 0.f, 0.f };
-						vec3_sub(&delta, &rot_angles, &curr_rot);
-
-						vec3 AXIS_X = { 1.f, 0.f, 0.f };
-						vec3 AXIS_Y = { 0.f, 1.f, 0.f };
-						vec3 AXIS_Z = { 0.f, 0.f, 1.f };
-
-						const float epsilon = 0.0001f;
-						if(fabsf(delta.x) > epsilon) transform_rotate(entity, &AXIS_X, delta.x, TS_WORLD);
-						if(fabsf(delta.y) > epsilon) transform_rotate(entity, &AXIS_Y, delta.y, TS_WORLD);
-						if(fabsf(delta.z) > epsilon) transform_rotate(entity, &AXIS_Z, delta.z, TS_WORLD);
-
-						nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Scale", NK_TEXT_ALIGN_CENTERED);
-						vec3 abs_scale = { 0.f, 0.f, 0.f };
-						transform_get_absolute_scale(entity, &abs_scale);
-						if(editor_widget_v3(context, &abs_scale, "#X", "#Y", "#Z", 0.1f, FLT_MAX, 1.f, 0.1f, row_height))
-						{
-							entity->transform.scale = abs_scale;
-							transform_update_transmat(entity);
-						}
+						entity->transform.scale = abs_scale;
+						transform_update_transmat(entity);
 					}
+				}
 
-					/* Light */
-					if(entity->type == ET_LIGHT)
+				/* Light */
+				if(entity->type == ET_LIGHT)
+				{
+					if(nk_tree_push(context, NK_TREE_TAB, "Light", NK_MAXIMIZED))
 					{
-						if(nk_tree_push(context, NK_TREE_TAB, "Light", NK_MAXIMIZED))
+						struct Light* light = (struct Light*)entity;
+						if(light->type > LT_POINT)
 						{
-							struct Light* light = (struct Light*)entity;
-							if(light->type > LT_POINT)
-							{
-								nk_layout_row_dynamic(context, row_height, 1);
-								nk_label(context, "Invalid light type!", NK_TEXT_ALIGN_CENTERED);
-							}
-							else
-							{
-								static const char* light_types[] = { "Spot", "Directional", "Point" };
-								float combo_width = nk_widget_width(context), combo_height = row_height * (LT_MAX);
-
-								nk_layout_row_dynamic(context, row_height, 2);
-								nk_label(context, "Light Type", NK_TEXT_ALIGN_LEFT);
-								nk_combobox(context, light_types, LT_MAX - 1, &light->type, row_height, nk_vec2(combo_width, combo_height));
-
-								nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Light Color", NK_TEXT_ALIGN_CENTERED);
-								nk_layout_row_dynamic(context, row_height, 1);
-								editor_widget_color_combov3(context, &light->color, 200, 300);
-
-								nk_layout_row_dynamic(context, row_height, 1);
-								nk_property_float(context, "Intensity", 0.f, &light->intensity, 100.f, 0.1f, 0.05f);
-
-								if(light->type != LT_DIR)
-								{
-									nk_layout_row_dynamic(context, row_height, 1);
-									light->outer_angle = TO_RADIANS(nk_propertyf(context, "Outer Angle", TO_DEGREES(light->inner_angle), TO_DEGREES(light->outer_angle), 360, 1.f, 0.5f));
-
-									nk_layout_row_dynamic(context, row_height, 1);
-									light->inner_angle = TO_RADIANS(nk_propertyf(context, "Inner Angle", 1.f, TO_DEGREES(light->inner_angle), TO_DEGREES(light->outer_angle), 1.f, 0.5f));
-
-									nk_layout_row_dynamic(context, row_height, 1);
-									nk_property_int(context, "Radius", 1, &light->radius, INT_MAX, 1, 1);
-
-									nk_layout_row_dynamic(context, row_height, 1);
-									nk_property_float(context, "Falloff", 0.f, &light->falloff, 100.f, 0.1f, 0.05f);
-								}
-							}
-							nk_tree_pop(context);
+							nk_layout_row_dynamic(context, row_height, 1);
+							nk_label(context, "Invalid light type!", NK_TEXT_ALIGN_CENTERED);
 						}
-					}
-
-					/* Camera */
-					if(entity->type == ET_CAMERA)
-					{
-						if(nk_tree_push(context, NK_TREE_TAB, "Camera", NK_MAXIMIZED))
+						else
 						{
-							bool update = false;
-							struct Camera* camera = (struct Camera*)entity;
+							static const char* light_types[] = { "Spot", "Directional", "Point" };
+							float combo_width = nk_widget_width(context), combo_height = row_height * (LT_MAX);
 
 							nk_layout_row_dynamic(context, row_height, 2);
-							nk_label(context, "Orthographic", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
-							bool ortho = nk_checkbox_label(context, "", &camera->ortho);
-							if(ortho != camera->ortho)
-							{
-								update = true;
-							}
+							nk_label(context, "Light Type", NK_TEXT_ALIGN_LEFT);
+							nk_combobox(context, light_types, LT_MAX - 1, &light->type, row_height, nk_vec2(combo_width, combo_height));
 
+							nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Light Color", NK_TEXT_ALIGN_CENTERED);
+							nk_layout_row_dynamic(context, row_height, 1);
+							editor_widget_color_combov3(context, &light->color, 200, 300);
 
-							if(!camera->ortho)
+							nk_layout_row_dynamic(context, row_height, 1);
+							nk_property_float(context, "Intensity", 0.f, &light->intensity, 100.f, 0.1f, 0.05f);
+
+							if(light->type != LT_DIR)
 							{
 								nk_layout_row_dynamic(context, row_height, 1);
-								float new_fov = nk_propertyf(context, "Fov", 30.f, camera->fov, 90.f, 0.1f, 1.f);
-								if(new_fov != camera->fov)
-								{
-									camera->fov = new_fov;
-									update = true;
-								}
+								light->outer_angle = TO_RADIANS(nk_propertyf(context, "Outer Angle", TO_DEGREES(light->inner_angle), TO_DEGREES(light->outer_angle), 360, 1.f, 0.5f));
 
-								nk_layout_row_dynamic(context, row_height, 2);
-								nk_label(context, "Aspect Ratio", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%.5f", camera->aspect_ratio);
+								nk_layout_row_dynamic(context, row_height, 1);
+								light->inner_angle = TO_RADIANS(nk_propertyf(context, "Inner Angle", 1.f, TO_DEGREES(light->inner_angle), TO_DEGREES(light->outer_angle), 1.f, 0.5f));
+
+								nk_layout_row_dynamic(context, row_height, 1);
+								nk_property_int(context, "Radius", 1, &light->radius, INT_MAX, 1, 1);
+
+								nk_layout_row_dynamic(context, row_height, 1);
+								nk_property_float(context, "Falloff", 0.f, &light->falloff, 100.f, 0.1f, 0.05f);
 							}
-
-							nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Clear Color", NK_TEXT_ALIGN_CENTERED);
-							nk_layout_row_dynamic(context, row_height, 1);
-							editor_widget_color_combov4(context, &camera->clear_color, 200, 300);
-
-							nk_layout_row_dynamic(context, row_height, 1);
-							float new_zoom = nk_propertyf(context, "Zoom", 1.f, camera->zoom, FLT_MAX, 0.1f, 1.f);
-							if(new_zoom != camera->zoom)
-							{
-								camera->zoom = new_zoom;
-								update = true;
-							}
-
-							nk_layout_row_dynamic(context, row_height, 1);
-							float new_near_z = nk_propertyf(context, "NearZ", -FLT_MAX, camera->nearz, camera->farz, 0.1f, 1.f);
-							if(new_near_z != camera->nearz)
-							{
-								camera->nearz = new_near_z;
-								update = true;
-							}
-
-							nk_layout_row_dynamic(context, row_height, 1);
-							float new_far_z = nk_propertyf(context, "FarZ", camera->nearz, camera->farz, FLT_MAX, 0.1f, 2.f);
-							if(new_far_z != camera->farz)
-							{
-								camera->farz = new_far_z;
-								update = true;
-							}
-
-							if(update)
-							{
-								camera_update_view(entity);
-								camera_update_proj(entity);
-							}
-
-							nk_tree_pop(context);
 						}
+						nk_tree_pop(context);
 					}
 				}
-				else
-				{
-					nk_label(context, "No Entity Selected", NK_TEXT_ALIGN_CENTERED);
-				}
-				nk_tree_pop(context);
-			}
 
-			nk_group_end(context);
+				/* Camera */
+				if(entity->type == ET_CAMERA)
+				{
+					if(nk_tree_push(context, NK_TREE_TAB, "Camera", NK_MAXIMIZED))
+					{
+						bool update = false;
+						struct Camera* camera = (struct Camera*)entity;
+
+						nk_layout_row_dynamic(context, row_height, 2);
+						nk_label(context, "Orthographic", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+						bool ortho = nk_checkbox_label(context, "", &camera->ortho);
+						if(ortho != camera->ortho)
+						{
+							update = true;
+						}
+
+
+						if(!camera->ortho)
+						{
+							nk_layout_row_dynamic(context, row_height, 1);
+							float new_fov = nk_propertyf(context, "Fov", 30.f, camera->fov, 90.f, 0.1f, 1.f);
+							if(new_fov != camera->fov)
+							{
+								camera->fov = new_fov;
+								update = true;
+							}
+
+							nk_layout_row_dynamic(context, row_height, 2);
+							nk_label(context, "Aspect Ratio", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%.5f", camera->aspect_ratio);
+						}
+
+						nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Clear Color", NK_TEXT_ALIGN_CENTERED);
+						nk_layout_row_dynamic(context, row_height, 1);
+						editor_widget_color_combov4(context, &camera->clear_color, 200, 300);
+
+						nk_layout_row_dynamic(context, row_height, 1);
+						float new_zoom = nk_propertyf(context, "Zoom", 1.f, camera->zoom, FLT_MAX, 0.1f, 1.f);
+						if(new_zoom != camera->zoom)
+						{
+							camera->zoom = new_zoom;
+							update = true;
+						}
+
+						nk_layout_row_dynamic(context, row_height, 1);
+						float new_near_z = nk_propertyf(context, "NearZ", -FLT_MAX, camera->nearz, camera->farz, 0.1f, 1.f);
+						if(new_near_z != camera->nearz)
+						{
+							camera->nearz = new_near_z;
+							update = true;
+						}
+
+						nk_layout_row_dynamic(context, row_height, 1);
+						float new_far_z = nk_propertyf(context, "FarZ", camera->nearz, camera->farz, FLT_MAX, 0.1f, 2.f);
+						if(new_far_z != camera->farz)
+						{
+							camera->farz = new_far_z;
+							update = true;
+						}
+
+						if(update)
+						{
+							camera_update_view(entity);
+							camera_update_proj(entity);
+						}
+						nk_tree_pop(context);
+					}
+				}
+			}
+			else
+			{
+				nk_label(context, "No Entity Selected", NK_TEXT_ALIGN_CENTERED);
+			}
+			nk_tree_pop(context);
 		}
-    }
-    nk_end(context);
-    context->style.window.padding = default_padding;
+	}
+	nk_end(context);
+	
+	// if(nk_begin(context, "Editor", nk_recti(0, 0, win_width, win_height), NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BACKGROUND))
+	// {
+	// 	context->style.window.fixed_background = default_background;
+
+	// 	
+
+	// 	/* Empty Space in the center */
+	// 	nk_spacing(context, 1);
+
+	// 	
+    // }
+    // nk_end(context);
+    // context->style.window.padding = default_padding;
 
     /* Render Settings Window */
 	if(editor->renderer_settings_window)
@@ -574,7 +575,11 @@ void editor_on_mousebutton(const struct Event* event)
 	assert(event->type == EVT_MOUSEBUTTON_PRESSED || event->type == EVT_MOUSEBUTTON_RELEASED);
 
 	struct Editor* editor = game_state_get()->editor;
-	if(event->mousebutton.button == MSB_LEFT && event->type == EVT_MOUSEBUTTON_RELEASED && !editor->camera_looking_around)
+	struct Gui* gui = game_state_get()->gui;
+	if(event->mousebutton.button == MSB_LEFT &&
+	   event->type == EVT_MOUSEBUTTON_RELEASED && 
+	   !editor->camera_looking_around && 
+	   nk_item_is_any_active(&gui->context) == 0)
 	{
 		log_message("Editor Picking");
 		struct Camera* editor_camera = &game_state_get()->scene->cameras[CAM_EDITOR];

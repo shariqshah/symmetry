@@ -62,6 +62,7 @@ Improvements:
 	- Better naming semantics for examples, init/deinit for initialization and cleanup and create/destroy when memory is allocated or deallocated
 	- Reset mouse cursor position to the center of the screen in editor mode after the right click is released
 	- Categorized entity list in editor for example different subtree for lights and static meshes
+	- Remove fixed editor windows locations and bring back floating windows
 
 Bugs:
 	- Better handling of wav format checking at load time
@@ -69,6 +70,7 @@ Bugs:
 	- Fix lights type not being correctly saved/loaded from file
 	- Fix culling
 	- Fix bounding boxes not aligning in editor
+	- Investigate memory usage increase when window is maximized
 
 Done:
 	* Input
@@ -202,3 +204,7 @@ Done:
 	* Ray picking for editor
 	* Highlight entity selected in editor in a specific color
 	* Deselect selected entity in editor when nothing is hit on click and an entity is already selected
+	* Implemented showing a placeholder when an entity other than a static mesh is selected
+	* Prevented ray casting when clicking on editor window and buttons
+	* Implemented handling drawing other entity types that can be selected in the editor but are not static meshes
+

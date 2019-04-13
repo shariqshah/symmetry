@@ -7,7 +7,7 @@
 #define MAX_CONSOLE_MESSAGE_LEN 256
 #define MAX_CONSOLE_MESSAGES 1024
 
-struct Gui_State;
+struct Gui;
 
 enum Console_Message_Type
 {
@@ -38,7 +38,7 @@ struct Console
 
 void console_init(struct Console* console);
 void console_toggle(struct Console* console);
-void console_update(struct Console* console, struct Gui_State* gui_state, float dt);
+void console_update(struct Console* console, struct Gui* gui_state, float dt);
 void console_destroy(struct Console* console);
 void console_on_log_message(struct Console* console, const char* message, va_list args);
 void console_on_log_warning(struct Console* console, const char* warning_message, va_list args);

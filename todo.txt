@@ -1,4 +1,5 @@
 Todo:
+	- Implement proper topbar
 	- Specific rendering mode for editor related rendering	
 	- Basic Editor gizmo for transformation i.e. translate/rotate/scale in world and local coordinates
 	- Add warning to genie build script when running on windows and WindowsSdkVersion cannot be found. This happens when the script is not run from vcvarsall command prompt
@@ -203,7 +204,6 @@ Done:
 	* Fixed mouse button press/release behaviour by using event callbacks for editor mouse picking
 	* Ray picking for editor
 	* Highlight entity selected in editor in a specific color
-	* Deselect selected entity in editor when nothing is hit on click and an entity is already selected
 	* Implemented showing a placeholder when an entity other than a static mesh is selected
 	* Prevented ray casting when clicking on editor window and buttons
 	* Implemented handling drawing other entity types that can be selected in the editor but are not static meshes

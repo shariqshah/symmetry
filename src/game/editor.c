@@ -66,7 +66,6 @@ static bool editor_widget_v3(struct nk_context* context,
 
 void editor_init(struct Editor* editor)
 {
-    editor->enabled                  = true;
     editor->renderer_settings_window = false;
 	editor->camera_looking_around    = false;
     editor->selected_entity          = NULL;
@@ -198,8 +197,6 @@ void editor_debugvar_slot_set_quat(int index, quat* value)
 
 void editor_update(struct Editor* editor, float dt)
 {
-	if(!editor->enabled) return;
-
 	editor_camera_update(editor, dt);
 
 	struct Game_State* game_state = game_state_get();
@@ -217,31 +214,27 @@ void editor_update(struct Editor* editor, float dt)
 	/* Top Panel */
 	if(nk_begin(context, "Top Panel", nk_recti(0, 0, win_width, editor->top_panel_height), NK_WINDOW_NO_SCROLLBAR))
 	{
-		nk_layout_row_dynamic(context, editor->top_panel_height, 1);
-		nk_group_begin(context, "Menubar", NK_WINDOW_NO_SCROLLBAR);
+		static float top_panel_ratios[] = { 0.1f, 0.1f, 0.7f, 0.1f };
+		static int   frames = 0;
+		static int   fps = 0;
+		static float seconds = 0.f;
+		seconds += dt;
+		frames++;
+		if(seconds >= 1.f)
 		{
-			static float top_panel_ratios[] = { 0.1f, 0.1f, 0.7f, 0.1f };
-			static int   frames = 0;
-			static int   fps = 0;
-			static float seconds = 0.f;
-			seconds += dt;
-			frames++;
-			if(seconds >= 1.f)
-			{
-				fps = frames;
-				seconds = 0.f;
-				frames = 0;
-			}
-
-			nk_layout_row(context, NK_DYNAMIC, editor->top_panel_height, sizeof(top_panel_ratios) / sizeof(float), top_panel_ratios);
-			if(nk_button_label(context, "Render Settings"))
-				editor->renderer_settings_window = !editor->renderer_settings_window;
-			if(nk_button_label(context, "Save config"))
-				config_vars_save("config.symtres", DIRT_USER);
-			nk_spacing(context, 1);
-			nk_labelf(context, NK_TEXT_ALIGN_RIGHT | NK_TEXT_ALIGN_MIDDLE, "FPS : %.d", fps);
+			fps = frames;
+			seconds = 0.f;
+			frames = 0;
 		}
-		nk_group_end(context);
+
+		nk_layout_row(context, NK_DYNAMIC, editor->top_panel_height - 10, sizeof(top_panel_ratios) / sizeof(float), top_panel_ratios);
+		if(nk_button_label(context, "Render Settings"))
+			editor->renderer_settings_window = !editor->renderer_settings_window;
+		if(nk_button_label(context, "Save config"))
+			config_vars_save("config.symtres", DIRT_USER);
+		nk_spacing(context, 1);
+		nk_labelf(context, NK_TEXT_ALIGN_RIGHT | NK_TEXT_ALIGN_MIDDLE, "FPS : %.d", fps);
+		nk_layout_row_dynamic(context, editor->top_panel_height, 1);
 	}
 	nk_end(context);
 
@@ -574,8 +567,12 @@ void editor_on_mousebutton(const struct Event* event)
 {
 	assert(event->type == EVT_MOUSEBUTTON_PRESSED || event->type == EVT_MOUSEBUTTON_RELEASED);
 
-	struct Editor* editor = game_state_get()->editor;
-	struct Gui* gui = game_state_get()->gui;
+	struct Game_State* game_state = game_state_get();
+	struct Editor*     editor     = game_state->editor;
+	struct Gui*        gui        = game_state->gui;
+	if(game_state->game_mode != GAME_MODE_EDITOR)
+		return;
+
 	if(event->mousebutton.button == MSB_LEFT &&
 	   event->type == EVT_MOUSEBUTTON_RELEASED && 
 	   !editor->camera_looking_around && 

@@ -515,7 +515,6 @@ void game_update(float dt, bool* window_should_close)
     if(input_map_state_get("Console_Toggle",    KS_RELEASED)) console_toggle(game_state->console);
     if(input_map_state_get("Editor_Toggle",     KS_RELEASED)) 
     {
-		//editor_toggle();
 		if(game_state->game_mode == GAME_MODE_EDITOR)
 		{
 			game_state->game_mode = GAME_MODE_GAME;
@@ -551,7 +550,7 @@ void game_post_update(float dt)
 
 void game_debug_gui(float dt)
 {
-    struct Gui* gui_state = gui_state_get();
+    struct Gui* gui_state = game_state->gui;
     struct nk_context* ctx = &gui_state->context;
 	
 	/* window flags */

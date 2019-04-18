@@ -9,7 +9,6 @@ struct Entity;
 
 struct Editor
 {
-    bool           enabled;
     bool           renderer_settings_window;
 	bool           camera_looking_around;
     struct Entity* selected_entity;

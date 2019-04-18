@@ -9,8 +9,11 @@ struct Entity;
 
 struct Editor
 {
-    bool           renderer_settings_window;
-	bool           camera_looking_around;
+    int            renderer_settings_window;
+	int            window_scene_heirarchy;
+	int            window_property_inspector;
+	int            window_debug_variables;
+	int            camera_looking_around;
     struct Entity* selected_entity;
     int            top_panel_height;
     float          camera_turn_speed;

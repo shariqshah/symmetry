@@ -9,7 +9,7 @@
 #include "../common/log.h"
 #include "entity.h"
 #include "../system/config_vars.h"
-
+#include "game.h"
 
 void player_init(struct Player* player, struct Scene* scene)
 {
@@ -18,7 +18,7 @@ void player_init(struct Player* player, struct Scene* scene)
     player->base.id      = 1;
     player->base.type    = ET_PLAYER;
 
-    struct Hashmap* config = config_vars_get();
+    struct Hashmap* config = game_state_get()->cvars;
     player->move_speed            = hashmap_int_get(config, "player_move_speed");
     player->move_speed_multiplier = hashmap_int_get(config, "player_move_speed_multiplier");
     player->turn_speed            = hashmap_int_get(config, "player_turn_speed");

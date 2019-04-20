@@ -10,13 +10,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_LINE_LEN 512
-
-static struct Hashmap* cvars = NULL;
-
-void config_vars_init(void)
+void config_vars_init(struct Hashmap* cvars)
 {
-    cvars = hashmap_new();
     /* Initialize with default values incase there is no config file */
     hashmap_int_set(cvars,   "render_width",                 1024);
     hashmap_int_set(cvars,   "render_height",                768);
@@ -38,100 +33,95 @@ void config_vars_init(void)
     hashmap_float_set(cvars, "player_turn_speed",            5.f);
 }
 
-void config_vars_cleanup(void)
+void config_vars_cleanup(struct Hashmap* cvars)
 {
     hashmap_free(cvars);
 }
 
-struct Hashmap* config_vars_get(void)
+bool config_vars_load(struct Hashmap* cvars, const char* filename, int directory_type)
 {
-    return cvars;
-}
-
-bool config_vars_load(const char* filename, int directory_type)
-{
-    FILE* config_file = io_file_open(directory_type, filename, "rb");
-    if(!config_file)
-    {
-	log_error("config:vars_load", "Could not open %s", filename);
-	return false;
-    }
-
-    struct Parser* parser = parser_load_objects(config_file, filename);
-    if(!parser)
-    {
-        log_error("config_vars:load", "Failed to load config data from %s", filename);
-        fclose(config_file);
-        return false;
-    }
-
-    bool config_loaded = false;
-    for(int i = 0; i < array_len(parser->objects); i++)
-    {
-        struct Parser_Object* object = &parser->objects[i];
-	if(object->type != PO_CONFIG)
+	FILE* config_file = io_file_open(directory_type, filename, "rb");
+	if(!config_file)
 	{
-	    log_warning("Unexpected config object type %s in %s", parser_object_type_to_str(object->type), filename);
-	    continue;
+		log_error("config:vars_load", "Could not open %s", filename);
+		return false;
 	}
 
-	config_loaded = true;
-	char* key = NULL;
-	struct Variant* value = NULL;
-	HASHMAP_FOREACH(object->data, key, value)
+	struct Parser* parser = parser_load_objects(config_file, filename);
+	if(!parser)
 	{
-	    struct Variant* existing_val = hashmap_value_get(cvars, key);
-	    if(!existing_val)
-	    {
-		log_warning("Unkown key '%s' in config file %s", key, filename);
-		continue;
-	    }
-
-	    variant_copy(existing_val, value);
+		log_error("config_vars:load", "Failed to load config data from %s", filename);
+		fclose(config_file);
+		return false;
 	}
-    }
 
-    if(config_loaded) log_message("Loaded config from %s", filename);
-    fclose(config_file);
-    return config_loaded;
-}
+	bool config_loaded = false;
+	for(int i = 0; i < array_len(parser->objects); i++)
+	{
+		struct Parser_Object* object = &parser->objects[i];
+		if(object->type != PO_CONFIG)
+		{
+			log_warning("Unexpected config object type %s in %s", parser_object_type_to_str(object->type), filename);
+			continue;
+		}
 
-bool config_vars_save(const char* filename, int directory_type)
-{
-    bool success = false;
-    FILE* config_file = io_file_open(directory_type, filename, "w");
-    if(!config_file)
-    {
-	log_error("config:vars_save", "Failed to open config file %s for writing");
-	return success;
-    }
+		config_loaded = true;
+		char* key = NULL;
+		struct Variant* value = NULL;
+		HASHMAP_FOREACH(object->data, key, value)
+		{
+			struct Variant* existing_val = hashmap_value_get(cvars, key);
+			if(!existing_val)
+			{
+				log_warning("Unkown key '%s' in config file %s", key, filename);
+				continue;
+			}
 
-    struct Parser* parser = parser_new();
-    if(!parser)
-    {
-	log_error("config_vars:save", "Could not create Parser for %s", filename);
+			variant_copy(existing_val, value);
+		}
+	}
+
+	if(config_loaded) log_message("Loaded config from %s", filename);
 	fclose(config_file);
-	return false;
-    }
+	return config_loaded;
+}
 
-    struct Parser_Object* object = parser_object_new(parser, PO_CONFIG);
-    if(!object)
-    {
-	log_error("config_vars:save", "Could not create Parser_Object for %s", filename);
+bool config_vars_save(struct Hashmap* cvars, const char* filename, int directory_type)
+{
+	bool success = false;
+	FILE* config_file = io_file_open(directory_type, filename, "w");
+	if(!config_file)
+	{
+		log_error("config:vars_save", "Failed to open config file %s for writing");
+		return success;
+	}
+
+	struct Parser* parser = parser_new();
+	if(!parser)
+	{
+		log_error("config_vars:save", "Could not create Parser for %s", filename);
+		fclose(config_file);
+		return false;
+	}
+
+	struct Parser_Object* object = parser_object_new(parser, PO_CONFIG);
+	if(!object)
+	{
+		log_error("config_vars:save", "Could not create Parser_Object for %s", filename);
+		parser_free(parser);
+		fclose(config_file);
+		return false;
+	}
+
+	hashmap_copy(cvars, object->data);
+
+	if(!parser_write_objects(parser, config_file, filename))
+	{
+		log_error("config_vars:save", "Failed to write config to '%s'", filename);
+		success = false;
+	}
+
 	parser_free(parser);
 	fclose(config_file);
-	return false;
-    }
-
-    hashmap_copy(cvars, object->data);
-
-    if(!parser_write_objects(parser, config_file, filename))
-    {
-	log_error("config_vars:save", "Failed to write config to '%s'", filename);
-	success = false;
-    }
-
-    parser_free(parser);
-    fclose(config_file);
-    return success;
+	return success;
 }

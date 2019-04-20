@@ -11,7 +11,9 @@
 #include "../game/game.h"
 
 struct Wndow;
-static struct Window* window;
+
+static struct Window*  window = NULL;
+static struct Hashmap* cvars  = NULL;
 
 bool init(void);
 void cleanup(void);
@@ -27,7 +29,7 @@ int main(int argc, char** args)
 		bool done = false;
 		while(!done)
 		{
-			bool game_init_status = game_init(window);
+			bool game_init_status = game_init(window, cvars);
 			if(!game_init_status)
 			{
 				log_error("main", "Game init failed");
@@ -50,7 +52,8 @@ bool init(void)
         return false;
 	}
 
-    config_vars_init();
+	cvars = hashmap_new();
+    config_vars_init(cvars);
     if(!platform_init()) return false;
 
     char* install_path = platform_install_directory_get();
@@ -59,10 +62,10 @@ bool init(void)
     io_file_init(install_path, user_path);
     free(install_path);
     free(user_path);
-    if(!config_vars_load("config.symtres", DIRT_USER))
+    if(!config_vars_load(cvars, "config.symtres", DIRT_USER))
     {
         log_error("main:init", "Could not load config, reverting to defaults");
-        config_vars_save("config.symtres", DIRT_USER);
+        config_vars_save(cvars, "config.symtres", DIRT_USER);
     }
 
     if(!platform_init_video()) return false;
@@ -73,7 +76,6 @@ bool init(void)
         return false;
     }
 
-    struct Hashmap* cvars = config_vars_get();
     int width       = hashmap_int_get(cvars,  "render_width");
     int height      = hashmap_int_get(cvars,  "render_height");
     int msaa        = hashmap_bool_get(cvars, "msaa_enabled");
@@ -102,7 +104,7 @@ void cleanup(void)
     sound_cleanup();
     platform_unload_gl();
     platform_cleanup();
-	config_vars_cleanup();
+	config_vars_cleanup(cvars);
     io_file_cleanup();
 	log_message("Program exiting!");
 	log_cleanup();

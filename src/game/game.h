@@ -12,6 +12,7 @@ struct Console;
 struct Gui;
 struct Event_Manager;
 struct Editor;
+struct Hashmap;
 
 enum Game_Mode
 {
@@ -27,14 +28,15 @@ struct Game_State
 	struct Renderer*      renderer;
 	struct Scene*         scene;
 	struct Console*       console;
-	struct Gui*     gui;
+	struct Gui*           gui;
 	struct Event_Manager* event_manager;
 	struct Editor*        editor;
+	struct Hashmap*       cvars;
 };
 
 
 struct Game_State* game_state_get(void);
-bool               game_init(struct Window* window);
+bool               game_init(struct Window* window, struct Hashmap* cvars);
 bool               game_run(void);
 void               game_cleanup(void);
 

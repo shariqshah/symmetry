@@ -86,14 +86,14 @@ void editor_init(struct Editor* editor)
     editor->camera_move_speed         = 20.f;
     editor->camera_sprint_multiplier  = 2.f;
 	vec4_fill(&editor->selected_entity_colour, 0.f, 1.f, 0.f, 1.f);
-    debug_vars_list                       = array_new(struct Debug_Variable);
-    empty_indices                         = array_new(int);
+    debug_vars_list                   = array_new(struct Debug_Variable);
+    empty_indices                     = array_new(int);
 	
 	event_manager_subscribe(game_state_get()->event_manager, EVT_MOUSEBUTTON_PRESSED, &editor_on_mousebutton);
 	event_manager_subscribe(game_state_get()->event_manager, EVT_MOUSEBUTTON_RELEASED, &editor_on_mousebutton);
 }
 
-void editor_init_camera(struct Editor* editor)
+void editor_init_camera(struct Editor* editor, struct Hashmap* cvars)
 {
     struct Camera* editor_camera = &game_state_get()->scene->cameras[CAM_EDITOR];
     entity_rename(editor_camera, "Editor_Camera");
@@ -103,9 +103,8 @@ void editor_init_camera(struct Editor* editor)
     editor_camera->clear_color.z = 0.9f;
     editor_camera->clear_color.w = 1.f;
 
-    struct Hashmap* config = config_vars_get();
-    int render_width  = hashmap_int_get(config, "render_width");
-    int render_height = hashmap_int_get(config, "render_height");
+    int render_width  = hashmap_int_get(cvars, "render_width");
+    int render_height = hashmap_int_get(cvars, "render_height");
     camera_attach_fbo(editor_camera, render_width, render_height, true, true, true);
 
     vec3 cam_pos = {5.f, 20.f, 50.f};
@@ -216,7 +215,6 @@ void editor_update(struct Editor* editor, float dt)
 	int win_width = 0, win_height = 0;
 	window_get_drawable_size(game_state->window, &win_width, &win_height);
 	int half_width = win_width / 2, half_height = win_height / 2;
-
 
 	/* Top Panel */
 	if(nk_begin(context, "Top Panel", nk_recti(0, 0, win_width, editor->top_panel_height), NK_WINDOW_NO_SCROLLBAR))

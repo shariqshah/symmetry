@@ -57,7 +57,7 @@ static void on_collision_test(struct Entity* this_ent, struct Entity* other_ent,
 
 static struct Game_State* game_state = NULL;
 
-bool game_init(struct Window* window)
+bool game_init(struct Window* window, struct Hashmap* cvars)
 {
     game_state = malloc(sizeof(*game_state));
     if(!game_state)
@@ -68,6 +68,7 @@ bool game_init(struct Window* window)
     else
     {
 		game_state->window         = window;
+		game_state->cvars          = cvars;
 		game_state->is_initialized = false;
 		game_state->game_mode      = GAME_MODE_GAME;
 		game_state->renderer       = calloc(1, sizeof(*game_state->renderer));

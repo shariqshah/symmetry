@@ -6,6 +6,7 @@
 
 struct Camera;
 struct Entity;
+struct Hashmap;
 
 struct Editor
 {
@@ -23,7 +24,7 @@ struct Editor
 };
 
 void editor_init(struct Editor* editor_state);
-void editor_init_camera(struct Editor* editor_state);
+void editor_init_camera(struct Editor* editor_state, struct Hashmap* cvars);
 void editor_render(struct Editor* editor_state, struct Camera* active_camera);
 void editor_update(struct Editor* editor_state, float dt);
 void editor_cleanup(struct Editor* editor_state);

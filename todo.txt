@@ -71,7 +71,7 @@ Bugs:
 	- Fix lights type not being correctly saved/loaded from file
 	- Fix culling
 	- Fix bounding boxes not aligning in editor
-	- Investigate memory usage increase when window is maximized
+	- Investigate memory usage increase when window is minimized
 
 Done:
 	* Input
@@ -208,4 +208,5 @@ Done:
 	* Prevented ray casting when clicking on editor window and buttons
 	* Implemented handling drawing other entity types that can be selected in the editor but are not static meshes
 	* Implemented proper topbar
+	* Changed config vars are used.
 

@@ -21,6 +21,11 @@ struct Editor
     float          camera_move_speed;
     float          camera_sprint_multiplier;
 	vec4           selected_entity_colour;
+	int            current_mode;
+	int            current_axis;
+	vec4           grid_color;
+	int            grid_num_lines;
+	float          grid_scale;
 };
 
 void editor_init(struct Editor* editor_state);

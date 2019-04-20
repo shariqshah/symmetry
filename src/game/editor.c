@@ -44,6 +44,21 @@ struct Debug_Variable
     char*          name;
 };
 
+enum Editor_Mode
+{
+	EDITOR_MODE_NORMAL = 0,
+	EDITOR_MODE_TRANSLATE,
+	EDITOR_MODE_ROTATE,
+	EDITOR_MODE_SCALE
+};
+
+enum Editor_Axis
+{
+	EDITOR_AXIS_XY = 0,
+	EDITOR_AXIS_X,
+	EDITOR_AXIS_Y,
+	EDITOR_AXIS_Z
+};
 
 static struct Debug_Variable* debug_vars_list = NULL;
 static int*                   empty_indices   = NULL;
@@ -72,6 +87,7 @@ static bool editor_widget_v3(struct nk_context* context,
 static void editor_window_scene_heirarchy(struct nk_context* context, struct Editor* editor, struct Game_State* game_state);
 static void editor_window_debug_variables(struct nk_context* context, struct Editor* editor);
 static void editor_window_property_inspector(struct nk_context* context, struct Editor* editor, struct Game_State* game_state);
+static void editor_window_renderer_settings(struct nk_context* context, struct Editor* editor, struct Game_State* game_state);
 
 void editor_init(struct Editor* editor)
 {
@@ -85,7 +101,12 @@ void editor_init(struct Editor* editor)
     editor->camera_turn_speed         = 50.f;
     editor->camera_move_speed         = 20.f;
     editor->camera_sprint_multiplier  = 2.f;
+	editor->current_mode              = EDITOR_MODE_NORMAL;
+	editor->current_axis              = EDITOR_AXIS_XY;
+	editor->grid_num_lines            = 50;
+	editor->grid_scale                = 2.f;
 	vec4_fill(&editor->selected_entity_colour, 0.f, 1.f, 0.f, 1.f);
+	vec4_fill(&editor->grid_color, 0.3f, 0.3f, 0.3f, 1.f);
     debug_vars_list                   = array_new(struct Debug_Variable);
     empty_indices                     = array_new(int);
 	
@@ -131,6 +152,29 @@ void editor_render(struct Editor* editor, struct Camera * active_camera)
 
 	// 	}
 	// }
+
+
+	//Draw Grid
+	vec3 position = { 0.f, 0.f, 0.f };
+	quat rotation = { 0.f, 0.f, 0.f, 1.f };
+	vec3 scale = { 1.f, 1.f, 1.f };
+	if(editor->selected_entity)
+	{
+		transform_get_absolute_position(editor->selected_entity, &position);
+		transform_get_absolute_scale(editor->selected_entity, &scale);
+		transform_get_absolute_rot(editor->selected_entity, &rotation);
+	}
+
+	im_begin(position, rotation, scale, editor->grid_color, GDM_LINES);
+
+	float half_grid = editor->grid_num_lines * editor->grid_scale / 2.f;
+	for(int i = 0; i <= editor->grid_num_lines * editor->grid_scale; i+= editor->grid_scale)
+	{
+		im_pos(-half_grid,     0.f, -half_grid + i); im_pos( half_grid,     0.f, -half_grid + i); // X
+		im_pos(-half_grid + i, 0.f, -half_grid);     im_pos(-half_grid + i, 0.f,  half_grid);     // Z
+	}
+
+	im_end();
 }
 
 int editor_debugvar_slot_create(const char* name, int value_type)
@@ -280,86 +324,8 @@ void editor_update(struct Editor* editor, float dt)
 	if(editor->window_scene_heirarchy) editor_window_scene_heirarchy(context, editor, game_state);
 	if(editor->window_debug_variables) editor_window_debug_variables(context, editor);
 	if(editor->window_property_inspector) editor_window_property_inspector(context, editor, game_state);
-
-    /* Render Settings Window */
-	if(editor->renderer_settings_window)
-	{
-		const int row_height = 25;
-		if(nk_begin_titled(context, "Renderer_Settings_Window", "Renderer Settings", nk_rect(half_width, half_height, 300, 350), window_flags))
-		{
-			struct Render_Settings* render_settings = &game_state->renderer->settings;
-			if(nk_tree_push(context, NK_TREE_TAB, "Debug", NK_MAXIMIZED))
-			{
-				static const char* draw_modes[] = { "Triangles", "Lines", "Points" };
-				nk_layout_row_dynamic(context, row_height, 2);
-				nk_label(context, "Debug Draw", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
-				render_settings->debug_draw_enabled = nk_check_label(context, "", render_settings->debug_draw_enabled);
-
-				nk_layout_row_dynamic(context, row_height, 2);
-				nk_label(context, "Debug Draw Mode", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
-				render_settings->debug_draw_mode = nk_combo(context, draw_modes, 3, render_settings->debug_draw_mode, 20, nk_vec2(180, 100));
-
-				nk_layout_row_dynamic(context, row_height, 2);
-				nk_label(context, "Debug Color", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
-				editor_widget_color_combov4(context, &render_settings->debug_draw_color, 200, 400);
-				nk_tree_pop(context);
-			}
-
-			if(nk_tree_push(context, NK_TREE_TAB, "Fog", NK_MAXIMIZED))
-			{
-				static const char* fog_modes[] = { "None", "Linear", "Exponential", "Exponential Squared" };
-				nk_layout_row_dynamic(context, row_height, 2);
-				nk_label(context, "Color", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
-				editor_widget_color_combov3(context, &render_settings->fog.color, 200, 400);
-
-				nk_layout_row_dynamic(context, row_height, 2);
-				nk_label(context, "Fog Mode", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
-				render_settings->fog.mode = nk_combo(context,
-					fog_modes,
-					4,
-					render_settings->fog.mode,
-					20,
-					nk_vec2(180, 100));
-
-				nk_layout_row_dynamic(context, row_height, 2);
-				nk_label(context, "Density", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
-				struct nk_rect bounds = nk_widget_bounds(context);
-				nk_slider_float(context, 0.f, &render_settings->fog.density, 1.f, 0.005);
-				if(nk_input_is_mouse_hovering_rect(&context->input, bounds))
-				{
-					if(nk_tooltip_begin(context, 100))
-					{
-						nk_layout_row_dynamic(context, row_height, 1);
-						nk_labelf(context, NK_TEXT_ALIGN_CENTERED, "%.3f", render_settings->fog.density);
-						nk_tooltip_end(context);
-					}
-				}
-
-				nk_layout_row_dynamic(context, row_height, 1);
-				nk_property_float(context,
-					"Start Distance",
-					0.f,
-					&render_settings->fog.start_dist,
-					render_settings->fog.max_dist,
-					5.f, 10.f);
-
-				nk_layout_row_dynamic(context, row_height, 1);
-				nk_property_float(context,
-					"Max Distance",
-					render_settings->fog.start_dist,
-					&render_settings->fog.max_dist,
-					10000.f,
-					5.f, 10.f);
-
-				nk_tree_pop(context);
-			}
-		}
-		else
-		{
-			editor->renderer_settings_window = 0;
-		}
-		nk_end(context);
-	}
+	if(editor->renderer_settings_window) editor_window_renderer_settings(context, editor, game_state);
+	
 }
 
 void editor_on_mousebutton(const struct Event* event)
@@ -860,6 +826,89 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 	else
 	{
 	     editor->window_property_inspector = false;
+	}
+	nk_end(context);
+}
+
+void editor_window_renderer_settings(struct nk_context* context, struct Editor* editor, struct Game_State* game_state)
+{
+	int win_width = 0, win_height = 0;
+	window_get_drawable_size(game_state->window, &win_width, &win_height);
+	int half_width = win_width / 2, half_height = win_height / 2;
+
+	const int row_height = 25;
+	if(nk_begin_titled(context, "Renderer_Settings_Window", "Renderer Settings", nk_rect(half_width, half_height, 300, 350), window_flags))
+	{
+		struct Render_Settings* render_settings = &game_state->renderer->settings;
+		if(nk_tree_push(context, NK_TREE_TAB, "Debug", NK_MAXIMIZED))
+		{
+			static const char* draw_modes[] = { "Triangles", "Lines", "Points" };
+			nk_layout_row_dynamic(context, row_height, 2);
+			nk_label(context, "Debug Draw", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+			render_settings->debug_draw_enabled = nk_check_label(context, "", render_settings->debug_draw_enabled);
+
+			nk_layout_row_dynamic(context, row_height, 2);
+			nk_label(context, "Debug Draw Mode", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+			render_settings->debug_draw_mode = nk_combo(context, draw_modes, 3, render_settings->debug_draw_mode, 20, nk_vec2(180, 100));
+
+			nk_layout_row_dynamic(context, row_height, 2);
+			nk_label(context, "Debug Color", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+			editor_widget_color_combov4(context, &render_settings->debug_draw_color, 200, 400);
+			nk_tree_pop(context);
+		}
+
+		if(nk_tree_push(context, NK_TREE_TAB, "Fog", NK_MAXIMIZED))
+		{
+			static const char* fog_modes[] = { "None", "Linear", "Exponential", "Exponential Squared" };
+			nk_layout_row_dynamic(context, row_height, 2);
+			nk_label(context, "Color", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+			editor_widget_color_combov3(context, &render_settings->fog.color, 200, 400);
+
+			nk_layout_row_dynamic(context, row_height, 2);
+			nk_label(context, "Fog Mode", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+			render_settings->fog.mode = nk_combo(context,
+				fog_modes,
+				4,
+				render_settings->fog.mode,
+				20,
+				nk_vec2(180, 100));
+
+			nk_layout_row_dynamic(context, row_height, 2);
+			nk_label(context, "Density", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+			struct nk_rect bounds = nk_widget_bounds(context);
+			nk_slider_float(context, 0.f, &render_settings->fog.density, 1.f, 0.005);
+			if(nk_input_is_mouse_hovering_rect(&context->input, bounds))
+			{
+				if(nk_tooltip_begin(context, 100))
+				{
+					nk_layout_row_dynamic(context, row_height, 1);
+					nk_labelf(context, NK_TEXT_ALIGN_CENTERED, "%.3f", render_settings->fog.density);
+					nk_tooltip_end(context);
+				}
+			}
+
+			nk_layout_row_dynamic(context, row_height, 1);
+			nk_property_float(context,
+				"Start Distance",
+				0.f,
+				&render_settings->fog.start_dist,
+				render_settings->fog.max_dist,
+				5.f, 10.f);
+
+			nk_layout_row_dynamic(context, row_height, 1);
+			nk_property_float(context,
+				"Max Distance",
+				render_settings->fog.start_dist,
+				&render_settings->fog.max_dist,
+				10000.f,
+				5.f, 10.f);
+
+			nk_tree_pop(context);
+		}
+	}
+	else
+	{
+		editor->renderer_settings_window = 0;
 	}
 	nk_end(context);
 }

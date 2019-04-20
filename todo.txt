@@ -1,6 +1,8 @@
 Todo:
 	- Specific rendering mode for editor related rendering	
-	- Basic Editor gizmo for transformation i.e. translate/rotate/scale in world and local coordinates
+	- Editor modes for Transform, Rotate, Scale that operate similar to vim or blender.
+	  Modes can be toggled by hotkeys and the operation will be applied to the selected object.
+	  By default, we work on the ground axis i.e the xz plane and when we have alt pressed, we work in the vertical or y axis.
 	- Add warning to genie build script when running on windows and WindowsSdkVersion cannot be found. This happens when the script is not run from vcvarsall command prompt
 	- Improve README and add a screenshot to make the repository ready for making it public 
 	- Refactor all global application state into 'Application_Context' struct. A single global instance of which is available everywhere
@@ -209,4 +211,5 @@ Done:
 	* Implemented proper topbar
 	* Changed config vars are used.
 	* Changed all usages of bool types and nuklear causing buggy behaviour in editor code by using int instead of bool or by using variants of the functions that do take int as parameter instead of int*
+	* Added Grid to editor
 

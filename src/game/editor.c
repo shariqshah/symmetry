@@ -88,10 +88,12 @@ static void editor_window_scene_heirarchy(struct nk_context* context, struct Edi
 static void editor_window_debug_variables(struct nk_context* context, struct Editor* editor);
 static void editor_window_property_inspector(struct nk_context* context, struct Editor* editor, struct Game_State* game_state);
 static void editor_window_renderer_settings(struct nk_context* context, struct Editor* editor, struct Game_State* game_state);
+static void editor_window_settings_editor(struct nk_context* context, struct Editor* editor, struct Game_State* game_state);
 
 void editor_init(struct Editor* editor)
 {
-    editor->renderer_settings_window  = 0;
+    editor->window_settings_renderer  = 0;
+    editor->window_settings_editor    = 0;
 	editor->window_debug_variables    = 0;
 	editor->window_property_inspector = 0;
 	editor->window_scene_heirarchy    = 0;
@@ -103,6 +105,7 @@ void editor_init(struct Editor* editor)
     editor->camera_sprint_multiplier  = 2.f;
 	editor->current_mode              = EDITOR_MODE_NORMAL;
 	editor->current_axis              = EDITOR_AXIS_XY;
+	editor->grid_enabled              = 1;
 	editor->grid_num_lines            = 50;
 	editor->grid_scale                = 2.f;
 	vec4_fill(&editor->selected_entity_colour, 0.f, 1.f, 0.f, 1.f);
@@ -155,26 +158,29 @@ void editor_render(struct Editor* editor, struct Camera * active_camera)
 
 
 	//Draw Grid
-	vec3 position = { 0.f, 0.f, 0.f };
-	quat rotation = { 0.f, 0.f, 0.f, 1.f };
-	vec3 scale = { 1.f, 1.f, 1.f };
-	if(editor->selected_entity)
+	if(editor->grid_enabled)
 	{
-		transform_get_absolute_position(editor->selected_entity, &position);
-		transform_get_absolute_scale(editor->selected_entity, &scale);
-		transform_get_absolute_rot(editor->selected_entity, &rotation);
+		vec3 position = { 0.f, 0.f, 0.f };
+		quat rotation = { 0.f, 0.f, 0.f, 1.f };
+		vec3 scale = { 1.f, 1.f, 1.f };
+		if(editor->selected_entity)
+		{
+			transform_get_absolute_position(editor->selected_entity, &position);
+			transform_get_absolute_scale(editor->selected_entity, &scale);
+			transform_get_absolute_rot(editor->selected_entity, &rotation);
+		}
+
+		im_begin(position, rotation, scale, editor->grid_color, GDM_LINES);
+
+		float half_grid = editor->grid_num_lines * editor->grid_scale / 2.f;
+		for(float i = 0; i <= editor->grid_num_lines * editor->grid_scale; i += editor->grid_scale)
+		{
+			im_pos(-half_grid,     0.f, -half_grid + i); im_pos(half_grid,      0.f, -half_grid + i); // X
+			im_pos(-half_grid + i, 0.f, -half_grid);     im_pos(-half_grid + i, 0.f,  half_grid);     // Z
+		}
+
+		im_end();
 	}
-
-	im_begin(position, rotation, scale, editor->grid_color, GDM_LINES);
-
-	float half_grid = editor->grid_num_lines * editor->grid_scale / 2.f;
-	for(int i = 0; i <= editor->grid_num_lines * editor->grid_scale; i+= editor->grid_scale)
-	{
-		im_pos(-half_grid,     0.f, -half_grid + i); im_pos( half_grid,     0.f, -half_grid + i); // X
-		im_pos(-half_grid + i, 0.f, -half_grid);     im_pos(-half_grid + i, 0.f,  half_grid);     // Z
-	}
-
-	im_end();
 }
 
 int editor_debugvar_slot_create(const char* name, int value_type)
@@ -297,7 +303,8 @@ void editor_update(struct Editor* editor, float dt)
 		if(nk_menu_begin_label(context, "Settings", NK_TEXT_CENTERED | NK_TEXT_ALIGN_MIDDLE, nk_vec2(150, 100)))
 		{
 			nk_layout_row_dynamic(context, 25, 1);
-			if(nk_menu_item_label(context, "Render Settings", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE)) editor->renderer_settings_window = !editor->renderer_settings_window;
+			if(nk_menu_item_label(context, "Editor Settings", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE)) editor->window_settings_editor = !editor->window_settings_editor;
+			if(nk_menu_item_label(context, "Render Settings", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE)) editor->window_settings_renderer = !editor->window_settings_renderer;
 			nk_menu_end(context);
 		}
 
@@ -324,7 +331,8 @@ void editor_update(struct Editor* editor, float dt)
 	if(editor->window_scene_heirarchy) editor_window_scene_heirarchy(context, editor, game_state);
 	if(editor->window_debug_variables) editor_window_debug_variables(context, editor);
 	if(editor->window_property_inspector) editor_window_property_inspector(context, editor, game_state);
-	if(editor->renderer_settings_window) editor_window_renderer_settings(context, editor, game_state);
+	if(editor->window_settings_renderer) editor_window_renderer_settings(context, editor, game_state);
+	if(editor->window_settings_editor) editor_window_settings_editor(context, editor, game_state);
 	
 }
 
@@ -908,7 +916,37 @@ void editor_window_renderer_settings(struct nk_context* context, struct Editor* 
 	}
 	else
 	{
-		editor->renderer_settings_window = 0;
+		editor->window_settings_renderer = 0;
+	}
+	nk_end(context);
+}
+
+void editor_window_settings_editor(struct nk_context* context, struct Editor* editor, struct Game_State* game_state)
+{
+	int win_width = 0, win_height = 0;
+	window_get_drawable_size(game_state->window, &win_width, &win_height);
+	int half_width = win_width / 2, half_height = win_height / 2;
+
+	const int row_height = 25;
+	if(nk_begin_titled(context, "Window_Settings_Editor", "Editor Settings", nk_rect(half_width, half_height, 300, 350), window_flags))
+	{
+		nk_layout_row_dynamic(context, row_height, 2);
+		nk_label(context, "Grid Enabled", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+		nk_checkbox_label(context, "", &editor->grid_enabled);
+
+		nk_layout_row_dynamic(context, row_height, 2);
+		nk_label(context, "Grid Color", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+		editor_widget_color_combov4(context, &editor->grid_color, 200, 400);
+
+		nk_layout_row_dynamic(context, row_height, 1);
+		nk_property_int(context, "Grid Lines", 10, &editor->grid_num_lines, 100, 1, 1);
+
+		nk_layout_row_dynamic(context, row_height, 1);
+		nk_property_float(context, "Grid Scale", 0.25f, &editor->grid_scale, 10.f, 1, 0.25f);
+	}
+	else
+	{
+		editor->window_settings_editor = 0;
 	}
 	nk_end(context);
 }

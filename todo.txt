@@ -64,6 +64,7 @@ Improvements:
 	- Better naming semantics for examples, init/deinit for initialization and cleanup and create/destroy when memory is allocated or deallocated
 	- Reset mouse cursor position to the center of the screen in editor mode after the right click is released
 	- Categorized entity list in editor for example different subtree for lights and static meshes
+	- Depth testing for editor grid
 	- Remove fixed editor windows locations and bring back floating windows
 
 Bugs:
@@ -212,4 +213,5 @@ Done:
 	* Changed config vars are used.
 	* Changed all usages of bool types and nuklear causing buggy behaviour in editor code by using int instead of bool or by using variants of the functions that do take int as parameter instead of int*
 	* Added Grid to editor
+	* Added Editor settings window and grid configuration to editor settings window
 

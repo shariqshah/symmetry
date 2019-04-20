@@ -10,7 +10,8 @@ struct Hashmap;
 
 struct Editor
 {
-    int            renderer_settings_window;
+    int            window_settings_renderer;
+    int            window_settings_editor;
 	int            window_scene_heirarchy;
 	int            window_property_inspector;
 	int            window_debug_variables;
@@ -23,6 +24,7 @@ struct Editor
 	vec4           selected_entity_colour;
 	int            current_mode;
 	int            current_axis;
+	int            grid_enabled;
 	vec4           grid_color;
 	int            grid_num_lines;
 	float          grid_scale;

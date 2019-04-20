@@ -1,5 +1,4 @@
 Todo:
-	- Change all usages of bool types and nuklear causing buggy behaviour in editor code
 	- Specific rendering mode for editor related rendering	
 	- Basic Editor gizmo for transformation i.e. translate/rotate/scale in world and local coordinates
 	- Add warning to genie build script when running on windows and WindowsSdkVersion cannot be found. This happens when the script is not run from vcvarsall command prompt
@@ -209,4 +208,5 @@ Done:
 	* Implemented handling drawing other entity types that can be selected in the editor but are not static meshes
 	* Implemented proper topbar
 	* Changed config vars are used.
+	* Changed all usages of bool types and nuklear causing buggy behaviour in editor code by using int instead of bool or by using variants of the functions that do take int as parameter instead of int*
 

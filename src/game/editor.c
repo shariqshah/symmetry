@@ -277,7 +277,6 @@ void editor_update(struct Editor* editor, float dt)
 	}
 	nk_end(context);
 
-
 	if(editor->window_scene_heirarchy) editor_window_scene_heirarchy(context, editor, game_state);
 	if(editor->window_debug_variables) editor_window_debug_variables(context, editor);
 	if(editor->window_property_inspector) editor_window_property_inspector(context, editor, game_state);
@@ -294,7 +293,7 @@ void editor_update(struct Editor* editor, float dt)
 				static const char* draw_modes[] = { "Triangles", "Lines", "Points" };
 				nk_layout_row_dynamic(context, row_height, 2);
 				nk_label(context, "Debug Draw", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
-				nk_checkbox_label(context, "", &render_settings->debug_draw_enabled);
+				render_settings->debug_draw_enabled = nk_check_label(context, "", render_settings->debug_draw_enabled);
 
 				nk_layout_row_dynamic(context, row_height, 2);
 				nk_label(context, "Debug Draw Mode", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
@@ -795,12 +794,12 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 
 					nk_layout_row_dynamic(context, row_height, 2);
 					nk_label(context, "Orthographic", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
-					bool ortho = nk_checkbox_label(context, "", &camera->ortho);
+					bool ortho = nk_check_label(context, "", camera->ortho);
 					if(ortho != camera->ortho)
 					{
+						camera->ortho = ortho;
 						update = true;
 					}
-
 
 					if(!camera->ortho)
 					{

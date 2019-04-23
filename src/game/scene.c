@@ -14,6 +14,7 @@
 #include "editor.h"
 #include "../system/sound.h"
 #include "../system/physics.h"
+#include "../system/platform.h"
 
 #include <assert.h>
 #include <string.h>
@@ -22,6 +23,8 @@
 void scene_init(struct Scene* scene)
 {
 	assert(scene);
+	struct Game_State* game_state = game_state_get();
+
 	//Initialize the root entity
 	entity_init(&scene->root_entity, "ROOT_ENTITY", NULL);
 	scene->root_entity.active = true;
@@ -45,15 +48,17 @@ void scene_init(struct Scene* scene)
 		mesh->model.material = NULL;
 	}
 	for(int i = 0; i < MAX_SOUND_SOURCES; i++) entity_reset(&scene->sound_sources[i], i);
+	int width = 1280, height = 720;
+	window_get_drawable_size(game_state->window, &width, &height);
+
 	for(int i = 0; i < MAX_CAMERAS; i++)
 	{
 		entity_init(&scene->cameras[i], NULL, &scene->root_entity);
-		camera_init(&scene->cameras[i], 1024, 768);
+		camera_init(&scene->cameras[i], width, height);
 		scene->cameras[i].base.id = i;
 	}
 
 	player_init(&scene->player, scene);
-	struct Game_State* game_state = game_state_get();
 	editor_init_camera(game_state->editor, game_state->cvars);
 
 	scene->active_camera_index = game_state_get()->game_mode == GAME_MODE_GAME ? CAM_GAME : CAM_EDITOR;

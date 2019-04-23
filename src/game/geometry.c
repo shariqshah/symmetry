@@ -5,7 +5,6 @@
 #include "renderer.h"
 #include "transform.h"
 #include "../system/file_io.h"
-#include "gl_load.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -14,10 +13,9 @@
 #include <math.h>
 #include <float.h>
 
-/* Data */
+GLenum* draw_modes = NULL;
 static struct Geometry* geometry_list;
 static int*             empty_indices;
-static GLenum*          draw_modes;
 
 static int              load_from_file(struct Geometry* geometry, const char* filename);
 static void             create_vao(struct Geometry* geometry);

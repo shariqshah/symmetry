@@ -143,3 +143,21 @@ bool bv_intersect_sphere_ray(struct Bounding_Sphere* sphere, vec3* sphere_abs_po
 
 	//return true;
 }
+
+float bv_distance_ray_plane(struct Ray* ray, struct Plane* plane)
+{
+	float dot = vec3_dot(&plane->normal, &ray->direction);
+	float abs_dot = fabsf(dot);
+	if(abs_dot >= EPSILON)
+	{
+		float dot_origin = vec3_dot(&plane->normal, &ray->origin);
+		float t = -(dot_origin + plane->constant) / dot;
+		if(t >= 0.0f)
+			return t;
+		else
+			return INFINITY;
+	}
+	else
+		return INFINITY;
+
+}

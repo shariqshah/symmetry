@@ -31,7 +31,7 @@ struct IM_Geom
 		int prim_geom_index;
 		
 	};
-	int  draw_mode;
+	int draw_mode;
 };
 
 struct Camera;

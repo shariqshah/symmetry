@@ -78,7 +78,7 @@ solution "Symmetry"
 			
 		configuration "Debug"
 		    links {"soloud_x64_d"}
-		    defines {"GL_DEBUG_CONTEXT"}
+		    defines {"GL_DEBUG_CONTEXT", "GL_BREAK_ON_ERROR"}
 		
 		configuration "Release"
 			links {"soloud_x64"}

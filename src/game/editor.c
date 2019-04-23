@@ -49,7 +49,8 @@ enum Editor_Mode
 	EDITOR_MODE_NORMAL = 0,
 	EDITOR_MODE_TRANSLATE,
 	EDITOR_MODE_ROTATE,
-	EDITOR_MODE_SCALE
+	EDITOR_MODE_SCALE,
+	EDITOR_MODE_MAX
 };
 
 enum Editor_Axis
@@ -69,6 +70,8 @@ static int                    window_flags    = NK_WINDOW_BORDER |
 		                                        NK_WINDOW_SCALABLE;
 
 static void editor_on_mousebutton(const struct Event* event);
+static void editor_on_mousemotion(const struct Event* event);
+static void editor_on_key_release(const struct Event* event);
 static void editor_camera_update(struct Editor* editor, float dt);
 static void editor_show_entity_in_list(struct Editor* editor, struct nk_context* context, struct Scene* scene, struct Entity* entity);
 static void editor_widget_color_combov3(struct nk_context* context, vec3* color, int width, int height);
@@ -107,14 +110,21 @@ void editor_init(struct Editor* editor)
 	editor->current_axis              = EDITOR_AXIS_XY;
 	editor->grid_enabled              = 1;
 	editor->grid_num_lines            = 50;
-	editor->grid_scale                = 2.f;
+	editor->grid_scale                = 1.f;
+	editor->tool_mesh_draw_enabled    = 0;
+	editor->tool_snap_enabled         = 1;
+	vec3_fill(&editor->tool_mesh_position, 0.f, 0.f, 0.f);
+	vec4_fill(&editor->tool_mesh_color, 1.f, 0.f, 1.f, 1.f);
 	vec4_fill(&editor->selected_entity_colour, 0.f, 1.f, 0.f, 1.f);
 	vec4_fill(&editor->grid_color, 0.3f, 0.3f, 0.3f, 1.f);
     debug_vars_list                   = array_new(struct Debug_Variable);
     empty_indices                     = array_new(int);
 	
-	event_manager_subscribe(game_state_get()->event_manager, EVT_MOUSEBUTTON_PRESSED, &editor_on_mousebutton);
-	event_manager_subscribe(game_state_get()->event_manager, EVT_MOUSEBUTTON_RELEASED, &editor_on_mousebutton);
+	struct Event_Manager* event_manager = game_state_get()->event_manager;
+	event_manager_subscribe(event_manager, EVT_MOUSEBUTTON_PRESSED, &editor_on_mousebutton);
+	event_manager_subscribe(event_manager, EVT_MOUSEMOTION, &editor_on_mousemotion);
+	event_manager_subscribe(event_manager, EVT_MOUSEBUTTON_RELEASED, &editor_on_mousebutton);
+	event_manager_subscribe(event_manager, EVT_KEY_RELEASED, &editor_on_key_release);
 }
 
 void editor_init_camera(struct Editor* editor, struct Hashmap* cvars)
@@ -269,7 +279,6 @@ void editor_update(struct Editor* editor, float dt)
 	/* Top Panel */
 	if(nk_begin(context, "Top Panel", nk_recti(0, 0, win_width, editor->top_panel_height), NK_WINDOW_NO_SCROLLBAR))
 	{
-		static float top_panel_ratios[] = { 0.1f, 0.1f, 0.7f, 0.1f };
 		static int   frames = 0;
 		static int   fps = 0;
 		static float seconds = 0.f;
@@ -282,13 +291,14 @@ void editor_update(struct Editor* editor, float dt)
 			frames = 0;
 		}
 
+		const int row_height = 25.f;
 		nk_menubar_begin(context);
 
-		nk_layout_row_begin(context, NK_DYNAMIC, editor->top_panel_height, 5);
-		nk_layout_row_push(context, 0.1f);
-		if(nk_menu_begin_label(context, "File", NK_TEXT_CENTERED | NK_TEXT_ALIGN_MIDDLE, nk_vec2(150, 100)))
+		nk_layout_row_begin(context, NK_DYNAMIC, editor->top_panel_height - 5, 6);
+		nk_layout_row_push(context, 0.03f);
+		if(nk_menu_begin_label(context, "File", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, nk_vec2(150, 100)))
 		{
-			nk_layout_row_dynamic(context, 25, 1);
+			nk_layout_row_dynamic(context, row_height, 1);
 			nk_menu_item_label(context, "Open", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
 			nk_menu_item_label(context, "Save", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
 			if(nk_menu_item_label(context, "Back to Game", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE))
@@ -299,19 +309,19 @@ void editor_update(struct Editor* editor, float dt)
 			nk_menu_end(context);
 		}
 
-		nk_layout_row_push(context, 0.1f);
-		if(nk_menu_begin_label(context, "Settings", NK_TEXT_CENTERED | NK_TEXT_ALIGN_MIDDLE, nk_vec2(150, 100)))
+		nk_layout_row_push(context, 0.05f);
+		if(nk_menu_begin_label(context, "Settings", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, nk_vec2(150, 100)))
 		{
-			nk_layout_row_dynamic(context, 25, 1);
+			nk_layout_row_dynamic(context, row_height, 1);
 			if(nk_menu_item_label(context, "Editor Settings", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE)) editor->window_settings_editor = !editor->window_settings_editor;
 			if(nk_menu_item_label(context, "Render Settings", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE)) editor->window_settings_renderer = !editor->window_settings_renderer;
 			nk_menu_end(context);
 		}
 
-		nk_layout_row_push(context, 0.1f);
-		if(nk_menu_begin_label(context, "Windows", NK_TEXT_CENTERED | NK_TEXT_ALIGN_MIDDLE, nk_vec2(180, 100)))
+		nk_layout_row_push(context, 0.05f);
+		if(nk_menu_begin_label(context, "Windows", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, nk_vec2(180, 100)))
 		{
-			nk_layout_row_dynamic(context, 25, 1);
+			nk_layout_row_dynamic(context, row_height, 1);
 			nk_checkbox_label(context, "Scene Heirarchy", &editor->window_scene_heirarchy);
 			nk_checkbox_label(context, "Property Inspector", &editor->window_property_inspector);
 			nk_checkbox_label(context, "Debug Variables", &editor->window_debug_variables);
@@ -321,7 +331,12 @@ void editor_update(struct Editor* editor, float dt)
 		nk_layout_row_push(context, 0.6f);
 		nk_spacing(context, 1);
 
-		nk_layout_row_push(context, 0.1f);
+		nk_layout_row_push(context, 0.20f);
+		static const char* editor_modes[] = { "Normal", "Translate", "Rotate", "Scale" };
+		static const char* editor_axis[] = { "XY", "X", "Y", "Z" };
+		nk_labelf(context, NK_TEXT_ALIGN_RIGHT | NK_TEXT_ALIGN_MIDDLE, "Mode : %s Axis: %s", editor_modes[editor->current_mode], editor_axis[editor->current_axis]);
+
+		nk_layout_row_push(context, 0.07f);
 		nk_labelf(context, NK_TEXT_ALIGN_RIGHT | NK_TEXT_ALIGN_MIDDLE, "FPS : %.d", fps);
 		
 		nk_menubar_end(context);
@@ -334,6 +349,13 @@ void editor_update(struct Editor* editor, float dt)
 	if(editor->window_settings_renderer) editor_window_renderer_settings(context, editor, game_state);
 	if(editor->window_settings_editor) editor_window_settings_editor(context, editor, game_state);
 	
+	if(editor->tool_mesh_draw_enabled)
+	{
+		if(editor->current_mode == EDITOR_MODE_TRANSLATE)
+		{
+			im_sphere(1.f, editor->tool_mesh_position, (quat) { 0.f, 0.f, 0.f, 1.f }, editor->tool_mesh_color, GDM_TRIANGLES);
+		}
+	}
 }
 
 void editor_on_mousebutton(const struct Event* event)
@@ -347,9 +369,9 @@ void editor_on_mousebutton(const struct Event* event)
 		return;
 
 	if(event->mousebutton.button == MSB_LEFT &&
-	   event->type == EVT_MOUSEBUTTON_RELEASED && 
-	   !editor->camera_looking_around && 
-	   nk_item_is_any_active(&gui->context) == 0)
+		event->type == EVT_MOUSEBUTTON_RELEASED &&
+		!editor->camera_looking_around &&
+		nk_item_is_any_active(&gui->context) == 0)
 	{
 		log_message("Editor Picking");
 		struct Camera* editor_camera = &game_state_get()->scene->cameras[CAM_EDITOR];
@@ -378,14 +400,97 @@ void editor_on_mousebutton(const struct Event* event)
 		}
 		else
 		{
-			//Deselect the currently selected entity if nothing was found
 			if(editor->selected_entity)
 			{
-				editor->selected_entity->editor_selected = false;
-				editor->selected_entity = NULL;
+				if(editor->current_mode == EDITOR_MODE_TRANSLATE)
+				{
+					transform_set_position(editor->selected_entity, &editor->tool_mesh_position);
+				}
+				else
+				{
+					//Deselect the currently selected entity if nothing was found
+					editor->selected_entity->editor_selected = false;
+					editor->selected_entity = NULL;
+				}
 			}
 		}
 	}
+}
+
+void editor_on_mousemotion(const struct Event* event)
+{
+	struct Game_State* game_state = game_state_get();
+	struct Editor*     editor = game_state->editor;
+
+	switch(editor->current_mode)
+	{
+	case EDITOR_MODE_NORMAL:
+	{
+
+	}
+	break;
+	case EDITOR_MODE_TRANSLATE:
+	{
+		if(editor->selected_entity)
+		{
+			struct Camera* editor_camera = &game_state->scene->cameras[CAM_EDITOR];
+			vec3 position = { 0.f };
+			transform_get_absolute_position(editor->selected_entity, &position);
+			struct Ray cam_ray;
+			cam_ray = camera_screen_coord_to_ray(editor_camera, event->mousemotion.x, event->mousemotion.y);
+
+			struct Plane ground_plane;
+			vec3_fill(&ground_plane.normal, 0.f, 1.f, 0.f);
+			float dot = vec3_dot(&ground_plane.normal, &position);
+			ground_plane.constant = -dot;
+
+			float distance = bv_distance_ray_plane(&cam_ray, &ground_plane);
+			if(distance < INFINITY && distance > -INFINITY)
+			{
+				vec3 abs_cam_pos, projected_point, cam_forward;
+				transform_get_absolute_position(editor_camera, &abs_cam_pos);
+				transform_get_absolute_forward(editor_camera, &cam_forward);
+				vec3_scale(&projected_point, &cam_ray.direction, distance);
+				vec3_add(&position, &projected_point, &abs_cam_pos);
+				if(editor->tool_snap_enabled)
+				{
+					position.x = roundf(position.x / editor->grid_scale) * editor->grid_scale;
+					position.y = roundf(position.y / editor->grid_scale) * editor->grid_scale;
+					position.z = roundf(position.z / editor->grid_scale) * editor->grid_scale;
+					vec3_assign(&editor->tool_mesh_position, &position);
+				}
+			}
+			log_message("%.3f, %.3f, %.3f", position.x, position.y, position.z);
+		}
+	}
+	break;
+	default: break;
+	}
+}
+
+void editor_on_key_release(const struct Event* event)
+{
+	struct Editor* editor = game_state_get()->editor;
+	if(event->key.key == KEY_TAB)
+	{
+		editor->current_mode++;
+		if(editor->current_mode == EDITOR_MODE_MAX) 
+			editor->current_mode = EDITOR_MODE_NORMAL;
+
+	}
+
+	if(!editor->camera_looking_around)
+	{
+		if(event->key.key == KEY_Q) editor->current_mode = EDITOR_MODE_NORMAL;
+		if(event->key.key == KEY_W) editor->current_mode = EDITOR_MODE_TRANSLATE;
+		if(event->key.key == KEY_E) editor->current_mode = EDITOR_MODE_ROTATE;
+		if(event->key.key == KEY_R) editor->current_mode = EDITOR_MODE_SCALE;
+	}
+
+	if(editor->current_mode == EDITOR_MODE_TRANSLATE)
+		editor->tool_mesh_draw_enabled = 1;
+	else
+		editor->tool_mesh_draw_enabled = 0;
 }
 
 void editor_camera_update(struct Editor* editor, float dt)
@@ -939,7 +1044,7 @@ void editor_window_settings_editor(struct nk_context* context, struct Editor* ed
 		editor_widget_color_combov4(context, &editor->grid_color, 200, 400);
 
 		nk_layout_row_dynamic(context, row_height, 1);
-		nk_property_int(context, "Grid Lines", 10, &editor->grid_num_lines, 100, 1, 1);
+		nk_property_int(context, "Grid Lines", 10, &editor->grid_num_lines, 200, 1, 1);
 
 		nk_layout_row_dynamic(context, row_height, 1);
 		nk_property_float(context, "Grid Scale", 0.25f, &editor->grid_scale, 10.f, 1, 0.25f);

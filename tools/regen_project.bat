@@ -1,4 +1,4 @@
 @echo off
 
-cd W:\build\
+chdir /D W:\build\
 genie.exe vs2017

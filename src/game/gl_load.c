@@ -2,6 +2,8 @@
 #include "../common/log.h"
 #include "../system/platform.h"
 
+#include <SDL_assert.h>
+
 #ifndef USE_GLAD
 
 #define GLE(ret, name, ...) name##proc * gl##name;
@@ -62,7 +64,12 @@ void gl_check_error(const char * expression, unsigned int line, const char * fil
 	}
 
 	if(error_code != GL_NO_ERROR)
+	{
 		log_error("GL", "(%s:%d:%s) : %s", file, line, expression, error_string);
+#ifdef GL_BREAK_ON_ERROR
+		SDL_TriggerBreakpoint();
+#endif
+	}
 	else
 		error = 0;
 }

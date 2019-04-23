@@ -42,15 +42,22 @@ struct Ray
 	vec3 origin;
 };
 
+struct Plane
+{
+	vec3  normal;
+	float constant;
+};
+
 struct Raycast_Result
 {
 	struct Entity* entities_intersected[MAX_RAYCAST_ENTITIES_INTERSECT];
 	int            num_entities_intersected;
 };
 
-int  bv_intersect_frustum_box(vec4* frustum, struct Bounding_Box* box, vec3* box_abs_position, vec3* box_abs_scale);
-int  bv_intersect_frustum_sphere(vec4* frustum, struct Bounding_Sphere* sphere, vec3* sphere_abs_pos, vec3* sphere_abs_scale);
-bool bv_intersect_frustum_point(vec4* frustum, const vec3* point);
-bool bv_intersect_sphere_ray(struct Bounding_Sphere* sphere, vec3* sphere_abs_position, struct Ray* ray);
+int   bv_intersect_frustum_box(vec4* frustum, struct Bounding_Box* box, vec3* box_abs_position, vec3* box_abs_scale);
+int   bv_intersect_frustum_sphere(vec4* frustum, struct Bounding_Sphere* sphere, vec3* sphere_abs_pos, vec3* sphere_abs_scale);
+bool  bv_intersect_frustum_point(vec4* frustum, const vec3* point);
+bool  bv_intersect_sphere_ray(struct Bounding_Sphere* sphere, vec3* sphere_abs_position, struct Ray* ray);
+float bv_distance_ray_plane(struct Ray* ray, struct Plane* plane);
 
 #endif

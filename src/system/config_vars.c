@@ -13,8 +13,8 @@
 void config_vars_init(struct Hashmap* cvars)
 {
     /* Initialize with default values incase there is no config file */
-    hashmap_int_set(cvars,   "render_width",                 1024);
-    hashmap_int_set(cvars,   "render_height",                768);
+    hashmap_int_set(cvars,   "render_width",                 1280);
+    hashmap_int_set(cvars,   "render_height",                720);
     hashmap_int_set(cvars,   "fog_mode",                     0);
     hashmap_vec3_setf(cvars, "fog_color",                    0.9f, 0.2f, 0.2f);
     hashmap_float_set(cvars, "fog_density",                  0.1f);

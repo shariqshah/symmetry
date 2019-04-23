@@ -26,7 +26,9 @@ static struct
 IM_State;
 
 static struct IM_Geom* active_geom = NULL;
-static int  active_vertex_index    = 0;
+static int active_vertex_index    = 0;
+
+static void im_geom_reset(struct IM_Geom* geom);
 
 void im_init(void)
 {
@@ -81,6 +83,7 @@ void im_begin(vec3 position, quat rotation, vec3 scale, vec4 color, int draw_mod
 	}
 	IM_State.curr_geom++;
 	active_geom = &IM_State.geometries[IM_State.curr_geom];
+	im_geom_reset(active_geom);
 	active_geom->start_index = IM_State.curr_vertex;
 	active_geom->type = IGT_DYNAMIC;
 	active_geom->draw_mode = draw_mode;
@@ -106,11 +109,12 @@ void im_box(float x, float y, float z, vec3 position, quat rotation, vec4 color,
 {
 	if(active_geom)
 	{
-		log_error("im_begin", "im_begin called before im_end");
+		log_error("im_box", "im_box called before im_end");
 		return;
 	}
 	IM_State.curr_geom++;
 	active_geom = &IM_State.geometries[IM_State.curr_geom];
+	im_geom_reset(active_geom);
 	active_geom->type = IGT_PRIMITIVE;
 	active_geom->draw_mode = draw_mode;
 	active_geom->prim_geom_index = geom_create_from_file("cube.symbres");
@@ -126,11 +130,12 @@ void im_sphere(float radius, vec3 position, quat rotation, vec4 color, int draw_
 {
 	if(active_geom)
 	{
-		log_error("im_begin", "im_begin called before im_end");
+		log_error("im_sphere", "im_sphere called before im_end");
 		return;
 	}
 	IM_State.curr_geom++;
 	active_geom = &IM_State.geometries[IM_State.curr_geom];
+	im_geom_reset(active_geom);
 	active_geom->type = IGT_PRIMITIVE;
 	active_geom->draw_mode = draw_mode;
 	active_geom->prim_geom_index = geom_create_from_file("sphere.symbres");
@@ -145,7 +150,7 @@ void im_sphere(float radius, vec3 position, quat rotation, vec4 color, int draw_
 void im_end(void)
 {
 	active_geom->num_vertices = active_vertex_index + 1;
-	glBindBuffer(GL_ARRAY_BUFFER, IM_State.vbo);
+	GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, IM_State.vbo));
 	GL_CHECK(glBufferSubData(GL_ARRAY_BUFFER,
 					sizeof(struct IM_Vertex) * active_geom->start_index,
 					sizeof(struct IM_Vertex) * active_geom->num_vertices,
@@ -166,7 +171,6 @@ void im_render(struct Camera* active_viewer)
 	{
 		static mat4 mvp, translation, rotation, scale;
 
-		glBindVertexArray(IM_State.vao);
 		for(int i = 0; i <= IM_State.curr_geom; i++)
 		{
 			struct IM_Geom* geom = &IM_State.geometries[i];
@@ -190,20 +194,34 @@ void im_render(struct Camera* active_viewer)
 			shader_set_uniform_vec4(IM_State.im_shader, "geom_color", &geom->color);
 			if(geom->type == IGT_DYNAMIC)
 			{
-				glDrawArrays(geom->draw_mode, geom->start_index, geom->num_vertices);
+				GL_CHECK(glBindVertexArray(IM_State.vao));
+				GL_CHECK(glDrawArrays(draw_modes[geom->draw_mode], geom->start_index, geom->num_vertices));
+				GL_CHECK(glBindVertexArray(0));
 			}
 			else
 			{
-				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				GL_CHECK(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
 				geom_render(geom->prim_geom_index, geom->draw_mode);
-				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				GL_CHECK(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 			}
 		}
-		glBindVertexArray(0);
 
 	}
 	shader_unbind();
 
 	IM_State.curr_geom   = -1;
 	IM_State.curr_vertex =  0;
+}
+
+void im_geom_reset(struct IM_Geom* geom)
+{
+	vec3_fill(&geom->position, 0.f, 0.f, 0.f);
+	quat_identity(&geom->rotation);
+	vec3_fill(&geom->scale, 1.f, 1.f, 1.f);
+	vec4_fill(&geom->color, 0.f, 0.f, 0.f, 0.f);
+	geom->type = -1;
+	geom->start_index = -1;
+	geom->num_vertices = 0;
+	geom->prim_geom_index = -1;
+	geom->draw_mode = -1;
 }

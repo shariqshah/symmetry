@@ -28,6 +28,10 @@ struct Editor
 	vec4           grid_color;
 	int            grid_num_lines;
 	float          grid_scale;
+	int            tool_snap_enabled;
+	vec3           tool_mesh_position;
+	vec4           tool_mesh_color;
+	int            tool_mesh_draw_enabled;
 };
 
 void editor_init(struct Editor* editor_state);

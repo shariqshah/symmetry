@@ -13,7 +13,7 @@ i'll make my own additions like SIMD etc later on.
 #ifndef M_PI
     #define M_PI		        3.14159265358979323846f
 #endif
-#define EPSILON             0.0001
+#define EPSILON             0.000001
 #define TO_RADIANS(degrees) ((degrees * M_PI) / 180.0)
 #define TO_DEGREES(radians) ((radians * 180.0) / M_PI)
 

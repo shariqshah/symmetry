@@ -210,7 +210,7 @@ struct Ray camera_screen_coord_to_ray(struct Camera* camera, int mouse_x, int mo
 
 	int win_width = 0, win_height = 0;
 	struct Game_State* game_state = game_state_get();
-	window_get_size(game_state->window, &win_width, &win_height);
+	window_get_drawable_size(game_state->window, &win_width, &win_height);
 
 	float normalized_x = (2.f * (float)mouse_x) / (float)win_width - 1.f;
 	float normalized_y = 1.f - (2.f * (float)mouse_y) / (float)win_height;

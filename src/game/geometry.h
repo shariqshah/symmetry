@@ -4,8 +4,11 @@
 #include "../common/num_types.h"
 #include "../common/linmath.h"
 #include "bounding_volumes.h"
+#include "gl_load.h"
 
 struct Entity;
+
+extern GLenum* draw_modes;
 
 enum Geometry_Draw_Mode
 {

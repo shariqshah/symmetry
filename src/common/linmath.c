@@ -824,3 +824,10 @@ void quat_mul_mat4(quat* res, quat* val, mat4* mat)
     res->z = v.z;
     res->w = v.w;
 }
+
+void plane_init(Plane* plane, vec3* normal, vec3* point)
+{
+	vec3_assign(&plane->normal, normal);
+	float dot = vec3_dot(&plane->normal, point);
+	plane->constant = -dot;
+}

@@ -109,7 +109,7 @@ void editor_init(struct Editor* editor)
 	editor->current_mode              = EDITOR_MODE_NORMAL;
 	editor->current_axis              = EDITOR_AXIS_XY;
 	editor->grid_enabled              = 1;
-	editor->grid_num_lines            = 50;
+	editor->grid_num_lines            = 100;
 	editor->grid_scale                = 1.f;
 	editor->tool_mesh_draw_enabled    = 0;
 	editor->tool_snap_enabled         = 1;
@@ -420,7 +420,7 @@ void editor_on_mousebutton(const struct Event* event)
 void editor_on_mousemotion(const struct Event* event)
 {
 	struct Game_State* game_state = game_state_get();
-	struct Editor*     editor = game_state->editor;
+	struct Editor*     editor     = game_state->editor;
 
 	switch(editor->current_mode)
 	{
@@ -439,10 +439,8 @@ void editor_on_mousemotion(const struct Event* event)
 			struct Ray cam_ray;
 			cam_ray = camera_screen_coord_to_ray(editor_camera, event->mousemotion.x, event->mousemotion.y);
 
-			struct Plane ground_plane;
-			vec3_fill(&ground_plane.normal, 0.f, 1.f, 0.f);
-			float dot = vec3_dot(&ground_plane.normal, &position);
-			ground_plane.constant = -dot;
+			Plane ground_plane;
+			plane_init(&ground_plane, &(vec3){0.f, 1.f, 0.f}, &position);
 
 			float distance = bv_distance_ray_plane(&cam_ray, &ground_plane);
 			if(distance < INFINITY && distance > -INFINITY)
@@ -460,7 +458,6 @@ void editor_on_mousemotion(const struct Event* event)
 					vec3_assign(&editor->tool_mesh_position, &position);
 				}
 			}
-			log_message("%.3f, %.3f, %.3f", position.x, position.y, position.z);
 		}
 	}
 	break;

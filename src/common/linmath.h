@@ -51,6 +51,12 @@ typedef struct quat_t
 	float w;
 } quat;
 
+typedef struct plane_t
+{
+	vec3 normal;
+	float constant;
+} Plane;
+
 /* constants */
 extern const vec3 UNIT_X;
 extern const vec3 UNIT_Y;
@@ -133,5 +139,8 @@ void  quat_assign(quat* res, const quat* val);
 void  quat_identity(quat* res);
 void  quat_fill(quat* res, float x, float y, float z, float w);
 void  quat_mul_mat4(quat* res, quat* val, mat4* mat);
+
+/* Plane */
+void plane_init(Plane* plane, vec3* normal, vec3* point);
 
 #endif

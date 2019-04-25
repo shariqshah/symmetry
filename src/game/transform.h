@@ -4,7 +4,7 @@
 #include "../common/linmath.h"
 #include "../common/num_types.h"
 
-enum Transform_Space { TS_LOCAL, TS_PARENT, TS_WORLD};
+enum Transform_Space { TS_LOCAL = 0, TS_PARENT, TS_WORLD};
 
 struct Entity;
 

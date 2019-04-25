@@ -1,5 +1,7 @@
 Todo:
-	- Display editor camera information and speed adjustment in status bar or top bar
+	- Display editor camera parameter adjustment in top bar
+	- Display Transform mode selection in top bar
+	- Display Axis selection in top bar
 	- Add pre-render/post-render steps to deal with render order issues and culling lights before rendering
 	- Immediate mode render order, drawing axis and helpers on top of grid
 	- Better, more accurate picking
@@ -9,6 +11,7 @@ Todo:
 	- Scale Mode
 	- Rotate Mode
 	- Add other axis combinations like YZ and XY to transform tool
+	- Transformation space selection for translation, rotation and scale.
 	- Use actual selected entity's mesh for tool mesh when the entity already has a mesh and use a placeholder like a sphere when there is not mesh 
 	- Add warning to genie build script when running on windows and WindowsSdkVersion cannot be found. This happens when the script is not run from vcvarsall command prompt
 	- Improve README and add a screenshot to make the repository ready for making it public 
@@ -82,6 +85,7 @@ Bugs:
 	- Fix culling
 	- Fix bounding boxes not aligning in editor
 	- Investigate memory usage increase when window is minimized
+	- Fix hang on fullscreen toggle
 
 Done:
 	* Input
@@ -232,4 +236,5 @@ Done:
 	* Axis selection/cycling
 	* Axis switching and returning back to previously selected axis after releasing alt in translate mode
 	* Display tool/cursor location in editor statusbar
+	* Displaying camera position and tool transformation space in top bar
 

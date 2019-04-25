@@ -109,6 +109,7 @@ void editor_init(struct Editor* editor)
     editor->camera_turn_speed         = 50.f;
     editor->camera_move_speed         = 20.f;
     editor->camera_sprint_multiplier  = 2.f;
+	editor->current_transform_space   = TS_WORLD;
 	editor->current_mode              = EDITOR_MODE_NORMAL;
 	editor->current_axis              = EDITOR_AXIS_XZ;
 	editor->previous_axis             = EDITOR_AXIS_XZ;
@@ -284,22 +285,10 @@ void editor_update(struct Editor* editor, float dt)
 	/* Top Panel */
 	if(nk_begin(context, "Top Panel", nk_recti(0, 0, win_width, editor->top_panel_height), NK_WINDOW_NO_SCROLLBAR))
 	{
-		static int   frames = 0;
-		static int   fps = 0;
-		static float seconds = 0.f;
-		seconds += dt;
-		frames++;
-		if(seconds >= 1.f)
-		{
-			fps = frames;
-			seconds = 0.f;
-			frames = 0;
-		}
-
 		const int row_height = 25.f;
 		nk_menubar_begin(context);
 
-		nk_layout_row_begin(context, NK_DYNAMIC, editor->top_panel_height - 5, 6);
+		nk_layout_row_begin(context, NK_DYNAMIC, editor->top_panel_height - 5, 8);
 		nk_layout_row_push(context, 0.03f);
 		if(nk_menu_begin_label(context, "File", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, nk_vec2(150, 100)))
 		{
@@ -333,16 +322,46 @@ void editor_update(struct Editor* editor, float dt)
 			nk_menu_end(context);
 		}
 
-		nk_layout_row_push(context, 0.6f);
+		nk_layout_row_push(context, 0.50f);
 		nk_spacing(context, 1);
 
-		nk_layout_row_push(context, 0.20f);
-		static const char* editor_modes[] = { "Normal", "Translate", "Rotate", "Scale" };
-		static const char* editor_axis[] = { "XY", "X", "Y", "Z" };
-		nk_labelf(context, NK_TEXT_ALIGN_RIGHT | NK_TEXT_ALIGN_MIDDLE, "Mode : %s Axis: %s", editor_modes[editor->current_mode], editor_axis[editor->current_axis]);
+		nk_layout_row_push(context, 0.1f);
+		static const char* editor_transformation_modes[] = { "Normal", "Translate", "Rotate", "Scale" };
+		static char transform_mode_line[32];
+		snprintf(&transform_mode_line, 32, "Mode : %s", editor_transformation_modes[editor->current_mode]);
+		if(nk_menu_begin_label(context, transform_mode_line, NK_TEXT_ALIGN_RIGHT | NK_TEXT_ALIGN_MIDDLE, nk_vec2(180, 100)))
+		{
+			nk_menu_end(context);
+		}
 
-		nk_layout_row_push(context, 0.07f);
-		nk_labelf(context, NK_TEXT_ALIGN_RIGHT | NK_TEXT_ALIGN_MIDDLE, "FPS : %.d", fps);
+		nk_layout_row_push(context, 0.1f);
+		static const char* editor_transformation_spaces[] = { "Local", "Parent", "World" };
+		static char transform_space_text[32];
+		snprintf(&transform_space_text, 32, "Space : %s", editor_transformation_spaces[editor->current_transform_space]);
+		if(nk_menu_begin_label(context, transform_space_text, NK_TEXT_ALIGN_RIGHT | NK_TEXT_ALIGN_MIDDLE, nk_vec2(180, 100)))
+		{
+			nk_menu_end(context);
+		}
+
+		nk_layout_row_push(context, 0.05f);
+		static const char* editor_axis[] = { "XZ", "X", "Y", "Z" };
+		static char axis_text[16];
+		snprintf(axis_text, 16, "Axis: %s", editor_axis[editor->current_axis]);
+		if(nk_menu_begin_label(context, axis_text, NK_TEXT_ALIGN_RIGHT | NK_TEXT_ALIGN_MIDDLE, nk_vec2(180, 100)))
+		{
+			nk_menu_end(context);
+		}
+
+		
+		nk_layout_row_push(context, 0.1f);
+		static char camera_text[32];
+		vec3 camera_position = { 0.f, 0.f, 0.f };
+		transform_get_absolute_position(&game_state->scene->cameras[CAM_EDITOR], &camera_position);
+		snprintf(camera_text, 32, "Camera: %.1f %.1f %.1f", camera_position.x, camera_position.y, camera_position.z);
+		if(nk_menu_begin_label(context, camera_text, NK_TEXT_ALIGN_RIGHT | NK_TEXT_ALIGN_MIDDLE, nk_vec2(180, 100)))
+		{
+			nk_menu_end(context);
+		}
 		
 		nk_menubar_end(context);
 	}
@@ -351,7 +370,7 @@ void editor_update(struct Editor* editor, float dt)
 	/* Status Bar */
 	if(nk_begin(context, "Status Bar", nk_recti(0, win_height - editor->top_panel_height, win_width, editor->top_panel_height), NK_WINDOW_NO_SCROLLBAR))
 	{
-		nk_layout_row_begin(context, NK_DYNAMIC, editor->top_panel_height - 5, 5);
+		nk_layout_row_begin(context, NK_DYNAMIC, editor->top_panel_height - 5, 8);
 
 		nk_layout_row_push(context, 0.1f);
 		nk_labelf(context, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, "Cursor: %.1f  %.1f  %.1f", editor->tool_mesh_position.x, editor->tool_mesh_position.y, editor->tool_mesh_position.z);
@@ -365,8 +384,23 @@ void editor_update(struct Editor* editor, float dt)
 		nk_layout_row_push(context, 0.1f);
 		nk_labelf(context, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, "Grid Length: %d", editor->grid_num_lines);
 
-		nk_layout_row_push(context, 0.6f);
+		nk_layout_row_push(context, 0.5f);
 		nk_spacing(context, 1);
+		
+		nk_layout_row_push(context, 0.1f);
+		static int   frames = 0;
+		static int   fps = 0;
+		static float seconds = 0.f;
+		seconds += dt;
+		frames++;
+		if(seconds >= 1.f)
+		{
+			fps = frames;
+			seconds = 0.f;
+			frames = 0;
+		}
+		nk_labelf(context, NK_TEXT_ALIGN_RIGHT | NK_TEXT_ALIGN_MIDDLE, "FPS : %.d", fps);
+		
 	}
 	nk_end(context);
 

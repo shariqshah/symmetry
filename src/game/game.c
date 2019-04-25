@@ -783,7 +783,7 @@ void game_debug_gui(float dt)
 
 				nk_label(ctx, "Slider float", NK_TEXT_LEFT);
 				nk_slider_float(ctx, 0, &float_slider, 5.0, 0.5f);
-				nk_labelf(ctx, NK_TEXT_LEFT, "Progressbar: %zu", prog_value);
+				nk_labelf(ctx, NK_TEXT_LEFT, "Progressbar: %d", prog_value);
 				nk_progress(ctx, &prog_value, 100, NK_MODIFIABLE);
 
 				nk_layout_row(ctx, NK_STATIC, 25, 2, ratio);

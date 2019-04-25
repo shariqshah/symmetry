@@ -496,7 +496,6 @@ bool game_run(void)
 		if(delta_time > MAX_FRAME_TIME) delta_time = (1.f / 60.f); /* To deal with resuming from breakpoint we artificially set delta time */
 
 		gui_input_begin(game_state->gui);
-        //platform_poll_events(&should_window_close);
 		event_manager_poll_events(game_state->event_manager, &should_window_close);
 		gui_input_end(game_state->gui);
 		
@@ -510,7 +509,7 @@ bool game_run(void)
 
 void game_update(float dt, bool* window_should_close)
 {	
-    if(input_is_key_pressed(KEY_ESCAPE))                      *window_should_close = true;
+    //if(input_is_key_pressed(KEY_ESCAPE))                      *window_should_close = true;
     if(input_map_state_get("Window_Fullscreen", KS_RELEASED)) window_fullscreen_set(game_state->window, true);
     if(input_map_state_get("Window_Maximize",   KS_RELEASED)) window_fullscreen_set(game_state->window, false);
     if(input_map_state_get("Console_Toggle",    KS_RELEASED)) console_toggle(game_state->console);

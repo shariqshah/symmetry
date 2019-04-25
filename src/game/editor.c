@@ -55,7 +55,7 @@ enum Editor_Mode
 
 enum Editor_Axis
 {
-	EDITOR_AXIS_XY = 0,
+	EDITOR_AXIS_XZ = 0,
 	EDITOR_AXIS_X,
 	EDITOR_AXIS_Y,
 	EDITOR_AXIS_Z
@@ -72,6 +72,7 @@ static int                    window_flags    = NK_WINDOW_BORDER |
 static void editor_on_mousebutton(const struct Event* event);
 static void editor_on_mousemotion(const struct Event* event);
 static void editor_on_key_release(const struct Event* event);
+static void editor_on_key_press(const struct Event* event);
 static void editor_camera_update(struct Editor* editor, float dt);
 static void editor_show_entity_in_list(struct Editor* editor, struct nk_context* context, struct Scene* scene, struct Entity* entity);
 static void editor_widget_color_combov3(struct nk_context* context, vec3* color, int width, int height);
@@ -92,6 +93,8 @@ static void editor_window_debug_variables(struct nk_context* context, struct Edi
 static void editor_window_property_inspector(struct nk_context* context, struct Editor* editor, struct Game_State* game_state);
 static void editor_window_renderer_settings(struct nk_context* context, struct Editor* editor, struct Game_State* game_state);
 static void editor_window_settings_editor(struct nk_context* context, struct Editor* editor, struct Game_State* game_state);
+static void editor_axis_set(int axis);
+static void editor_entity_select(struct Editor* editor, struct Entity* entity);
 
 void editor_init(struct Editor* editor)
 {
@@ -107,14 +110,15 @@ void editor_init(struct Editor* editor)
     editor->camera_move_speed         = 20.f;
     editor->camera_sprint_multiplier  = 2.f;
 	editor->current_mode              = EDITOR_MODE_NORMAL;
-	editor->current_axis              = EDITOR_AXIS_XY;
+	editor->current_axis              = EDITOR_AXIS_XZ;
+	editor->previous_axis             = EDITOR_AXIS_XZ;
 	editor->grid_enabled              = 1;
 	editor->grid_num_lines            = 100;
 	editor->grid_scale                = 1.f;
 	editor->tool_mesh_draw_enabled    = 0;
 	editor->tool_snap_enabled         = 1;
 	vec3_fill(&editor->tool_mesh_position, 0.f, 0.f, 0.f);
-	vec4_fill(&editor->tool_mesh_color, 1.f, 0.f, 1.f, 1.f);
+	vec4_fill(&editor->tool_mesh_color, 0.f, 0.3f, 1.f, 1.f);
 	vec4_fill(&editor->selected_entity_colour, 0.f, 1.f, 0.f, 1.f);
 	vec4_fill(&editor->grid_color, 0.3f, 0.3f, 0.3f, 1.f);
     debug_vars_list                   = array_new(struct Debug_Variable);
@@ -125,6 +129,7 @@ void editor_init(struct Editor* editor)
 	event_manager_subscribe(event_manager, EVT_MOUSEMOTION, &editor_on_mousemotion);
 	event_manager_subscribe(event_manager, EVT_MOUSEBUTTON_RELEASED, &editor_on_mousebutton);
 	event_manager_subscribe(event_manager, EVT_KEY_RELEASED, &editor_on_key_release);
+	event_manager_subscribe(event_manager, EVT_KEY_PRESSED, &editor_on_key_press);
 }
 
 void editor_init_camera(struct Editor* editor, struct Hashmap* cvars)
@@ -353,7 +358,30 @@ void editor_update(struct Editor* editor, float dt)
 	{
 		if(editor->current_mode == EDITOR_MODE_TRANSLATE)
 		{
-			im_sphere(1.f, editor->tool_mesh_position, (quat) { 0.f, 0.f, 0.f, 1.f }, editor->tool_mesh_color, GDM_TRIANGLES);
+			im_sphere(0.5f, editor->tool_mesh_position, (quat) { 0.f, 0.f, 0.f, 1.f }, editor->tool_mesh_color, GDM_TRIANGLES);
+			//im_box(editor->grid_scale, editor->grid_scale, editor->grid_scale, editor->tool_mesh_position, (quat) { 0.f, 0.f, 0.f, 1.f }, editor->tool_mesh_color, GDM_TRIANGLES);
+
+			im_begin(editor->tool_mesh_position, (quat) { 0.f, 0.f, 0.f, 1.f }, (vec3) { 1.f, 1.f, 1.f }, (vec4) { 0.f, 1.f, 1.f, 1.f }, GDM_LINES);
+			switch(editor->current_axis)
+			{
+			case EDITOR_AXIS_XZ:
+				im_pos(-editor->grid_num_lines * editor->grid_scale, 0.f, 0.f); im_pos(editor->grid_num_lines * editor->grid_scale, 0.f, 0.f);
+				im_pos(0.f, 0.f, -editor->grid_num_lines * editor->grid_scale); im_pos(0.f, 0.f, editor->grid_num_lines * editor->grid_scale);
+				break;
+			case EDITOR_AXIS_Y:
+				im_pos(0.f, -editor->grid_num_lines * editor->grid_scale, 0.f);
+				im_pos(0.f, editor->grid_num_lines * editor->grid_scale, 0.f);
+				break;
+			case EDITOR_AXIS_X:
+				im_pos(-editor->grid_num_lines * editor->grid_scale, 0.f, 0.f);
+				im_pos(editor->grid_num_lines * editor->grid_scale, 0.f, 0.f);
+				break;
+			case EDITOR_AXIS_Z:
+				im_pos(0.f, 0.f, -editor->grid_num_lines * editor->grid_scale);
+				im_pos(0.f, 0.f, editor->grid_num_lines * editor->grid_scale);
+				break;
+			}
+			im_end();
 		}
 	}
 }
@@ -378,7 +406,6 @@ void editor_on_mousebutton(const struct Event* event)
 		int mouse_x = 0, mouse_y = 0;
 		platform_mouse_position_get(&mouse_x, &mouse_y);
 		struct Ray ray = camera_screen_coord_to_ray(editor_camera, mouse_x, mouse_y);
-		//log_message("Ray: %.3f, %.3f, %.3f", ray.direction.x, ray.direction.y, ray.direction.z); 
 
 		struct Scene* scene = game_state_get()->scene;
 		struct Raycast_Result ray_result;
@@ -388,15 +415,7 @@ void editor_on_mousebutton(const struct Event* event)
 		{
 			//For now, just select the first entity that is intersected 
 			struct Entity* intersected_entity = ray_result.entities_intersected[0];
-
-			if(editor->selected_entity && editor->selected_entity != intersected_entity)
-			{
-				editor->selected_entity->editor_selected = false;
-				editor->selected_entity = NULL;
-			}
-
-			intersected_entity->editor_selected = true;
-			editor->selected_entity = intersected_entity;
+			editor_entity_select(editor, intersected_entity);
 		}
 		else
 		{
@@ -409,8 +428,7 @@ void editor_on_mousebutton(const struct Event* event)
 				else
 				{
 					//Deselect the currently selected entity if nothing was found
-					editor->selected_entity->editor_selected = false;
-					editor->selected_entity = NULL;
+					editor_entity_select(editor, NULL);
 				}
 			}
 		}
@@ -439,24 +457,35 @@ void editor_on_mousemotion(const struct Event* event)
 			struct Ray cam_ray;
 			cam_ray = camera_screen_coord_to_ray(editor_camera, event->mousemotion.x, event->mousemotion.y);
 
-			Plane ground_plane;
-			plane_init(&ground_plane, &(vec3){0.f, 1.f, 0.f}, &position);
-
-			float distance = bv_distance_ray_plane(&cam_ray, &ground_plane);
-			if(distance < INFINITY && distance > -INFINITY)
+			switch(editor->current_axis)
 			{
-				vec3 abs_cam_pos, projected_point, cam_forward;
-				transform_get_absolute_position(editor_camera, &abs_cam_pos);
-				transform_get_absolute_forward(editor_camera, &cam_forward);
-				vec3_scale(&projected_point, &cam_ray.direction, distance);
-				vec3_add(&position, &projected_point, &abs_cam_pos);
-				if(editor->tool_snap_enabled)
+			case EDITOR_AXIS_X: editor->tool_mesh_position.x +=  event->mousemotion.xrel; break;
+			case EDITOR_AXIS_Y: editor->tool_mesh_position.y += -event->mousemotion.yrel; break;
+			case EDITOR_AXIS_Z: editor->tool_mesh_position.z += -event->mousemotion.yrel; break;
+			case EDITOR_AXIS_XZ:
+			{
+				Plane ground_plane;
+				plane_init(&ground_plane, &(vec3){0.f, 1.f, 0.f}, &position);
+
+				float distance = bv_distance_ray_plane(&cam_ray, &ground_plane);
+				if(distance < INFINITY && distance > -INFINITY)
 				{
-					position.x = roundf(position.x / editor->grid_scale) * editor->grid_scale;
-					position.y = roundf(position.y / editor->grid_scale) * editor->grid_scale;
-					position.z = roundf(position.z / editor->grid_scale) * editor->grid_scale;
+					vec3 abs_cam_pos, projected_point, cam_forward;
+					transform_get_absolute_position(editor_camera, &abs_cam_pos);
+					transform_get_absolute_forward(editor_camera, &cam_forward);
+					vec3_scale(&projected_point, &cam_ray.direction, distance);
+					vec3_add(&position, &projected_point, &abs_cam_pos);
 					vec3_assign(&editor->tool_mesh_position, &position);
 				}
+			}
+			break;
+			}
+
+			if(editor->tool_snap_enabled)
+			{
+				editor->tool_mesh_position.x = roundf(editor->tool_mesh_position.x / editor->grid_scale) * editor->grid_scale;
+				editor->tool_mesh_position.y = roundf(editor->tool_mesh_position.y / editor->grid_scale) * editor->grid_scale;
+				editor->tool_mesh_position.z = roundf(editor->tool_mesh_position.z / editor->grid_scale) * editor->grid_scale;
 			}
 		}
 	}
@@ -468,20 +497,51 @@ void editor_on_mousemotion(const struct Event* event)
 void editor_on_key_release(const struct Event* event)
 {
 	struct Editor* editor = game_state_get()->editor;
-	if(event->key.key == KEY_TAB)
-	{
-		editor->current_mode++;
-		if(editor->current_mode == EDITOR_MODE_MAX) 
-			editor->current_mode = EDITOR_MODE_NORMAL;
+	struct Gui*    gui    = game_state_get()->gui;
 
-	}
-
-	if(!editor->camera_looking_around)
+	if(!nk_window_is_any_hovered(&gui->context))
 	{
-		if(event->key.key == KEY_Q) editor->current_mode = EDITOR_MODE_NORMAL;
-		if(event->key.key == KEY_W) editor->current_mode = EDITOR_MODE_TRANSLATE;
-		if(event->key.key == KEY_E) editor->current_mode = EDITOR_MODE_ROTATE;
-		if(event->key.key == KEY_R) editor->current_mode = EDITOR_MODE_SCALE;
+		/* Mode Cycle */
+		if(event->key.key == KEY_TAB)
+		{
+			editor->current_mode++;
+			if(editor->current_mode == EDITOR_MODE_MAX)
+				editor->current_mode = EDITOR_MODE_NORMAL;
+
+		}
+
+		/* Mode Select */
+		if(!editor->camera_looking_around)
+		{
+			if(event->key.key == KEY_Q) editor->current_mode = EDITOR_MODE_NORMAL;
+			if(event->key.key == KEY_W) editor->current_mode = EDITOR_MODE_TRANSLATE;
+			if(event->key.key == KEY_E) editor->current_mode = EDITOR_MODE_ROTATE;
+			if(event->key.key == KEY_R) editor->current_mode = EDITOR_MODE_SCALE;
+		}
+
+		/* Axis select */
+		int selected_axis = editor->current_axis;
+		if(event->key.key == KEY_X) selected_axis = EDITOR_AXIS_X;
+		if(event->key.key == KEY_Y) selected_axis = EDITOR_AXIS_Y;
+		if(event->key.key == KEY_Z) selected_axis = EDITOR_AXIS_Z;
+		if(event->key.key == KEY_Y && input_is_key_pressed(KEY_LSHIFT)) selected_axis = EDITOR_AXIS_XZ;
+		if(event->key.key == KEY_ALT) selected_axis = editor->previous_axis;
+		editor_axis_set(selected_axis);
+		
+		/* Grid Scale select */
+		if(event->key.key == KEY_1) editor->grid_scale = 1.f;
+		if(event->key.key == KEY_2) editor->grid_scale = 2.f;
+		if(event->key.key == KEY_3) editor->grid_scale = 3.f;
+		if(event->key.key == KEY_4) editor->grid_scale = 4.f;
+		if(event->key.key == KEY_5) editor->grid_scale = 5.f;
+		if(event->key.key == KEY_6) editor->grid_scale = 6.f;
+		if(event->key.key == KEY_7) editor->grid_scale = 7.f;
+		if(event->key.key == KEY_8) editor->grid_scale = 8.f;
+		if(event->key.key == KEY_9) editor->grid_scale = 9.f;
+		if(event->key.key == KEY_0) editor->grid_scale = 0.5f;
+
+		if(event->key.key == KEY_G) editor->grid_enabled = !editor->grid_enabled;
+		if(event->key.key == KEY_ESCAPE) editor_entity_select(editor, NULL);
 	}
 
 	if(editor->current_mode == EDITOR_MODE_TRANSLATE)
@@ -490,6 +550,54 @@ void editor_on_key_release(const struct Event* event)
 		editor->tool_mesh_draw_enabled = 0;
 }
 
+void editor_entity_select(struct Editor* editor, struct Entity* entity)
+{
+	if(!entity && editor->selected_entity) // Deselect
+	{
+		editor->selected_entity->editor_selected = false;
+		editor->selected_entity = NULL;
+	}
+	else if(entity) // Select
+	{
+		if(editor->selected_entity && editor->selected_entity != entity)
+		{
+			editor->selected_entity->editor_selected = false;
+			editor->selected_entity = NULL;
+		}
+
+		entity->editor_selected = true;
+		editor->selected_entity = entity;
+		transform_get_absolute_position(editor->selected_entity, &editor->tool_mesh_position);
+	}
+}
+
+void editor_on_key_press(const struct Event* event)
+{
+	struct Editor* editor = game_state_get()->editor;
+	if(!nk_window_is_any_hovered(&game_state_get()->gui->context))
+	{
+		if(event->key.key == KEY_ALT) editor_axis_set(EDITOR_AXIS_Y);
+	}
+}
+
+void editor_axis_set(int axis)
+{
+	struct Editor* editor = game_state_get()->editor;
+	if(editor->current_axis != axis)
+	{
+		if(axis != editor->current_axis)
+		{
+			editor->previous_axis = editor->current_axis;
+			editor->current_axis  = axis;
+
+			/* Reset tool position after axis has changed */
+			if(editor->selected_entity)
+			{
+				transform_get_absolute_position(editor->selected_entity, &editor->tool_mesh_position);
+			}
+		}
+	}
+}
 void editor_camera_update(struct Editor* editor, float dt)
 {
     struct Camera* editor_camera = &game_state_get()->scene->cameras[CAM_EDITOR];
@@ -561,20 +669,23 @@ void editor_camera_update(struct Editor* editor, float dt)
     }
 
     /* Movement */
-    if(input_map_state_get("Sprint",        KS_PRESSED)) move_speed *= editor->camera_sprint_multiplier;
-    if(input_map_state_get("Move_Forward",  KS_PRESSED)) offset.z   -= move_speed;
-    if(input_map_state_get("Move_Backward", KS_PRESSED)) offset.z   += move_speed;
-    if(input_map_state_get("Move_Left",     KS_PRESSED)) offset.x   -= move_speed;
-    if(input_map_state_get("Move_Right",    KS_PRESSED)) offset.x   += move_speed;
-    if(input_map_state_get("Move_Up",       KS_PRESSED)) offset.y   += move_speed;
-    if(input_map_state_get("Move_Down",     KS_PRESSED)) offset.y   -= move_speed;
+	if(editor->camera_looking_around)
+	{
+		if(input_map_state_get("Sprint", KS_PRESSED)) move_speed *= editor->camera_sprint_multiplier;
+		if(input_map_state_get("Move_Forward", KS_PRESSED)) offset.z -= move_speed;
+		if(input_map_state_get("Move_Backward", KS_PRESSED)) offset.z += move_speed;
+		if(input_map_state_get("Move_Left", KS_PRESSED)) offset.x -= move_speed;
+		if(input_map_state_get("Move_Right", KS_PRESSED)) offset.x += move_speed;
+		if(input_map_state_get("Move_Up", KS_PRESSED)) offset.y += move_speed;
+		if(input_map_state_get("Move_Down", KS_PRESSED)) offset.y -= move_speed;
 
-    vec3_scale(&offset, &offset, dt);
-    if(offset.x != 0 || offset.y != 0 || offset.z != 0)
-    {
-		transform_translate(editor_camera, &offset, TS_LOCAL);
-		//log_message("Position : %s", tostr_vec3(&transform->position));
-    }
+		vec3_scale(&offset, &offset, dt);
+		if(offset.x != 0 || offset.y != 0 || offset.z != 0)
+		{
+			transform_translate(editor_camera, &offset, TS_LOCAL);
+			//log_message("Position : %s", tostr_vec3(&transform->position));
+		}
+	}
 }
 
 void editor_widget_color_combov3(struct nk_context* context, vec3* color, int width, int height)
@@ -661,6 +772,7 @@ void editor_cleanup(struct Editor* editor)
     array_free(debug_vars_list);
     array_free(empty_indices);
 }
+
 
 
 bool editor_widget_v3(struct nk_context* context, vec3* value, const char* name_x, const char* name_y, const char* name_z, float min, float max, float step, float inc_per_pixel, int row_height)

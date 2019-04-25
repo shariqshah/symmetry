@@ -24,6 +24,7 @@ struct Editor
 	vec4           selected_entity_colour;
 	int            current_mode;
 	int            current_axis;
+	int            previous_axis;
 	int            grid_enabled;
 	vec4           grid_color;
 	int            grid_num_lines;

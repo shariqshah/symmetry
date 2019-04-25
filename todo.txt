@@ -1,16 +1,20 @@
 Todo:
-	- Vertical translation in translate mode
+	- Immediate mode render order, drawing axis and helpers on top of grid
+	- Display tool/cursor location in editor statusbar
+	- Better, more accurate picking
 	- Highlight if we are about to select an entity or perform the tool action like translate when mouse is hovered and an entity can be selected at that location
 	- Display the projected position if we perform the action for example display what the new location would be right next to the tool mesh
 	- Editor Undo
 	- Scale Mode
 	- Rotate Mode
+	- Add other axis combinations like YZ and XY to transform tool
 	- Use actual selected entity's mesh for tool mesh when the entity already has a mesh and use a placeholder like a sphere when there is not mesh 
 	- Add warning to genie build script when running on windows and WindowsSdkVersion cannot be found. This happens when the script is not run from vcvarsall command prompt
 	- Improve README and add a screenshot to make the repository ready for making it public 
 	- Refactor all global application state into 'Application_Context' struct. A single global instance of which is available everywhere
 	? Improve bounding sphere calculation
 	- Change the way lights are set as uniforms to remove snprintf calls per frame for every light attribute
+	- Filter Scene heirarchy by search using entity name
 	- Screen mouse coordinates to world-coordinates for aiming
 	- Player projectiles and sounds
 	- Console commands
@@ -64,7 +68,7 @@ Todo:
 	- Profit!
 
 Improvements:
-	- Better naming semantics for examples, init/deinit for initialization and cleanup and create/destroy when memory is allocated or deallocated
+	- Better naming semantics for example, init/deinit for initialization and cleanup and create/destroy when memory is allocated or deallocated
 	- Reset mouse cursor position to the center of the screen in editor mode after the right click is released
 	- Categorized entity list in editor for example different subtree for lights and static meshes
 	- Depth testing for editor grid
@@ -222,4 +226,8 @@ Done:
 	  Modes can be toggled by hotkeys and the operation will be applied to the selected object.
 	  By default, we work on the ground axis i.e the xz plane and when we have alt pressed, we work in the vertical or y axis.
 	* Move plane creation into its own function 
+	* De-select object on escape key in editor
+	* Vertical translation in translate mode
+	* Axis selection/cycling
+	* Axis switching and returning back to previously selected axis after releasing alt in translate mode
 

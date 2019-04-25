@@ -1,6 +1,7 @@
 Todo:
+	- Display editor camera information and speed adjustment in status bar or top bar
+	- Add pre-render/post-render steps to deal with render order issues and culling lights before rendering
 	- Immediate mode render order, drawing axis and helpers on top of grid
-	- Display tool/cursor location in editor statusbar
 	- Better, more accurate picking
 	- Highlight if we are about to select an entity or perform the tool action like translate when mouse is hovered and an entity can be selected at that location
 	- Display the projected position if we perform the action for example display what the new location would be right next to the tool mesh
@@ -230,4 +231,5 @@ Done:
 	* Vertical translation in translate mode
 	* Axis selection/cycling
 	* Axis switching and returning back to previously selected axis after releasing alt in translate mode
+	* Display tool/cursor location in editor statusbar
 

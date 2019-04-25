@@ -348,6 +348,28 @@ void editor_update(struct Editor* editor, float dt)
 	}
 	nk_end(context);
 
+	/* Status Bar */
+	if(nk_begin(context, "Status Bar", nk_recti(0, win_height - editor->top_panel_height, win_width, editor->top_panel_height), NK_WINDOW_NO_SCROLLBAR))
+	{
+		nk_layout_row_begin(context, NK_DYNAMIC, editor->top_panel_height - 5, 5);
+
+		nk_layout_row_push(context, 0.1f);
+		nk_labelf(context, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, "Cursor: %.1f  %.1f  %.1f", editor->tool_mesh_position.x, editor->tool_mesh_position.y, editor->tool_mesh_position.z);
+
+		nk_layout_row_push(context, 0.1f);
+		nk_checkbox_label(context, "Snap to grid ", &editor->tool_snap_enabled);
+
+		nk_layout_row_push(context, 0.1f);
+		nk_labelf(context, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, "Grid Scale: %.1f", editor->grid_scale);
+
+		nk_layout_row_push(context, 0.1f);
+		nk_labelf(context, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, "Grid Length: %d", editor->grid_num_lines);
+
+		nk_layout_row_push(context, 0.6f);
+		nk_spacing(context, 1);
+	}
+	nk_end(context);
+
 	if(editor->window_scene_heirarchy) editor_window_scene_heirarchy(context, editor, game_state);
 	if(editor->window_debug_variables) editor_window_debug_variables(context, editor);
 	if(editor->window_property_inspector) editor_window_property_inspector(context, editor, game_state);
@@ -556,6 +578,7 @@ void editor_entity_select(struct Editor* editor, struct Entity* entity)
 	{
 		editor->selected_entity->editor_selected = false;
 		editor->selected_entity = NULL;
+		vec3_fill(&editor->tool_mesh_position, 0.f, 0.f, 0.f);
 	}
 	else if(entity) // Select
 	{

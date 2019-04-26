@@ -93,8 +93,9 @@ static void editor_window_debug_variables(struct nk_context* context, struct Edi
 static void editor_window_property_inspector(struct nk_context* context, struct Editor* editor, struct Game_State* game_state);
 static void editor_window_renderer_settings(struct nk_context* context, struct Editor* editor, struct Game_State* game_state);
 static void editor_window_settings_editor(struct nk_context* context, struct Editor* editor, struct Game_State* game_state);
-static void editor_axis_set(int axis);
+static void editor_axis_set(struct Editor* editor, int axis);
 static void editor_entity_select(struct Editor* editor, struct Entity* entity);
+static void editor_mode_set(struct Editor* editor, int mode);
 
 void editor_init(struct Editor* editor)
 {
@@ -322,45 +323,62 @@ void editor_update(struct Editor* editor, float dt)
 			nk_menu_end(context);
 		}
 
-		nk_layout_row_push(context, 0.50f);
+		nk_layout_row_push(context, 0.45f);
 		nk_spacing(context, 1);
 
 		nk_layout_row_push(context, 0.1f);
-		static const char* editor_transformation_modes[] = { "Normal", "Translate", "Rotate", "Scale" };
-		static char transform_mode_line[32];
-		snprintf(&transform_mode_line, 32, "Mode : %s", editor_transformation_modes[editor->current_mode]);
-		if(nk_menu_begin_label(context, transform_mode_line, NK_TEXT_ALIGN_RIGHT | NK_TEXT_ALIGN_MIDDLE, nk_vec2(180, 100)))
+		static const char* editor_transformation_modes[] = { "Mode: Normal", "Mode: Translate", "Mode: Rotate", "Mode: Scale" };
+		if(nk_combo_begin_label(context, editor_transformation_modes[editor->current_mode], nk_vec2(160, 125)))
 		{
-			nk_menu_end(context);
+			nk_layout_row_dynamic(context, row_height, 1);
+			int mode = editor->current_mode;
+			mode = nk_option_label(context, "Normal", mode == EDITOR_MODE_NORMAL) ? EDITOR_MODE_NORMAL : mode;
+			mode = nk_option_label(context, "Translate", mode == EDITOR_MODE_TRANSLATE) ? EDITOR_MODE_TRANSLATE : mode;
+			mode = nk_option_label(context, "Rotate", mode == EDITOR_MODE_ROTATE) ? EDITOR_MODE_ROTATE : mode;
+			mode = nk_option_label(context, "Scale", mode == EDITOR_MODE_SCALE) ? EDITOR_MODE_SCALE : mode;
+			editor_mode_set(editor, mode);
+			nk_combo_end(context);
 		}
 
 		nk_layout_row_push(context, 0.1f);
-		static const char* editor_transformation_spaces[] = { "Local", "Parent", "World" };
-		static char transform_space_text[32];
-		snprintf(&transform_space_text, 32, "Space : %s", editor_transformation_spaces[editor->current_transform_space]);
-		if(nk_menu_begin_label(context, transform_space_text, NK_TEXT_ALIGN_RIGHT | NK_TEXT_ALIGN_MIDDLE, nk_vec2(180, 100)))
+		static const char* editor_transformation_spaces[] = { "Space: Local", "Space: Parent", "Space: World" };
+		if(nk_combo_begin_label(context, editor_transformation_spaces[editor->current_transform_space], nk_vec2(160, 125)))
 		{
-			nk_menu_end(context);
+			nk_layout_row_dynamic(context, row_height, 1);
+			int space = editor->current_transform_space;
+			space = nk_option_label(context, "Local",  space == TS_LOCAL)  ? TS_LOCAL  : space;
+			space = nk_option_label(context, "Parent", space == TS_PARENT) ? TS_PARENT : space;
+			space = nk_option_label(context, "World",  space == TS_WORLD)  ? TS_WORLD  : space;
+			editor->current_transform_space = space;
+			nk_combo_end(context);
 		}
 
 		nk_layout_row_push(context, 0.05f);
-		static const char* editor_axis[] = { "XZ", "X", "Y", "Z" };
-		static char axis_text[16];
-		snprintf(axis_text, 16, "Axis: %s", editor_axis[editor->current_axis]);
-		if(nk_menu_begin_label(context, axis_text, NK_TEXT_ALIGN_RIGHT | NK_TEXT_ALIGN_MIDDLE, nk_vec2(180, 100)))
+		static const char* editor_axes[] = { "Axis: XZ", "Axis: X", "Axis: Y", "Axis: Z" };
+		if(nk_combo_begin_label(context, editor_axes[editor->current_axis], nk_vec2(160, 125)))
 		{
-			nk_menu_end(context);
+			nk_layout_row_dynamic(context, row_height, 1);
+			int axis = editor->current_axis;
+			axis = nk_option_label(context, "X",  axis == EDITOR_AXIS_X)  ? EDITOR_AXIS_X  : axis;
+			axis = nk_option_label(context, "Y",  axis == EDITOR_AXIS_Y)  ? EDITOR_AXIS_Y  : axis;
+			axis = nk_option_label(context, "Z",  axis == EDITOR_AXIS_Z)  ? EDITOR_AXIS_Z  : axis;
+			axis = nk_option_label(context, "XZ", axis == EDITOR_AXIS_XZ) ? EDITOR_AXIS_XZ : axis;
+			editor_axis_set(editor, axis);
+			nk_combo_end(context);
 		}
-
 		
-		nk_layout_row_push(context, 0.1f);
-		static char camera_text[32];
+		nk_layout_row_push(context, 0.17f);
 		vec3 camera_position = { 0.f, 0.f, 0.f };
 		transform_get_absolute_position(&game_state->scene->cameras[CAM_EDITOR], &camera_position);
-		snprintf(camera_text, 32, "Camera: %.1f %.1f %.1f", camera_position.x, camera_position.y, camera_position.z);
-		if(nk_menu_begin_label(context, camera_text, NK_TEXT_ALIGN_RIGHT | NK_TEXT_ALIGN_MIDDLE, nk_vec2(180, 100)))
+		static char position_text[32];
+		snprintf(position_text, 32, "Camera: %.1f  %.1f  %.1f", camera_position.x, camera_position.y, camera_position.z);
+		if(nk_combo_begin_label(context, position_text, nk_vec2(200, 125)))
 		{
-			nk_menu_end(context);
+			nk_layout_row_dynamic(context, row_height, 1);
+			editor->camera_move_speed = nk_propertyf(context, "Move Speed", 1.f, editor->camera_move_speed, 100.f, 1.f, 0.5f);
+			editor->camera_turn_speed = nk_propertyf(context, "Turn Speed", 5.f, editor->camera_turn_speed, 200.f, 1.f, 0.5f);
+
+			nk_combo_end(context);
 		}
 		
 		nk_menubar_end(context);
@@ -560,19 +578,19 @@ void editor_on_key_release(const struct Event* event)
 		/* Mode Cycle */
 		if(event->key.key == KEY_TAB)
 		{
-			editor->current_mode++;
-			if(editor->current_mode == EDITOR_MODE_MAX)
-				editor->current_mode = EDITOR_MODE_NORMAL;
-
+			int mode = editor->current_mode;
+			if(++mode == EDITOR_MODE_MAX)
+				mode = EDITOR_MODE_NORMAL;
+			editor_mode_set(editor, mode);
 		}
 
 		/* Mode Select */
 		if(!editor->camera_looking_around)
 		{
-			if(event->key.key == KEY_Q) editor->current_mode = EDITOR_MODE_NORMAL;
-			if(event->key.key == KEY_W) editor->current_mode = EDITOR_MODE_TRANSLATE;
-			if(event->key.key == KEY_E) editor->current_mode = EDITOR_MODE_ROTATE;
-			if(event->key.key == KEY_R) editor->current_mode = EDITOR_MODE_SCALE;
+			if(event->key.key == KEY_Q) editor_mode_set(editor, EDITOR_MODE_NORMAL);
+			if(event->key.key == KEY_W) editor_mode_set(editor, EDITOR_MODE_TRANSLATE);
+			if(event->key.key == KEY_E) editor_mode_set(editor, EDITOR_MODE_ROTATE);
+			if(event->key.key == KEY_R) editor_mode_set(editor, EDITOR_MODE_SCALE);
 		}
 
 		/* Axis select */
@@ -582,7 +600,7 @@ void editor_on_key_release(const struct Event* event)
 		if(event->key.key == KEY_Z) selected_axis = EDITOR_AXIS_Z;
 		if(event->key.key == KEY_Y && input_is_key_pressed(KEY_LSHIFT)) selected_axis = EDITOR_AXIS_XZ;
 		if(event->key.key == KEY_ALT) selected_axis = editor->previous_axis;
-		editor_axis_set(selected_axis);
+		editor_axis_set(editor, selected_axis);
 		
 		/* Grid Scale select */
 		if(event->key.key == KEY_1) editor->grid_scale = 1.f;
@@ -600,10 +618,18 @@ void editor_on_key_release(const struct Event* event)
 		if(event->key.key == KEY_ESCAPE) editor_entity_select(editor, NULL);
 	}
 
-	if(editor->current_mode == EDITOR_MODE_TRANSLATE)
-		editor->tool_mesh_draw_enabled = 1;
-	else
-		editor->tool_mesh_draw_enabled = 0;
+}
+
+void editor_mode_set(struct Editor* editor, int mode)
+{
+	if(editor->current_mode != mode)
+	{
+		editor->current_mode = mode;
+		if(editor->current_mode == EDITOR_MODE_TRANSLATE)
+			editor->tool_mesh_draw_enabled = 1;
+		else
+			editor->tool_mesh_draw_enabled = 0;
+	}
 }
 
 void editor_entity_select(struct Editor* editor, struct Entity* entity)
@@ -633,13 +659,12 @@ void editor_on_key_press(const struct Event* event)
 	struct Editor* editor = game_state_get()->editor;
 	if(!nk_window_is_any_hovered(&game_state_get()->gui->context))
 	{
-		if(event->key.key == KEY_ALT) editor_axis_set(EDITOR_AXIS_Y);
+		if(event->key.key == KEY_ALT) editor_axis_set(editor, EDITOR_AXIS_Y);
 	}
 }
 
-void editor_axis_set(int axis)
+void editor_axis_set(struct Editor* editor, int axis)
 {
-	struct Editor* editor = game_state_get()->editor;
 	if(editor->current_axis != axis)
 	{
 		if(axis != editor->current_axis)

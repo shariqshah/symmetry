@@ -1,7 +1,4 @@
 Todo:
-	- Display editor camera parameter adjustment in top bar
-	- Display Transform mode selection in top bar
-	- Display Axis selection in top bar
 	- Add pre-render/post-render steps to deal with render order issues and culling lights before rendering
 	- Immediate mode render order, drawing axis and helpers on top of grid
 	- Better, more accurate picking
@@ -24,6 +21,7 @@ Todo:
 	- Console commands
 	- Console command history
 	- Console command help
+	- Debug drawing/variable display that also works in game mode. Can be toggled with a console command. Can show variable values or plots their graphs or debug textures etc
 	- Space partitioning and scene handling
 	- Move Gui_State and Editor_State into game_state and modify usage as needed
 	- Get editor camera speed and other settings from config file
@@ -237,4 +235,7 @@ Done:
 	* Axis switching and returning back to previously selected axis after releasing alt in translate mode
 	* Display tool/cursor location in editor statusbar
 	* Displaying camera position and tool transformation space in top bar
+	* Display editor camera parameter adjustment in top bar
+	* Display Transform mode selection in top bar
+	* Display Axis selection in top bar
 

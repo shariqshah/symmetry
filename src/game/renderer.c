@@ -144,7 +144,7 @@ void renderer_init(struct Renderer* renderer)
     }
 }
 
-void renderer_draw(struct Renderer* renderer, struct Scene* scene)
+void renderer_render(struct Renderer* renderer, struct Scene* scene)
 {
     /* Render each camera output into it's framebuffer or to the default framebuffer */
     for(int i = 0; i < MAX_CAMERAS; i++)
@@ -394,14 +394,14 @@ void renderer_draw(struct Renderer* renderer, struct Scene* scene)
 			case CST_SPHERE:
 			{
 				float radius = physics_cs_sphere_radius_get(mesh->collision.collision_shape);
-				im_sphere(radius, pos, rot, physics_draw_color, GDM_TRIANGLES);
+				im_sphere(radius, pos, rot, physics_draw_color, GDM_TRIANGLES, 1);
 			}
 			break;
 			case CST_BOX:
 			{
 				float x = 0.f, y = 0.f, z = 0.f;
 				physics_cs_box_params_get(mesh->collision.collision_shape, &x, &y, &z);
-				im_box(x, y, z, pos, rot, physics_draw_color, GDM_TRIANGLES);
+				im_box(x, y, z, pos, rot, physics_draw_color, GDM_TRIANGLES, 1);
 			};
 			break;
 			default: break;
@@ -442,12 +442,13 @@ void renderer_draw(struct Renderer* renderer, struct Scene* scene)
 				quat abs_rot;
 				transform_get_absolute_position(game_state->editor->selected_entity, &abs_pos);
 				transform_get_absolute_rot(game_state->editor->selected_entity, &abs_rot);
-				im_sphere(1.f, abs_pos, abs_rot, game_state->editor->selected_entity_colour, GDM_TRIANGLES);
+				im_sphere(1.f, abs_pos, abs_rot, game_state->editor->selected_entity_colour, GDM_TRIANGLES, 1);
 			}
 		}
 	}
 
     //Immediate mode geometry render
+	// Maybe try binding the old frame buffer, clear the drawing but let the depth buffer remain to check depth?
     im_render(active_camera);
 
     /* Render 2D stuff */

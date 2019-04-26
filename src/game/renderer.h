@@ -52,7 +52,7 @@ struct Renderer
 };
 
 void renderer_init(struct Renderer* renderer);
-void renderer_draw(struct Renderer* renderer, struct Scene* scene);
+void renderer_render(struct Renderer* renderer, struct Scene* scene);
 void renderer_cleanup(struct Renderer* renderer);
 void renderer_clearcolor_set(float r, float g, float b, float a);
 void renderer_debug_draw_enabled(struct Renderer* renderer, bool enabled);

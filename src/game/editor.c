@@ -122,7 +122,7 @@ void editor_init(struct Editor* editor)
 	vec3_fill(&editor->tool_mesh_position, 0.f, 0.f, 0.f);
 	vec4_fill(&editor->tool_mesh_color, 0.f, 0.3f, 1.f, 1.f);
 	vec4_fill(&editor->selected_entity_colour, 0.f, 1.f, 0.f, 1.f);
-	vec4_fill(&editor->grid_color, 0.3f, 0.3f, 0.3f, 1.f);
+	vec4_fill(&editor->grid_color, 0.3f, 0.3f, 0.3f, 0.5f);
     debug_vars_list                   = array_new(struct Debug_Variable);
     empty_indices                     = array_new(int);
 	
@@ -187,7 +187,7 @@ void editor_render(struct Editor* editor, struct Camera * active_camera)
 			transform_get_absolute_rot(editor->selected_entity, &rotation);
 		}
 
-		im_begin(position, rotation, scale, editor->grid_color, GDM_LINES);
+		im_begin(position, rotation, scale, editor->grid_color, GDM_LINES, 0);
 
 		float half_grid = editor->grid_num_lines * editor->grid_scale / 2.f;
 		for(float i = 0; i <= editor->grid_num_lines * editor->grid_scale; i += editor->grid_scale)
@@ -432,10 +432,10 @@ void editor_update(struct Editor* editor, float dt)
 	{
 		if(editor->current_mode == EDITOR_MODE_TRANSLATE)
 		{
-			im_sphere(0.5f, editor->tool_mesh_position, (quat) { 0.f, 0.f, 0.f, 1.f }, editor->tool_mesh_color, GDM_TRIANGLES);
+			im_sphere(0.5f, editor->tool_mesh_position, (quat) { 0.f, 0.f, 0.f, 1.f }, editor->tool_mesh_color, GDM_TRIANGLES, 2);
 			//im_box(editor->grid_scale, editor->grid_scale, editor->grid_scale, editor->tool_mesh_position, (quat) { 0.f, 0.f, 0.f, 1.f }, editor->tool_mesh_color, GDM_TRIANGLES);
 
-			im_begin(editor->tool_mesh_position, (quat) { 0.f, 0.f, 0.f, 1.f }, (vec3) { 1.f, 1.f, 1.f }, (vec4) { 0.f, 1.f, 1.f, 1.f }, GDM_LINES);
+			im_begin(editor->tool_mesh_position, (quat) { 0.f, 0.f, 0.f, 1.f }, (vec3) { 1.f, 1.f, 1.f }, (vec4) { 0.f, 1.f, 1.f, 1.f }, GDM_LINES, 3);
 			switch(editor->current_axis)
 			{
 			case EDITOR_AXIS_XZ:

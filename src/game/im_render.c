@@ -9,6 +9,7 @@
 #include "geometry.h"
 
 #include <string.h>
+#include <stdlib.h>
 
 #define MAX_IM_VERTICES 2048
 #define MAX_IM_GEOMETRIES (MAX_IM_VERTICES / 2)
@@ -29,6 +30,7 @@ static struct IM_Geom* active_geom = NULL;
 static int active_vertex_index    = 0;
 
 static void im_geom_reset(struct IM_Geom* geom);
+static int  im_sort_func(const void* p1, const void* p2);
 
 void im_init(void)
 {
@@ -74,7 +76,7 @@ void im_cleanup(void)
 	IM_State.im_shader   = -1;
 }
 
-void im_begin(vec3 position, quat rotation, vec3 scale, vec4 color, int draw_mode)
+void im_begin(vec3 position, quat rotation, vec3 scale, vec4 color, int draw_mode, int draw_order)
 {
 	if(active_geom)
 	{
@@ -87,6 +89,7 @@ void im_begin(vec3 position, quat rotation, vec3 scale, vec4 color, int draw_mod
 	active_geom->start_index = IM_State.curr_vertex;
 	active_geom->type = IGT_DYNAMIC;
 	active_geom->draw_mode = draw_mode;
+	active_geom->draw_order = draw_order;
 	vec3_assign(&active_geom->position, &position);
 	vec3_assign(&active_geom->scale, &scale);
 	vec4_assign(&active_geom->color, &color);
@@ -105,7 +108,7 @@ void im_pos(float x, float y, float z)
 	active_vertex_index++;
 }
 
-void im_box(float x, float y, float z, vec3 position, quat rotation, vec4 color, int draw_mode)
+void im_box(float x, float y, float z, vec3 position, quat rotation, vec4 color, int draw_mode, int draw_order)
 {
 	if(active_geom)
 	{
@@ -117,6 +120,7 @@ void im_box(float x, float y, float z, vec3 position, quat rotation, vec4 color,
 	im_geom_reset(active_geom);
 	active_geom->type = IGT_PRIMITIVE;
 	active_geom->draw_mode = draw_mode;
+	active_geom->draw_order = draw_order;
 	active_geom->prim_geom_index = geom_create_from_file("cube.symbres");
 	vec3_assign(&active_geom->position, &position);
 	vec3 scale =  { x, y, z}; 
@@ -126,7 +130,7 @@ void im_box(float x, float y, float z, vec3 position, quat rotation, vec4 color,
 	active_geom = NULL;
 }
 
-void im_sphere(float radius, vec3 position, quat rotation, vec4 color, int draw_mode)
+void im_sphere(float radius, vec3 position, quat rotation, vec4 color, int draw_mode, int draw_order)
 {
 	if(active_geom)
 	{
@@ -138,6 +142,7 @@ void im_sphere(float radius, vec3 position, quat rotation, vec4 color, int draw_
 	im_geom_reset(active_geom);
 	active_geom->type = IGT_PRIMITIVE;
 	active_geom->draw_mode = draw_mode;
+	active_geom->draw_order = draw_order;
 	active_geom->prim_geom_index = geom_create_from_file("sphere.symbres");
 	vec3_assign(&active_geom->position, &position);
 	vec3 scale =  { radius, radius, radius }; 
@@ -167,6 +172,10 @@ void im_render(struct Camera* active_viewer)
 	if(IM_State.curr_geom == -1)
 		return;
 
+	/* Sort by draw order, geometries with lower draw order get drawn first */
+	if(IM_State.curr_geom + 1 > 1)
+		qsort(IM_State.geometries, IM_State.curr_geom + 1, sizeof(struct IM_Geom), &im_sort_func);
+	
 	shader_bind(IM_State.im_shader);
 	{
 		static mat4 mvp, translation, rotation, scale;
@@ -224,4 +233,18 @@ void im_geom_reset(struct IM_Geom* geom)
 	geom->num_vertices = 0;
 	geom->prim_geom_index = -1;
 	geom->draw_mode = -1;
+	geom->draw_order = -1;
 }
+
+int im_sort_func(const void* p1, const void* p2)
+{
+	struct IM_Geom* g1 = (struct IM_Geom*)p1;
+	struct IM_Geom* g2 = (struct IM_Geom*)p2;
+	if(g1->draw_order < g2->draw_order)
+		return -1;
+	else if(g1->draw_order == g2->draw_order)
+		return 0;
+	else
+		return 1;
+}
+

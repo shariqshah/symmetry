@@ -408,7 +408,7 @@ void game_debug(float dt)
     quat im_rot      = { 0.f, 0.f, 0.f, 1.f };
     vec4 im_color    = { 0.f, 1.f, 1.f, 1.f };
     quat_identity(&im_rot);
-    im_begin(im_position, im_rot, im_scale, im_color, GL_LINES);
+    im_begin(im_position, im_rot, im_scale, im_color, GDM_LINES, 1);
 
     im_pos(0.f, 0.f, 0.f);
     im_pos(100.f, 100.f, 10.f);
@@ -419,7 +419,7 @@ void game_debug(float dt)
 
     im_color.x = 1.f;
     im_color.y = 0.f;
-    im_begin(im_position, im_rot, im_scale, im_color, GL_TRIANGLES);
+    im_begin(im_position, im_rot, im_scale, im_color, GL_TRIANGLES, 1);
 
     float length = 200.f;
 
@@ -458,7 +458,7 @@ void game_debug(float dt)
     im_end();
 
     im_position.x = -30.f;
-    im_begin(im_position, im_rot, im_scale, im_color, GL_LINES);
+    im_begin(im_position, im_rot, im_scale, im_color, GL_LINES, 1);
 
     im_pos(0.f, 0.f, 0.f);
     im_pos(0.f, 0.f, 10.f);
@@ -475,12 +475,12 @@ void game_debug(float dt)
     im_end();
 
     vec4 prim_color = {1.f, 1.f, 0.f, 1.f};
-    im_box(5.f, 2.f, 10.f, im_position, im_rot, prim_color, GDM_TRIANGLES);
+    im_box(5.f, 2.f, 10.f, im_position, im_rot, prim_color, GDM_TRIANGLES, 1);
 
     for(int i = 0; i < 10; i++)
     {
 		im_position.x += i * 2.f;
-		im_sphere(2.f, im_position, im_rot, prim_color, GDM_TRIANGLES);
+		im_sphere(2.f, im_position, im_rot, prim_color, GDM_TRIANGLES, 1);
     }
 }
 
@@ -1868,7 +1868,7 @@ void game_debug_gui(float dt)
 
 void game_render(void)
 {
-    renderer_draw(game_state->renderer, game_state->scene);
+    renderer_render(game_state->renderer, game_state->scene);
 }
 
 void game_cleanup(void)

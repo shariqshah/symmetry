@@ -110,7 +110,6 @@ void editor_init(struct Editor* editor)
     editor->camera_turn_speed         = 50.f;
     editor->camera_move_speed         = 20.f;
     editor->camera_sprint_multiplier  = 2.f;
-	editor->current_transform_space   = TS_WORLD;
 	editor->current_mode              = EDITOR_MODE_NORMAL;
 	editor->current_axis              = EDITOR_AXIS_XZ;
 	editor->previous_axis             = EDITOR_AXIS_XZ;
@@ -183,7 +182,7 @@ void editor_render(struct Editor* editor, struct Camera * active_camera)
 		if(editor->selected_entity)
 		{
 			transform_get_absolute_position(editor->selected_entity, &position);
-			transform_get_absolute_scale(editor->selected_entity, &scale);
+			//transform_get_absolute_scale(editor->selected_entity, &scale);
 			transform_get_absolute_rot(editor->selected_entity, &rotation);
 		}
 
@@ -326,7 +325,7 @@ void editor_update(struct Editor* editor, float dt)
 		nk_layout_row_push(context, 0.45f);
 		nk_spacing(context, 1);
 
-		nk_layout_row_push(context, 0.1f);
+		nk_layout_row_push(context, 0.15f);
 		static const char* editor_transformation_modes[] = { "Mode: Normal", "Mode: Translate", "Mode: Rotate", "Mode: Scale" };
 		if(nk_combo_begin_label(context, editor_transformation_modes[editor->current_mode], nk_vec2(160, 125)))
 		{
@@ -341,19 +340,6 @@ void editor_update(struct Editor* editor, float dt)
 		}
 
 		nk_layout_row_push(context, 0.1f);
-		static const char* editor_transformation_spaces[] = { "Space: Local", "Space: Parent", "Space: World" };
-		if(nk_combo_begin_label(context, editor_transformation_spaces[editor->current_transform_space], nk_vec2(160, 125)))
-		{
-			nk_layout_row_dynamic(context, row_height, 1);
-			int space = editor->current_transform_space;
-			space = nk_option_label(context, "Local",  space == TS_LOCAL)  ? TS_LOCAL  : space;
-			space = nk_option_label(context, "Parent", space == TS_PARENT) ? TS_PARENT : space;
-			space = nk_option_label(context, "World",  space == TS_WORLD)  ? TS_WORLD  : space;
-			editor->current_transform_space = space;
-			nk_combo_end(context);
-		}
-
-		nk_layout_row_push(context, 0.05f);
 		static const char* editor_axes[] = { "Axis: XZ", "Axis: X", "Axis: Y", "Axis: Z" };
 		if(nk_combo_begin_label(context, editor_axes[editor->current_axis], nk_vec2(160, 125)))
 		{
@@ -435,6 +421,7 @@ void editor_update(struct Editor* editor, float dt)
 			im_sphere(0.5f, editor->tool_mesh_position, (quat) { 0.f, 0.f, 0.f, 1.f }, editor->tool_mesh_color, GDM_TRIANGLES, 2);
 			//im_box(editor->grid_scale, editor->grid_scale, editor->grid_scale, editor->tool_mesh_position, (quat) { 0.f, 0.f, 0.f, 1.f }, editor->tool_mesh_color, GDM_TRIANGLES);
 
+			//Draw Axes
 			im_begin(editor->tool_mesh_position, (quat) { 0.f, 0.f, 0.f, 1.f }, (vec3) { 1.f, 1.f, 1.f }, (vec4) { 0.f, 1.f, 1.f, 1.f }, GDM_LINES, 3);
 			switch(editor->current_axis)
 			{
@@ -497,7 +484,13 @@ void editor_on_mousebutton(const struct Event* event)
 			{
 				if(editor->current_mode == EDITOR_MODE_TRANSLATE)
 				{
-					transform_set_position(editor->selected_entity, &editor->tool_mesh_position);
+					//transform_set_position(editor->selected_entity, &editor->tool_mesh_position);
+					vec3 translation = { 0.f, 0.f, 0.f };
+					vec3 current_position = {0.f, 0.f, 0.f};
+					transform_get_absolute_position(editor->selected_entity, &current_position);
+					vec3_sub(&translation, &editor->tool_mesh_position, &current_position);
+					//transform_translate(editor->selected_entity, &translation, editor->current_transform_space);
+					transform_translate(editor->selected_entity, &translation, TS_WORLD);
 				}
 				else
 				{

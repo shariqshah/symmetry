@@ -152,6 +152,14 @@ void im_sphere(float radius, vec3 position, quat rotation, vec4 color, int draw_
 	active_geom = NULL;
 }
 
+void im_line(vec3 p1, vec3 p2, vec3 position, quat rotation, vec3 scale, vec4 color, int draw_mode, int draw_order)
+{
+	im_begin(position, rotation, scale, color, draw_mode, draw_order);
+	im_pos(p1.x, p1.y, p1.z);
+	im_pos(p2.x, p2.y, p2.z);
+	im_end();
+}
+
 void im_end(void)
 {
 	active_geom->num_vertices = active_vertex_index + 1;

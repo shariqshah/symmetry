@@ -35,6 +35,9 @@ struct Editor
 	vec4           tool_mesh_color;
 	int            tool_mesh_draw_enabled;
 	float          axis_line_length;
+	vec4           axis_color_x;
+	vec4           axis_color_y;
+	vec4           axis_color_z;
 };
 
 void editor_init(struct Editor* editor_state);

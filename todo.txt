@@ -1,12 +1,15 @@
 Todo:
-	- Make axis lines always follow the same colour scheme for consistency across all tools, red for X axis, green for Y axis and blue for Z axis
-	- Toggle between relative and static grid i.e, grid that moves along with the selected object or grid that remains stationary at the origin
+	- Implement circle drawing with immediate mode renderer
+	- Implement arc drawing with renderer
+	- Rotate mode tool widget
+	- Complete rotate mode
 	- Better, more accurate picking
 	- Highlight if we are about to select an entity or perform the tool action like translate when mouse is hovered and an entity can be selected at that location
 	- Display the projected position if we perform the action for example display what the new location would be right next to the tool mesh
 	- Editor Undo
 	- Scale Mode
-	- Rotate Mode
+	- Color picker
+	- Color palette, picker and dropper
 	- Add other axis combinations like YZ and XY to transform tool
 	- Transformation space selection for translation, rotation and scale.
 	- Use actual selected entity's mesh for tool mesh when the entity already has a mesh and use a placeholder like a sphere when there is not mesh 
@@ -242,4 +245,6 @@ Done:
 	* Display Axis selection in top bar
 	* Immediate mode render order, drawing axis and helpers on top of grid
 	* Draw coloured axes lines at world origin or grid origin
+	* Make axis lines always follow the same colour scheme for consistency across all tools, red for X axis, green for Y axis and blue for Z axis
+	* Toggle between relative and static grid i.e, grid that moves along with the selected object or grid that remains stationary at the origin
 

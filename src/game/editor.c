@@ -121,9 +121,12 @@ void editor_init(struct Editor* editor)
 	editor->tool_snap_enabled         = 1;
 	editor->axis_line_length          = 500.f;
 	vec3_fill(&editor->tool_mesh_position, 0.f, 0.f, 0.f);
-	vec4_fill(&editor->tool_mesh_color, 0.f, 0.3f, 1.f, 1.f);
-	vec4_fill(&editor->selected_entity_colour, 0.f, 1.f, 0.f, 1.f);
+	vec4_fill(&editor->tool_mesh_color, 0.f, 1.f, 1.f, 1.f);
+	vec4_fill(&editor->selected_entity_colour, 1.f, 1.f, 0.f, 1.f);
 	vec4_fill(&editor->grid_color, 0.3f, 0.3f, 0.3f, 0.1f);
+	vec4_fill(&editor->axis_color_x, 1.f, 0.f, 0.f, 1.f);
+	vec4_fill(&editor->axis_color_y, 0.f, 1.f, 0.f, 1.f);
+	vec4_fill(&editor->axis_color_z, 0.f, 0.f, 1.f, 1.f);
     debug_vars_list                   = array_new(struct Debug_Variable);
     empty_indices                     = array_new(int);
 	
@@ -180,17 +183,9 @@ void editor_render(struct Editor* editor, struct Camera * active_camera)
 
 	float half_axis_line_length = editor->axis_line_length / 2.f;
 
-	im_begin(position, rotation, scale, (vec4) { 1.f, 0.f, 0.f, 1.f }, GDM_LINES, 1); // X Axis
-	im_pos(-half_axis_line_length, 0.f, 0.f); im_pos(half_axis_line_length, 0.f, 0.f);
-	im_end();
-
-	im_begin(position, rotation, scale, (vec4) { 0.f, 1.f, 0.f, 1.f }, GDM_LINES, 1); // Y Axis
-	im_pos(0.f, -half_axis_line_length, 0.f); im_pos(0.f, half_axis_line_length, 0.f);
-	im_end();
-
-	im_begin(position, rotation, scale, (vec4) { 0.f, 0.f, 1.f, 1.f }, GDM_LINES, 1); // Z Axis
-	im_pos(0.f, 0.f, -half_axis_line_length); im_pos(0.f, 0.f, half_axis_line_length);
-	im_end();
+	im_line((vec3) { -half_axis_line_length, 0.f, 0.f }, (vec3) { half_axis_line_length, 0.f, 0.f }, position, rotation, scale, editor->axis_color_x, GDM_LINES, 1); // X Axis
+	im_line((vec3) { 0.f, -half_axis_line_length, 0.f }, (vec3) { 0.f, half_axis_line_length, 0.f }, position, rotation, scale, editor->axis_color_y, GDM_LINES, 1); // Y Axis
+	im_line((vec3) { 0.f, 0.f, -half_axis_line_length }, (vec3) { 0.f, 0.f, half_axis_line_length }, position, rotation, scale, editor->axis_color_z, GDM_LINES, 1); // Z Axis
 
 	//Draw Grid
 	if(editor->grid_enabled)
@@ -390,7 +385,7 @@ void editor_update(struct Editor* editor, float dt)
 	{
 		nk_layout_row_begin(context, NK_DYNAMIC, editor->top_panel_height - 5, 8);
 
-		nk_layout_row_push(context, 0.1f);
+		nk_layout_row_push(context, 0.12f);
 		nk_labelf(context, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, "Cursor: %.1f  %.1f  %.1f", editor->tool_mesh_position.x, editor->tool_mesh_position.y, editor->tool_mesh_position.z);
 
 		nk_layout_row_push(context, 0.1f);
@@ -405,7 +400,7 @@ void editor_update(struct Editor* editor, float dt)
 		nk_layout_row_push(context, 0.1f);
 		nk_labelf(context, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, "Grid Length: %d", editor->grid_num_lines);
 
-		nk_layout_row_push(context, 0.4f);
+		nk_layout_row_push(context, 0.38f);
 		nk_spacing(context, 1);
 		
 		nk_layout_row_push(context, 0.1f);
@@ -435,31 +430,27 @@ void editor_update(struct Editor* editor, float dt)
 	{
 		if(editor->current_mode == EDITOR_MODE_TRANSLATE)
 		{
-			im_sphere(0.5f, editor->tool_mesh_position, (quat) { 0.f, 0.f, 0.f, 1.f }, editor->tool_mesh_color, GDM_TRIANGLES, 2);
-			//im_box(editor->grid_scale, editor->grid_scale, editor->grid_scale, editor->tool_mesh_position, (quat) { 0.f, 0.f, 0.f, 1.f }, editor->tool_mesh_color, GDM_TRIANGLES);
+			quat rotation = { 0.f, 0.f, 0.f, 1.f };
+			vec3 scale = { 1.f, 1.f, 1.f };
+			im_sphere(0.5f, editor->tool_mesh_position, rotation, editor->tool_mesh_color, GDM_TRIANGLES, 2);
 
 			//Draw Axes
-			im_begin(editor->tool_mesh_position, (quat) { 0.f, 0.f, 0.f, 1.f }, (vec3) { 1.f, 1.f, 1.f }, (vec4) { 0.f, 1.f, 1.f, 1.f }, GDM_LINES, 3);
 			switch(editor->current_axis)
 			{
 			case EDITOR_AXIS_XZ:
-				im_pos(-editor->axis_line_length, 0.f, 0.f); im_pos(editor->axis_line_length, 0.f, 0.f);
-				im_pos(0.f, 0.f, -editor->axis_line_length); im_pos(0.f, 0.f, editor->axis_line_length);
+				im_line((vec3) { -editor->axis_line_length, 0.f, 0.f }, (vec3) { editor->axis_line_length, 0.f, 0.f }, editor->tool_mesh_position, rotation, scale, editor->axis_color_x, GDM_LINES, 3);
+				im_line((vec3) { 0.f, 0.f, -editor->axis_line_length }, (vec3) { 0.f, 0.f, editor->axis_line_length }, editor->tool_mesh_position, rotation, scale, editor->axis_color_z, GDM_LINES, 3);
 				break;
 			case EDITOR_AXIS_Y:
-				im_pos(0.f, -editor->axis_line_length, 0.f);
-				im_pos(0.f, editor->axis_line_length, 0.f);
+				im_line((vec3) { 0.f, -editor->axis_line_length, 0.f }, (vec3) { 0.f, editor->axis_line_length, 0.f }, editor->tool_mesh_position, rotation, scale, editor->axis_color_y, GDM_LINES, 3);
 				break;
 			case EDITOR_AXIS_X:
-				im_pos(-editor->axis_line_length, 0.f, 0.f);
-				im_pos(editor->axis_line_length, 0.f, 0.f);
+				im_line((vec3) { -editor->axis_line_length, 0.f, 0.f }, (vec3) { editor->axis_line_length, 0.f, 0.f }, editor->tool_mesh_position, rotation, scale, editor->axis_color_x, GDM_LINES, 3);
 				break;
 			case EDITOR_AXIS_Z:
-				im_pos(0.f, 0.f, -editor->axis_line_length);
-				im_pos(0.f, 0.f, editor->axis_line_length);
+				im_line((vec3) { 0.f, 0.f, -editor->axis_line_length }, (vec3) { 0.f, 0.f, editor->axis_line_length }, editor->tool_mesh_position, rotation, scale, editor->axis_color_z, GDM_LINES, 3);
 				break;
 			}
-			im_end();
 		}
 	}
 }
@@ -543,9 +534,9 @@ void editor_on_mousemotion(const struct Event* event)
 
 			switch(editor->current_axis)
 			{
-			case EDITOR_AXIS_X: editor->tool_mesh_position.x +=  event->mousemotion.xrel; break;
-			case EDITOR_AXIS_Y: editor->tool_mesh_position.y += -event->mousemotion.yrel; break;
-			case EDITOR_AXIS_Z: editor->tool_mesh_position.z += -event->mousemotion.yrel; break;
+			case EDITOR_AXIS_X: editor->tool_mesh_position.x +=  event->mousemotion.xrel / 2; break;
+			case EDITOR_AXIS_Y: editor->tool_mesh_position.y += -event->mousemotion.xrel / 2; break;
+			case EDITOR_AXIS_Z: editor->tool_mesh_position.z += -event->mousemotion.xrel / 2; break;
 			case EDITOR_AXIS_XZ:
 			{
 				Plane ground_plane;

@@ -43,6 +43,7 @@ void im_begin(vec3 position, quat rotation, vec3 scale, vec4 color, int draw_mod
 void im_pos(float x, float y, float z);
 void im_box(float x, float y, float z, vec3 position, quat rotation, vec4 color, int draw_mode, int draw_order);
 void im_sphere(float radius, vec3 position, quat rotation, vec4 color, int draw_mode, int draw_order);
+void im_line(vec3 p1, vec3 p2, vec3 position, quat rotation, vec3 scale, vec4 color, int draw_mode, int draw_order);
 void im_end(void);
 void im_render(struct Camera* active_viewer);
 

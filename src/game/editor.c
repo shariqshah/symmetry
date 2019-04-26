@@ -114,14 +114,16 @@ void editor_init(struct Editor* editor)
 	editor->current_axis              = EDITOR_AXIS_XZ;
 	editor->previous_axis             = EDITOR_AXIS_XZ;
 	editor->grid_enabled              = 1;
+	editor->grid_relative             = 1;
 	editor->grid_num_lines            = 100;
 	editor->grid_scale                = 1.f;
 	editor->tool_mesh_draw_enabled    = 0;
 	editor->tool_snap_enabled         = 1;
+	editor->axis_line_length          = 500.f;
 	vec3_fill(&editor->tool_mesh_position, 0.f, 0.f, 0.f);
 	vec4_fill(&editor->tool_mesh_color, 0.f, 0.3f, 1.f, 1.f);
 	vec4_fill(&editor->selected_entity_colour, 0.f, 1.f, 0.f, 1.f);
-	vec4_fill(&editor->grid_color, 0.3f, 0.3f, 0.3f, 0.5f);
+	vec4_fill(&editor->grid_color, 0.3f, 0.3f, 0.3f, 0.1f);
     debug_vars_list                   = array_new(struct Debug_Variable);
     empty_indices                     = array_new(int);
 	
@@ -172,18 +174,30 @@ void editor_render(struct Editor* editor, struct Camera * active_camera)
 	// 	}
 	// }
 
+	vec3 position = { 0.f, 0.f, 0.f };
+	quat rotation = { 0.f, 0.f, 0.f, 1.f };
+	vec3 scale = { 1.f, 1.f, 1.f };
+
+	float half_axis_line_length = editor->axis_line_length / 2.f;
+
+	im_begin(position, rotation, scale, (vec4) { 1.f, 0.f, 0.f, 1.f }, GDM_LINES, 1); // X Axis
+	im_pos(-half_axis_line_length, 0.f, 0.f); im_pos(half_axis_line_length, 0.f, 0.f);
+	im_end();
+
+	im_begin(position, rotation, scale, (vec4) { 0.f, 1.f, 0.f, 1.f }, GDM_LINES, 1); // Y Axis
+	im_pos(0.f, -half_axis_line_length, 0.f); im_pos(0.f, half_axis_line_length, 0.f);
+	im_end();
+
+	im_begin(position, rotation, scale, (vec4) { 0.f, 0.f, 1.f, 1.f }, GDM_LINES, 1); // Z Axis
+	im_pos(0.f, 0.f, -half_axis_line_length); im_pos(0.f, 0.f, half_axis_line_length);
+	im_end();
 
 	//Draw Grid
 	if(editor->grid_enabled)
 	{
-		vec3 position = { 0.f, 0.f, 0.f };
-		quat rotation = { 0.f, 0.f, 0.f, 1.f };
-		vec3 scale = { 1.f, 1.f, 1.f };
-		if(editor->selected_entity)
+		if(editor->grid_relative && editor->selected_entity)
 		{
 			transform_get_absolute_position(editor->selected_entity, &position);
-			//transform_get_absolute_scale(editor->selected_entity, &scale);
-			transform_get_absolute_rot(editor->selected_entity, &rotation);
 		}
 
 		im_begin(position, rotation, scale, editor->grid_color, GDM_LINES, 0);
@@ -383,12 +397,15 @@ void editor_update(struct Editor* editor, float dt)
 		nk_checkbox_label(context, "Snap to grid ", &editor->tool_snap_enabled);
 
 		nk_layout_row_push(context, 0.1f);
+		nk_checkbox_label(context, "Relative grid ", &editor->grid_relative);
+
+		nk_layout_row_push(context, 0.1f);
 		nk_labelf(context, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, "Grid Scale: %.1f", editor->grid_scale);
 
 		nk_layout_row_push(context, 0.1f);
 		nk_labelf(context, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, "Grid Length: %d", editor->grid_num_lines);
 
-		nk_layout_row_push(context, 0.5f);
+		nk_layout_row_push(context, 0.4f);
 		nk_spacing(context, 1);
 		
 		nk_layout_row_push(context, 0.1f);
@@ -426,20 +443,20 @@ void editor_update(struct Editor* editor, float dt)
 			switch(editor->current_axis)
 			{
 			case EDITOR_AXIS_XZ:
-				im_pos(-editor->grid_num_lines * editor->grid_scale, 0.f, 0.f); im_pos(editor->grid_num_lines * editor->grid_scale, 0.f, 0.f);
-				im_pos(0.f, 0.f, -editor->grid_num_lines * editor->grid_scale); im_pos(0.f, 0.f, editor->grid_num_lines * editor->grid_scale);
+				im_pos(-editor->axis_line_length, 0.f, 0.f); im_pos(editor->axis_line_length, 0.f, 0.f);
+				im_pos(0.f, 0.f, -editor->axis_line_length); im_pos(0.f, 0.f, editor->axis_line_length);
 				break;
 			case EDITOR_AXIS_Y:
-				im_pos(0.f, -editor->grid_num_lines * editor->grid_scale, 0.f);
-				im_pos(0.f, editor->grid_num_lines * editor->grid_scale, 0.f);
+				im_pos(0.f, -editor->axis_line_length, 0.f);
+				im_pos(0.f, editor->axis_line_length, 0.f);
 				break;
 			case EDITOR_AXIS_X:
-				im_pos(-editor->grid_num_lines * editor->grid_scale, 0.f, 0.f);
-				im_pos(editor->grid_num_lines * editor->grid_scale, 0.f, 0.f);
+				im_pos(-editor->axis_line_length, 0.f, 0.f);
+				im_pos(editor->axis_line_length, 0.f, 0.f);
 				break;
 			case EDITOR_AXIS_Z:
-				im_pos(0.f, 0.f, -editor->grid_num_lines * editor->grid_scale);
-				im_pos(0.f, 0.f, editor->grid_num_lines * editor->grid_scale);
+				im_pos(0.f, 0.f, -editor->axis_line_length);
+				im_pos(0.f, 0.f, editor->axis_line_length);
 				break;
 			}
 			im_end();

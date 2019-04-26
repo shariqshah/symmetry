@@ -26,6 +26,7 @@ struct Editor
 	int            current_axis;
 	int            previous_axis;
 	int            grid_enabled;
+	int            grid_relative;
 	vec4           grid_color;
 	int            grid_num_lines;
 	float          grid_scale;
@@ -33,6 +34,7 @@ struct Editor
 	vec3           tool_mesh_position;
 	vec4           tool_mesh_color;
 	int            tool_mesh_draw_enabled;
+	float          axis_line_length;
 };
 
 void editor_init(struct Editor* editor_state);

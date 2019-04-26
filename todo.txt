@@ -1,5 +1,5 @@
 Todo:
-	- Draw coloured axes lines at world origin or grid origin
+	- Make axis lines always follow the same colour scheme for consistency across all tools, red for X axis, green for Y axis and blue for Z axis
 	- Toggle between relative and static grid i.e, grid that moves along with the selected object or grid that remains stationary at the origin
 	- Better, more accurate picking
 	- Highlight if we are about to select an entity or perform the tool action like translate when mouse is hovered and an entity can be selected at that location
@@ -241,4 +241,5 @@ Done:
 	* Display Transform mode selection in top bar
 	* Display Axis selection in top bar
 	* Immediate mode render order, drawing axis and helpers on top of grid
+	* Draw coloured axes lines at world origin or grid origin
 

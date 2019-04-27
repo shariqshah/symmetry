@@ -161,22 +161,30 @@ void im_line(vec3 p1, vec3 p2, vec3 position, quat rotation, vec3 scale, vec4 co
 	im_end();
 }
 
-void im_circle(float radius, int num_divisions, vec3 position, quat rotation, vec4 color, int draw_order)
+void im_circle(float radius, int num_divisions, bool filled, vec3 position, quat rotation, vec4 color, int draw_order)
 {
-	im_arc(radius, 0.f, 360.f, num_divisions, position, rotation, color, draw_order);
+	im_arc(radius, 0.f, 360.f, num_divisions, filled, position, rotation, color, draw_order);
 }
 
-void im_arc(float radius, float angle_start, float angle_end, int num_divisions, vec3 position, quat rotation, vec4 color, int draw_order)
+void im_arc(float radius, float angle_start, float angle_end, int num_divisions, bool filled, vec3 position, quat rotation, vec4 color, int draw_order)
 {
-	im_begin(position, rotation, (vec3) { 1.f, 1.f, 1.f }, color, GDM_LINE_LOOP, draw_order);
+	im_begin(position, rotation, (vec3) { 1.f, 1.f, 1.f }, color, filled ? GDM_TRIANGLE_FAN : GDM_LINE_LOOP, draw_order);
 	float arc_degrees = angle_end - angle_start;
 	float increment = arc_degrees / num_divisions;
 
 	if(arc_degrees != 360)
 		im_pos(0.f, 0.f, 0.f);
 
-	for(float i = angle_start; i <= angle_end; i+= increment)
-		im_pos(sinf(i * M_PI / 180.f) * radius, cosf(i * M_PI / 180.f) * radius, 0.f);
+	if(angle_start < angle_end)
+	{
+		for(float i = angle_start; i <= angle_end; i += increment)
+			im_pos(sinf(i * M_PI / 180.f) * radius, cosf(i * M_PI / 180.f) * radius, 0.f);
+	}
+	else
+	{
+		for(float i = angle_start; i >= angle_end; i += increment)
+			im_pos(sinf(i * M_PI / 180.f) * radius, cosf(i * M_PI / 180.f) * radius, 0.f);
+	}
 	
 	im_end();
 }
@@ -205,6 +213,11 @@ void im_render(struct Camera* active_viewer)
 	if(IM_State.curr_geom + 1 > 1)
 		qsort(IM_State.geometries, IM_State.curr_geom + 1, sizeof(struct IM_Geom), &im_sort_func);
 	
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND);
 	shader_bind(IM_State.im_shader);
 	{
 		static mat4 mvp, translation, rotation, scale;

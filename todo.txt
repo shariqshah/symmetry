@@ -1,10 +1,7 @@
 Todo:
-	- Impement im_filled_circle
-	- Draw rotation gizmo using filled circles to better reflect the underlying logic
+	- Only show rotation gizmo for one axis at a time
+	- Rotate mesh along mouse movement or show what the rotation is going to look like by using a wireframe version of mesh when rotating
 	- Match amount to be rotate with actual axes and the gizmo arc being drawn
-	- Handle negative values in im_arc
-	- Rotate mode tool widget
-	- Complete rotate mode
 	- Handle all other axes combinations
 	- Better, more accurate picking
 	- Highlight if we are about to select an entity or perform the tool action like translate when mouse is hovered and an entity can be selected at that location
@@ -257,4 +254,9 @@ Done:
 	* Toggle between relative and static grid i.e, grid that moves along with the selected object or grid that remains stationary at the origin
 	* Implement circle drawing with immediate mode renderer
 	* Implement arc drawing with renderer
+	* Impement im_filled_circle
+	* Draw rotation gizmo using filled circles to better reflect the underlying logic
+	* Handle negative values in im_arc
+	* Rotate mode tool widget
+	* Complete rotate mode
 

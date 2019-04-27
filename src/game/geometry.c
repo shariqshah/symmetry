@@ -26,11 +26,12 @@ void geom_init(void)
 	geometry_list = array_new(struct Geometry);
 	empty_indices = array_new(int);
 	draw_modes    = array_new_cap(GLenum, GDM_NUM_DRAWMODES);
-	draw_modes[GDM_TRIANGLES]  = GL_TRIANGLES;
-	draw_modes[GDM_LINES]      = GL_LINES;
-	draw_modes[GDM_POINTS]     = GL_POINTS;
-	draw_modes[GDM_LINE_STRIP] = GL_LINE_STRIP;
-	draw_modes[GDM_LINE_LOOP]  = GL_LINE_LOOP;
+	draw_modes[GDM_TRIANGLES]    = GL_TRIANGLES;
+	draw_modes[GDM_LINES]        = GL_LINES;
+	draw_modes[GDM_POINTS]       = GL_POINTS;
+	draw_modes[GDM_LINE_STRIP]   = GL_LINE_STRIP;
+	draw_modes[GDM_LINE_LOOP]    = GL_LINE_LOOP;
+	draw_modes[GDM_TRIANGLE_FAN] = GL_TRIANGLE_FAN;
 }
 
 int geom_find(const char* filename)

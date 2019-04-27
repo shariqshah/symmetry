@@ -121,7 +121,7 @@ void editor_init(struct Editor* editor)
 	editor->grid_scale                         = 1.f;
 	editor->tool_mesh_draw_enabled             = 1;
 	editor->tool_snap_enabled                  = 1;
-	editor->tool_rotate_arc_radius             = 10.f;
+	editor->tool_rotate_arc_radius             = 5.f;
 	editor->tool_rotate_arc_segments           = 50.f;
 	editor->tool_rotate_axis_selection_enabled = true;
 	editor->axis_line_length                   = 500.f;
@@ -131,7 +131,7 @@ void editor_init(struct Editor* editor)
 	vec3_fill(&editor->tool_mesh_position, 0.f, 0.f, 0.f);
 	vec4_fill(&editor->tool_mesh_color, 0.f, 1.f, 1.f, 1.f);
 	vec4_fill(&editor->selected_entity_colour, 0.96, 0.61, 0.17, 1.f);
-	vec4_fill(&editor->grid_color, 0.3f, 0.3f, 0.3f, 0.1f);
+	vec4_fill(&editor->grid_color, 0.3f, 0.3f, 0.3f, 0.7f);
 	vec4_fill(&editor->axis_color_x, 0.87, 0.32, 0.40, 1.f);
 	vec4_fill(&editor->axis_color_y, 0.53, 0.67, 0.28, 1.f);
 	vec4_fill(&editor->axis_color_z, 0.47, 0.67, 0.89, 1.f);
@@ -479,16 +479,16 @@ void editor_update(struct Editor* editor, float dt)
 		{
 			quat rotation = { 0.f, 0.f, 0.f, 1.f };
 			vec3 scale = { 1.f, 1.f, 1.f };
-			im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, editor->tool_mesh_position, rotation, editor->axis_color_z, 3);
+			im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_z, 3);
 			//im_arc(editor->tool_rotate_arc_radius, 0.f, 90.f, editor->tool_rotate_arc_segments, editor->tool_mesh_position, rotation, editor->axis_color_z, 3);
 			
 			quat_axis_angle(&rotation, &UNIT_X, -90.f);
-			im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, editor->tool_mesh_position, rotation, editor->axis_color_y, 3);
+			im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_y, 3);
 			//im_arc(editor->tool_rotate_arc_radius, 90.f, 180.f, editor->tool_rotate_arc_segments, editor->tool_mesh_position, rotation, editor->axis_color_y, 3);
 
 			quat_identity(&rotation);
 			quat_axis_angle(&rotation, &UNIT_Y, -90.f);
-			im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, editor->tool_mesh_position, rotation, editor->axis_color_x, 3);
+			im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_x, 3);
 			//im_arc(editor->tool_rotate_arc_radius, 0.f, 90.f, editor->tool_rotate_arc_segments, editor->tool_mesh_position, rotation, editor->axis_color_x, 3);
 
 			if(editor->current_axis != EDITOR_AXIS_NONE)
@@ -502,10 +502,15 @@ void editor_update(struct Editor* editor, float dt)
 				case EDITOR_AXIS_Z: vec4_assign(&arc_color, &editor->axis_color_z); break;
 				}
 
-				if(editor->tool_rotate_amount == 0.f)
-					im_arc(editor->tool_rotate_arc_radius / 2.f, 0.f, 1.f, editor->tool_rotate_arc_segments, editor->tool_mesh_position, rotation, arc_color, 2);
-				else
-					im_arc(editor->tool_rotate_arc_radius / 2.f, 0.f, editor->tool_rotate_amount, editor->tool_rotate_arc_segments, editor->tool_mesh_position, rotation, arc_color, 3);
+				arc_color.w = 0.1f;
+				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, true, editor->tool_mesh_position, rotation, arc_color, 2);
+				if(editor->tool_rotate_amount != 0.f)
+				{
+					arc_color.w = 0.5f;
+					im_arc(editor->tool_rotate_arc_radius / 2.f, 0.f, editor->tool_rotate_amount, editor->tool_rotate_arc_segments, true, editor->tool_mesh_position, rotation, arc_color, 4);
+				}
+
+
 			}
 		}
 		break;
@@ -712,7 +717,11 @@ void editor_on_mousemotion(const struct Event* event)
 		}
 		else /* Rotate on selected axis */
 		{
-			editor->tool_rotate_amount += editor->current_axis == EDITOR_AXIS_X ? event->mousemotion.xrel / 2 : -event->mousemotion.xrel / 2;
+			editor->tool_rotate_amount += event->mousemotion.xrel / 2;
+			if(editor->tool_rotate_amount > 360.f)
+				editor->tool_rotate_amount = editor->tool_rotate_amount - 360.f;
+			else if(editor->tool_rotate_amount < -360.f)
+				editor->tool_rotate_amount = editor->tool_rotate_amount + 360.f;
 		}
 	}
 	break;

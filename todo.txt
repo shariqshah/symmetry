@@ -1,13 +1,21 @@
 Todo:
+	- Impement im_filled_circle
+	- Draw rotation gizmo using filled circles to better reflect the underlying logic
+	- Match amount to be rotate with actual axes and the gizmo arc being drawn
+	- Handle negative values in im_arc
 	- Rotate mode tool widget
 	- Complete rotate mode
+	- Handle all other axes combinations
 	- Better, more accurate picking
 	- Highlight if we are about to select an entity or perform the tool action like translate when mouse is hovered and an entity can be selected at that location
 	- Display the projected position if we perform the action for example display what the new location would be right next to the tool mesh
+	? Disable entity picking when tool is in use or only allow picking when pressing ALT
+	- Disable editor event recievers on game mode change
 	- Editor Undo
 	- Scale Mode
 	- Color picker
 	- Color palette, picker and dropper
+	- Mouse warp to opposite side of the window when it reaches bounds
 	- Add other axis combinations like YZ and XY to transform tool
 	- Transformation space selection for translation, rotation and scale.
 	- Use actual selected entity's mesh for tool mesh when the entity already has a mesh and use a placeholder like a sphere when there is not mesh 

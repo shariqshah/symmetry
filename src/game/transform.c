@@ -96,7 +96,7 @@ void transform_rotate(struct Entity*       entity,
 	struct Transform* transform = &entity->transform;
 	quat new_rot;
 	quat_identity(&new_rot);
-	quat_axis_angle(&new_rot, axis, TO_RADIANS(angle));
+	quat_axis_angle(&new_rot, axis, angle);
 
 	if(space == TS_LOCAL)
 		quat_mul(&transform->rotation, &transform->rotation, &new_rot);

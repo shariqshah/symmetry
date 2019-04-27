@@ -10,13 +10,14 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
 #define MAX_IM_VERTICES 2048
 #define MAX_IM_GEOMETRIES (MAX_IM_VERTICES / 2)
 
 static struct
 {
-	struct IM_Vertex vertices[MAX_IM_VERTICES];
+	struct IM_Vertex current_vertices[MAX_IM_VERTICES];
 	struct IM_Geom   geometries[MAX_IM_GEOMETRIES];
 	uint             vao;
 	uint             vbo;
@@ -27,7 +28,7 @@ static struct
 IM_State;
 
 static struct IM_Geom* active_geom = NULL;
-static int active_vertex_index    = 0;
+static int current_vertex_index    = 0;
 
 static void im_geom_reset(struct IM_Geom* geom);
 static int  im_sort_func(const void* p1, const void* p2);
@@ -54,7 +55,7 @@ void im_init(void)
 	glBindVertexArray(0);
 
 	memset(&IM_State.geometries[0], 0, sizeof(struct IM_Geom) * MAX_IM_GEOMETRIES);
-	memset(&IM_State.vertices[0], 0, sizeof(struct IM_Vertex) * MAX_IM_VERTICES);
+	memset(&IM_State.current_vertices[0], 0, sizeof(struct IM_Vertex) * MAX_IM_VERTICES);
 	IM_State.curr_geom   = -1;
 	IM_State.curr_vertex =  0;
 
@@ -68,7 +69,7 @@ void im_cleanup(void)
 	glDeleteVertexArrays(1, &IM_State.vao);
 
 	memset(&IM_State.geometries[0], 0, sizeof(struct IM_Geom) * MAX_IM_GEOMETRIES);
-	memset(&IM_State.vertices[0], 0, sizeof(struct IM_Vertex) * MAX_IM_VERTICES);
+	memset(&IM_State.current_vertices[0], 0, sizeof(struct IM_Vertex) * MAX_IM_VERTICES);
 	IM_State.vao         =  0;
 	IM_State.vbo         =  0;
 	IM_State.curr_geom   = -1;
@@ -103,9 +104,9 @@ void im_pos(float x, float y, float z)
 		log_error("im_pos", "Buffer full!");
 		return;
 	}
-	vec3_fill(&IM_State.vertices[active_vertex_index].position, x, y, z);
+	current_vertex_index++;
+	vec3_fill(&IM_State.current_vertices[current_vertex_index].position, x, y, z);
 	IM_State.curr_vertex++;
-	active_vertex_index++;
 }
 
 void im_box(float x, float y, float z, vec3 position, quat rotation, vec4 color, int draw_mode, int draw_order)
@@ -152,27 +153,47 @@ void im_sphere(float radius, vec3 position, quat rotation, vec4 color, int draw_
 	active_geom = NULL;
 }
 
-void im_line(vec3 p1, vec3 p2, vec3 position, quat rotation, vec3 scale, vec4 color, int draw_mode, int draw_order)
+void im_line(vec3 p1, vec3 p2, vec3 position, quat rotation, vec3 scale, vec4 color, int draw_order)
 {
-	im_begin(position, rotation, scale, color, draw_mode, draw_order);
+	im_begin(position, rotation, scale, color, GDM_LINES, draw_order);
 	im_pos(p1.x, p1.y, p1.z);
 	im_pos(p2.x, p2.y, p2.z);
 	im_end();
 }
 
+void im_circle(float radius, int num_divisions, vec3 position, quat rotation, vec4 color, int draw_order)
+{
+	im_arc(radius, 0.f, 360.f, num_divisions, position, rotation, color, draw_order);
+}
+
+void im_arc(float radius, float angle_start, float angle_end, int num_divisions, vec3 position, quat rotation, vec4 color, int draw_order)
+{
+	im_begin(position, rotation, (vec3) { 1.f, 1.f, 1.f }, color, GDM_LINE_LOOP, draw_order);
+	float arc_degrees = angle_end - angle_start;
+	float increment = arc_degrees / num_divisions;
+
+	if(arc_degrees != 360)
+		im_pos(0.f, 0.f, 0.f);
+
+	for(float i = angle_start; i <= angle_end; i+= increment)
+		im_pos(sinf(i * M_PI / 180.f) * radius, cosf(i * M_PI / 180.f) * radius, 0.f);
+	
+	im_end();
+}
+
 void im_end(void)
 {
-	active_geom->num_vertices = active_vertex_index + 1;
+	active_geom->num_vertices = current_vertex_index + 1;
 	GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, IM_State.vbo));
 	GL_CHECK(glBufferSubData(GL_ARRAY_BUFFER,
 					sizeof(struct IM_Vertex) * active_geom->start_index,
 					sizeof(struct IM_Vertex) * active_geom->num_vertices,
-					&IM_State.vertices[0]));
+					&IM_State.current_vertices[0]));
 	
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	active_geom = NULL;
-	active_vertex_index = 0;
-	memset(&IM_State.vertices[0], 0, sizeof(struct IM_Vertex) * MAX_IM_VERTICES);
+	current_vertex_index = -1;
+	memset(&IM_State.current_vertices[0], 0, sizeof(struct IM_Vertex) * MAX_IM_VERTICES);
 }
 
 void im_render(struct Camera* active_viewer)

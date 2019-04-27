@@ -34,6 +34,8 @@ struct Editor
 	vec3           tool_mesh_position;
 	vec4           tool_mesh_color;
 	int            tool_mesh_draw_enabled;
+	float          tool_rotate_arc_radius;
+	int            tool_rotate_arc_segments;
 	float          axis_line_length;
 	vec4           axis_color_x;
 	vec4           axis_color_y;

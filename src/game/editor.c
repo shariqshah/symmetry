@@ -117,16 +117,18 @@ void editor_init(struct Editor* editor)
 	editor->grid_relative             = 1;
 	editor->grid_num_lines            = 100;
 	editor->grid_scale                = 1.f;
-	editor->tool_mesh_draw_enabled    = 0;
+	editor->tool_mesh_draw_enabled    = 1;
 	editor->tool_snap_enabled         = 1;
+	editor->tool_rotate_arc_radius    = 10.f;
+	editor->tool_rotate_arc_segments  = 20.f;
 	editor->axis_line_length          = 500.f;
 	vec3_fill(&editor->tool_mesh_position, 0.f, 0.f, 0.f);
 	vec4_fill(&editor->tool_mesh_color, 0.f, 1.f, 1.f, 1.f);
-	vec4_fill(&editor->selected_entity_colour, 1.f, 1.f, 0.f, 1.f);
+	vec4_fill(&editor->selected_entity_colour, 0.96, 0.61, 0.17, 1.f);
 	vec4_fill(&editor->grid_color, 0.3f, 0.3f, 0.3f, 0.1f);
-	vec4_fill(&editor->axis_color_x, 1.f, 0.f, 0.f, 1.f);
-	vec4_fill(&editor->axis_color_y, 0.f, 1.f, 0.f, 1.f);
-	vec4_fill(&editor->axis_color_z, 0.f, 0.f, 1.f, 1.f);
+	vec4_fill(&editor->axis_color_x, 0.87, 0.32, 0.40, 1.f);
+	vec4_fill(&editor->axis_color_y, 0.53, 0.67, 0.28, 1.f);
+	vec4_fill(&editor->axis_color_z, 0.47, 0.67, 0.89, 1.f);
     debug_vars_list                   = array_new(struct Debug_Variable);
     empty_indices                     = array_new(int);
 	
@@ -183,9 +185,9 @@ void editor_render(struct Editor* editor, struct Camera * active_camera)
 
 	float half_axis_line_length = editor->axis_line_length / 2.f;
 
-	im_line((vec3) { -half_axis_line_length, 0.f, 0.f }, (vec3) { half_axis_line_length, 0.f, 0.f }, position, rotation, scale, editor->axis_color_x, GDM_LINES, 1); // X Axis
-	im_line((vec3) { 0.f, -half_axis_line_length, 0.f }, (vec3) { 0.f, half_axis_line_length, 0.f }, position, rotation, scale, editor->axis_color_y, GDM_LINES, 1); // Y Axis
-	im_line((vec3) { 0.f, 0.f, -half_axis_line_length }, (vec3) { 0.f, 0.f, half_axis_line_length }, position, rotation, scale, editor->axis_color_z, GDM_LINES, 1); // Z Axis
+	im_line((vec3) { -half_axis_line_length, 0.f, 0.f }, (vec3) { half_axis_line_length, 0.f, 0.f }, position, rotation, scale, editor->axis_color_x, 1); // X Axis
+	im_line((vec3) { 0.f, -half_axis_line_length, 0.f }, (vec3) { 0.f, half_axis_line_length, 0.f }, position, rotation, scale, editor->axis_color_y, 1); // Y Axis
+	im_line((vec3) { 0.f, 0.f, -half_axis_line_length }, (vec3) { 0.f, 0.f, half_axis_line_length }, position, rotation, scale, editor->axis_color_z, 1); // Z Axis
 
 	//Draw Grid
 	if(editor->grid_enabled)
@@ -428,7 +430,9 @@ void editor_update(struct Editor* editor, float dt)
 	
 	if(editor->tool_mesh_draw_enabled)
 	{
-		if(editor->current_mode == EDITOR_MODE_TRANSLATE)
+		switch(editor->current_mode)
+		{
+		case EDITOR_MODE_TRANSLATE:
 		{
 			quat rotation = { 0.f, 0.f, 0.f, 1.f };
 			vec3 scale = { 1.f, 1.f, 1.f };
@@ -438,19 +442,31 @@ void editor_update(struct Editor* editor, float dt)
 			switch(editor->current_axis)
 			{
 			case EDITOR_AXIS_XZ:
-				im_line((vec3) { -editor->axis_line_length, 0.f, 0.f }, (vec3) { editor->axis_line_length, 0.f, 0.f }, editor->tool_mesh_position, rotation, scale, editor->axis_color_x, GDM_LINES, 3);
-				im_line((vec3) { 0.f, 0.f, -editor->axis_line_length }, (vec3) { 0.f, 0.f, editor->axis_line_length }, editor->tool_mesh_position, rotation, scale, editor->axis_color_z, GDM_LINES, 3);
+				im_line((vec3) { -editor->axis_line_length, 0.f, 0.f }, (vec3) { editor->axis_line_length, 0.f, 0.f }, editor->tool_mesh_position, rotation, scale, editor->axis_color_x, 3);
+				im_line((vec3) { 0.f, 0.f, -editor->axis_line_length }, (vec3) { 0.f, 0.f, editor->axis_line_length }, editor->tool_mesh_position, rotation, scale, editor->axis_color_z, 3);
 				break;
 			case EDITOR_AXIS_Y:
-				im_line((vec3) { 0.f, -editor->axis_line_length, 0.f }, (vec3) { 0.f, editor->axis_line_length, 0.f }, editor->tool_mesh_position, rotation, scale, editor->axis_color_y, GDM_LINES, 3);
+				im_line((vec3) { 0.f, -editor->axis_line_length, 0.f }, (vec3) { 0.f, editor->axis_line_length, 0.f }, editor->tool_mesh_position, rotation, scale, editor->axis_color_y, 3);
 				break;
 			case EDITOR_AXIS_X:
-				im_line((vec3) { -editor->axis_line_length, 0.f, 0.f }, (vec3) { editor->axis_line_length, 0.f, 0.f }, editor->tool_mesh_position, rotation, scale, editor->axis_color_x, GDM_LINES, 3);
+				im_line((vec3) { -editor->axis_line_length, 0.f, 0.f }, (vec3) { editor->axis_line_length, 0.f, 0.f }, editor->tool_mesh_position, rotation, scale, editor->axis_color_x, 3);
 				break;
 			case EDITOR_AXIS_Z:
-				im_line((vec3) { 0.f, 0.f, -editor->axis_line_length }, (vec3) { 0.f, 0.f, editor->axis_line_length }, editor->tool_mesh_position, rotation, scale, editor->axis_color_z, GDM_LINES, 3);
+				im_line((vec3) { 0.f, 0.f, -editor->axis_line_length }, (vec3) { 0.f, 0.f, editor->axis_line_length }, editor->tool_mesh_position, rotation, scale, editor->axis_color_z, 3);
 				break;
 			}
+		}
+		break;
+		case EDITOR_MODE_ROTATE:
+		{
+			quat rotation = { 0.f, 0.f, 0.f, 1.f };
+			quat_axis_angle(&rotation, &UNIT_X, -90.f);
+			vec3 scale = { 1.f, 1.f, 1.f };
+			//im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, editor->tool_mesh_position, rotation, editor->axis_color_x, 3);
+			im_arc(editor->tool_rotate_arc_radius, 0.f, 90.f, editor->tool_rotate_arc_segments, editor->tool_mesh_position, rotation, editor->axis_color_y, 3);
+		}
+		break;
+
 		}
 	}
 }
@@ -626,11 +642,12 @@ void editor_mode_set(struct Editor* editor, int mode)
 	if(editor->current_mode != mode)
 	{
 		editor->current_mode = mode;
-		if(editor->current_mode == EDITOR_MODE_TRANSLATE)
-			editor->tool_mesh_draw_enabled = 1;
-		else
-			editor->tool_mesh_draw_enabled = 0;
 	}
+
+	if(editor->selected_entity)
+		transform_get_absolute_position(editor->selected_entity, &editor->tool_mesh_position);
+	else
+		vec3_fill(&editor->tool_mesh_position, 0.f, 0.f, 0.f);
 }
 
 void editor_entity_select(struct Editor* editor, struct Entity* entity)

@@ -1,6 +1,4 @@
 Todo:
-	- Implement circle drawing with immediate mode renderer
-	- Implement arc drawing with renderer
 	- Rotate mode tool widget
 	- Complete rotate mode
 	- Better, more accurate picking
@@ -20,6 +18,8 @@ Todo:
 	? Improve bounding sphere calculation
 	- Change the way lights are set as uniforms to remove snprintf calls per frame for every light attribute
 	- Filter Scene heirarchy by search using entity name
+	- Command interface that allows applying commands to selected entity like r x 30 would rotate the selected entity or entities on x axis by 30 degrees
+	- Quick scene filter and entity selection by popping up a menu which has list of entities and fuzzy matches them based on the typed name
 	- Screen mouse coordinates to world-coordinates for aiming
 	- Player projectiles and sounds
 	- Console commands
@@ -247,4 +247,6 @@ Done:
 	* Draw coloured axes lines at world origin or grid origin
 	* Make axis lines always follow the same colour scheme for consistency across all tools, red for X axis, green for Y axis and blue for Z axis
 	* Toggle between relative and static grid i.e, grid that moves along with the selected object or grid that remains stationary at the origin
+	* Implement circle drawing with immediate mode renderer
+	* Implement arc drawing with renderer
 

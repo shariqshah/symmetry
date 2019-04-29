@@ -36,8 +36,9 @@ struct Editor
 	int            tool_mesh_draw_enabled;
 	float          tool_rotate_arc_radius;
 	int            tool_rotate_arc_segments;
-	bool           tool_rotate_axis_selection_enabled;
 	float          tool_rotate_amount;
+	bool           tool_rotate_allowed;
+	bool           tool_rotate_rotation_started;
 	float          tool_rotate_increment;
 	vec3           tool_scale_amount;
 	float          axis_line_length;

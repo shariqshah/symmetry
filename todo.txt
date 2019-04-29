@@ -1,5 +1,5 @@
 Todo:
-	- Only show rotation gizmo for one axis at a time
+	- Cancel tool action when right click is pressed in between
 	- Rotate mesh along mouse movement or show what the rotation is going to look like by using a wireframe version of mesh when rotating
 	- Match amount to be rotate with actual axes and the gizmo arc being drawn
 	- Handle all other axes combinations
@@ -83,16 +83,15 @@ Todo:
 
 Improvements:
 	- Better naming semantics for example, init/deinit for initialization and cleanup and create/destroy when memory is allocated or deallocated
-	- Reset mouse cursor position to the center of the screen in editor mode after the right click is released
 	- Categorized entity list in editor for example different subtree for lights and static meshes
 	- Depth testing for editor grid
-	- Remove fixed editor windows locations and bring back floating windows
+	- Improve picking and automatically improve everything in editor
+	- Improve culling
 
 Bugs:
 	- Better handling of wav format checking at load time
 	- Fix light rotation/direction bugs
 	- Fix lights type not being correctly saved/loaded from file
-	- Fix culling
 	- Fix bounding boxes not aligning in editor
 	- Investigate memory usage increase when window is minimized
 	- Fix hang on fullscreen toggle
@@ -264,4 +263,7 @@ Done:
 	* Complete rotate mode
 	* Implement arc values greater than 360 or -360
 	* Rotation degree snapping
+	* Reset mouse cursor position to the center of the screen in editor mode after the right click is released
+	* Remove fixed editor windows locations and bring back floating windows
+	* Only show rotation gizmo for one axis at a time
 

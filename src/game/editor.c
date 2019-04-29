@@ -55,11 +55,13 @@ enum Editor_Mode
 
 enum Editor_Axis
 {
-	EDITOR_AXIS_XZ = 0,
+	EDITOR_AXIS_NONE = 0,
 	EDITOR_AXIS_X,
 	EDITOR_AXIS_Y,
 	EDITOR_AXIS_Z,
-	EDITOR_AXIS_NONE
+	EDITOR_AXIS_XZ,
+	EDITOR_AXIS_XY,
+	EDITOR_AXIS_YZ,
 };
 
 static struct Debug_Variable* debug_vars_list = NULL;
@@ -98,6 +100,7 @@ static void editor_window_settings_editor(struct nk_context* context, struct Edi
 static void editor_axis_set(struct Editor* editor, int axis);
 static void editor_entity_select(struct Editor* editor, struct Entity* entity);
 static void editor_mode_set(struct Editor* editor, int mode);
+static void editor_tool_reset(struct Editor* editor);
 
 void editor_init(struct Editor* editor)
 {
@@ -125,7 +128,8 @@ void editor_init(struct Editor* editor)
 	editor->tool_rotate_increment              = 5.f;
 	editor->tool_rotate_arc_radius             = 5.f;
 	editor->tool_rotate_arc_segments           = 50.f;
-	editor->tool_rotate_axis_selection_enabled = true;
+	editor->tool_rotate_rotation_started       = false;
+	editor->tool_rotate_allowed                = false;
 	editor->axis_line_length                   = 500.f;
 	editor->picking_enabled                    = true;
 
@@ -359,15 +363,18 @@ void editor_update(struct Editor* editor, float dt)
 		}
 
 		nk_layout_row_push(context, 0.1f);
-		static const char* editor_axes[] = { "Axis: XZ", "Axis: X", "Axis: Y", "Axis: Z", "Axis: None" };
+		static const char* editor_axes[] = { "Axis: None", "Axis: X", "Axis: Y", "Axis: Z", "Axis: XZ", "Axis: XY", "Axis: YZ" };
 		if(nk_combo_begin_label(context, editor_axes[editor->current_axis], nk_vec2(160, 125)))
 		{
 			nk_layout_row_dynamic(context, row_height, 1);
 			int axis = editor->current_axis;
-			axis = nk_option_label(context, "X",  axis == EDITOR_AXIS_X)  ? EDITOR_AXIS_X  : axis;
-			axis = nk_option_label(context, "Y",  axis == EDITOR_AXIS_Y)  ? EDITOR_AXIS_Y  : axis;
-			axis = nk_option_label(context, "Z",  axis == EDITOR_AXIS_Z)  ? EDITOR_AXIS_Z  : axis;
-			axis = nk_option_label(context, "XZ", axis == EDITOR_AXIS_XZ) ? EDITOR_AXIS_XZ : axis;
+			axis = nk_option_label(context, "X",    axis == EDITOR_AXIS_X)    ? EDITOR_AXIS_X    : axis;
+			axis = nk_option_label(context, "Y",    axis == EDITOR_AXIS_Y)    ? EDITOR_AXIS_Y    : axis;
+			axis = nk_option_label(context, "Z",    axis == EDITOR_AXIS_Z)    ? EDITOR_AXIS_Z    : axis;
+			axis = nk_option_label(context, "XZ",   axis == EDITOR_AXIS_XZ)   ? EDITOR_AXIS_XZ   : axis;
+			axis = nk_option_label(context, "XY",   axis == EDITOR_AXIS_XY)   ? EDITOR_AXIS_XY   : axis;
+			axis = nk_option_label(context, "YZ",   axis == EDITOR_AXIS_YZ)   ? EDITOR_AXIS_YZ   : axis;
+			axis = nk_option_label(context, "None", axis == EDITOR_AXIS_NONE) ? EDITOR_AXIS_NONE : axis;
 			editor_axis_set(editor, axis);
 			nk_combo_end(context);
 		}
@@ -461,10 +468,6 @@ void editor_update(struct Editor* editor, float dt)
 			//Draw Axes
 			switch(editor->current_axis)
 			{
-			case EDITOR_AXIS_XZ:
-				im_line((vec3) { -editor->axis_line_length, 0.f, 0.f }, (vec3) { editor->axis_line_length, 0.f, 0.f }, editor->tool_mesh_position, rotation, scale, editor->axis_color_x, 3);
-				im_line((vec3) { 0.f, 0.f, -editor->axis_line_length }, (vec3) { 0.f, 0.f, editor->axis_line_length }, editor->tool_mesh_position, rotation, scale, editor->axis_color_z, 3);
-				break;
 			case EDITOR_AXIS_Y:
 				im_line((vec3) { 0.f, -editor->axis_line_length, 0.f }, (vec3) { 0.f, editor->axis_line_length, 0.f }, editor->tool_mesh_position, rotation, scale, editor->axis_color_y, 3);
 				break;
@@ -474,6 +477,18 @@ void editor_update(struct Editor* editor, float dt)
 			case EDITOR_AXIS_Z:
 				im_line((vec3) { 0.f, 0.f, -editor->axis_line_length }, (vec3) { 0.f, 0.f, editor->axis_line_length }, editor->tool_mesh_position, rotation, scale, editor->axis_color_z, 3);
 				break;
+			case EDITOR_AXIS_XZ:
+				im_line((vec3) { -editor->axis_line_length, 0.f, 0.f }, (vec3) { editor->axis_line_length, 0.f, 0.f }, editor->tool_mesh_position, rotation, scale, editor->axis_color_x, 3);
+				im_line((vec3) { 0.f, 0.f, -editor->axis_line_length }, (vec3) { 0.f, 0.f, editor->axis_line_length }, editor->tool_mesh_position, rotation, scale, editor->axis_color_z, 3);
+				break;
+			case EDITOR_AXIS_XY:
+				im_line((vec3) { -editor->axis_line_length, 0.f, 0.f }, (vec3) { editor->axis_line_length, 0.f, 0.f }, editor->tool_mesh_position, rotation, scale, editor->axis_color_x, 3);
+				im_line((vec3) { 0.f, -editor->axis_line_length, 0.f }, (vec3) { 0.f, editor->axis_line_length, 0.f }, editor->tool_mesh_position, rotation, scale, editor->axis_color_y, 3);
+				break;
+			case EDITOR_AXIS_YZ:
+				im_line((vec3) { 0.f, -editor->axis_line_length, 0.f }, (vec3) { 0.f, editor->axis_line_length, 0.f }, editor->tool_mesh_position, rotation, scale, editor->axis_color_y, 3);
+				im_line((vec3) { 0.f, 0.f, -editor->axis_line_length }, (vec3) { 0.f, 0.f, editor->axis_line_length }, editor->tool_mesh_position, rotation, scale, editor->axis_color_z, 3);
+				break;
 			}
 		}
 		break;
@@ -481,17 +496,46 @@ void editor_update(struct Editor* editor, float dt)
 		{
 			quat rotation = { 0.f, 0.f, 0.f, 1.f };
 			vec3 scale = { 1.f, 1.f, 1.f };
-			im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_z, 3);
-			//im_arc(editor->tool_rotate_arc_radius, 0.f, 90.f, editor->tool_rotate_arc_segments, editor->tool_mesh_position, rotation, editor->axis_color_z, 3);
-			
-			quat_axis_angle(&rotation, &UNIT_X, -90.f);
-			im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_y, 3);
-			//im_arc(editor->tool_rotate_arc_radius, 90.f, 180.f, editor->tool_rotate_arc_segments, editor->tool_mesh_position, rotation, editor->axis_color_y, 3);
+			switch(editor->current_axis)
+			{
+			case EDITOR_AXIS_X:
+				quat_axis_angle(&rotation, &UNIT_Y, -90.f);
+				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_x, 3);
+				break;
+			case EDITOR_AXIS_Y:
+				quat_axis_angle(&rotation, &UNIT_X, -90.f);
+				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_y, 3);
+				break;
+			case EDITOR_AXIS_Z:
+				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_z, 3);
+				break;
+			case EDITOR_AXIS_XZ:
+				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_z, 3);
+				quat_axis_angle(&rotation, &UNIT_Y, -90.f);
+				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_x, 3);
+				break;
+			case EDITOR_AXIS_XY:
+				quat_axis_angle(&rotation, &UNIT_Y, -90.f);
+				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_x, 3);
+				quat_identity(&rotation);
+				quat_axis_angle(&rotation, &UNIT_X, -90.f);
+				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_y, 3);
+				break;
+			case EDITOR_AXIS_YZ:
+				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_z, 3);
+				quat_axis_angle(&rotation, &UNIT_X, -90.f);
+				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_y, 3);
+				break;
+			}
 
-			quat_identity(&rotation);
-			quat_axis_angle(&rotation, &UNIT_Y, -90.f);
-			im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_x, 3);
-			//im_arc(editor->tool_rotate_arc_radius, 0.f, 90.f, editor->tool_rotate_arc_segments, editor->tool_mesh_position, rotation, editor->axis_color_x, 3);
+			//im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_z, 3);
+			//
+			//quat_axis_angle(&rotation, &UNIT_X, -90.f);
+			//im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_y, 3);
+
+			//quat_identity(&rotation);
+			//quat_axis_angle(&rotation, &UNIT_Y, -90.f);
+			//im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_x, 3);
 
 			if(editor->current_axis != EDITOR_AXIS_NONE)
 			{
@@ -504,15 +548,17 @@ void editor_update(struct Editor* editor, float dt)
 				case EDITOR_AXIS_Z: vec4_assign(&arc_color, &editor->axis_color_z); break;
 				}
 
-				arc_color.w = 0.1f;
-				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, true, editor->tool_mesh_position, rotation, arc_color, 2);
+				if(editor->tool_rotate_allowed)
+				{
+					arc_color.w = 0.1f;
+					im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, true, editor->tool_mesh_position, rotation, arc_color, 2);
+				}
+
 				if(editor->tool_rotate_amount != 0.f)
 				{
 					arc_color.w = 0.5f;
 					im_arc(editor->tool_rotate_arc_radius / 2.f, 0.f, editor->tool_rotate_amount, editor->tool_rotate_arc_segments, true, editor->tool_mesh_position, rotation, arc_color, 4);
 				}
-
-
 			}
 		}
 		break;
@@ -575,24 +621,25 @@ void editor_on_mousebutton_release(const struct Event* event)
 				transform_translate(editor->selected_entity, &translation, TS_WORLD);
 			}
 		}
-		else if(editor->current_mode == EDITOR_MODE_ROTATE)
+		else if(editor->current_mode == EDITOR_MODE_ROTATE && editor->tool_rotate_rotation_started)
 		{
-			if(!editor->tool_rotate_axis_selection_enabled)
+			editor->picking_enabled = true;
+			editor->tool_rotate_rotation_started = false;
+			if(editor->tool_rotate_amount != 0.f)
 			{
-				editor->tool_rotate_axis_selection_enabled = true;
-				editor->picking_enabled = true;
-				if(editor->tool_rotate_amount != 0.f)
+				vec3 axis = { 0.f, 0.f, 0.f };
+				bool should_rotate = true;
+				switch(editor->current_axis)
 				{
-					vec3 axis = { 0.f, 0.f, 0.f };
-					switch(editor->current_axis)
-					{
-					case EDITOR_AXIS_X: vec3_assign(&axis, &UNIT_X); break;
-					case EDITOR_AXIS_Y: vec3_assign(&axis, &UNIT_Y); break;
-					case EDITOR_AXIS_Z: vec3_assign(&axis, &UNIT_Z); break;
-					}
-					transform_rotate(editor->selected_entity, &axis, editor->tool_rotate_amount, TS_WORLD);
-					editor->tool_rotate_amount = 0.f;
+				case EDITOR_AXIS_X: vec3_assign(&axis, &UNIT_X); break;
+				case EDITOR_AXIS_Y: vec3_assign(&axis, &UNIT_Y); break;
+				case EDITOR_AXIS_Z: vec3_assign(&axis, &UNIT_Z); break;
+				default: should_rotate = false;
 				}
+
+				if(should_rotate)
+					transform_rotate(editor->selected_entity, &axis, editor->tool_rotate_amount, TS_WORLD);
+				editor->tool_rotate_amount = 0.f;
 			}
 		}
 	}
@@ -609,13 +656,10 @@ void editor_on_mousebutton_press(const struct Event* event)
 
 	if(event->mousebutton.button == MSB_LEFT && event->type == EVT_MOUSEBUTTON_PRESSED && editor->selected_entity)
 	{
-		if(editor->current_mode == EDITOR_MODE_ROTATE)
+		if(editor->current_mode == EDITOR_MODE_ROTATE && editor->tool_rotate_allowed)
 		{
-			if(editor->tool_rotate_axis_selection_enabled)
-			{
-				editor->tool_rotate_axis_selection_enabled = false;
-				editor->picking_enabled = false;
-			}
+			editor->picking_enabled = false;
+			editor->tool_rotate_rotation_started = true;
 		}
 	}
 }
@@ -624,6 +668,8 @@ void editor_on_mousemotion(const struct Event* event)
 {
 	struct Game_State* game_state = game_state_get();
 	struct Editor*     editor     = game_state->editor;
+	struct Gui*        gui        = game_state->gui;
+	if(nk_window_is_any_hovered(&gui->context)) return;
 
 	switch(editor->current_mode)
 	{
@@ -677,8 +723,7 @@ void editor_on_mousemotion(const struct Event* event)
 	break;
 	case EDITOR_MODE_ROTATE:
 	{
-		/* Select Axis to rotate on */
-		if(editor->selected_entity && editor->tool_rotate_axis_selection_enabled)
+		if(editor->selected_entity && editor->current_axis < EDITOR_AXIS_XZ)
 		{
 			struct Camera* editor_camera = &game_state->scene->cameras[CAM_EDITOR];
 			vec3 position = { 0.f };
@@ -686,49 +731,62 @@ void editor_on_mousemotion(const struct Event* event)
 			struct Ray cam_ray;
 			cam_ray = camera_screen_coord_to_ray(editor_camera, event->mousemotion.x, event->mousemotion.y);
 
+
+			/* Instead of using a spehre intersection, get the point where the ray intersects the plane 
+			   then check if the distance of that point from the selected entity is less than or equal to
+			   the radius of the circle/disc, if it is, then we are inside the circle and can rotate */
+
+
+
 			struct Bounding_Sphere gizmo_sphere;
 			//vec3_assign(&gizmo_sphere.center, &position);
 			gizmo_sphere.center = (vec3) { 0.f, 0.f, 0.f };
 			gizmo_sphere.radius = editor->tool_rotate_arc_radius;
 			if(bv_intersect_sphere_ray(&gizmo_sphere, &position, &cam_ray))
 			{
-				Plane ground_plane;
-				plane_init(&ground_plane, &UNIT_X, &position);
-				float distance_x = bv_distance_ray_plane(&cam_ray, &ground_plane);
+				//Plane ground_plane;
+				//plane_init(&ground_plane, &UNIT_X, &position);
+				//float distance_x = bv_distance_ray_plane(&cam_ray, &ground_plane);
 
-				plane_init(&ground_plane, &UNIT_Y, &position);
-				float distance_y = bv_distance_ray_plane(&cam_ray, &ground_plane);
+				//plane_init(&ground_plane, &UNIT_Y, &position);
+				//float distance_y = bv_distance_ray_plane(&cam_ray, &ground_plane);
 
-				plane_init(&ground_plane, &UNIT_Z, &position);
-				float distance_z = bv_distance_ray_plane(&cam_ray, &ground_plane);
+				//plane_init(&ground_plane, &UNIT_Z, &position);
+				//float distance_z = bv_distance_ray_plane(&cam_ray, &ground_plane);
 
-				//Determine the closest plane
-				log_message("X: %.3f  Y: %.3f  Z: %.3f", distance_x, distance_y, distance_z);
+				////Determine the closest plane
+				////log_message("X: %.3f  Y: %.3f  Z: %.3f", distance_x, distance_y, distance_z);
 
-				float shortest_distance = distance_x < distance_y ? distance_x : distance_y;
-				shortest_distance = shortest_distance < distance_z ? shortest_distance : distance_z;
+				//float shortest_distance = distance_x < distance_y ? distance_x : distance_y;
+				//shortest_distance = shortest_distance < distance_z ? shortest_distance : distance_z;
 
-				if(shortest_distance == distance_x) editor->current_axis = EDITOR_AXIS_X;
-				if(shortest_distance == distance_y) editor->current_axis = EDITOR_AXIS_Y;
-				if(shortest_distance == distance_z) editor->current_axis = EDITOR_AXIS_Z;
+				//if(shortest_distance == distance_x) editor->tool_rotate_axis = EDITOR_AXIS_X;
+				//if(shortest_distance == distance_y) editor->tool_rotate_axis = EDITOR_AXIS_Y;
+				//if(shortest_distance == distance_z) editor->tool_rotate_axis = EDITOR_AXIS_Z;
+				editor->tool_rotate_allowed = true;
 			}
 			else
 			{
-				editor->current_axis = EDITOR_AXIS_NONE;
+				editor->tool_rotate_allowed = false;
+			}
+			//else
+			//{
+			//	editor->tool_rotate_axis = EDITOR_AXIS_NONE;
+			//}
+			if(editor->current_axis != EDITOR_AXIS_NONE && editor->tool_rotate_rotation_started)
+			{
+				if(editor->tool_snap_enabled)
+					editor->tool_rotate_amount += editor->grid_scale * editor->tool_rotate_increment * ((float)event->mousemotion.xrel / 2.f);
+				else
+					editor->tool_rotate_amount += event->mousemotion.xrel / 2;
+
+				if(editor->tool_rotate_amount > 360.f)
+					editor->tool_rotate_amount = editor->tool_rotate_amount - 360.f;
+				else if(editor->tool_rotate_amount < -360.f)
+					editor->tool_rotate_amount = editor->tool_rotate_amount + 360.f;
 			}
 		}
-		else /* Rotate on selected axis */
-		{
-			if(editor->tool_snap_enabled)
-				editor->tool_rotate_amount += editor->grid_scale * editor->tool_rotate_increment * ((float)event->mousemotion.xrel / 2.f);
-			else
-				editor->tool_rotate_amount += event->mousemotion.xrel / 2;
-
-			if(editor->tool_rotate_amount > 360.f)
-				editor->tool_rotate_amount = editor->tool_rotate_amount - 360.f;
-			else if(editor->tool_rotate_amount < -360.f)
-				editor->tool_rotate_amount = editor->tool_rotate_amount + 360.f;
-		}
+		
 	}
 	break;
 	default: break;
@@ -765,8 +823,10 @@ void editor_on_key_release(const struct Event* event)
 		if(event->key.key == KEY_X) selected_axis = EDITOR_AXIS_X;
 		if(event->key.key == KEY_Y) selected_axis = EDITOR_AXIS_Y;
 		if(event->key.key == KEY_Z) selected_axis = EDITOR_AXIS_Z;
+		if(event->key.key == KEY_X && input_is_key_pressed(KEY_LSHIFT)) selected_axis = EDITOR_AXIS_YZ;
 		if(event->key.key == KEY_Y && input_is_key_pressed(KEY_LSHIFT)) selected_axis = EDITOR_AXIS_XZ;
-		if(event->key.key == KEY_ALT) selected_axis = editor->previous_axis;
+		if(event->key.key == KEY_Z && input_is_key_pressed(KEY_LSHIFT)) selected_axis = EDITOR_AXIS_XY;
+		if(event->key.key == KEY_ALT && editor->current_mode == EDITOR_MODE_TRANSLATE) selected_axis = editor->previous_axis; // Revert to previous axis when alt is released
 		editor_axis_set(editor, selected_axis);
 		
 		/* Grid Scale select */
@@ -794,18 +854,7 @@ void editor_mode_set(struct Editor* editor, int mode)
 		editor->current_mode = mode;
 	}
 
-	if(editor->selected_entity)
-		transform_get_absolute_position(editor->selected_entity, &editor->tool_mesh_position);
-	else
-		vec3_fill(&editor->tool_mesh_position, 0.f, 0.f, 0.f);
-
-	editor->tool_rotate_amount = 0.f;
-	editor->tool_rotate_axis_selection_enabled = true;
-	editor->picking_enabled = true;
-	if(mode == EDITOR_MODE_TRANSLATE)
-		editor_axis_set(editor, EDITOR_AXIS_XZ);
-	else
-		editor_axis_set(editor, EDITOR_AXIS_NONE);
+	editor_tool_reset(editor);
 }
 
 void editor_entity_select(struct Editor* editor, struct Entity* entity)
@@ -814,7 +863,7 @@ void editor_entity_select(struct Editor* editor, struct Entity* entity)
 	{
 		editor->selected_entity->editor_selected = false;
 		editor->selected_entity = NULL;
-		vec3_fill(&editor->tool_mesh_position, 0.f, 0.f, 0.f);
+		editor_tool_reset(editor);
 	}
 	else if(entity) // Select
 	{
@@ -830,12 +879,28 @@ void editor_entity_select(struct Editor* editor, struct Entity* entity)
 	}
 }
 
+void editor_tool_reset(struct Editor* editor)
+{
+	if(editor->selected_entity)
+		transform_get_absolute_position(editor->selected_entity, &editor->tool_mesh_position);
+	else
+		vec3_fill(&editor->tool_mesh_position, 0.f, 0.f, 0.f);
+
+	editor->tool_rotate_amount = 0.f;
+	editor->tool_rotate_allowed = false;
+	editor->picking_enabled = true;
+	if(editor->current_mode == EDITOR_MODE_TRANSLATE)
+		editor_axis_set(editor, EDITOR_AXIS_XZ);
+	else
+		editor_axis_set(editor, EDITOR_AXIS_NONE);
+}
+
 void editor_on_key_press(const struct Event* event)
 {
 	struct Editor* editor = game_state_get()->editor;
 	if(!nk_window_is_any_hovered(&game_state_get()->gui->context))
 	{
-		if(event->key.key == KEY_ALT) editor_axis_set(editor, EDITOR_AXIS_Y);
+		if(event->key.key == KEY_ALT && editor->current_mode == EDITOR_MODE_TRANSLATE) editor_axis_set(editor, EDITOR_AXIS_Y);
 	}
 }
 
@@ -843,15 +908,24 @@ void editor_axis_set(struct Editor* editor, int axis)
 {
 	if(editor->current_axis != axis)
 	{
-		if(axis != editor->current_axis)
-		{
-			editor->previous_axis = editor->current_axis;
-			editor->current_axis  = axis;
+		editor->previous_axis = editor->current_axis;
+		editor->current_axis = axis;
 
-			/* Reset tool position after axis has changed */
-			if(editor->selected_entity)
+		/* Reset tool position after axis has changed */
+		if(editor->selected_entity)
+		{
+			transform_get_absolute_position(editor->selected_entity, &editor->tool_mesh_position);
+		}
+
+		if(editor->current_mode == EDITOR_MODE_ROTATE)
+		{
+			// Assign rotation axis only if it is a single axis since we don't want to rotate on multiple axes at the same time
+			if(axis >= EDITOR_AXIS_XZ)
 			{
-				transform_get_absolute_position(editor->selected_entity, &editor->tool_mesh_position);
+				editor->previous_axis = EDITOR_AXIS_NONE;
+				editor->current_axis = EDITOR_AXIS_NONE;
+				editor->tool_rotate_allowed = false;
+				editor->tool_rotate_amount = 0.f;
 			}
 		}
 	}
@@ -860,7 +934,7 @@ void editor_camera_update(struct Editor* editor, float dt)
 {
     struct Camera* editor_camera = &game_state_get()->scene->cameras[CAM_EDITOR];
     static float total_up_down_rot = 0.f;
-    float move_speed          = editor->camera_move_speed, turn_speed = editor->camera_turn_speed;
+    float move_speed = editor->camera_move_speed, turn_speed = editor->camera_turn_speed;
     float turn_up_down        = 0.f;
     float turn_left_right     = 0.f;
     float max_up_down         = 60.f;

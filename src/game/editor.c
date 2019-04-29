@@ -121,6 +121,7 @@ void editor_init(struct Editor* editor)
 	editor->grid_scale                         = 1.f;
 	editor->tool_mesh_draw_enabled             = 1;
 	editor->tool_snap_enabled                  = 1;
+	editor->tool_rotate_amount                 = 0.f;
 	editor->tool_rotate_arc_radius             = 5.f;
 	editor->tool_rotate_arc_segments           = 50.f;
 	editor->tool_rotate_axis_selection_enabled = true;
@@ -560,7 +561,7 @@ void editor_on_mousebutton_release(const struct Event* event)
 
 	}
 
-	if(editor->selected_entity && event->mousebutton.button == MSB_LEFT)
+	if(editor->selected_entity && event->mousebutton.button == MSB_LEFT && nk_item_is_any_active(&gui->context) == 0)
 	{
 		if(editor->current_mode == EDITOR_MODE_TRANSLATE)
 		{

@@ -1,4 +1,5 @@
 Todo:
+	- Rotation degree snapping
 	- Only show rotation gizmo for one axis at a time
 	- Rotate mesh along mouse movement or show what the rotation is going to look like by using a wireframe version of mesh when rotating
 	- Match amount to be rotate with actual axes and the gizmo arc being drawn
@@ -12,6 +13,9 @@ Todo:
 	- Scale Mode
 	- Color picker
 	- Color palette, picker and dropper
+	- Key binding and function to snap editor camera to selected entity
+	  location
+	- Key binding and function to orient entity to camera orientation
 	- Mouse warp to opposite side of the window when it reaches bounds
 	- Add other axis combinations like YZ and XY to transform tool
 	- Transformation space selection for translation, rotation and scale.
@@ -259,4 +263,5 @@ Done:
 	* Handle negative values in im_arc
 	* Rotate mode tool widget
 	* Complete rotate mode
+	* Implement arc values greater than 360 or -360
 

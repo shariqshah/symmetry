@@ -170,19 +170,24 @@ void im_arc(float radius, float angle_start, float angle_end, int num_divisions,
 {
 	im_begin(position, rotation, (vec3) { 1.f, 1.f, 1.f }, color, filled ? GDM_TRIANGLE_FAN : GDM_LINE_LOOP, draw_order);
 	float arc_degrees = angle_end - angle_start;
-	float increment = arc_degrees / num_divisions;
 
 	if(arc_degrees != 360)
 		im_pos(0.f, 0.f, 0.f);
 
+	if(arc_degrees > 360.f)
+		arc_degrees = (int)arc_degrees % 360;
+	if(arc_degrees < -360.f)
+		arc_degrees = (int)arc_degrees % -360;
+
+	float increment = arc_degrees / num_divisions;
 	if(angle_start < angle_end)
 	{
-		for(float i = angle_start; i <= angle_end; i += increment)
+		for(float i = angle_start; i <= arc_degrees; i += increment)
 			im_pos(sinf(i * M_PI / 180.f) * radius, cosf(i * M_PI / 180.f) * radius, 0.f);
 	}
 	else
 	{
-		for(float i = angle_start; i >= angle_end; i += increment)
+		for(float i = angle_start; i >= arc_degrees; i += increment)
 			im_pos(sinf(i * M_PI / 180.f) * radius, cosf(i * M_PI / 180.f) * radius, 0.f);
 	}
 	

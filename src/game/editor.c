@@ -122,6 +122,7 @@ void editor_init(struct Editor* editor)
 	editor->tool_mesh_draw_enabled             = 1;
 	editor->tool_snap_enabled                  = 1;
 	editor->tool_rotate_amount                 = 0.f;
+	editor->tool_rotate_increment              = 5.f;
 	editor->tool_rotate_arc_radius             = 5.f;
 	editor->tool_rotate_arc_segments           = 50.f;
 	editor->tool_rotate_axis_selection_enabled = true;
@@ -602,7 +603,7 @@ void editor_on_mousebutton_press(const struct Event* event)
 	struct Game_State* game_state = game_state_get();
 	struct Editor*     editor     = game_state->editor;
 	struct Gui*        gui        = game_state->gui;
-	if(game_state->game_mode != GAME_MODE_EDITOR)
+	if(game_state->game_mode != GAME_MODE_EDITOR && nk_window_is_any_hovered(&gui->context) == 0)
 		return;
 
 
@@ -718,7 +719,11 @@ void editor_on_mousemotion(const struct Event* event)
 		}
 		else /* Rotate on selected axis */
 		{
-			editor->tool_rotate_amount += event->mousemotion.xrel / 2;
+			if(editor->tool_snap_enabled)
+				editor->tool_rotate_amount += editor->grid_scale * editor->tool_rotate_increment * ((float)event->mousemotion.xrel / 2.f);
+			else
+				editor->tool_rotate_amount += event->mousemotion.xrel / 2;
+
 			if(editor->tool_rotate_amount > 360.f)
 				editor->tool_rotate_amount = editor->tool_rotate_amount - 360.f;
 			else if(editor->tool_rotate_amount < -360.f)

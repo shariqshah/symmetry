@@ -38,6 +38,7 @@ struct Editor
 	int            tool_rotate_arc_segments;
 	bool           tool_rotate_axis_selection_enabled;
 	float          tool_rotate_amount;
+	float          tool_rotate_increment;
 	vec3           tool_scale_amount;
 	float          axis_line_length;
 	vec4           axis_color_x;

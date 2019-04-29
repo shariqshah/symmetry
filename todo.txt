@@ -1,5 +1,4 @@
 Todo:
-	- Rotation degree snapping
 	- Only show rotation gizmo for one axis at a time
 	- Rotate mesh along mouse movement or show what the rotation is going to look like by using a wireframe version of mesh when rotating
 	- Match amount to be rotate with actual axes and the gizmo arc being drawn
@@ -264,4 +263,5 @@ Done:
 	* Rotate mode tool widget
 	* Complete rotate mode
 	* Implement arc values greater than 360 or -360
+	* Rotation degree snapping
 

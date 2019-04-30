@@ -801,20 +801,24 @@ void quat_get_right(vec3* res, const quat* q)
 
 float quat_get_pitch(const quat* q)
 {
-	float result = (float)atan2(2 * (q->y * q->z + q->w * q->x), q->w * q->w - q->x * q->x - q->y * q->y + q->z * q->z);
-	return result;
+	float check = 2.0f * (-q->y * q->z + q->w * q->x);
+	if(check < -0.995f || check > 0.995f)
+		return 0.f;
+	else
+		return TO_DEGREES(atan2f(2.f * (q->x * q->z + q->w * q->y), 1.f - 2.f * (q->x * q->x + q->y * q->y)));
+		//return TO_DEGREES(atan2f(2.f * (q->y * q->z + q->w * q->x), q->w * q->w - q->x * q->x - q->y * q->y + q->z * q->z));
 }
 
 float quat_get_yaw(const quat* q)
 {
 	float result = (float)asin(-2 * (q->x * q->z - q->w * q->y));
-	return result;
+	return TO_DEGREES(result);
 }
 
 float quat_get_roll(const quat* q)
 {
 	float result = atan2(2 * (q->x * q->y + q->w * q->z), q->w * q->w + q->x * q->x - q->y * q->y - q->z * q->z);
-	return result;
+	return TO_DEGREES(result);
 }
 
 void quat_mul_mat4(quat* res, quat* val, mat4* mat)

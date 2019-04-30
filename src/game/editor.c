@@ -127,16 +127,19 @@ void editor_init(struct Editor* editor)
 	editor->tool_rotate_amount                 = 0.f;
 	editor->tool_rotate_increment              = 5.f;
 	editor->tool_rotate_arc_radius             = 5.f;
-	editor->tool_rotate_arc_segments           = 50.f;
+	editor->tool_rotate_arc_segments           = 20.f;
+	editor->tool_rotate_starting_rotation      = 0.f;
 	editor->tool_rotate_rotation_started       = false;
 	editor->tool_rotate_allowed                = false;
 	editor->axis_line_length                   = 500.f;
 	editor->picking_enabled                    = true;
+	editor->draw_entity_wireframe              = false;
 
+	vec4_fill(&editor->projected_entity_color, 0.f, 1.f, 1.f, 1.f);
 	vec3_fill(&editor->tool_scale_amount, 0.f, 0.f, 0.f);
 	vec3_fill(&editor->tool_mesh_position, 0.f, 0.f, 0.f);
 	vec4_fill(&editor->tool_mesh_color, 0.f, 1.f, 1.f, 1.f);
-	vec4_fill(&editor->selected_entity_colour, 0.96, 0.61, 0.17, 1.f);
+	vec4_fill(&editor->selected_entity_color, 0.96, 0.61, 0.17, 0.5f);
 	vec4_fill(&editor->grid_color, 0.3f, 0.3f, 0.3f, 0.7f);
 	vec4_fill(&editor->axis_color_x, 0.87, 0.32, 0.40, 1.f);
 	vec4_fill(&editor->axis_color_y, 0.53, 0.67, 0.28, 1.f);
@@ -150,6 +153,8 @@ void editor_init(struct Editor* editor)
 	event_manager_subscribe(event_manager, EVT_MOUSEMOTION, &editor_on_mousemotion);
 	event_manager_subscribe(event_manager, EVT_KEY_PRESSED, &editor_on_key_press);
 	event_manager_subscribe(event_manager, EVT_KEY_RELEASED, &editor_on_key_release);
+
+	editor->selected_entity_wireframe = scene_static_mesh_create(game_state_get()->scene, "EDITOR_SELECTED_ENTITY_WIREFRAME", NULL, "Sphere.pamesh", MAT_UNSHADED);
 }
 
 void editor_init_camera(struct Editor* editor, struct Hashmap* cvars)
@@ -172,6 +177,8 @@ void editor_init_camera(struct Editor* editor, struct Hashmap* cvars)
 
 void editor_render(struct Editor* editor, struct Camera * active_camera)
 {
+	struct Game_State* game_state = game_state_get();
+	struct Renderer* renderer = game_state->renderer;
 	//Disabling this for now until better handling of bounding box and scale of the entity is implemented
 	//Get the selected entity if any, see if it has a mesh and render it in the selected entity colour
 	// if(editor->selected_entity)
@@ -190,6 +197,67 @@ void editor_render(struct Editor* editor, struct Camera * active_camera)
 
 	// 	}
 	// }
+
+	if(game_state->editor->selected_entity)
+	{
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LEQUAL);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_BLEND);
+		/* Draw selected entity */
+		if(editor->selected_entity->type == ET_STATIC_MESH)
+		{
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			shader_bind(renderer->debug_shader);
+			{
+				static mat4 mvp;
+				shader_set_uniform_vec4(renderer->debug_shader, "debug_color", &editor->selected_entity_color);
+				struct Static_Mesh* mesh = (struct Static_Mesh*)editor->selected_entity;
+				struct Model*       model = &mesh->model;
+				struct Transform*   transform = &mesh->base.transform;
+				int                 geometry = model->geometry_index;
+				mat4_identity(&mvp);
+				mat4_mul(&mvp, &active_camera->view_proj_mat, &transform->trans_mat);
+				shader_set_uniform_mat4(renderer->debug_shader, "mvp", &mvp);
+				geom_render(geometry, GDM_TRIANGLES);
+			}
+			shader_unbind();
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+		}
+		else
+		{
+			//For now just draw a placeholder sphere just to visually denote that the entity is selected
+			vec3 abs_pos;
+			quat abs_rot;
+			transform_get_absolute_position(editor->selected_entity, &abs_pos);
+			transform_get_absolute_rot(editor->selected_entity, &abs_rot);
+			im_sphere(1.f, abs_pos, abs_rot, editor->selected_entity_color, GDM_TRIANGLES, 1);
+		}
+
+		/* Draw selected entity with projected transformation applied  */
+		if(editor->draw_entity_wireframe)
+		{
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			shader_bind(renderer->debug_shader);
+			{
+				static mat4 mvp;
+				shader_set_uniform_vec4(renderer->debug_shader, "debug_color", &editor->projected_entity_color);
+				struct Static_Mesh* mesh      = editor->selected_entity_wireframe;
+				struct Model*       model     = editor->selected_entity->type == ET_STATIC_MESH ? &((struct Static_Mesh*)editor->selected_entity)->model : &mesh->model;
+				struct Transform*   transform = &mesh->base.transform;
+				int                 geometry  = model->geometry_index;
+				mat4_identity(&mvp);
+				mat4_mul(&mvp, &active_camera->view_proj_mat, &transform->trans_mat);
+				shader_set_uniform_mat4(renderer->debug_shader, "mvp", &mvp);
+				geom_render(geometry, GDM_TRIANGLES);
+			}
+			shader_unbind();
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		}
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_BLEND);
+	}
 
 	vec3 position = { 0.f, 0.f, 0.f };
 	quat rotation = { 0.f, 0.f, 0.f, 1.f };
@@ -413,7 +481,7 @@ void editor_update(struct Editor* editor, float dt)
 			nk_labelf(context, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, "Position at: %.1f  %.1f  %.1f", editor->tool_mesh_position.x, editor->tool_mesh_position.y, editor->tool_mesh_position.z);
 			break;
 		case EDITOR_MODE_ROTATE:
-			nk_labelf(context, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, "Rotation by: %.1f", editor->tool_rotate_amount);
+			nk_labelf(context, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, "Rotation by: %.1f", editor->tool_rotate_total_rotation);
 			break;
 		case EDITOR_MODE_SCALE:
 			nk_labelf(context, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, "Scale to: %.1f  %.1f  %.1f", editor->tool_scale_amount.x, editor->tool_scale_amount.y, editor->tool_scale_amount.z);
@@ -531,15 +599,6 @@ void editor_update(struct Editor* editor, float dt)
 				break;
 			}
 
-			//im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_z, 3);
-			//
-			//quat_axis_angle(&rotation, &UNIT_X, -90.f);
-			//im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_y, 3);
-
-			//quat_identity(&rotation);
-			//quat_axis_angle(&rotation, &UNIT_Y, -90.f);
-			//im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_x, 3);
-
 			if(editor->current_axis != EDITOR_AXIS_NONE)
 			{
 				quat_identity(&rotation);
@@ -547,8 +606,8 @@ void editor_update(struct Editor* editor, float dt)
 				switch(editor->current_axis)
 				{
 				case EDITOR_AXIS_X: quat_axis_angle(&rotation, &UNIT_Y, -90.f); vec4_assign(&arc_color, &editor->axis_color_x); break;
-				case EDITOR_AXIS_Y: quat_axis_angle(&rotation, &UNIT_X, -90.f); vec4_assign(&arc_color, &editor->axis_color_y) ;break;
-				case EDITOR_AXIS_Z: vec4_assign(&arc_color, &editor->axis_color_z); break;
+				case EDITOR_AXIS_Y: quat_axis_angle(&rotation, &UNIT_X, 90.f);  vec4_assign(&arc_color, &editor->axis_color_y); break;
+				case EDITOR_AXIS_Z: quat_axis_angle(&rotation, &UNIT_Y, 180.f); vec4_assign(&arc_color, &editor->axis_color_z); break;
 				}
 
 				if(editor->tool_rotate_allowed)
@@ -557,10 +616,11 @@ void editor_update(struct Editor* editor, float dt)
 					im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, true, editor->tool_mesh_position, rotation, arc_color, 2);
 				}
 
-				if(editor->tool_rotate_amount != 0.f)
+				if(editor->tool_rotate_total_rotation != 0.f)
 				{
 					arc_color.w = 0.5f;
-					im_arc(editor->tool_rotate_arc_radius / 2.f, 0.f, editor->tool_rotate_amount, editor->tool_rotate_arc_segments, true, editor->tool_mesh_position, rotation, arc_color, 4);
+					log_message("Starting: %f", editor->tool_rotate_starting_rotation);
+					im_arc(editor->tool_rotate_arc_radius / 2.f, editor->tool_rotate_starting_rotation, editor->tool_rotate_total_rotation, editor->tool_rotate_arc_segments, true, editor->tool_mesh_position, rotation, arc_color, 4);
 				}
 			}
 		}
@@ -599,7 +659,14 @@ void editor_on_mousebutton_release(const struct Event* event)
 			{
 				//For now, just select the first entity that is intersected 
 				struct Entity* intersected_entity = ray_result.entities_intersected[0];
-				editor_entity_select(editor, intersected_entity);
+				if(intersected_entity == editor->selected_entity_wireframe)
+				{
+					if(ray_result.num_entities_intersected > 1)
+						intersected_entity = ray_result.entities_intersected[1];
+					else
+						intersected_entity = NULL;
+				}
+				if(intersected_entity) editor_entity_select(editor, intersected_entity);
 			}
 			else
 			{
@@ -628,21 +695,25 @@ void editor_on_mousebutton_release(const struct Event* event)
 		{
 			editor->picking_enabled = true;
 			editor->tool_rotate_rotation_started = false;
+			transform_copy(editor->selected_entity, editor->selected_entity_wireframe, false);
+			editor->tool_rotate_total_rotation = 0.f;
+			editor->tool_rotate_starting_rotation = 0.f;
+			editor->draw_entity_wireframe = false;
 			if(editor->tool_rotate_amount != 0.f)
 			{
-				vec3 axis = { 0.f, 0.f, 0.f };
-				bool should_rotate = true;
-				switch(editor->current_axis)
-				{
-				case EDITOR_AXIS_X: vec3_assign(&axis, &UNIT_X); break;
-				case EDITOR_AXIS_Y: vec3_assign(&axis, &UNIT_Y); break;
-				case EDITOR_AXIS_Z: vec3_assign(&axis, &UNIT_Z); break;
-				default: should_rotate = false;
-				}
+				//vec3 axis = { 0.f, 0.f, 0.f };
+				//bool should_rotate = true;
+				//switch(editor->current_axis)
+				//{
+				//case EDITOR_AXIS_X: vec3_assign(&axis, &UNIT_X); break;
+				//case EDITOR_AXIS_Y: vec3_assign(&axis, &UNIT_Y); break;
+				//case EDITOR_AXIS_Z: vec3_assign(&axis, &UNIT_Z); break;
+				//default: should_rotate = false;
+				//}
 
-				if(should_rotate)
-					transform_rotate(editor->selected_entity, &axis, editor->tool_rotate_amount, TS_WORLD);
-				editor->tool_rotate_amount = 0.f;
+				//if(should_rotate)
+				//	transform_rotate(editor->selected_entity, &axis, editor->tool_rotate_amount, TS_WORLD);
+				//editor->tool_rotate_amount = 0.f;
 			}
 		}
 	}
@@ -663,6 +734,14 @@ void editor_on_mousebutton_press(const struct Event* event)
 		{
 			editor->picking_enabled = false;
 			editor->tool_rotate_rotation_started = true;
+			editor->tool_rotate_total_rotation = 0.f;
+			editor->draw_entity_wireframe = true;
+			switch(editor->current_axis)
+			{
+			case EDITOR_AXIS_X: editor->tool_rotate_starting_rotation = roundf(quat_get_pitch(&editor->selected_entity->transform.rotation)); break;
+			case EDITOR_AXIS_Y: editor->tool_rotate_starting_rotation = roundf(quat_get_yaw(&editor->selected_entity->transform.rotation));   break;
+			case EDITOR_AXIS_Z: editor->tool_rotate_starting_rotation = roundf(quat_get_roll(&editor->selected_entity->transform.rotation));  break;
+			}
 		}
 	}
 
@@ -724,6 +803,7 @@ void editor_on_mousemotion(const struct Event* event)
 				editor->tool_mesh_position.x = roundf(editor->tool_mesh_position.x / editor->grid_scale) * editor->grid_scale;
 				editor->tool_mesh_position.y = roundf(editor->tool_mesh_position.y / editor->grid_scale) * editor->grid_scale;
 				editor->tool_mesh_position.z = roundf(editor->tool_mesh_position.z / editor->grid_scale) * editor->grid_scale;
+				transform_set_position(editor->selected_entity_wireframe, &editor->tool_mesh_position);
 			}
 		}
 	}
@@ -791,6 +871,28 @@ void editor_on_mousemotion(const struct Event* event)
 					editor->tool_rotate_amount = editor->tool_rotate_amount - 360.f;
 				else if(editor->tool_rotate_amount < -360.f)
 					editor->tool_rotate_amount = editor->tool_rotate_amount + 360.f;
+
+				if(editor->tool_rotate_amount != 0.f)
+				{
+					vec3 axis = { 0.f, 0.f, 0.f };
+					bool should_rotate = true;
+					switch(editor->current_axis)
+					{
+					case EDITOR_AXIS_X: vec3_assign(&axis, &UNIT_X); break;
+					case EDITOR_AXIS_Y: vec3_assign(&axis, &UNIT_Y); break;
+					case EDITOR_AXIS_Z: vec3_assign(&axis, &UNIT_Z); break;
+					default: should_rotate = false;
+					}
+
+					if(should_rotate)
+						transform_rotate(editor->selected_entity_wireframe, &axis, editor->tool_rotate_amount, TS_WORLD);
+					editor->tool_rotate_total_rotation += editor->tool_rotate_amount;
+					if(editor->tool_rotate_total_rotation > 360.f)
+						editor->tool_rotate_total_rotation = (int)editor->tool_rotate_total_rotation % 360;
+					else if(editor->tool_rotate_total_rotation < -360.f)
+						editor->tool_rotate_total_rotation = (int)editor->tool_rotate_total_rotation % -360;
+					editor->tool_rotate_amount = 0.f;
+				}
 			}
 		}
 		
@@ -860,7 +962,11 @@ void editor_mode_set(struct Editor* editor, int mode)
 	{
 		editor->current_mode = mode;
 	}
-
+	
+	if(editor->selected_entity && editor->current_mode == EDITOR_MODE_TRANSLATE)
+		editor->draw_entity_wireframe = true;
+	else
+		editor->draw_entity_wireframe = false;
 	editor_tool_reset(editor);
 }
 
@@ -880,20 +986,28 @@ void editor_entity_select(struct Editor* editor, struct Entity* entity)
 			editor->selected_entity = NULL;
 		}
 
+		if(editor->current_mode == EDITOR_MODE_TRANSLATE) editor->draw_entity_wireframe = true;
 		entity->editor_selected = true;
 		editor->selected_entity = entity;
 		transform_get_absolute_position(editor->selected_entity, &editor->tool_mesh_position);
+		transform_copy(editor->selected_entity_wireframe, editor->selected_entity, false);
 	}
 }
 
 void editor_tool_reset(struct Editor* editor)
 {
 	if(editor->selected_entity)
+	{ 
 		transform_get_absolute_position(editor->selected_entity, &editor->tool_mesh_position);
+		transform_copy(editor->selected_entity_wireframe, editor->selected_entity, false);
+	}
 	else
+	{
 		vec3_fill(&editor->tool_mesh_position, 0.f, 0.f, 0.f);
+	}
 
 	editor->tool_rotate_amount = 0.f;
+	editor->tool_rotate_total_rotation = 0.f;
 	editor->tool_rotate_allowed = false;
 	editor->tool_rotate_rotation_started = false;
 	editor->picking_enabled = true;
@@ -1235,9 +1349,9 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 				quat abs_rot = { 0.f, 0.f, 0.f, 1.f };
 				transform_get_absolute_rot(entity, &abs_rot);
 				vec3 rot_angles = { 0.f, 0.f, 0.f };
-				rot_angles.x = TO_DEGREES(quat_get_pitch(&abs_rot));
-				rot_angles.y = TO_DEGREES(quat_get_yaw(&abs_rot));
-				rot_angles.z = TO_DEGREES(quat_get_roll(&abs_rot));
+				rot_angles.x = quat_get_pitch(&abs_rot);
+				rot_angles.y = quat_get_yaw(&abs_rot);
+				rot_angles.z = quat_get_roll(&abs_rot);
 				vec3 curr_rot = { rot_angles.x, rot_angles.y, rot_angles.z };
 
 				nk_layout_row_dynamic(context, row_height, 1); nk_property_float(context, "#X", -FLT_MAX, &curr_rot.x, FLT_MAX, 5.f, 1.f);

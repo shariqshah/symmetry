@@ -3,7 +3,9 @@
 #include "../common/array.h"
 #include "entity.h"
 #include "../common/utils.h"
+
 #include <assert.h>
+#include <string.h>
 
 void transform_init(struct Entity* entity, struct Entity* parent)
 {
@@ -64,6 +66,18 @@ void transform_parent_set(struct Entity* child, struct Entity* parent, bool upda
 	}
 
 	if(update_transmat) transform_update_transmat(child);
+}
+
+void transform_copy(struct Entity* copy_to, struct Entity* copy_from, bool copy_parent)
+{
+	struct Entity* current_parent = copy_to->transform.parent;
+	struct Entity** current_children = copy_to->transform.children;
+
+	memcpy(&copy_to->transform, &copy_from->transform, sizeof(struct Transform));
+	if(copy_parent)
+		transform_parent_set(copy_to, current_parent, true);
+
+	copy_to->transform.children = current_children;
 }
 
 void transform_translate(struct Entity* entity, vec3* amount, enum Transform_Space space)

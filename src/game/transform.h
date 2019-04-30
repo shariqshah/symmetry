@@ -32,5 +32,6 @@ void transform_get_absolute_forward(struct Entity* entity, vec3* res);
 void transform_child_add(struct Entity* entity, struct Entity* child, bool update_transmat);
 bool transform_child_remove(struct Entity* entity, struct Entity* child);
 void transform_parent_set(struct Entity* entity, struct Entity* parent, bool update_transmat);
+void transform_copy(struct Entity* copy_to, struct Entity* copy_from, bool copy_parent);
 
 #endif

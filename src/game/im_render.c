@@ -168,26 +168,44 @@ void im_circle(float radius, int num_divisions, bool filled, vec3 position, quat
 
 void im_arc(float radius, float angle_start, float angle_end, int num_divisions, bool filled, vec3 position, quat rotation, vec4 color, int draw_order)
 {
-	im_begin(position, rotation, (vec3) { 1.f, 1.f, 1.f }, color, filled ? GDM_TRIANGLE_FAN : GDM_LINE_LOOP, draw_order);
 	float arc_degrees = angle_end - angle_start;
+	if(fabsf(arc_degrees) < 0.01f)
+		return;
+
+	im_begin(position, rotation, (vec3) { 1.f, 1.f, 1.f }, color, filled ? GDM_TRIANGLE_FAN : GDM_LINE_LOOP, draw_order);
 
 	if(arc_degrees != 360)
 		im_pos(0.f, 0.f, 0.f);
 
 	if(arc_degrees > 360.f)
+	{
 		arc_degrees = (int)arc_degrees % 360;
-	if(arc_degrees < -360.f)
+		angle_end = arc_degrees;
+	}
+	else if(arc_degrees < -360.f)
+	{
 		arc_degrees = (int)arc_degrees % -360;
-
+		angle_end = arc_degrees;
+	}
+	
+	if(fabsf(arc_degrees) < 0.01f)
+		arc_degrees = arc_degrees < 0.f ? -0.01f : 0.01f;
 	float increment = arc_degrees / num_divisions;
+	if(fabsf(increment) < 0.01f)
+		increment = increment < 0.f ? -0.01f : 0.01f;
+
 	if(angle_start < angle_end)
 	{
-		for(float i = angle_start; i <= arc_degrees; i += increment)
-			im_pos(sinf(i * M_PI / 180.f) * radius, cosf(i * M_PI / 180.f) * radius, 0.f);
+		int count = 0;
+		for(float i = angle_start; i <= angle_end; i += increment)
+		{
+			count++;
+ 			im_pos(sinf(i * M_PI / 180.f) * radius, cosf(i * M_PI / 180.f) * radius, 0.f);
+		}
 	}
 	else
 	{
-		for(float i = angle_start; i >= arc_degrees; i += increment)
+		for(float i = angle_start; i >= angle_end; i += increment)
 			im_pos(sinf(i * M_PI / 180.f) * radius, cosf(i * M_PI / 180.f) * radius, 0.f);
 	}
 	
@@ -264,6 +282,8 @@ void im_render(struct Camera* active_viewer)
 
 	}
 	shader_unbind();
+	glDisable(GL_BLEND);
+	glDisable(GL_DEPTH_TEST);
 
 	IM_State.curr_geom   = -1;
 	IM_State.curr_vertex =  0;

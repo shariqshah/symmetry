@@ -407,38 +407,6 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
 	if(game_state->game_mode == GAME_MODE_EDITOR)
 	{
 		editor_render(game_state->editor, active_camera);
-		if(game_state->editor->selected_entity)
-		{
-			if(game_state->editor->selected_entity->type == ET_STATIC_MESH)
-			{
-				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-				shader_bind(renderer->debug_shader);
-				{
-					static mat4 mvp;
-					shader_set_uniform_vec4(renderer->debug_shader, "debug_color", &game_state->editor->selected_entity_colour);
-					struct Static_Mesh* mesh = (struct Static_Mesh*)game_state->editor->selected_entity;
-					struct Model*       model = &mesh->model;
-					struct Transform*   transform = &mesh->base.transform;
-					int                 geometry = model->geometry_index;
-					mat4_identity(&mvp);
-					mat4_mul(&mvp, &active_camera->view_proj_mat, &transform->trans_mat);
-					shader_set_uniform_mat4(renderer->debug_shader, "mvp", &mvp);
-					geom_render(geometry, GDM_TRIANGLES);
-				}
-				shader_unbind();
-				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-			}
-			else
-			{
-				//For now just draw a placeholder sphere just to visually denote that the entity is selected
-				vec3 abs_pos;
-				quat abs_rot;
-				transform_get_absolute_position(game_state->editor->selected_entity, &abs_pos);
-				transform_get_absolute_rot(game_state->editor->selected_entity, &abs_rot);
-				im_sphere(1.f, abs_pos, abs_rot, game_state->editor->selected_entity_colour, GDM_TRIANGLES, 1);
-			}
-		}
 	}
 
     //Immediate mode geometry render

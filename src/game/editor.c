@@ -371,9 +371,12 @@ void editor_update(struct Editor* editor, float dt)
 			axis = nk_option_label(context, "X",    axis == EDITOR_AXIS_X)    ? EDITOR_AXIS_X    : axis;
 			axis = nk_option_label(context, "Y",    axis == EDITOR_AXIS_Y)    ? EDITOR_AXIS_Y    : axis;
 			axis = nk_option_label(context, "Z",    axis == EDITOR_AXIS_Z)    ? EDITOR_AXIS_Z    : axis;
-			axis = nk_option_label(context, "XZ",   axis == EDITOR_AXIS_XZ)   ? EDITOR_AXIS_XZ   : axis;
-			axis = nk_option_label(context, "XY",   axis == EDITOR_AXIS_XY)   ? EDITOR_AXIS_XY   : axis;
-			axis = nk_option_label(context, "YZ",   axis == EDITOR_AXIS_YZ)   ? EDITOR_AXIS_YZ   : axis;
+			if(editor->current_mode != EDITOR_MODE_ROTATE)
+			{
+				axis = nk_option_label(context, "XZ", axis == EDITOR_AXIS_XZ) ? EDITOR_AXIS_XZ : axis;
+				axis = nk_option_label(context, "XY", axis == EDITOR_AXIS_XY) ? EDITOR_AXIS_XY : axis;
+				axis = nk_option_label(context, "YZ", axis == EDITOR_AXIS_YZ) ? EDITOR_AXIS_YZ : axis;
+			}
 			axis = nk_option_label(context, "None", axis == EDITOR_AXIS_NONE) ? EDITOR_AXIS_NONE : axis;
 			editor_axis_set(editor, axis);
 			nk_combo_end(context);
@@ -654,7 +657,7 @@ void editor_on_mousebutton_press(const struct Event* event)
 		return;
 
 
-	if(event->mousebutton.button == MSB_LEFT && event->type == EVT_MOUSEBUTTON_PRESSED && editor->selected_entity)
+	if(event->mousebutton.button == MSB_LEFT && editor->selected_entity)
 	{
 		if(editor->current_mode == EDITOR_MODE_ROTATE && editor->tool_rotate_allowed)
 		{
@@ -662,6 +665,10 @@ void editor_on_mousebutton_press(const struct Event* event)
 			editor->tool_rotate_rotation_started = true;
 		}
 	}
+
+	/* Cancel rotation on right mouse press */
+	if(event->mousebutton.button == MSB_RIGHT && editor->selected_entity && editor->current_mode == EDITOR_MODE_ROTATE)
+		editor_tool_reset(editor);
 }
 
 void editor_on_mousemotion(const struct Event* event)
@@ -888,6 +895,7 @@ void editor_tool_reset(struct Editor* editor)
 
 	editor->tool_rotate_amount = 0.f;
 	editor->tool_rotate_allowed = false;
+	editor->tool_rotate_rotation_started = false;
 	editor->picking_enabled = true;
 	if(editor->current_mode == EDITOR_MODE_TRANSLATE)
 		editor_axis_set(editor, EDITOR_AXIS_XZ);
@@ -1098,7 +1106,7 @@ void editor_widget_color_combov4(struct nk_context* context, vec4* color, int wi
 void editor_cleanup(struct Editor* editor)
 {
 	event_manager_unsubscribe(game_state_get()->event_manager, EVT_MOUSEBUTTON_PRESSED, &editor_on_mousebutton_press);
-	event_manager_unsubscribe(game_state_get()->event_manager, EVT_MOUSEBUTTON_RELEASED, &editor_on_mousebutton_press);
+	event_manager_unsubscribe(game_state_get()->event_manager, EVT_MOUSEBUTTON_RELEASED, &editor_on_mousebutton_release);
     for(int i = 0; i < array_len(debug_vars_list); i++)
 	editor_debugvar_slot_remove(i);
     array_free(debug_vars_list);

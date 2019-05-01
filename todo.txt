@@ -267,4 +267,6 @@ Done:
 	* Rotate mesh along mouse movement or show what the rotation is going to look like by using a wireframe version of mesh when rotating
 	* Match amount to be rotate with actual axes and the gizmo arc being drawn
 	* Handle all other axes combinations
+	* Fixed issue with picking not working when the other entity is inside
+	  rotation radius
 

@@ -154,7 +154,7 @@ void editor_init(struct Editor* editor)
 	event_manager_subscribe(event_manager, EVT_KEY_PRESSED, &editor_on_key_press);
 	event_manager_subscribe(event_manager, EVT_KEY_RELEASED, &editor_on_key_release);
 
-	editor->selected_entity_wireframe = scene_static_mesh_create(game_state_get()->scene, "EDITOR_SELECTED_ENTITY_WIREFRAME", NULL, "Sphere.pamesh", MAT_UNSHADED);
+	editor->selected_entity_wireframe = scene_static_mesh_create(game_state_get()->scene, "EDITOR_SELECTED_ENTITY_WIREFRAME", NULL, "sphere.pamesh", MAT_UNSHADED);
 }
 
 void editor_init_camera(struct Editor* editor, struct Hashmap* cvars)
@@ -732,15 +732,43 @@ void editor_on_mousebutton_press(const struct Event* event)
 	{
 		if(editor->current_mode == EDITOR_MODE_ROTATE && editor->tool_rotate_allowed)
 		{
-			editor->picking_enabled = false;
-			editor->tool_rotate_rotation_started = true;
-			editor->tool_rotate_total_rotation = 0.f;
-			editor->draw_entity_wireframe = true;
-			switch(editor->current_axis)
+			/* Check if there's an entity under cursor, if there is then select it,
+			   otherwise disable picking and start rotating */
+			struct Scene* scene = game_state_get()->scene;
+			struct Camera* editor_camera = &scene->cameras[CAM_EDITOR];
+			int mouse_x = 0, mouse_y = 0;
+			platform_mouse_position_get(&mouse_x, &mouse_y);
+			struct Ray ray = camera_screen_coord_to_ray(editor_camera, mouse_x, mouse_y);
+
+			struct Raycast_Result ray_result;
+			scene_ray_intersect(scene, &ray, &ray_result);
+
+			if(ray_result.num_entities_intersected > 0)
 			{
-			case EDITOR_AXIS_X: editor->tool_rotate_starting_rotation = roundf(quat_get_pitch(&editor->selected_entity->transform.rotation)); break;
-			case EDITOR_AXIS_Y: editor->tool_rotate_starting_rotation = roundf(quat_get_yaw(&editor->selected_entity->transform.rotation));   break;
-			case EDITOR_AXIS_Z: editor->tool_rotate_starting_rotation = roundf(quat_get_roll(&editor->selected_entity->transform.rotation));  break;
+				//For now, just select the first entity that is intersected 
+				struct Entity* intersected_entity = ray_result.entities_intersected[0];
+				if(intersected_entity == editor->selected_entity_wireframe)
+				{
+					if(ray_result.num_entities_intersected > 1)
+					{
+						intersected_entity = ray_result.entities_intersected[1];
+						if(intersected_entity) 
+							editor_entity_select(editor, intersected_entity);
+					}
+				}
+			}
+			else
+			{
+				editor->picking_enabled = false;
+				editor->tool_rotate_rotation_started = true;
+				editor->tool_rotate_total_rotation = 0.f;
+				editor->draw_entity_wireframe = true;
+				switch(editor->current_axis)
+				{
+				case EDITOR_AXIS_X: editor->tool_rotate_starting_rotation = roundf(quat_get_pitch(&editor->selected_entity->transform.rotation)); break;
+				case EDITOR_AXIS_Y: editor->tool_rotate_starting_rotation = roundf(quat_get_yaw(&editor->selected_entity->transform.rotation));   break;
+				case EDITOR_AXIS_Z: editor->tool_rotate_starting_rotation = roundf(quat_get_roll(&editor->selected_entity->transform.rotation));  break;
+				}
 			}
 		}
 	}

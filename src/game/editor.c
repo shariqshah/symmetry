@@ -137,7 +137,6 @@ void editor_init(struct Editor* editor)
 
 	vec4_fill(&editor->projected_entity_color, 0.f, 1.f, 1.f, 1.f);
 	vec3_fill(&editor->tool_scale_amount, 0.f, 0.f, 0.f);
-	vec3_fill(&editor->tool_mesh_position, 0.f, 0.f, 0.f);
 	vec4_fill(&editor->tool_mesh_color, 0.f, 1.f, 1.f, 1.f);
 	vec4_fill(&editor->selected_entity_color, 0.96, 0.61, 0.17, 0.5f);
 	vec4_fill(&editor->grid_color, 0.3f, 0.3f, 0.3f, 0.7f);
@@ -154,7 +153,7 @@ void editor_init(struct Editor* editor)
 	event_manager_subscribe(event_manager, EVT_KEY_PRESSED, &editor_on_key_press);
 	event_manager_subscribe(event_manager, EVT_KEY_RELEASED, &editor_on_key_release);
 
-	editor->selected_entity_wireframe = scene_static_mesh_create(game_state_get()->scene, "EDITOR_SELECTED_ENTITY_WIREFRAME", NULL, "sphere.pamesh", MAT_UNSHADED);
+	editor->cursor_entity = scene_static_mesh_create(game_state_get()->scene, "EDITOR_SELECTED_ENTITY_WIREFRAME", NULL, "sphere.symbres", MAT_UNSHADED);
 }
 
 void editor_init_camera(struct Editor* editor, struct Hashmap* cvars)
@@ -243,7 +242,7 @@ void editor_render(struct Editor* editor, struct Camera * active_camera)
 			{
 				static mat4 mvp;
 				shader_set_uniform_vec4(renderer->debug_shader, "debug_color", &editor->projected_entity_color);
-				struct Static_Mesh* mesh      = editor->selected_entity_wireframe;
+				struct Static_Mesh* mesh      = editor->cursor_entity;
 				struct Model*       model     = editor->selected_entity->type == ET_STATIC_MESH ? &((struct Static_Mesh*)editor->selected_entity)->model : &mesh->model;
 				struct Transform*   transform = &mesh->base.transform;
 				int                 geometry  = model->geometry_index;
@@ -478,7 +477,7 @@ void editor_update(struct Editor* editor, float dt)
 		{
 		case EDITOR_MODE_NORMAL:
 		case EDITOR_MODE_TRANSLATE:
-			nk_labelf(context, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, "Position at: %.1f  %.1f  %.1f", editor->tool_mesh_position.x, editor->tool_mesh_position.y, editor->tool_mesh_position.z);
+			nk_labelf(context, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, "Position at: %.1f  %.1f  %.1f", editor->cursor_entity->base.transform.position.x, editor->cursor_entity->base.transform.position.y, editor->cursor_entity->base.transform.position.z);
 			break;
 		case EDITOR_MODE_ROTATE:
 			nk_labelf(context, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, "Rotation by: %.1f", editor->tool_rotate_total_rotation);
@@ -534,31 +533,31 @@ void editor_update(struct Editor* editor, float dt)
 		{
 			quat rotation = { 0.f, 0.f, 0.f, 1.f };
 			vec3 scale = { 1.f, 1.f, 1.f };
-			im_sphere(0.5f, editor->tool_mesh_position, rotation, editor->tool_mesh_color, GDM_TRIANGLES, 2);
+			vec3 position = { editor->cursor_entity->base.transform.position.x, editor->cursor_entity->base.transform.position.y, editor->cursor_entity->base.transform.position.z };
 
 			//Draw Axes
 			switch(editor->current_axis)
 			{
 			case EDITOR_AXIS_Y:
-				im_line((vec3) { 0.f, -editor->axis_line_length, 0.f }, (vec3) { 0.f, editor->axis_line_length, 0.f }, editor->tool_mesh_position, rotation, scale, editor->axis_color_y, 3);
+				im_line((vec3) { 0.f, -editor->axis_line_length, 0.f }, (vec3) { 0.f, editor->axis_line_length, 0.f }, position, rotation, scale, editor->axis_color_y, 3);
 				break;
 			case EDITOR_AXIS_X:
-				im_line((vec3) { -editor->axis_line_length, 0.f, 0.f }, (vec3) { editor->axis_line_length, 0.f, 0.f }, editor->tool_mesh_position, rotation, scale, editor->axis_color_x, 3);
+				im_line((vec3) { -editor->axis_line_length, 0.f, 0.f }, (vec3) { editor->axis_line_length, 0.f, 0.f }, position, rotation, scale, editor->axis_color_x, 3);
 				break;
 			case EDITOR_AXIS_Z:
-				im_line((vec3) { 0.f, 0.f, -editor->axis_line_length }, (vec3) { 0.f, 0.f, editor->axis_line_length }, editor->tool_mesh_position, rotation, scale, editor->axis_color_z, 3);
+				im_line((vec3) { 0.f, 0.f, -editor->axis_line_length }, (vec3) { 0.f, 0.f, editor->axis_line_length }, position, rotation, scale, editor->axis_color_z, 3);
 				break;
 			case EDITOR_AXIS_XZ:
-				im_line((vec3) { -editor->axis_line_length, 0.f, 0.f }, (vec3) { editor->axis_line_length, 0.f, 0.f }, editor->tool_mesh_position, rotation, scale, editor->axis_color_x, 3);
-				im_line((vec3) { 0.f, 0.f, -editor->axis_line_length }, (vec3) { 0.f, 0.f, editor->axis_line_length }, editor->tool_mesh_position, rotation, scale, editor->axis_color_z, 3);
+				im_line((vec3) { -editor->axis_line_length, 0.f, 0.f }, (vec3) { editor->axis_line_length, 0.f, 0.f }, position, rotation, scale, editor->axis_color_x, 3);
+				im_line((vec3) { 0.f, 0.f, -editor->axis_line_length }, (vec3) { 0.f, 0.f, editor->axis_line_length }, position, rotation, scale, editor->axis_color_z, 3);
 				break;
 			case EDITOR_AXIS_XY:
-				im_line((vec3) { -editor->axis_line_length, 0.f, 0.f }, (vec3) { editor->axis_line_length, 0.f, 0.f }, editor->tool_mesh_position, rotation, scale, editor->axis_color_x, 3);
-				im_line((vec3) { 0.f, -editor->axis_line_length, 0.f }, (vec3) { 0.f, editor->axis_line_length, 0.f }, editor->tool_mesh_position, rotation, scale, editor->axis_color_y, 3);
+				im_line((vec3) { -editor->axis_line_length, 0.f, 0.f }, (vec3) { editor->axis_line_length, 0.f, 0.f }, position, rotation, scale, editor->axis_color_x, 3);
+				im_line((vec3) { 0.f, -editor->axis_line_length, 0.f }, (vec3) { 0.f, editor->axis_line_length, 0.f }, position, rotation, scale, editor->axis_color_y, 3);
 				break;
 			case EDITOR_AXIS_YZ:
-				im_line((vec3) { 0.f, -editor->axis_line_length, 0.f }, (vec3) { 0.f, editor->axis_line_length, 0.f }, editor->tool_mesh_position, rotation, scale, editor->axis_color_y, 3);
-				im_line((vec3) { 0.f, 0.f, -editor->axis_line_length }, (vec3) { 0.f, 0.f, editor->axis_line_length }, editor->tool_mesh_position, rotation, scale, editor->axis_color_z, 3);
+				im_line((vec3) { 0.f, -editor->axis_line_length, 0.f }, (vec3) { 0.f, editor->axis_line_length, 0.f }, position, rotation, scale, editor->axis_color_y, 3);
+				im_line((vec3) { 0.f, 0.f, -editor->axis_line_length }, (vec3) { 0.f, 0.f, editor->axis_line_length }, position, rotation, scale, editor->axis_color_z, 3);
 				break;
 			}
 		}
@@ -567,35 +566,36 @@ void editor_update(struct Editor* editor, float dt)
 		{
 			quat rotation = { 0.f, 0.f, 0.f, 1.f };
 			vec3 scale = { 1.f, 1.f, 1.f };
+			vec3 position = { editor->cursor_entity->base.transform.position.x, editor->cursor_entity->base.transform.position.y, editor->cursor_entity->base.transform.position.z };
 			switch(editor->current_axis)
 			{
 			case EDITOR_AXIS_X:
 				quat_axis_angle(&rotation, &UNIT_Y, -90.f);
-				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_x, 3);
+				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, position, rotation, editor->axis_color_x, 3);
 				break;
 			case EDITOR_AXIS_Y:
 				quat_axis_angle(&rotation, &UNIT_X, -90.f);
-				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_y, 3);
+				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, position, rotation, editor->axis_color_y, 3);
 				break;
 			case EDITOR_AXIS_Z:
-				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_z, 3);
+				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, position, rotation, editor->axis_color_z, 3);
 				break;
 			case EDITOR_AXIS_XZ:
-				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_z, 3);
+				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, position, rotation, editor->axis_color_z, 3);
 				quat_axis_angle(&rotation, &UNIT_Y, -90.f);
-				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_x, 3);
+				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, position, rotation, editor->axis_color_x, 3);
 				break;
 			case EDITOR_AXIS_XY:
 				quat_axis_angle(&rotation, &UNIT_Y, -90.f);
-				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_x, 3);
+				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, position, rotation, editor->axis_color_x, 3);
 				quat_identity(&rotation);
 				quat_axis_angle(&rotation, &UNIT_X, -90.f);
-				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_y, 3);
+				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, position, rotation, editor->axis_color_y, 3);
 				break;
 			case EDITOR_AXIS_YZ:
-				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_z, 3);
+				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, position, rotation, editor->axis_color_z, 3);
 				quat_axis_angle(&rotation, &UNIT_X, -90.f);
-				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, editor->tool_mesh_position, rotation, editor->axis_color_y, 3);
+				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, position, rotation, editor->axis_color_y, 3);
 				break;
 			}
 
@@ -613,14 +613,14 @@ void editor_update(struct Editor* editor, float dt)
 				if(editor->tool_rotate_allowed)
 				{
 					arc_color.w = 0.1f;
-					im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, true, editor->tool_mesh_position, rotation, arc_color, 2);
+					im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, true, position, rotation, arc_color, 2);
 				}
 
 				if(editor->tool_rotate_total_rotation != 0.f)
 				{
 					arc_color.w = 0.5f;
 					log_message("Starting: %f", editor->tool_rotate_starting_rotation);
-					im_arc(editor->tool_rotate_arc_radius / 2.f, editor->tool_rotate_starting_rotation, editor->tool_rotate_total_rotation, editor->tool_rotate_arc_segments, true, editor->tool_mesh_position, rotation, arc_color, 4);
+					im_arc(editor->tool_rotate_arc_radius / 2.f, editor->tool_rotate_starting_rotation, editor->tool_rotate_total_rotation, editor->tool_rotate_arc_segments, true, position, rotation, arc_color, 4);
 				}
 			}
 		}
@@ -659,7 +659,7 @@ void editor_on_mousebutton_release(const struct Event* event)
 			{
 				//For now, just select the first entity that is intersected 
 				struct Entity* intersected_entity = ray_result.entities_intersected[0];
-				if(intersected_entity == editor->selected_entity_wireframe)
+				if(intersected_entity == editor->cursor_entity)
 				{
 					if(ray_result.num_entities_intersected > 1)
 						intersected_entity = ray_result.entities_intersected[1];
@@ -683,38 +683,16 @@ void editor_on_mousebutton_release(const struct Event* event)
 		if(editor->current_mode == EDITOR_MODE_TRANSLATE)
 		{
 			if(editor->current_axis != EDITOR_AXIS_NONE)
-			{
-				vec3 translation = { 0.f, 0.f, 0.f };
-				vec3 current_position = { 0.f, 0.f, 0.f };
-				transform_get_absolute_position(editor->selected_entity, &current_position);
-				vec3_sub(&translation, &editor->tool_mesh_position, &current_position);
-				transform_translate(editor->selected_entity, &translation, TS_WORLD);
-			}
+				transform_copy(editor->selected_entity, editor->cursor_entity, false);
 		}
 		else if(editor->current_mode == EDITOR_MODE_ROTATE && editor->tool_rotate_rotation_started)
 		{
 			editor->picking_enabled = true;
 			editor->tool_rotate_rotation_started = false;
-			transform_copy(editor->selected_entity, editor->selected_entity_wireframe, false);
+			transform_copy(editor->selected_entity, editor->cursor_entity, false);
 			editor->tool_rotate_total_rotation = 0.f;
 			editor->tool_rotate_starting_rotation = 0.f;
 			editor->draw_entity_wireframe = false;
-			if(editor->tool_rotate_amount != 0.f)
-			{
-				//vec3 axis = { 0.f, 0.f, 0.f };
-				//bool should_rotate = true;
-				//switch(editor->current_axis)
-				//{
-				//case EDITOR_AXIS_X: vec3_assign(&axis, &UNIT_X); break;
-				//case EDITOR_AXIS_Y: vec3_assign(&axis, &UNIT_Y); break;
-				//case EDITOR_AXIS_Z: vec3_assign(&axis, &UNIT_Z); break;
-				//default: should_rotate = false;
-				//}
-
-				//if(should_rotate)
-				//	transform_rotate(editor->selected_entity, &axis, editor->tool_rotate_amount, TS_WORLD);
-				//editor->tool_rotate_amount = 0.f;
-			}
 		}
 	}
 }
@@ -747,7 +725,7 @@ void editor_on_mousebutton_press(const struct Event* event)
 			{
 				//For now, just select the first entity that is intersected 
 				struct Entity* intersected_entity = ray_result.entities_intersected[0];
-				if(intersected_entity == editor->selected_entity_wireframe)
+				if(intersected_entity == editor->cursor_entity)
 				{
 					if(ray_result.num_entities_intersected > 1)
 					{
@@ -797,20 +775,22 @@ void editor_on_mousemotion(const struct Event* event)
 		if(editor->selected_entity)
 		{
 			struct Camera* editor_camera = &game_state->scene->cameras[CAM_EDITOR];
-			vec3 position = { 0.f };
-			transform_get_absolute_position(editor->selected_entity, &position);
+			vec3 current_position = { 0.f, 0.f, 0.f };
+			vec3 cursor_entity_position;
+			vec3_assign(&cursor_entity_position, &editor->cursor_entity->base.transform.position);
+			transform_get_absolute_position(editor->selected_entity, &current_position);
 			struct Ray cam_ray;
 			cam_ray = camera_screen_coord_to_ray(editor_camera, event->mousemotion.x, event->mousemotion.y);
 
 			switch(editor->current_axis)
 			{
-			case EDITOR_AXIS_X: editor->tool_mesh_position.x +=  event->mousemotion.xrel / 2; break;
-			case EDITOR_AXIS_Y: editor->tool_mesh_position.y += -event->mousemotion.xrel / 2; break;
-			case EDITOR_AXIS_Z: editor->tool_mesh_position.z += -event->mousemotion.xrel / 2; break;
+			case EDITOR_AXIS_X: cursor_entity_position.x +=  event->mousemotion.xrel / 2; break;
+			case EDITOR_AXIS_Y: cursor_entity_position.y += -event->mousemotion.xrel / 2; break;
+			case EDITOR_AXIS_Z: cursor_entity_position.z += -event->mousemotion.xrel / 2; break;
 			case EDITOR_AXIS_XZ:
 			{
 				Plane ground_plane;
-				plane_init(&ground_plane, &(vec3){0.f, 1.f, 0.f}, &position);
+				plane_init(&ground_plane, &(vec3){0.f, 1.f, 0.f}, &current_position);
 
 				float distance = bv_distance_ray_plane(&cam_ray, &ground_plane);
 				if(distance < INFINITY && distance > -INFINITY)
@@ -819,8 +799,8 @@ void editor_on_mousemotion(const struct Event* event)
 					transform_get_absolute_position(editor_camera, &abs_cam_pos);
 					transform_get_absolute_forward(editor_camera, &cam_forward);
 					vec3_scale(&projected_point, &cam_ray.direction, distance);
-					vec3_add(&position, &projected_point, &abs_cam_pos);
-					vec3_assign(&editor->tool_mesh_position, &position);
+					vec3_add(&current_position, &projected_point, &abs_cam_pos);
+					vec3_assign(&cursor_entity_position, &current_position);
 				}
 			}
 			break;
@@ -828,10 +808,10 @@ void editor_on_mousemotion(const struct Event* event)
 
 			if(editor->tool_snap_enabled)
 			{
-				editor->tool_mesh_position.x = roundf(editor->tool_mesh_position.x / editor->grid_scale) * editor->grid_scale;
-				editor->tool_mesh_position.y = roundf(editor->tool_mesh_position.y / editor->grid_scale) * editor->grid_scale;
-				editor->tool_mesh_position.z = roundf(editor->tool_mesh_position.z / editor->grid_scale) * editor->grid_scale;
-				transform_set_position(editor->selected_entity_wireframe, &editor->tool_mesh_position);
+				cursor_entity_position.x = roundf(cursor_entity_position.x / editor->grid_scale) * editor->grid_scale;
+				cursor_entity_position.y = roundf(cursor_entity_position.y / editor->grid_scale) * editor->grid_scale;
+				cursor_entity_position.z = roundf(cursor_entity_position.z / editor->grid_scale) * editor->grid_scale;
+				transform_set_position(editor->cursor_entity, &cursor_entity_position);
 			}
 		}
 	}
@@ -913,7 +893,7 @@ void editor_on_mousemotion(const struct Event* event)
 					}
 
 					if(should_rotate)
-						transform_rotate(editor->selected_entity_wireframe, &axis, editor->tool_rotate_amount, TS_WORLD);
+						transform_rotate(editor->cursor_entity, &axis, editor->tool_rotate_amount, TS_WORLD);
 					editor->tool_rotate_total_rotation += editor->tool_rotate_amount;
 					if(editor->tool_rotate_total_rotation > 360.f)
 						editor->tool_rotate_total_rotation = (int)editor->tool_rotate_total_rotation % 360;
@@ -1017,22 +997,16 @@ void editor_entity_select(struct Editor* editor, struct Entity* entity)
 		if(editor->current_mode == EDITOR_MODE_TRANSLATE) editor->draw_entity_wireframe = true;
 		entity->editor_selected = true;
 		editor->selected_entity = entity;
-		transform_get_absolute_position(editor->selected_entity, &editor->tool_mesh_position);
-		transform_copy(editor->selected_entity_wireframe, editor->selected_entity, false);
+		transform_copy(editor->cursor_entity, editor->selected_entity, false);
 	}
 }
 
 void editor_tool_reset(struct Editor* editor)
 {
 	if(editor->selected_entity)
-	{ 
-		transform_get_absolute_position(editor->selected_entity, &editor->tool_mesh_position);
-		transform_copy(editor->selected_entity_wireframe, editor->selected_entity, false);
-	}
+		transform_copy(editor->cursor_entity, editor->selected_entity, false);
 	else
-	{
-		vec3_fill(&editor->tool_mesh_position, 0.f, 0.f, 0.f);
-	}
+		transform_reset(editor->cursor_entity);
 
 	editor->tool_rotate_amount = 0.f;
 	editor->tool_rotate_total_rotation = 0.f;
@@ -1063,9 +1037,7 @@ void editor_axis_set(struct Editor* editor, int axis)
 
 		/* Reset tool position after axis has changed */
 		if(editor->selected_entity)
-		{
-			transform_get_absolute_position(editor->selected_entity, &editor->tool_mesh_position);
-		}
+			transform_copy(editor->cursor_entity, editor->selected_entity, false);
 
 		if(editor->current_mode == EDITOR_MODE_ROTATE)
 		{

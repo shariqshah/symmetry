@@ -269,4 +269,5 @@ Done:
 	* Handle all other axes combinations
 	* Fixed issue with picking not working when the other entity is inside
 	  rotation radius
+	* Removed all usages of tool_mesh_position 
 

@@ -10,6 +10,7 @@ struct Entity;
 
 void transform_init(struct Entity* entity, struct Entity* parent);
 void transform_destroy(struct Entity* entity);
+void transform_reset(struct Entity* entity);
 void transform_translate(struct Entity* entity, vec3* amount, enum Transform_Space space);
 void transform_rotate(struct Entity*    transform,
 					  vec3*                axis,

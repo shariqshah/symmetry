@@ -18,7 +18,7 @@ struct Editor
 	int                 window_debug_variables;
 	int                 camera_looking_around;
     struct Entity*      selected_entity;
-	struct Static_Mesh* selected_entity_wireframe;
+	struct Static_Mesh* cursor_entity;
 	vec4                projected_entity_color;
 	bool                draw_entity_wireframe;
     int                 top_panel_height;
@@ -35,7 +35,6 @@ struct Editor
 	int                 grid_num_lines;
 	float               grid_scale;
 	int                 tool_snap_enabled;
-	vec3                tool_mesh_position;
 	vec4                tool_mesh_color;
 	int                 tool_mesh_draw_enabled;
 	float               tool_rotate_arc_radius;

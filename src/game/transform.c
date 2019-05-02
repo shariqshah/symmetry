@@ -70,12 +70,21 @@ void transform_parent_set(struct Entity* child, struct Entity* parent, bool upda
 
 void transform_copy(struct Entity* copy_to, struct Entity* copy_from, bool copy_parent)
 {
+	/* Bear in mind that we can't copy the children because that would mean
+	   those children have more than one parent and we don't support that.*/
 	struct Entity* current_parent = copy_to->transform.parent;
 	struct Entity** current_children = copy_to->transform.children;
 
 	memcpy(&copy_to->transform, &copy_from->transform, sizeof(struct Transform));
 	if(copy_parent)
-		transform_parent_set(copy_to, current_parent, true);
+	{
+		transform_child_remove(current_parent, copy_to);
+		transform_parent_set(copy_to, copy_from->transform.parent, true);
+	}
+	else
+	{
+		copy_to->transform.parent = current_parent;
+	}
 
 	copy_to->transform.children = current_children;
 }
@@ -301,4 +310,13 @@ void transform_get_absolute_rot(struct Entity* entity, quat* res)
 		quat_mul(res, res, &parent->transform.rotation);
 		parent = parent->transform.parent;
 	}
+}
+
+void transform_reset(struct Entity* entity)
+{
+	/* Does remove/change parent or children, only modifies that transformation data */
+	vec3_fill(&entity->transform.position, 0.f, 0.f, 0.f);
+	vec3_fill(&entity->transform.scale, 0.f, 0.f, 0.f);
+	quat_identity(&entity->transform.rotation);
+	transform_update_transmat(entity);
 }

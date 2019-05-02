@@ -44,13 +44,13 @@ struct Debug_Variable
     char*          name;
 };
 
-enum Editor_Mode
+enum Editor_Tool
 {
-	EDITOR_MODE_NORMAL = 0,
-	EDITOR_MODE_TRANSLATE,
-	EDITOR_MODE_ROTATE,
-	EDITOR_MODE_SCALE,
-	EDITOR_MODE_MAX
+	EDITOR_TOOL_NORMAL = 0,
+	EDITOR_TOOL_TRANSLATE,
+	EDITOR_TOOL_ROTATE,
+	EDITOR_TOOL_SCALE,
+	EDITOR_TOOL_MAX
 };
 
 enum Editor_Axis
@@ -99,7 +99,7 @@ static void editor_window_renderer_settings(struct nk_context* context, struct E
 static void editor_window_settings_editor(struct nk_context* context, struct Editor* editor, struct Game_State* game_state);
 static void editor_axis_set(struct Editor* editor, int axis);
 static void editor_entity_select(struct Editor* editor, struct Entity* entity);
-static void editor_mode_set(struct Editor* editor, int mode);
+static void editor_tool_set(struct Editor* editor, int mode);
 static void editor_tool_reset(struct Editor* editor);
 
 void editor_init(struct Editor* editor)
@@ -115,7 +115,7 @@ void editor_init(struct Editor* editor)
     editor->camera_turn_speed                  = 50.f;
     editor->camera_move_speed                  = 20.f;
     editor->camera_sprint_multiplier           = 2.f;
-	editor->current_mode                       = EDITOR_MODE_NORMAL;
+	editor->current_tool                       = EDITOR_TOOL_NORMAL;
 	editor->current_axis                       = EDITOR_AXIS_XZ;
 	editor->previous_axis                      = EDITOR_AXIS_XZ;
 	editor->grid_enabled                       = 1;
@@ -178,24 +178,6 @@ void editor_render(struct Editor* editor, struct Camera * active_camera)
 {
 	struct Game_State* game_state = game_state_get();
 	struct Renderer* renderer = game_state->renderer;
-	//Disabling this for now until better handling of bounding box and scale of the entity is implemented
-	//Get the selected entity if any, see if it has a mesh and render it in the selected entity colour
-	// if(editor->selected_entity)
-	// {
-	// 	if(editor->selected_entity->type == ET_STATIC_MESH)
-	// 	{
-	// 		struct Static_Mesh* mesh = (struct Static_Mesh*)editor->selected_entity;
-	// 		struct Geometry* geom = geom_get(mesh->model.geometry_index);
-	// 		vec3 abs_pos;
-	// 		vec3 abs_scale;
-	// 		quat abs_rot;
-	// 		transform_get_absolute_position(mesh, &abs_pos);
-	// 		transform_get_absolute_scale(mesh, &abs_scale);
-	// 		transform_get_absolute_rot(mesh, &abs_rot);
-	// 		im_box(geom->bounding_box.max.x, geom->bounding_box.max.y, geom->bounding_box.max.z, abs_pos, abs_rot, editor->selected_entity_colour, GDM_TRIANGLES);
-
-	// 	}
-	// }
 
 	if(game_state->editor->selected_entity)
 	{
@@ -416,16 +398,16 @@ void editor_update(struct Editor* editor, float dt)
 		nk_spacing(context, 1);
 
 		nk_layout_row_push(context, 0.15f);
-		static const char* editor_transformation_modes[] = { "Mode: Normal", "Mode: Translate", "Mode: Rotate", "Mode: Scale" };
-		if(nk_combo_begin_label(context, editor_transformation_modes[editor->current_mode], nk_vec2(160, 125)))
+		static const char* editor_transformation_tools[] = { "Tool: Normal", "Tool: Translate", "Tool: Rotate", "Tool: Scale" };
+		if(nk_combo_begin_label(context, editor_transformation_tools[editor->current_tool], nk_vec2(160, 125)))
 		{
 			nk_layout_row_dynamic(context, row_height, 1);
-			int mode = editor->current_mode;
-			mode = nk_option_label(context, "Normal", mode == EDITOR_MODE_NORMAL) ? EDITOR_MODE_NORMAL : mode;
-			mode = nk_option_label(context, "Translate", mode == EDITOR_MODE_TRANSLATE) ? EDITOR_MODE_TRANSLATE : mode;
-			mode = nk_option_label(context, "Rotate", mode == EDITOR_MODE_ROTATE) ? EDITOR_MODE_ROTATE : mode;
-			mode = nk_option_label(context, "Scale", mode == EDITOR_MODE_SCALE) ? EDITOR_MODE_SCALE : mode;
-			editor_mode_set(editor, mode);
+			int tool = editor->current_tool;
+			tool = nk_option_label(context, "Normal", tool == EDITOR_TOOL_NORMAL) ? EDITOR_TOOL_NORMAL : tool;
+			tool = nk_option_label(context, "Translate", tool == EDITOR_TOOL_TRANSLATE) ? EDITOR_TOOL_TRANSLATE : tool;
+			tool = nk_option_label(context, "Rotate", tool == EDITOR_TOOL_ROTATE) ? EDITOR_TOOL_ROTATE : tool;
+			tool = nk_option_label(context, "Scale", tool == EDITOR_TOOL_SCALE) ? EDITOR_TOOL_SCALE : tool;
+			editor_tool_set(editor, tool);
 			nk_combo_end(context);
 		}
 
@@ -438,7 +420,7 @@ void editor_update(struct Editor* editor, float dt)
 			axis = nk_option_label(context, "X",    axis == EDITOR_AXIS_X)    ? EDITOR_AXIS_X    : axis;
 			axis = nk_option_label(context, "Y",    axis == EDITOR_AXIS_Y)    ? EDITOR_AXIS_Y    : axis;
 			axis = nk_option_label(context, "Z",    axis == EDITOR_AXIS_Z)    ? EDITOR_AXIS_Z    : axis;
-			if(editor->current_mode != EDITOR_MODE_ROTATE)
+			if(editor->current_tool != EDITOR_TOOL_ROTATE)
 			{
 				axis = nk_option_label(context, "XZ", axis == EDITOR_AXIS_XZ) ? EDITOR_AXIS_XZ : axis;
 				axis = nk_option_label(context, "XY", axis == EDITOR_AXIS_XY) ? EDITOR_AXIS_XY : axis;
@@ -473,16 +455,16 @@ void editor_update(struct Editor* editor, float dt)
 		nk_layout_row_begin(context, NK_DYNAMIC, editor->top_panel_height - 5, 8);
 
 		nk_layout_row_push(context, 0.12f);
-		switch(editor->current_mode)
+		switch(editor->current_tool)
 		{
-		case EDITOR_MODE_NORMAL:
-		case EDITOR_MODE_TRANSLATE:
+		case EDITOR_TOOL_NORMAL:
+		case EDITOR_TOOL_TRANSLATE:
 			nk_labelf(context, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, "Position at: %.1f  %.1f  %.1f", editor->cursor_entity->base.transform.position.x, editor->cursor_entity->base.transform.position.y, editor->cursor_entity->base.transform.position.z);
 			break;
-		case EDITOR_MODE_ROTATE:
+		case EDITOR_TOOL_ROTATE:
 			nk_labelf(context, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, "Rotation by: %.1f", editor->tool_rotate_total_rotation);
 			break;
-		case EDITOR_MODE_SCALE:
+		case EDITOR_TOOL_SCALE:
 			nk_labelf(context, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, "Scale to: %.1f  %.1f  %.1f", editor->tool_scale_amount.x, editor->tool_scale_amount.y, editor->tool_scale_amount.z);
 			break;
 		}
@@ -527,9 +509,9 @@ void editor_update(struct Editor* editor, float dt)
 	
 	if(editor->tool_mesh_draw_enabled)
 	{
-		switch(editor->current_mode)
+		switch(editor->current_tool)
 		{
-		case EDITOR_MODE_TRANSLATE:
+		case EDITOR_TOOL_TRANSLATE:
 		{
 			quat rotation = { 0.f, 0.f, 0.f, 1.f };
 			vec3 scale = { 1.f, 1.f, 1.f };
@@ -562,7 +544,7 @@ void editor_update(struct Editor* editor, float dt)
 			}
 		}
 		break;
-		case EDITOR_MODE_ROTATE:
+		case EDITOR_TOOL_ROTATE:
 		{
 			quat rotation = { 0.f, 0.f, 0.f, 1.f };
 			vec3 scale = { 1.f, 1.f, 1.f };
@@ -680,12 +662,12 @@ void editor_on_mousebutton_release(const struct Event* event)
 
 	if(editor->selected_entity && event->mousebutton.button == MSB_LEFT && nk_item_is_any_active(&gui->context) == 0)
 	{
-		if(editor->current_mode == EDITOR_MODE_TRANSLATE)
+		if(editor->current_tool == EDITOR_TOOL_TRANSLATE)
 		{
 			if(editor->current_axis != EDITOR_AXIS_NONE)
 				transform_copy(editor->selected_entity, editor->cursor_entity, false);
 		}
-		else if(editor->current_mode == EDITOR_MODE_ROTATE && editor->tool_rotate_rotation_started)
+		else if(editor->current_tool == EDITOR_TOOL_ROTATE && editor->tool_rotate_rotation_started)
 		{
 			editor->picking_enabled = true;
 			editor->tool_rotate_rotation_started = false;
@@ -708,7 +690,7 @@ void editor_on_mousebutton_press(const struct Event* event)
 
 	if(event->mousebutton.button == MSB_LEFT && editor->selected_entity)
 	{
-		if(editor->current_mode == EDITOR_MODE_ROTATE && editor->tool_rotate_allowed)
+		if(editor->current_tool == EDITOR_TOOL_ROTATE && editor->tool_rotate_allowed)
 		{
 			/* Check if there's an entity under cursor, if there is then select it,
 			   otherwise disable picking and start rotating */
@@ -752,7 +734,7 @@ void editor_on_mousebutton_press(const struct Event* event)
 	}
 
 	/* Cancel rotation on right mouse press */
-	if(event->mousebutton.button == MSB_RIGHT && editor->selected_entity && editor->current_mode == EDITOR_MODE_ROTATE)
+	if(event->mousebutton.button == MSB_RIGHT && editor->selected_entity && editor->current_tool == EDITOR_TOOL_ROTATE)
 		editor_tool_reset(editor);
 }
 
@@ -763,14 +745,14 @@ void editor_on_mousemotion(const struct Event* event)
 	struct Gui*        gui        = game_state->gui;
 	if(nk_window_is_any_hovered(&gui->context)) return;
 
-	switch(editor->current_mode)
+	switch(editor->current_tool)
 	{
-	case EDITOR_MODE_NORMAL:
+	case EDITOR_TOOL_NORMAL:
 	{
 
 	}
 	break;
-	case EDITOR_MODE_TRANSLATE:
+	case EDITOR_TOOL_TRANSLATE:
 	{
 		if(editor->selected_entity)
 		{
@@ -816,7 +798,7 @@ void editor_on_mousemotion(const struct Event* event)
 		}
 	}
 	break;
-	case EDITOR_MODE_ROTATE:
+	case EDITOR_TOOL_ROTATE:
 	{
 		if(editor->selected_entity && editor->current_axis < EDITOR_AXIS_XZ)
 		{
@@ -917,22 +899,22 @@ void editor_on_key_release(const struct Event* event)
 
 	if(!nk_window_is_any_hovered(&gui->context))
 	{
-		/* Mode Cycle */
+		/* Tool Cycle */
 		if(event->key.key == KEY_TAB)
 		{
-			int mode = editor->current_mode;
-			if(++mode == EDITOR_MODE_MAX)
-				mode = EDITOR_MODE_NORMAL;
-			editor_mode_set(editor, mode);
+			int tool = editor->current_tool;
+			if(++tool == EDITOR_TOOL_MAX)
+				tool = EDITOR_TOOL_NORMAL;
+			editor_tool_set(editor, tool);
 		}
 
-		/* Mode Select */
+		/* Tool Select */
 		if(!editor->camera_looking_around)
 		{
-			if(event->key.key == KEY_Q) editor_mode_set(editor, EDITOR_MODE_NORMAL);
-			if(event->key.key == KEY_W) editor_mode_set(editor, EDITOR_MODE_TRANSLATE);
-			if(event->key.key == KEY_E) editor_mode_set(editor, EDITOR_MODE_ROTATE);
-			if(event->key.key == KEY_R) editor_mode_set(editor, EDITOR_MODE_SCALE);
+			if(event->key.key == KEY_Q) editor_tool_set(editor, EDITOR_TOOL_NORMAL);
+			if(event->key.key == KEY_W) editor_tool_set(editor, EDITOR_TOOL_TRANSLATE);
+			if(event->key.key == KEY_E) editor_tool_set(editor, EDITOR_TOOL_ROTATE);
+			if(event->key.key == KEY_R) editor_tool_set(editor, EDITOR_TOOL_SCALE);
 		}
 
 		/* Axis select */
@@ -943,7 +925,7 @@ void editor_on_key_release(const struct Event* event)
 		if(event->key.key == KEY_X && input_is_key_pressed(KEY_LSHIFT)) selected_axis = EDITOR_AXIS_YZ;
 		if(event->key.key == KEY_Y && input_is_key_pressed(KEY_LSHIFT)) selected_axis = EDITOR_AXIS_XZ;
 		if(event->key.key == KEY_Z && input_is_key_pressed(KEY_LSHIFT)) selected_axis = EDITOR_AXIS_XY;
-		if(event->key.key == KEY_ALT && editor->current_mode == EDITOR_MODE_TRANSLATE) selected_axis = editor->previous_axis; // Revert to previous axis when alt is released
+		if(event->key.key == KEY_ALT && editor->current_tool == EDITOR_TOOL_TRANSLATE) selected_axis = editor->previous_axis; // Revert to previous axis when alt is released
 		editor_axis_set(editor, selected_axis);
 		
 		/* Grid Scale select */
@@ -964,14 +946,14 @@ void editor_on_key_release(const struct Event* event)
 
 }
 
-void editor_mode_set(struct Editor* editor, int mode)
+void editor_tool_set(struct Editor* editor, int tool)
 {
-	if(editor->current_mode != mode)
+	if(editor->current_tool != tool)
 	{
-		editor->current_mode = mode;
+		editor->current_tool = tool;
 	}
 	
-	if(editor->selected_entity && editor->current_mode == EDITOR_MODE_TRANSLATE)
+	if(editor->selected_entity && editor->current_tool == EDITOR_TOOL_TRANSLATE)
 		editor->draw_entity_wireframe = true;
 	else
 		editor->draw_entity_wireframe = false;
@@ -994,7 +976,7 @@ void editor_entity_select(struct Editor* editor, struct Entity* entity)
 			editor->selected_entity = NULL;
 		}
 
-		if(editor->current_mode == EDITOR_MODE_TRANSLATE) editor->draw_entity_wireframe = true;
+		if(editor->current_tool == EDITOR_TOOL_TRANSLATE) editor->draw_entity_wireframe = true;
 		entity->editor_selected = true;
 		editor->selected_entity = entity;
 		transform_copy(editor->cursor_entity, editor->selected_entity, false);
@@ -1013,7 +995,7 @@ void editor_tool_reset(struct Editor* editor)
 	editor->tool_rotate_allowed = false;
 	editor->tool_rotate_rotation_started = false;
 	editor->picking_enabled = true;
-	if(editor->current_mode == EDITOR_MODE_TRANSLATE)
+	if(editor->current_tool == EDITOR_TOOL_TRANSLATE)
 		editor_axis_set(editor, EDITOR_AXIS_XZ);
 	else
 		editor_axis_set(editor, EDITOR_AXIS_NONE);
@@ -1024,7 +1006,7 @@ void editor_on_key_press(const struct Event* event)
 	struct Editor* editor = game_state_get()->editor;
 	if(!nk_window_is_any_hovered(&game_state_get()->gui->context))
 	{
-		if(event->key.key == KEY_ALT && editor->current_mode == EDITOR_MODE_TRANSLATE) editor_axis_set(editor, EDITOR_AXIS_Y);
+		if(event->key.key == KEY_ALT && editor->current_tool == EDITOR_TOOL_TRANSLATE) editor_axis_set(editor, EDITOR_AXIS_Y);
 	}
 }
 
@@ -1039,7 +1021,7 @@ void editor_axis_set(struct Editor* editor, int axis)
 		if(editor->selected_entity)
 			transform_copy(editor->cursor_entity, editor->selected_entity, false);
 
-		if(editor->current_mode == EDITOR_MODE_ROTATE)
+		if(editor->current_tool == EDITOR_TOOL_ROTATE)
 		{
 			// Assign rotation axis only if it is a single axis since we don't want to rotate on multiple axes at the same time
 			if(axis >= EDITOR_AXIS_XZ)

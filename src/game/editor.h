@@ -26,7 +26,7 @@ struct Editor
     float               camera_move_speed;
     float               camera_sprint_multiplier;
 	vec4                selected_entity_color;
-	int                 current_mode;
+	int                 current_tool;
 	int                 current_axis;
 	int                 previous_axis;
 	int                 grid_enabled;

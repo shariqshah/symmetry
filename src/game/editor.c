@@ -677,6 +677,9 @@ void editor_on_mousebutton_release(const struct Event* event)
 			editor->draw_entity_wireframe = false;
 		}
 	}
+
+	if(editor->selected_entity && editor->current_tool == EDITOR_TOOL_ROTATE && editor->previous_axis != EDITOR_AXIS_NONE)
+		editor_axis_set(editor, editor->previous_axis);
 }
 
 void editor_on_mousebutton_press(const struct Event* event)
@@ -957,6 +960,7 @@ void editor_tool_set(struct Editor* editor, int tool)
 		editor->draw_entity_wireframe = true;
 	else
 		editor->draw_entity_wireframe = false;
+	editor->previous_axis = editor->current_axis;
 	editor_tool_reset(editor);
 }
 

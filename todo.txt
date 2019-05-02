@@ -11,6 +11,8 @@ Todo:
 	- Color palette, picker and dropper
 	- Key binding and function to snap editor camera to selected entity
 	  location
+	- Implement resetting complete transform or just rotation, translation
+	  or scale for selected entity
 	- Key binding and function to orient entity to camera orientation
 	- Mouse warp to opposite side of the window when it reaches bounds
 	- Add other axis combinations like YZ and XY to transform tool
@@ -272,4 +274,6 @@ Done:
 	* Removed all usages of tool_mesh_position 
 	* Renamed editor modes to editor tools to make the code more
 	  consistent
+	* Implemented reverting back to previously selected axis when not
+	  moving the camera any more and rotate tool is selected.
 

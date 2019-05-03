@@ -6,7 +6,7 @@ Todo:
 	? Disable entity picking when tool is in use or only allow picking when pressing ALT
 	- Disable editor event recievers on game mode change
 	- Editor Undo
-	- Scale Mode
+	- Duplicate with Ctrl-D
 	- Color picker
 	- Color palette, picker and dropper
 	- Key binding and function to snap editor camera to selected entity
@@ -86,6 +86,7 @@ Improvements:
 	- Depth testing for editor grid
 	- Improve picking and automatically improve everything in editor
 	- Improve culling
+	- Allow scaling on all axes at once
 
 Bugs:
 	- Better handling of wav format checking at load time
@@ -95,6 +96,8 @@ Bugs:
 	- Investigate memory usage increase when window is minimized
 	- Fix hang on fullscreen toggle
 	- Fix axis lines not aligning with grid lines
+	- Fix rotation arc starting and ending degree calculations
+	- Fix broken spot light degree/radian conversions
 
 Done:
 	* Input
@@ -276,4 +279,5 @@ Done:
 	  consistent
 	* Implemented reverting back to previously selected axis when not
 	  moving the camera any more and rotate tool is selected.
+	* Scale Mode
 

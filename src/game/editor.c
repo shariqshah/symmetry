@@ -133,10 +133,11 @@ void editor_init(struct Editor* editor)
 	editor->tool_rotate_allowed                = false;
 	editor->axis_line_length                   = 500.f;
 	editor->picking_enabled                    = true;
-	editor->draw_cursor_entity              = false;
+	editor->draw_cursor_entity                 = false;
+	editor->tool_scale_started                 = false;
 
 	vec4_fill(&editor->projected_entity_color, 0.f, 1.f, 1.f, 1.f);
-	vec3_fill(&editor->tool_scale_amount, 0.f, 0.f, 0.f);
+	vec3_fill(&editor->tool_scale_amount, 1.f, 1.f, 1.f);
 	vec4_fill(&editor->tool_mesh_color, 0.f, 1.f, 1.f, 1.f);
 	vec4_fill(&editor->selected_entity_color, 0.96, 0.61, 0.17, 0.5f);
 	vec4_fill(&editor->grid_color, 0.3f, 0.3f, 0.3f, 0.7f);
@@ -511,6 +512,7 @@ void editor_update(struct Editor* editor, float dt)
 	{
 		switch(editor->current_tool)
 		{
+		case EDITOR_TOOL_SCALE:
 		case EDITOR_TOOL_TRANSLATE:
 		{
 			quat rotation = { 0.f, 0.f, 0.f, 1.f };
@@ -674,19 +676,33 @@ void editor_on_mousebutton_release(const struct Event* event)
 
 	if(editor->selected_entity && event->mousebutton.button == MSB_LEFT && nk_item_is_any_active(&gui->context) == 0)
 	{
-		if(editor->current_tool == EDITOR_TOOL_TRANSLATE)
+		switch(editor->current_tool)
 		{
+		case EDITOR_TOOL_TRANSLATE:
 			if(editor->current_axis != EDITOR_AXIS_NONE)
 				transform_copy(editor->selected_entity, editor->cursor_entity, false);
-		}
-		else if(editor->current_tool == EDITOR_TOOL_ROTATE && editor->tool_rotate_rotation_started)
-		{
-			editor->picking_enabled = true;
-			editor->tool_rotate_rotation_started = false;
-			transform_copy(editor->selected_entity, editor->cursor_entity, false);
-			editor->tool_rotate_total_rotation = 0.f;
-			editor->tool_rotate_starting_rotation = 0.f;
-			editor->draw_cursor_entity = false;
+			break;
+		case EDITOR_TOOL_ROTATE:
+			if(editor->tool_rotate_rotation_started)
+			{
+				editor->picking_enabled = true;
+				editor->tool_rotate_rotation_started = false;
+				transform_copy(editor->selected_entity, editor->cursor_entity, false);
+				editor->tool_rotate_total_rotation = 0.f;
+				editor->tool_rotate_starting_rotation = 0.f;
+				editor->draw_cursor_entity = false;
+			}
+			break;
+		case EDITOR_TOOL_SCALE:
+			if(editor->tool_scale_started)
+			{
+				editor->picking_enabled = true;
+				editor->tool_scale_started = false;
+				transform_copy(editor->selected_entity, editor->cursor_entity, false);
+				vec3_fill(&editor->tool_scale_amount, 0.f, 0.f, 0.f);
+				editor->draw_cursor_entity = false;
+			}
+			break;
 		}
 	}
 
@@ -699,11 +715,6 @@ void editor_on_mousebutton_press(const struct Event* event)
 	struct Gui*        gui        = game_state->gui;
 	if(game_state->game_mode != GAME_MODE_EDITOR && nk_window_is_any_hovered(&gui->context) == 0)
 		return;
-
-	if(event->mousebutton.button == MSB_RIGHT && !editor->camera_looking_around)
-	{
-
-	}
 
 	if(event->mousebutton.button == MSB_LEFT && editor->selected_entity)
 	{
@@ -900,6 +911,23 @@ void editor_on_mousemotion(const struct Event* event)
 		
 	}
 	break;
+	case EDITOR_TOOL_SCALE:
+	{
+		if(editor->current_axis != EDITOR_AXIS_NONE && editor->tool_scale_started)
+		{
+			switch(editor->current_axis)
+			{
+			case EDITOR_AXIS_X:  editor->tool_scale_amount.x += (float)(event->mousemotion.xrel / 2) * editor->grid_scale; break;
+			case EDITOR_AXIS_Y:  editor->tool_scale_amount.y += (float)(event->mousemotion.xrel / 2) * editor->grid_scale; break;
+			case EDITOR_AXIS_Z:  editor->tool_scale_amount.z += (float)(event->mousemotion.xrel / 2) * editor->grid_scale; break;
+			case EDITOR_AXIS_XZ: editor->tool_scale_amount.x += (float)(event->mousemotion.xrel / 2) * editor->grid_scale; editor->tool_scale_amount.z += (float)(event->mousemotion.xrel / 2) * editor->grid_scale; break;
+			case EDITOR_AXIS_XY: editor->tool_scale_amount.x += (float)(event->mousemotion.xrel / 2) * editor->grid_scale; editor->tool_scale_amount.y += (float)(event->mousemotion.xrel / 2) * editor->grid_scale; break;
+			case EDITOR_AXIS_YZ: editor->tool_scale_amount.y += (float)(event->mousemotion.xrel / 2) * editor->grid_scale; editor->tool_scale_amount.z += (float)(event->mousemotion.xrel / 2) * editor->grid_scale; break;
+			}
+			transform_scale(editor->cursor_entity, &editor->tool_scale_amount);
+		}
+	}
+	break;
 	default: break;
 	}
 }
@@ -965,7 +993,7 @@ void editor_tool_set(struct Editor* editor, int tool)
 		editor->current_tool = tool;
 	}
 	
-	if(editor->selected_entity && editor->current_tool == EDITOR_TOOL_TRANSLATE)
+	if(editor->current_tool == EDITOR_TOOL_TRANSLATE)
 		editor->draw_cursor_entity = true;
 	else
 		editor->draw_cursor_entity = false;
@@ -1007,6 +1035,8 @@ void editor_tool_reset(struct Editor* editor)
 	editor->tool_rotate_total_rotation = 0.f;
 	editor->tool_rotate_allowed = false;
 	editor->tool_rotate_rotation_started = false;
+	vec3_fill(&editor->tool_scale_amount, 0.f, 0.f, 0.f);
+	editor->tool_scale_started = false;
 	editor->picking_enabled = true;
 	if(editor->current_tool == EDITOR_TOOL_TRANSLATE)
 		editor_axis_set(editor, EDITOR_AXIS_XZ);
@@ -1044,6 +1074,14 @@ void editor_axis_set(struct Editor* editor, int axis)
 				editor->tool_rotate_allowed = false;
 				editor->tool_rotate_amount = 0.f;
 			}
+		}
+
+		if(editor->current_tool == EDITOR_TOOL_SCALE && axis != EDITOR_AXIS_NONE)
+		{
+			editor->tool_scale_started = true;
+			editor->picking_enabled = false;
+			editor->draw_cursor_entity = true;
+			vec3_assign(&editor->tool_scale_amount, &editor->cursor_entity->base.transform.scale);
 		}
 	}
 }

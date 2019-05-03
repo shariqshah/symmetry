@@ -702,10 +702,19 @@ void editor_on_mousebutton_release(const struct Event* event)
 				vec3_fill(&editor->tool_scale_amount, 0.f, 0.f, 0.f);
 				editor->draw_cursor_entity = false;
 			}
+			else
+			{
+				if(editor->current_axis != EDITOR_AXIS_NONE)
+				{
+					editor->tool_scale_started = true;
+					editor->picking_enabled = false;
+					editor->draw_cursor_entity = true;
+					vec3_assign(&editor->tool_scale_amount, &editor->cursor_entity->base.transform.scale);
+				}
+			}
 			break;
 		}
 	}
-
 }
 
 void editor_on_mousebutton_press(const struct Event* event)

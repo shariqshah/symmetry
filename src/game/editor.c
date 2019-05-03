@@ -133,7 +133,7 @@ void editor_init(struct Editor* editor)
 	editor->tool_rotate_allowed                = false;
 	editor->axis_line_length                   = 500.f;
 	editor->picking_enabled                    = true;
-	editor->draw_entity_wireframe              = false;
+	editor->draw_cursor_entity              = false;
 
 	vec4_fill(&editor->projected_entity_color, 0.f, 1.f, 1.f, 1.f);
 	vec3_fill(&editor->tool_scale_amount, 0.f, 0.f, 0.f);
@@ -217,7 +217,7 @@ void editor_render(struct Editor* editor, struct Camera * active_camera)
 		}
 
 		/* Draw selected entity with projected transformation applied  */
-		if(editor->draw_entity_wireframe)
+		if(editor->draw_cursor_entity)
 		{
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			shader_bind(renderer->debug_shader);
@@ -621,6 +621,18 @@ void editor_on_mousebutton_release(const struct Event* event)
 	if(game_state->game_mode != GAME_MODE_EDITOR)
 		return;
 
+	if(editor->camera_looking_around)
+	{
+		input_mouse_mode_set(MM_NORMAL);
+		int width = 0, height = 0;
+		window_get_drawable_size(game_state_get()->window, &width, &height);
+		platform_mouse_position_set(game_state_get()->window, width / 2, height / 2);
+		editor->camera_looking_around = false;
+
+		if(editor->selected_entity && editor->current_tool == EDITOR_TOOL_ROTATE && editor->previous_axis != EDITOR_AXIS_NONE)
+			editor_axis_set(editor, editor->previous_axis);
+	}
+
 	if(event->mousebutton.button == MSB_LEFT &&
 		!editor->camera_looking_around &&
 		nk_item_is_any_active(&gui->context) == 0)
@@ -674,12 +686,10 @@ void editor_on_mousebutton_release(const struct Event* event)
 			transform_copy(editor->selected_entity, editor->cursor_entity, false);
 			editor->tool_rotate_total_rotation = 0.f;
 			editor->tool_rotate_starting_rotation = 0.f;
-			editor->draw_entity_wireframe = false;
+			editor->draw_cursor_entity = false;
 		}
 	}
 
-	if(editor->selected_entity && editor->current_tool == EDITOR_TOOL_ROTATE && editor->previous_axis != EDITOR_AXIS_NONE)
-		editor_axis_set(editor, editor->previous_axis);
 }
 
 void editor_on_mousebutton_press(const struct Event* event)
@@ -690,6 +700,10 @@ void editor_on_mousebutton_press(const struct Event* event)
 	if(game_state->game_mode != GAME_MODE_EDITOR && nk_window_is_any_hovered(&gui->context) == 0)
 		return;
 
+	if(event->mousebutton.button == MSB_RIGHT && !editor->camera_looking_around)
+	{
+
+	}
 
 	if(event->mousebutton.button == MSB_LEFT && editor->selected_entity)
 	{
@@ -725,12 +739,12 @@ void editor_on_mousebutton_press(const struct Event* event)
 				editor->picking_enabled = false;
 				editor->tool_rotate_rotation_started = true;
 				editor->tool_rotate_total_rotation = 0.f;
-				editor->draw_entity_wireframe = true;
+				editor->draw_cursor_entity = true;
 				switch(editor->current_axis)
 				{
-				case EDITOR_AXIS_X: editor->tool_rotate_starting_rotation = roundf(quat_get_pitch(&editor->selected_entity->transform.rotation)); break;
-				case EDITOR_AXIS_Y: editor->tool_rotate_starting_rotation = roundf(quat_get_yaw(&editor->selected_entity->transform.rotation));   break;
-				case EDITOR_AXIS_Z: editor->tool_rotate_starting_rotation = roundf(quat_get_roll(&editor->selected_entity->transform.rotation));  break;
+				case EDITOR_AXIS_X: editor->tool_rotate_starting_rotation = roundf(quat_get_pitch(&editor->cursor_entity->base.transform.rotation)); break;
+				case EDITOR_AXIS_Y: editor->tool_rotate_starting_rotation = roundf(quat_get_yaw(&editor->cursor_entity->base.transform.rotation));   break;
+				case EDITOR_AXIS_Z: editor->tool_rotate_starting_rotation = roundf(quat_get_roll(&editor->cursor_entity->base.transform.rotation));  break;
 				}
 			}
 		}
@@ -849,10 +863,7 @@ void editor_on_mousemotion(const struct Event* event)
 			{
 				editor->tool_rotate_allowed = false;
 			}
-			//else
-			//{
-			//	editor->tool_rotate_axis = EDITOR_AXIS_NONE;
-			//}
+
 			if(editor->current_axis != EDITOR_AXIS_NONE && editor->tool_rotate_rotation_started)
 			{
 				if(editor->tool_snap_enabled)
@@ -867,23 +878,21 @@ void editor_on_mousemotion(const struct Event* event)
 
 				if(editor->tool_rotate_amount != 0.f)
 				{
-					vec3 axis = { 0.f, 0.f, 0.f };
-					bool should_rotate = true;
 					switch(editor->current_axis)
 					{
-					case EDITOR_AXIS_X: vec3_assign(&axis, &UNIT_X); break;
-					case EDITOR_AXIS_Y: vec3_assign(&axis, &UNIT_Y); break;
-					case EDITOR_AXIS_Z: vec3_assign(&axis, &UNIT_Z); break;
-					default: should_rotate = false;
+					case EDITOR_AXIS_X:  
+						transform_rotate(editor->cursor_entity, &UNIT_X, editor->tool_rotate_amount, TS_WORLD);
+						editor->tool_rotate_total_rotation = roundf(quat_get_pitch(&editor->cursor_entity->base.transform.rotation)); 
+						break;
+					case EDITOR_AXIS_Y:  
+						transform_rotate(editor->cursor_entity, &UNIT_Y, editor->tool_rotate_amount, TS_WORLD);
+						editor->tool_rotate_total_rotation = roundf(quat_get_yaw(&editor->cursor_entity->base.transform.rotation)); 
+						break;
+					case EDITOR_AXIS_Z: 
+						transform_rotate(editor->cursor_entity, &UNIT_Z, editor->tool_rotate_amount, TS_WORLD);
+						editor->tool_rotate_total_rotation = roundf(quat_get_roll(&editor->cursor_entity->base.transform.rotation)); 
+						break;
 					}
-
-					if(should_rotate)
-						transform_rotate(editor->cursor_entity, &axis, editor->tool_rotate_amount, TS_WORLD);
-					editor->tool_rotate_total_rotation += editor->tool_rotate_amount;
-					if(editor->tool_rotate_total_rotation > 360.f)
-						editor->tool_rotate_total_rotation = (int)editor->tool_rotate_total_rotation % 360;
-					else if(editor->tool_rotate_total_rotation < -360.f)
-						editor->tool_rotate_total_rotation = (int)editor->tool_rotate_total_rotation % -360;
 					editor->tool_rotate_amount = 0.f;
 				}
 			}
@@ -957,9 +966,9 @@ void editor_tool_set(struct Editor* editor, int tool)
 	}
 	
 	if(editor->selected_entity && editor->current_tool == EDITOR_TOOL_TRANSLATE)
-		editor->draw_entity_wireframe = true;
+		editor->draw_cursor_entity = true;
 	else
-		editor->draw_entity_wireframe = false;
+		editor->draw_cursor_entity = false;
 	editor->previous_axis = editor->current_axis;
 	editor_tool_reset(editor);
 }
@@ -980,7 +989,7 @@ void editor_entity_select(struct Editor* editor, struct Entity* entity)
 			editor->selected_entity = NULL;
 		}
 
-		if(editor->current_tool == EDITOR_TOOL_TRANSLATE) editor->draw_entity_wireframe = true;
+		if(editor->current_tool == EDITOR_TOOL_TRANSLATE) editor->draw_cursor_entity = true;
 		entity->editor_selected = true;
 		editor->selected_entity = entity;
 		transform_copy(editor->cursor_entity, editor->selected_entity, false);
@@ -1058,10 +1067,10 @@ void editor_camera_update(struct Editor* editor, float dt)
 
     if(input_mousebutton_state_get(MSB_RIGHT, KS_PRESSED))
     {
-		editor->camera_looking_around = true;
 		const float scale = 0.1f;
 		int cursor_lr, cursor_ud;
 		input_mouse_delta_get(&cursor_lr, &cursor_ud);
+		editor->camera_looking_around = true;
 		if(input_mouse_mode_get() != MM_RELATIVE)
 		{
 			input_mouse_mode_set(MM_RELATIVE);
@@ -1073,16 +1082,8 @@ void editor_camera_update(struct Editor* editor, float dt)
     }
     else
     {
-		input_mouse_mode_set(MM_NORMAL);
 		turn_up_down *= dt;
 		turn_left_right *= dt;
-		if(editor->camera_looking_around)
-		{
-			int width = 0, height = 0;
-			window_get_drawable_size(game_state_get()->window, &width, &height);
-			platform_mouse_position_set(game_state_get()->window, width / 2, height / 2);
-			editor->camera_looking_around = false;
-		}
     }
 
     total_up_down_rot += turn_up_down;

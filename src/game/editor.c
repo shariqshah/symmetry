@@ -116,8 +116,8 @@ void editor_init(struct Editor* editor)
     editor->camera_move_speed                  = 20.f;
     editor->camera_sprint_multiplier           = 2.f;
 	editor->current_tool                       = EDITOR_TOOL_NORMAL;
-	editor->current_axis                       = EDITOR_AXIS_XZ;
-	editor->previous_axis                      = EDITOR_AXIS_XZ;
+	editor->current_axis                       = EDITOR_AXIS_NONE;
+	editor->previous_axis                      = EDITOR_AXIS_NONE;
 	editor->grid_enabled                       = 1;
 	editor->grid_relative                      = 1;
 	editor->grid_num_lines                     = 100;
@@ -428,7 +428,7 @@ void editor_update(struct Editor* editor, float dt)
 				axis = nk_option_label(context, "YZ", axis == EDITOR_AXIS_YZ) ? EDITOR_AXIS_YZ : axis;
 			}
 			axis = nk_option_label(context, "None", axis == EDITOR_AXIS_NONE) ? EDITOR_AXIS_NONE : axis;
-			editor_axis_set(editor, axis);
+			if(axis != editor->current_axis) editor_axis_set(editor, axis);
 			nk_combo_end(context);
 		}
 		
@@ -699,7 +699,7 @@ void editor_on_mousebutton_release(const struct Event* event)
 				editor->picking_enabled = true;
 				editor->tool_scale_started = false;
 				transform_copy(editor->selected_entity, editor->cursor_entity, false);
-				vec3_fill(&editor->tool_scale_amount, 0.f, 0.f, 0.f);
+				vec3_fill(&editor->tool_scale_amount, 1.f, 1.f, 1.f);
 				editor->draw_cursor_entity = false;
 			}
 			else
@@ -968,14 +968,13 @@ void editor_on_key_release(const struct Event* event)
 
 		/* Axis select */
 		int selected_axis = editor->current_axis;
-		if(event->key.key == KEY_X) selected_axis = EDITOR_AXIS_X;
-		if(event->key.key == KEY_Y) selected_axis = EDITOR_AXIS_Y;
-		if(event->key.key == KEY_Z) selected_axis = EDITOR_AXIS_Z;
-		if(event->key.key == KEY_X && input_is_key_pressed(KEY_LSHIFT)) selected_axis = EDITOR_AXIS_YZ;
-		if(event->key.key == KEY_Y && input_is_key_pressed(KEY_LSHIFT)) selected_axis = EDITOR_AXIS_XZ;
-		if(event->key.key == KEY_Z && input_is_key_pressed(KEY_LSHIFT)) selected_axis = EDITOR_AXIS_XY;
-		if(event->key.key == KEY_ALT && editor->current_tool == EDITOR_TOOL_TRANSLATE) selected_axis = editor->previous_axis; // Revert to previous axis when alt is released
-		editor_axis_set(editor, selected_axis);
+		if(event->key.key == KEY_X) editor_axis_set(editor, EDITOR_AXIS_X);
+		if(event->key.key == KEY_Y) editor_axis_set(editor, EDITOR_AXIS_Y);
+		if(event->key.key == KEY_Z) editor_axis_set(editor, EDITOR_AXIS_Z);
+		if(event->key.key == KEY_X && input_is_key_pressed(KEY_LSHIFT)) editor_axis_set(editor, EDITOR_AXIS_YZ);
+		if(event->key.key == KEY_Y && input_is_key_pressed(KEY_LSHIFT)) editor_axis_set(editor, EDITOR_AXIS_XZ);
+		if(event->key.key == KEY_Z && input_is_key_pressed(KEY_LSHIFT)) editor_axis_set(editor, EDITOR_AXIS_XY);
+		//if(selected_axis != editor->current_axis) editor_axis_set(editor, selected_axis);
 		
 		/* Grid Scale select */
 		if(event->key.key == KEY_1) editor->grid_scale = 1.f;
@@ -1000,14 +999,13 @@ void editor_tool_set(struct Editor* editor, int tool)
 	if(editor->current_tool != tool)
 	{
 		editor->current_tool = tool;
+		if(editor->current_tool == EDITOR_TOOL_TRANSLATE)
+			editor->draw_cursor_entity = true;
+		else
+			editor->draw_cursor_entity = false;
+		editor->previous_axis = editor->current_axis;
+		editor_tool_reset(editor);
 	}
-	
-	if(editor->current_tool == EDITOR_TOOL_TRANSLATE)
-		editor->draw_cursor_entity = true;
-	else
-		editor->draw_cursor_entity = false;
-	editor->previous_axis = editor->current_axis;
-	editor_tool_reset(editor);
 }
 
 void editor_entity_select(struct Editor* editor, struct Entity* entity)
@@ -1026,7 +1024,12 @@ void editor_entity_select(struct Editor* editor, struct Entity* entity)
 			editor->selected_entity = NULL;
 		}
 
-		if(editor->current_tool == EDITOR_TOOL_TRANSLATE) editor->draw_cursor_entity = true;
+		if(editor->current_tool == EDITOR_TOOL_TRANSLATE)
+		{
+			if(editor->current_axis == EDITOR_AXIS_NONE)
+				editor_axis_set(editor, EDITOR_AXIS_XZ);
+			editor->draw_cursor_entity = true;
+		}
 		entity->editor_selected = true;
 		editor->selected_entity = entity;
 		transform_copy(editor->cursor_entity, editor->selected_entity, false);
@@ -1044,10 +1047,10 @@ void editor_tool_reset(struct Editor* editor)
 	editor->tool_rotate_total_rotation = 0.f;
 	editor->tool_rotate_allowed = false;
 	editor->tool_rotate_rotation_started = false;
-	vec3_fill(&editor->tool_scale_amount, 0.f, 0.f, 0.f);
+	vec3_fill(&editor->tool_scale_amount, 1.f, 1.f, 1.f);
 	editor->tool_scale_started = false;
 	editor->picking_enabled = true;
-	if(editor->current_tool == EDITOR_TOOL_TRANSLATE)
+	if(editor->current_tool == EDITOR_TOOL_TRANSLATE && editor->current_axis != EDITOR_AXIS_XZ)
 		editor_axis_set(editor, EDITOR_AXIS_XZ);
 	else
 		editor_axis_set(editor, EDITOR_AXIS_NONE);
@@ -1058,7 +1061,7 @@ void editor_on_key_press(const struct Event* event)
 	struct Editor* editor = game_state_get()->editor;
 	if(!nk_window_is_any_hovered(&game_state_get()->gui->context))
 	{
-		if(event->key.key == KEY_ALT && editor->current_tool == EDITOR_TOOL_TRANSLATE) editor_axis_set(editor, EDITOR_AXIS_Y);
+		if(event->key.key == KEY_ALT && editor->current_tool == EDITOR_TOOL_TRANSLATE && editor->current_axis != EDITOR_AXIS_Y) editor_axis_set(editor, EDITOR_AXIS_Y);
 	}
 }
 
@@ -1093,7 +1096,27 @@ void editor_axis_set(struct Editor* editor, int axis)
 			vec3_assign(&editor->tool_scale_amount, &editor->cursor_entity->base.transform.scale);
 		}
 	}
+	else
+	{
+		if(axis == EDITOR_AXIS_NONE)
+			return;
+		/* De-select axis */
+		editor->previous_axis = editor->current_axis;
+		editor->current_axis = EDITOR_AXIS_NONE;
+
+		if(editor->selected_entity)
+			transform_copy(editor->cursor_entity, editor->selected_entity, false);
+		
+		if(editor->current_tool == EDITOR_TOOL_SCALE)
+		{
+			editor->picking_enabled = true;
+			editor->tool_scale_started = false;
+			vec3_fill(&editor->tool_scale_amount, 1.f, 1.f, 1.f);
+			editor->draw_cursor_entity = false;
+		}
+	}
 }
+
 void editor_camera_update(struct Editor* editor, float dt)
 {
     struct Camera* editor_camera = &game_state_get()->scene->cameras[CAM_EDITOR];

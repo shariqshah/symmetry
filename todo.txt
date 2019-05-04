@@ -17,6 +17,7 @@ Todo:
 	- Mouse warp to opposite side of the window when it reaches bounds
 	- Add other axis combinations like YZ and XY to transform tool
 	- Transformation space selection for translation, rotation and scale.
+	- Subscribe and Unsubscribe based on game mode changes
 	- Use actual selected entity's mesh for tool mesh when the entity already has a mesh and use a placeholder like a sphere when there is not mesh 
 	- Add warning to genie build script when running on windows and WindowsSdkVersion cannot be found. This happens when the script is not run from vcvarsall command prompt
 	- Improve README and add a screenshot to make the repository ready for making it public 

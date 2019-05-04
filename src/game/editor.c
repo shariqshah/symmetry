@@ -111,6 +111,7 @@ void editor_init(struct Editor* editor)
 	editor->window_scene_heirarchy             = 0;
 	editor->camera_looking_around              = 0;
     editor->selected_entity                    = NULL;
+    editor->hovered_entity                     = NULL;
     editor->top_panel_height                   = 30;
     editor->camera_turn_speed                  = 50.f;
     editor->camera_move_speed                  = 20.f;
@@ -137,6 +138,7 @@ void editor_init(struct Editor* editor)
 	editor->tool_scale_started                 = false;
 
 	vec4_fill(&editor->cursor_entity_color, 0.f, 1.f, 1.f, 1.f);
+	vec4_fill(&editor->hovered_entity_color, 0.53, 0.87, 0.28, 0.5f);
 	vec3_fill(&editor->tool_scale_amount, 1.f, 1.f, 1.f);
 	vec4_fill(&editor->tool_mesh_color, 0.f, 1.f, 1.f, 1.f);
 	vec4_fill(&editor->selected_entity_color, 0.96, 0.61, 0.17, 0.5f);
@@ -180,12 +182,13 @@ void editor_render(struct Editor* editor, struct Camera * active_camera)
 	struct Game_State* game_state = game_state_get();
 	struct Renderer* renderer = game_state->renderer;
 
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND);
+
 	if(game_state->editor->selected_entity)
 	{
-		glEnable(GL_DEPTH_TEST);
-		glDepthFunc(GL_LEQUAL);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glEnable(GL_BLEND);
 		/* Draw selected entity */
 		if(editor->selected_entity->type == ET_STATIC_MESH)
 		{
@@ -209,7 +212,7 @@ void editor_render(struct Editor* editor, struct Camera * active_camera)
 		}
 		else
 		{
-			//For now just draw a placeholder sphere just to visually denote that the entity is selected
+			//For now draw a placeholder sphere just to visually denote that the entity is selected
 			vec3 abs_pos;
 			quat abs_rot;
 			transform_get_absolute_position(editor->selected_entity, &abs_pos);
@@ -252,9 +255,43 @@ void editor_render(struct Editor* editor, struct Camera * active_camera)
 			shader_unbind();
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_BLEND);
 	}
+
+	/* If cursor is hovering over an entity, draw it*/
+	if(editor->hovered_entity)
+	{
+		if(editor->hovered_entity->type == ET_STATIC_MESH)
+		{
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			shader_bind(renderer->debug_shader);
+			{
+				static mat4 mvp;
+				shader_set_uniform_vec4(renderer->debug_shader, "debug_color", &editor->hovered_entity_color);
+				struct Static_Mesh* mesh = editor->hovered_entity;
+				struct Model*       model = &mesh->model;
+				struct Transform*   transform = &mesh->base.transform;
+				int                 geometry = model->geometry_index;
+				mat4_identity(&mvp);
+				mat4_mul(&mvp, &active_camera->view_proj_mat, &transform->trans_mat);
+				shader_set_uniform_mat4(renderer->debug_shader, "mvp", &mvp);
+				geom_render(geometry, GDM_TRIANGLES);
+			}
+			shader_unbind();
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		}
+		else
+		{
+			vec3 abs_pos;
+			quat abs_rot;
+			transform_get_absolute_position(editor->hovered_entity, &abs_pos);
+			transform_get_absolute_rot(editor->hovered_entity, &abs_rot);
+			im_sphere(1.f, abs_pos, abs_rot, editor->hovered_entity_color, GDM_TRIANGLES, 4);
+		}
+	}
+
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_BLEND);
+
 
 	vec3 position = { 0.f, 0.f, 0.f };
 	quat rotation = { 0.f, 0.f, 0.f, 1.f };
@@ -953,6 +990,32 @@ void editor_on_mousemotion(const struct Event* event)
 	}
 	break;
 	default: break;
+	}
+
+	/* Check if we're hovering over an entity */
+	struct Scene* scene = game_state->scene;
+	struct Camera* editor_camera = &scene->cameras[CAM_EDITOR];
+	struct Ray ray = camera_screen_coord_to_ray(editor_camera, event->mousemotion.x, event->mousemotion.y);
+	struct Raycast_Result ray_result;
+	scene_ray_intersect(scene, &ray, &ray_result);
+
+	if(ray_result.num_entities_intersected > 0)
+	{
+		struct Entity* intersected_entity = ray_result.entities_intersected[0];
+		if(intersected_entity == editor->cursor_entity)
+		{
+			if(ray_result.num_entities_intersected > 1)
+				intersected_entity = ray_result.entities_intersected[1];
+			else
+				intersected_entity = NULL;
+		}
+		if(intersected_entity && intersected_entity != editor->hovered_entity)
+			editor->hovered_entity = intersected_entity;
+	}
+	else
+	{
+		if(editor->hovered_entity)
+			editor->hovered_entity = NULL;
 	}
 }
 

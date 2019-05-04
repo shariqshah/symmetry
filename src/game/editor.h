@@ -19,6 +19,8 @@ struct Editor
 	int                 camera_looking_around;
     struct Entity*      selected_entity;
 	struct Static_Mesh* cursor_entity;
+	struct Entity*      hovered_entity;
+	vec4                hovered_entity_color;
 	vec4                cursor_entity_color;
 	bool                draw_cursor_entity;
     int                 top_panel_height;

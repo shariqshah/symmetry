@@ -1,8 +1,6 @@
 Todo:
 	- Better, more accurate picking
 	- Editor related messages/notifications in the bottom status bar
-	- Highlight if we are about to select an entity or perform the tool action like translate when mouse is hovered and an entity can be selected at that location
-	- Display the projected position if we perform the action for example display what the new location would be right next to the tool mesh
 	? Disable entity picking when tool is in use or only allow picking when pressing ALT
 	- Disable editor event recievers on game mode change
 	- Editor Undo
@@ -14,6 +12,9 @@ Todo:
 	- Implement resetting complete transform or just rotation, translation
 	  or scale for selected entity
 	- Key binding and function to orient entity to camera orientation
+	- Display the name of the hovered entity either as a tooltip under the
+	  cursor of in the top/bottom status bar
+	- Make lights and other entity types pickable
 	- Mouse warp to opposite side of the window when it reaches bounds
 	- Add other axis combinations like YZ and XY to transform tool
 	- Transformation space selection for translation, rotation and scale.
@@ -281,4 +282,6 @@ Done:
 	* Implemented reverting back to previously selected axis when not
 	  moving the camera any more and rotate tool is selected.
 	* Scale Mode
+	* Highlight if we are about to select an entity or perform the tool action like translate when mouse is hovered and an entity can be selected at that location
+	* Display the projected position if we perform the action for example display what the new location would be right next to the tool mesh
 

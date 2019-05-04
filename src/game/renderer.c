@@ -198,11 +198,11 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
 						memset(uniform_name, '\0', MAX_UNIFORM_NAME_LEN);
 
 						snprintf(uniform_name, MAX_UNIFORM_NAME_LEN, "lights[%d].outer_angle", light_count);
-						shader_set_uniform_float(material->shader, uniform_name, light->outer_angle);
+						shader_set_uniform_float(material->shader, uniform_name, TO_RADIANS(light->outer_angle));
 						memset(uniform_name, '\0', MAX_UNIFORM_NAME_LEN);
 
 						snprintf(uniform_name, MAX_UNIFORM_NAME_LEN, "lights[%d].inner_angle", light_count);
-						shader_set_uniform_float(material->shader, uniform_name, light->inner_angle);
+						shader_set_uniform_float(material->shader, uniform_name, TO_RADIANS(light->inner_angle));
 						memset(uniform_name, '\0', MAX_UNIFORM_NAME_LEN);
 
 						snprintf(uniform_name, MAX_UNIFORM_NAME_LEN, "lights[%d].falloff", light_count);

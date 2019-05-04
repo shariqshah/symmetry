@@ -396,7 +396,7 @@ void scene_entity_remove(struct Scene* scene, struct Entity* entity)
 
 	transform_destroy(entity);
 	entity->active              = false;
-	entity->editor_selected     = false;
+	entity->selected_in_editor     = false;
 	entity->marked_for_deletion = false;
 	memset(entity->name, '\0', MAX_ENTITY_NAME_LEN);
 }

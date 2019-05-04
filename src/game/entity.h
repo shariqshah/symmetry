@@ -65,7 +65,7 @@ struct Entity
     char             name[MAX_ENTITY_NAME_LEN];
     bool             marked_for_deletion;
     bool             active;
-    bool             editor_selected;
+    bool             selected_in_editor;
     struct Transform transform;
 };
 

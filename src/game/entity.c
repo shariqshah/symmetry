@@ -35,7 +35,7 @@ void entity_init(struct Entity* entity, const char* name, struct Entity* parent)
 	entity->type                = ET_DEFAULT;
 	entity->active              = true;
 	entity->marked_for_deletion = false;
-	entity->editor_selected     = false;
+	entity->selected_in_editor     = false;
 	transform_init(entity, parent);
 }
 
@@ -45,7 +45,7 @@ void entity_reset(struct Entity * entity, int id)
 	entity->id                  = id;
 	entity->active              = false;
 	entity->marked_for_deletion = false;
-	entity->editor_selected     = false;
+	entity->selected_in_editor     = false;
 	memset(entity->name, '\0', MAX_ENTITY_NAME_LEN);
 }
 

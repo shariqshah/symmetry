@@ -1012,7 +1012,7 @@ void editor_entity_select(struct Editor* editor, struct Entity* entity)
 {
 	if(!entity && editor->selected_entity) // Deselect
 	{
-		editor->selected_entity->editor_selected = false;
+		editor->selected_entity->selected_in_editor = false;
 		editor->selected_entity = NULL;
 		editor_tool_reset(editor);
 	}
@@ -1020,7 +1020,7 @@ void editor_entity_select(struct Editor* editor, struct Entity* entity)
 	{
 		if(editor->selected_entity && editor->selected_entity != entity)
 		{
-			editor->selected_entity->editor_selected = false;
+			editor->selected_entity->selected_in_editor = false;
 			editor->selected_entity = NULL;
 		}
 
@@ -1030,7 +1030,7 @@ void editor_entity_select(struct Editor* editor, struct Entity* entity)
 				editor_axis_set(editor, EDITOR_AXIS_XZ);
 			editor->draw_cursor_entity = true;
 		}
-		entity->editor_selected = true;
+		entity->selected_in_editor = true;
 		editor->selected_entity = entity;
 		transform_copy(editor->cursor_entity, editor->selected_entity, false);
 	}
@@ -1304,19 +1304,14 @@ void editor_show_entity_in_list(struct Editor* editor, struct nk_context* contex
 	if(!entity->active) return;
 
 	nk_layout_row_dynamic(context, 20, 1);
-	if(nk_selectable_label(context, entity->name, NK_TEXT_ALIGN_LEFT, &entity->editor_selected))
+	if(nk_selectable_label(context, entity->name, NK_TEXT_ALIGN_LEFT, &entity->selected_in_editor))
 	{
 		if(editor->selected_entity && editor->selected_entity != entity)
-		{
-			editor->selected_entity->editor_selected = false;
-			editor->selected_entity = NULL;
-		}
-		else if(editor->selected_entity && editor->selected_entity == entity && !entity->editor_selected)
-		{
-			editor->selected_entity = NULL;
-		}
+			editor_entity_select(editor, entity);
+		else if(editor->selected_entity && editor->selected_entity == entity && !entity->selected_in_editor)
+			editor_entity_select(editor, NULL);
 
-		if(entity->editor_selected)
+		if(entity->selected_in_editor)
 		{
 			editor->selected_entity = entity;
 			if(!editor->window_property_inspector) editor->window_property_inspector = true;
@@ -1391,7 +1386,7 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 			struct Entity* parent_ent = entity->transform.parent;
 			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Name", NK_TEXT_ALIGN_LEFT); nk_label(context, entity->name, NK_TEXT_ALIGN_RIGHT);
 			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "ID", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%d", entity->id);
-			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Selected", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%s", entity->editor_selected ? "True" : "False");
+			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Selected", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%s", entity->selected_in_editor ? "True" : "False");
 			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Entity Type", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%s", entity_type_name_get(entity));
 			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Parent Name", NK_TEXT_ALIGN_LEFT); nk_label(context, parent_ent ? parent_ent->name : "NONE", NK_TEXT_ALIGN_RIGHT);
 
@@ -1467,10 +1462,10 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 						if(light->type != LT_DIR)
 						{
 							nk_layout_row_dynamic(context, row_height, 1);
-							light->outer_angle = TO_RADIANS(nk_propertyf(context, "Outer Angle", TO_DEGREES(light->inner_angle), TO_DEGREES(light->outer_angle), 360, 1.f, 0.5f));
+							light->outer_angle = nk_propertyf(context, "Outer Angle", light->inner_angle, light->outer_angle, 360, 1.f, 0.5f);
 
 							nk_layout_row_dynamic(context, row_height, 1);
-							light->inner_angle = TO_RADIANS(nk_propertyf(context, "Inner Angle", 1.f, TO_DEGREES(light->inner_angle), TO_DEGREES(light->outer_angle), 1.f, 0.5f));
+							light->inner_angle = nk_propertyf(context, "Inner Angle", 1.f, light->inner_angle, light->outer_angle, 1.f, 0.5f);
 
 							nk_layout_row_dynamic(context, row_height, 1);
 							nk_property_int(context, "Radius", 1, &light->radius, INT_MAX, 1, 1);

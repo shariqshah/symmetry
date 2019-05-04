@@ -1,8 +1,6 @@
 #include "light.h"
-#include "../common/array.h"
 #include "entity.h"
 
-#include <assert.h>
 
 void light_init(struct Light* light, int light_type)
 {
@@ -13,8 +11,8 @@ void light_init(struct Light* light, int light_type)
 	light->pcf_enabled = false;
 	light->intensity   = 1.f;
 	light->falloff     = 1.5f;
-	light->outer_angle = TO_RADIANS(30.f);
-	light->inner_angle = TO_RADIANS(20.f);
+	light->outer_angle = 30.f;
+	light->inner_angle = 20.f;
 	light->radius      = 20.f;
 	vec3_fill(&light->color, 1.f, 1.f, 1.f);
 }

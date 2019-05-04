@@ -19,7 +19,7 @@ struct Editor
 	int                 camera_looking_around;
     struct Entity*      selected_entity;
 	struct Static_Mesh* cursor_entity;
-	vec4                projected_entity_color;
+	vec4                cursor_entity_color;
 	bool                draw_cursor_entity;
     int                 top_panel_height;
     float               camera_turn_speed;

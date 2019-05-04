@@ -153,9 +153,9 @@ void im_sphere(float radius, vec3 position, quat rotation, vec4 color, int draw_
 	active_geom = NULL;
 }
 
-void im_line(vec3 p1, vec3 p2, vec3 position, quat rotation, vec3 scale, vec4 color, int draw_order)
+void im_line(vec3 p1, vec3 p2, vec3 position, quat rotation, vec4 color, int draw_order)
 {
-	im_begin(position, rotation, scale, color, GDM_LINES, draw_order);
+	im_begin(position, rotation, (vec3) { 1.f, 1.f, 1.f }, color, GDM_LINES, draw_order);
 	im_pos(p1.x, p1.y, p1.z);
 	im_pos(p2.x, p2.y, p2.z);
 	im_end();
@@ -210,6 +210,14 @@ void im_arc(float radius, float angle_start, float angle_end, int num_divisions,
 	}
 	
 	im_end();
+}
+
+void im_ray(struct Ray* ray, float length, vec4 color, int draw_order)
+{
+	vec3 ending_pos = { 0.f, 0.f, 0.f };
+	vec3_scale(&ending_pos, &ray->direction, length);
+	vec3_add(&ending_pos, &ending_pos, &ray->origin);
+	im_line(ray->origin, ending_pos, (vec3) { 0.f, 0.f, 0.f }, (quat) { 0.f, 0.f, 0.f, 1.f }, color, draw_order);
 }
 
 void im_end(void)

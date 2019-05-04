@@ -185,7 +185,7 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
 					{
 						snprintf(uniform_name, MAX_UNIFORM_NAME_LEN, "lights[%d].direction", light_count);
 						vec3 light_dir = { 0.f, 0.f, 0.f };
-						transform_get_absolute_lookat(&light->base, &light_dir);
+						transform_get_absolute_forward(&light->base, &light_dir);
 						vec3_norm(&light_dir, &light_dir);
 						shader_set_uniform_vec3(material->shader, uniform_name, &light_dir);
 						memset(uniform_name, '\0', MAX_UNIFORM_NAME_LEN);

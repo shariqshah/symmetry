@@ -802,23 +802,32 @@ void quat_get_right(vec3* res, const quat* q)
 float quat_get_pitch(const quat* q)
 {
 	float check = 2.0f * (-q->y * q->z + q->w * q->x);
-	if(check < -0.995f || check > 0.995f)
-		return 0.f;
+	if(check < -0.995f)
+		return -90.f;
+	else if(check > 0.995)
+		return 90.f;
 	else
-		return TO_DEGREES(atan2f(2.f * (q->x * q->z + q->w * q->y), 1.f - 2.f * (q->x * q->x + q->y * q->y)));
-		//return TO_DEGREES(atan2f(2.f * (q->y * q->z + q->w * q->x), q->w * q->w - q->x * q->x - q->y * q->y + q->z * q->z));
+		return TO_DEGREES(asinf(check));
 }
 
 float quat_get_yaw(const quat* q)
 {
-	float result = (float)asin(-2 * (q->x * q->z - q->w * q->y));
-	return TO_DEGREES(result);
+	float check = 2.0f * (-q->y * q->z + q->w * q->x);
+	if(check > 0.995f || check < -0.995f)
+		return 0.f;
+	else
+		return TO_DEGREES(atan2f(2.0f * (q->x * q->z + q->w * q->y), 1.0f - 2.0f * (q->x * q->x + q->y * q->y)));
 }
 
 float quat_get_roll(const quat* q)
 {
-	float result = atan2(2 * (q->x * q->y + q->w * q->z), q->w * q->w + q->x * q->x - q->y * q->y - q->z * q->z);
-	return TO_DEGREES(result);
+	float check = 2.0f * (-q->y * q->z + q->w * q->x);
+	if(check < -0.955f)
+		return TO_DEGREES(-atan2f(2.0f * (q->x * q->z - q->w * q->y), 1.0f - 2.0f * (q->y * q->y + q->z * q->z)));
+	else if(check > 0.995f)
+		return TO_DEGREES(atan2f(2.0f * (q->x * q->z - q->w * q->y), 1.0f - 2.0f * (q->y * q->y + q->z * q->z)));
+	else
+		return TO_DEGREES(atan2f(2.0f * (q->x * q->y + q->w * q->z), 1.0f - 2.0f * (q->x * q->x + q->z * q->z)));
 }
 
 void quat_mul_mat4(quat* res, quat* val, mat4* mat)

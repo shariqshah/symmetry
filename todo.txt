@@ -98,9 +98,8 @@ Bugs:
 	- Investigate memory usage increase when window is minimized
 	- Fix hang on fullscreen toggle
 	- Fix axis lines not aligning with grid lines
-	- Fix rotation arc starting and ending degree calculations
-	- Fix broken spot light degree/radian conversions
-
+	- Fix arc angles resetting when rotating
+	
 Done:
 	* Input
 	* Shaders
@@ -285,4 +284,6 @@ Done:
 	* Highlight if we are about to select an entity or perform the tool action like translate when mouse is hovered and an entity can be selected at that location
 	* Display the projected position if we perform the action for example display what the new location would be right next to the tool mesh
 	* Tooltips for current action or hovered entity
+	* Fix broken spot light degree/radian conversions
+	* Fix rotation arc starting and ending degree calculations
 

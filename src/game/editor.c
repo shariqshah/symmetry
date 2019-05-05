@@ -138,16 +138,16 @@ void editor_init(struct Editor* editor)
 	editor->tool_scale_started                 = false;
 
 	vec4_fill(&editor->cursor_entity_color, 0.f, 1.f, 1.f, 1.f);
-	vec4_fill(&editor->hovered_entity_color, 0.53, 0.87, 0.28, 0.5f);
-	vec3_fill(&editor->tool_scale_amount, 1.f, 1.f, 1.f);
-	vec4_fill(&editor->tool_mesh_color, 0.f, 1.f, 1.f, 1.f);
-	vec4_fill(&editor->selected_entity_color, 0.96, 0.61, 0.17, 0.5f);
+	vec4_fill(&editor->hovered_entity_color, 0.53, 0.87, 0.28, 1.f);
+	vec4_fill(&editor->selected_entity_color, 0.96, 0.61, 0.17, 1.f);
 	vec4_fill(&editor->grid_color, 0.3f, 0.3f, 0.3f, 0.7f);
 	vec4_fill(&editor->axis_color_x, 0.87, 0.32, 0.40, 1.f);
 	vec4_fill(&editor->axis_color_y, 0.53, 0.67, 0.28, 1.f);
 	vec4_fill(&editor->axis_color_z, 0.47, 0.67, 0.89, 1.f);
-    debug_vars_list                   = array_new(struct Debug_Variable);
-    empty_indices                     = array_new(int);
+	vec3_fill(&editor->tool_scale_amount, 1.f, 1.f, 1.f);
+
+    debug_vars_list = array_new(struct Debug_Variable);
+    empty_indices   = array_new(int);
 	
 	struct Event_Manager* event_manager = game_state_get()->event_manager;
 	event_manager_subscribe(event_manager, EVT_MOUSEBUTTON_PRESSED, &editor_on_mousebutton_press);
@@ -499,6 +499,99 @@ void editor_update(struct Editor* editor, float dt)
 		}
 		
 		nk_menubar_end(context);
+
+		/* Tooltip for current action or entity being hovered */
+		if(!nk_window_is_any_hovered(context))
+		{
+			nk_byte previous_opacity = context->style.window.background.a;
+			context->style.window.background.a = 150;
+			nk_flags alignment_flags_left = NK_TEXT_ALIGN_MIDDLE | NK_TEXT_ALIGN_LEFT;
+			nk_flags alignment_flags_right = NK_TEXT_ALIGN_MIDDLE | NK_TEXT_ALIGN_RIGHT;
+			nk_flags alignment_flags_center = NK_TEXT_ALIGN_MIDDLE | NK_TEXT_ALIGN_CENTERED;
+			float tooltip_width = 250.f;
+
+			if(editor->hovered_entity)
+			{
+				if(nk_tooltip_begin(context, 250.f))
+				{
+					nk_layout_row_dynamic(context, 20, 2);
+					nk_label(context, "Hovered Entity: ", alignment_flags_left); nk_label_colored(context, editor->hovered_entity->name, alignment_flags_right, nk_rgba_fv(&editor->hovered_entity_color));
+					nk_label(context, "Hovered Entity Type: ", alignment_flags_left);   nk_label_colored(context, entity_type_name_get(editor->hovered_entity), alignment_flags_right, nk_rgba_fv(&editor->hovered_entity_color));
+					nk_tooltip_end(context);
+				}
+			}
+
+			if(editor->selected_entity && editor->current_axis != EDITOR_AXIS_NONE)
+			{
+				switch(editor->current_tool)
+				{
+				case EDITOR_TOOL_TRANSLATE:
+				{
+					if(nk_tooltip_begin(context, tooltip_width))
+					{
+						vec3 abs_pos_selected = { 0.f, 0.f, 0.f };
+						vec3 abs_pos_cursor = { 0.f, 0.f, 0.f };
+						transform_get_absolute_position(editor->selected_entity, &abs_pos_selected);
+						transform_get_absolute_position(editor->cursor_entity, &abs_pos_cursor);
+						nk_layout_row_dynamic(context, 20, 2);
+						nk_label(context, "Current Position: ", alignment_flags_left); nk_labelf_colored(context, alignment_flags_right, nk_rgba_fv(&editor->selected_entity_color), "%.1f %.1f %.1f", abs_pos_selected.x, abs_pos_selected.y, abs_pos_selected.z);
+						nk_label(context, "New Position: ", alignment_flags_left);     nk_labelf_colored(context, alignment_flags_right, nk_rgba_fv(&editor->cursor_entity_color), "%.1f %.1f %.1f", abs_pos_cursor.x, abs_pos_cursor.y, abs_pos_cursor.z);
+						nk_tooltip_end(context);
+					}
+				}
+				break;
+				case EDITOR_TOOL_ROTATE:
+				{
+					if(editor->tool_rotate_rotation_started)
+					{
+						if(nk_tooltip_begin(context, tooltip_width))
+						{
+							nk_layout_row_dynamic(context, 20, 2);
+							nk_label(context, "Axis: ", alignment_flags_left);
+							switch(editor->current_axis)
+							{
+							case EDITOR_AXIS_X: nk_label_colored(context, "X", alignment_flags_right, nk_rgba_fv(&editor->axis_color_x)); break;
+							case EDITOR_AXIS_Y: nk_label_colored(context, "Y", alignment_flags_right, nk_rgba_fv(&editor->axis_color_y)); break;
+							case EDITOR_AXIS_Z: nk_label_colored(context, "Z", alignment_flags_right, nk_rgba_fv(&editor->axis_color_z)); break;
+							}
+							nk_label(context, "Current Rotation: ", alignment_flags_left); nk_labelf_colored(context, alignment_flags_right, nk_rgba_fv(&editor->selected_entity_color), "%.3f", editor->tool_rotate_starting_rotation);
+							nk_label(context, "New Rotation: ", alignment_flags_left);     nk_labelf_colored(context, alignment_flags_right, nk_rgba_fv(&editor->cursor_entity_color), "%.3f", editor->tool_rotate_total_rotation);
+							nk_tooltip_end(context);
+						}
+					}
+				}
+				break;
+				case EDITOR_TOOL_SCALE:
+				{
+					if(editor->tool_scale_started)
+					{
+						if(nk_tooltip_begin(context, tooltip_width))
+						{
+							nk_layout_row_dynamic(context, 20, 4);
+							nk_label(context, "Axis: ", alignment_flags_left);
+							bool x_enabled = editor->current_axis == EDITOR_AXIS_X || editor->current_axis == EDITOR_AXIS_XZ || editor->current_axis == EDITOR_AXIS_XY ? true : false;
+							bool y_enabled = editor->current_axis == EDITOR_AXIS_Y || editor->current_axis == EDITOR_AXIS_XY || editor->current_axis == EDITOR_AXIS_YZ ? true : false;
+							bool z_enabled = editor->current_axis == EDITOR_AXIS_Z || editor->current_axis == EDITOR_AXIS_XZ || editor->current_axis == EDITOR_AXIS_YZ ? true : false;
+							nk_label_colored(context, "X", alignment_flags_right, nk_rgba_f(editor->axis_color_x.x, editor->axis_color_x.y, editor->axis_color_x.z, x_enabled ? 1.f : 0.2f));
+							nk_label_colored(context, "Y", alignment_flags_right, nk_rgba_f(editor->axis_color_y.x, editor->axis_color_y.y, editor->axis_color_y.z, y_enabled ? 1.f : 0.2f));
+							nk_label_colored(context, "Z", alignment_flags_right, nk_rgba_f(editor->axis_color_z.x, editor->axis_color_z.y, editor->axis_color_z.z, z_enabled ? 1.f : 0.2f));
+
+							nk_layout_row_dynamic(context, 20, 2);
+							vec3 current_scale = { 1.f, 1.f, 1.f };
+							vec3 cursor_entity_scale = { 1.f, 1.f, 1.f };
+							vec3_assign(&current_scale, &editor->selected_entity->transform.scale);
+							vec3_assign(&cursor_entity_scale, &editor->cursor_entity->base.transform.scale);
+							nk_label(context, "Current Scale: ", alignment_flags_left); nk_labelf_colored(context, alignment_flags_right, nk_rgba_fv(&editor->selected_entity_color), "%.1f %.1f %.1f", current_scale.x, current_scale.y, current_scale.z);
+							nk_label(context, "New Scale: ", alignment_flags_left);     nk_labelf_colored(context, alignment_flags_right, nk_rgba_fv(&editor->cursor_entity_color), "%.1f %.1f %.1f", cursor_entity_scale.x, cursor_entity_scale.y, cursor_entity_scale.z);
+							nk_tooltip_end(context);
+						}
+					}
+				}
+				break;
+				}
+			}
+			context->style.window.background.a = previous_opacity;
+		}
 	}
 	nk_end(context);
 
@@ -507,20 +600,11 @@ void editor_update(struct Editor* editor, float dt)
 	{
 		nk_layout_row_begin(context, NK_DYNAMIC, editor->top_panel_height - 5, 8);
 
-		nk_layout_row_push(context, 0.12f);
-		switch(editor->current_tool)
-		{
-		case EDITOR_TOOL_NORMAL:
-		case EDITOR_TOOL_TRANSLATE:
-			nk_labelf(context, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, "Position at: %.1f  %.1f  %.1f", editor->cursor_entity->base.transform.position.x, editor->cursor_entity->base.transform.position.y, editor->cursor_entity->base.transform.position.z);
-			break;
-		case EDITOR_TOOL_ROTATE:
-			nk_labelf(context, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, "Rotation by: %.1f", editor->tool_rotate_total_rotation);
-			break;
-		case EDITOR_TOOL_SCALE:
-			nk_labelf(context, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, "Scale to: %.1f  %.1f  %.1f", editor->tool_scale_amount.x, editor->tool_scale_amount.y, editor->tool_scale_amount.z);
-			break;
-		}
+		nk_layout_row_push(context, 0.06f);
+		nk_label(context, "Selected: ", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+
+		nk_layout_row_push(context, 0.06f);
+		nk_label_colored(context, editor->selected_entity ? editor->selected_entity->name : "None", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, nk_rgba_fv(&editor->selected_entity_color));
 
 		nk_layout_row_push(context, 0.1f);
 		nk_checkbox_label(context, "Snap to grid ", &editor->tool_snap_enabled);
@@ -664,6 +748,7 @@ void editor_update(struct Editor* editor, float dt)
 
 		}
 	}
+
 }
 
 void editor_on_mousebutton_release(const struct Event* event)
@@ -1011,6 +1096,8 @@ void editor_on_mousemotion(const struct Event* event)
 		}
 		if(intersected_entity && intersected_entity != editor->hovered_entity)
 			editor->hovered_entity = intersected_entity;
+		else if(editor->hovered_entity)
+			editor->hovered_entity = NULL;
 	}
 	else
 	{

@@ -284,4 +284,5 @@ Done:
 	* Scale Mode
 	* Highlight if we are about to select an entity or perform the tool action like translate when mouse is hovered and an entity can be selected at that location
 	* Display the projected position if we perform the action for example display what the new location would be right next to the tool mesh
+	* Tooltips for current action or hovered entity
 

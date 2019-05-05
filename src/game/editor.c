@@ -512,7 +512,7 @@ void editor_update(struct Editor* editor, float dt)
 
 			if(editor->hovered_entity)
 			{
-				if(nk_tooltip_begin(context, 250.f))
+				if(nk_tooltip_begin(context, tooltip_width))
 				{
 					nk_layout_row_dynamic(context, 20, 2);
 					nk_label(context, "Hovered Entity: ", alignment_flags_left); nk_label_colored(context, editor->hovered_entity->name, alignment_flags_right, nk_rgba_fv(&editor->hovered_entity_color));
@@ -1208,17 +1208,33 @@ void editor_tool_reset(struct Editor* editor)
 	else
 		transform_reset(editor->cursor_entity);
 
-	editor->tool_rotate_amount = 0.f;
-	editor->tool_rotate_total_rotation = 0.f;
-	editor->tool_rotate_allowed = false;
-	editor->tool_rotate_rotation_started = false;
-	vec3_fill(&editor->tool_scale_amount, 1.f, 1.f, 1.f);
-	editor->tool_scale_started = false;
-	editor->picking_enabled = true;
-	if(editor->current_tool == EDITOR_TOOL_TRANSLATE && editor->current_axis != EDITOR_AXIS_XZ)
-		editor_axis_set(editor, EDITOR_AXIS_XZ);
-	else
+	switch(editor->current_tool)
+	{
+	case EDITOR_TOOL_NORMAL:
+		editor->draw_cursor_entity = false;
+		break;
+	case EDITOR_TOOL_TRANSLATE:
+		if(editor->current_axis != EDITOR_AXIS_XZ)
+			editor_axis_set(editor, EDITOR_AXIS_XZ);
+		editor->draw_cursor_entity = true;
+		break;
+	case EDITOR_TOOL_ROTATE:
+		editor->tool_rotate_amount = 0.f;
+		editor->tool_rotate_total_rotation = 0.f;
+		editor->tool_rotate_allowed = false;
+		editor->tool_rotate_rotation_started = false;
+		editor->draw_cursor_entity = false;
 		editor_axis_set(editor, EDITOR_AXIS_NONE);
+		break;
+	case EDITOR_TOOL_SCALE:
+		vec3_fill(&editor->tool_scale_amount, 1.f, 1.f, 1.f);
+		editor->tool_scale_started = false;
+		editor->draw_cursor_entity = false;
+		editor_axis_set(editor, EDITOR_AXIS_NONE);
+		break;
+	}
+
+	editor->picking_enabled = true;
 }
 
 void editor_on_key_press(const struct Event* event)

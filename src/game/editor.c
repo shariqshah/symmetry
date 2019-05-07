@@ -1139,7 +1139,14 @@ void editor_on_key_release(const struct Event* event)
 		if(event->key.key == KEY_X && input_is_key_pressed(KEY_LSHIFT)) editor_axis_set(editor, EDITOR_AXIS_YZ);
 		if(event->key.key == KEY_Y && input_is_key_pressed(KEY_LSHIFT)) editor_axis_set(editor, EDITOR_AXIS_XZ);
 		if(event->key.key == KEY_Z && input_is_key_pressed(KEY_LSHIFT)) editor_axis_set(editor, EDITOR_AXIS_XY);
-		//if(selected_axis != editor->current_axis) editor_axis_set(editor, selected_axis);
+		if(event->key.key == KEY_ALT && editor->current_tool == EDITOR_TOOL_TRANSLATE && editor->current_axis == EDITOR_AXIS_Y)
+		{
+			if(editor->previous_axis != EDITOR_AXIS_Y)
+				editor_axis_set(editor, editor->previous_axis);
+			else
+				editor_axis_set(editor, EDITOR_AXIS_NONE);
+			editor->previous_axis = EDITOR_AXIS_NONE;
+		}
 		
 		/* Grid Scale select */
 		if(event->key.key == KEY_1) editor->grid_scale = 1.f;

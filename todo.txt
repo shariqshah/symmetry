@@ -286,4 +286,6 @@ Done:
 	* Tooltips for current action or hovered entity
 	* Fix broken spot light degree/radian conversions
 	* Fix rotation arc starting and ending degree calculations
+	* Fix releasing ALT in translate tool not reverting back to previous
+	  axis
 

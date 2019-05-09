@@ -72,7 +72,8 @@ void  vec2_add(vec2* res, vec2* v1, vec2* v2);
 void  vec2_sub(vec2* res, vec2* v1, vec2* v2);
 void  vec2_assign(vec2* res, const vec2* val);
 void  vec2_mul(vec2* res, vec2* v1, vec2* v2);
-float vec2_len(vec2* val);void vec2_norm(vec2* res, vec2* val);
+float vec2_len(vec2* val);
+void  vec2_norm(vec2* res, vec2* val);
 
 /* vec3 */
 void  vec3_fill(vec3* res, float x, float y, float z);

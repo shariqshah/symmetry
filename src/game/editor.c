@@ -29,6 +29,7 @@
 #include "im_render.h"
 #include "geometry.h"
 #include "gui.h"
+#include "console.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -739,7 +740,6 @@ void editor_update(struct Editor* editor, float dt)
 				if(editor->tool_rotate_total_rotation != 0.f)
 				{
 					arc_color.w = 0.5f;
-					log_message("Starting: %f", editor->tool_rotate_starting_rotation);
 					im_arc(editor->tool_rotate_arc_radius / 2.f, editor->tool_rotate_starting_rotation, editor->tool_rotate_total_rotation, editor->tool_rotate_arc_segments, true, position, rotation, arc_color, 4);
 				}
 			}
@@ -757,7 +757,7 @@ void editor_on_mousebutton_release(const struct Event* event)
 	struct Editor*     editor     = game_state->editor;
 	struct Gui*        gui        = game_state->gui;
 
-	if(game_state->game_mode != GAME_MODE_EDITOR)
+	if(game_state->game_mode != GAME_MODE_EDITOR || nk_window_is_any_hovered(&gui->context) || game_state->console->visible)
 		return;
 
 	if(editor->camera_looking_around)
@@ -859,7 +859,7 @@ void editor_on_mousebutton_press(const struct Event* event)
 	struct Game_State* game_state = game_state_get();
 	struct Editor*     editor     = game_state->editor;
 	struct Gui*        gui        = game_state->gui;
-	if(game_state->game_mode != GAME_MODE_EDITOR && nk_window_is_any_hovered(&gui->context) == 0)
+	if(game_state->game_mode != GAME_MODE_EDITOR || nk_window_is_any_hovered(&gui->context) || game_state->console->visible)
 		return;
 
 	if(event->mousebutton.button == MSB_LEFT && editor->selected_entity)
@@ -917,7 +917,8 @@ void editor_on_mousemotion(const struct Event* event)
 	struct Game_State* game_state = game_state_get();
 	struct Editor*     editor     = game_state->editor;
 	struct Gui*        gui        = game_state->gui;
-	if(nk_window_is_any_hovered(&gui->context)) return;
+	if(game_state->game_mode != GAME_MODE_EDITOR || nk_window_is_any_hovered(&gui->context) || game_state->console->visible)
+		return;
 
 	switch(editor->current_tool)
 	{
@@ -1108,62 +1109,61 @@ void editor_on_mousemotion(const struct Event* event)
 
 void editor_on_key_release(const struct Event* event)
 {
-	struct Editor* editor = game_state_get()->editor;
-	struct Gui*    gui    = game_state_get()->gui;
+	struct Game_State* game_state = game_state_get();
+	struct Editor*     editor     = game_state->editor;
+	struct Gui*        gui        = game_state->gui;
+	if(game_state->game_mode != GAME_MODE_EDITOR || nk_window_is_any_hovered(&gui->context) || game_state->console->visible)
+		return;
 
-	if(!nk_window_is_any_hovered(&gui->context))
+	/* Tool Cycle */
+	if(event->key.key == KEY_TAB)
 	{
-		/* Tool Cycle */
-		if(event->key.key == KEY_TAB)
-		{
-			int tool = editor->current_tool;
-			if(++tool == EDITOR_TOOL_MAX)
-				tool = EDITOR_TOOL_NORMAL;
-			editor_tool_set(editor, tool);
-		}
-
-		/* Tool Select */
-		if(!editor->camera_looking_around)
-		{
-			if(event->key.key == KEY_Q) editor_tool_set(editor, EDITOR_TOOL_NORMAL);
-			if(event->key.key == KEY_W) editor_tool_set(editor, EDITOR_TOOL_TRANSLATE);
-			if(event->key.key == KEY_E) editor_tool_set(editor, EDITOR_TOOL_ROTATE);
-			if(event->key.key == KEY_R) editor_tool_set(editor, EDITOR_TOOL_SCALE);
-		}
-
-		/* Axis select */
-		int selected_axis = editor->current_axis;
-		if(event->key.key == KEY_X) editor_axis_set(editor, EDITOR_AXIS_X);
-		if(event->key.key == KEY_Y) editor_axis_set(editor, EDITOR_AXIS_Y);
-		if(event->key.key == KEY_Z) editor_axis_set(editor, EDITOR_AXIS_Z);
-		if(event->key.key == KEY_X && input_is_key_pressed(KEY_LSHIFT)) editor_axis_set(editor, EDITOR_AXIS_YZ);
-		if(event->key.key == KEY_Y && input_is_key_pressed(KEY_LSHIFT)) editor_axis_set(editor, EDITOR_AXIS_XZ);
-		if(event->key.key == KEY_Z && input_is_key_pressed(KEY_LSHIFT)) editor_axis_set(editor, EDITOR_AXIS_XY);
-		if(event->key.key == KEY_ALT && editor->current_tool == EDITOR_TOOL_TRANSLATE && editor->current_axis == EDITOR_AXIS_Y)
-		{
-			if(editor->previous_axis != EDITOR_AXIS_Y)
-				editor_axis_set(editor, editor->previous_axis);
-			else
-				editor_axis_set(editor, EDITOR_AXIS_NONE);
-			editor->previous_axis = EDITOR_AXIS_NONE;
-		}
-		
-		/* Grid Scale select */
-		if(event->key.key == KEY_1) editor->grid_scale = 1.f;
-		if(event->key.key == KEY_2) editor->grid_scale = 2.f;
-		if(event->key.key == KEY_3) editor->grid_scale = 3.f;
-		if(event->key.key == KEY_4) editor->grid_scale = 4.f;
-		if(event->key.key == KEY_5) editor->grid_scale = 5.f;
-		if(event->key.key == KEY_6) editor->grid_scale = 6.f;
-		if(event->key.key == KEY_7) editor->grid_scale = 7.f;
-		if(event->key.key == KEY_8) editor->grid_scale = 8.f;
-		if(event->key.key == KEY_9) editor->grid_scale = 9.f;
-		if(event->key.key == KEY_0) editor->grid_scale = 0.5f;
-
-		if(event->key.key == KEY_G) editor->grid_enabled = !editor->grid_enabled;
-		if(event->key.key == KEY_ESCAPE) editor_entity_select(editor, NULL);
+		int tool = editor->current_tool;
+		if(++tool == EDITOR_TOOL_MAX)
+			tool = EDITOR_TOOL_NORMAL;
+		editor_tool_set(editor, tool);
 	}
 
+	/* Tool Select */
+	if(!editor->camera_looking_around)
+	{
+		if(event->key.key == KEY_Q) editor_tool_set(editor, EDITOR_TOOL_NORMAL);
+		if(event->key.key == KEY_W) editor_tool_set(editor, EDITOR_TOOL_TRANSLATE);
+		if(event->key.key == KEY_E) editor_tool_set(editor, EDITOR_TOOL_ROTATE);
+		if(event->key.key == KEY_R) editor_tool_set(editor, EDITOR_TOOL_SCALE);
+	}
+
+	/* Axis select */
+	int selected_axis = editor->current_axis;
+	if(event->key.key == KEY_X) editor_axis_set(editor, EDITOR_AXIS_X);
+	if(event->key.key == KEY_Y) editor_axis_set(editor, EDITOR_AXIS_Y);
+	if(event->key.key == KEY_Z) editor_axis_set(editor, EDITOR_AXIS_Z);
+	if(event->key.key == KEY_X && input_is_key_pressed(KEY_LSHIFT)) editor_axis_set(editor, EDITOR_AXIS_YZ);
+	if(event->key.key == KEY_Y && input_is_key_pressed(KEY_LSHIFT)) editor_axis_set(editor, EDITOR_AXIS_XZ);
+	if(event->key.key == KEY_Z && input_is_key_pressed(KEY_LSHIFT)) editor_axis_set(editor, EDITOR_AXIS_XY);
+	if(event->key.key == KEY_ALT && editor->current_tool == EDITOR_TOOL_TRANSLATE && editor->current_axis == EDITOR_AXIS_Y)
+	{
+		if(editor->previous_axis != EDITOR_AXIS_Y)
+			editor_axis_set(editor, editor->previous_axis);
+		else
+			editor_axis_set(editor, EDITOR_AXIS_NONE);
+		editor->previous_axis = EDITOR_AXIS_NONE;
+	}
+
+	/* Grid Scale select */
+	if(event->key.key == KEY_1) editor->grid_scale = 1.f;
+	if(event->key.key == KEY_2) editor->grid_scale = 2.f;
+	if(event->key.key == KEY_3) editor->grid_scale = 3.f;
+	if(event->key.key == KEY_4) editor->grid_scale = 4.f;
+	if(event->key.key == KEY_5) editor->grid_scale = 5.f;
+	if(event->key.key == KEY_6) editor->grid_scale = 6.f;
+	if(event->key.key == KEY_7) editor->grid_scale = 7.f;
+	if(event->key.key == KEY_8) editor->grid_scale = 8.f;
+	if(event->key.key == KEY_9) editor->grid_scale = 9.f;
+	if(event->key.key == KEY_0) editor->grid_scale = 0.5f;
+
+	if(event->key.key == KEY_G) editor->grid_enabled = !editor->grid_enabled;
+	if(event->key.key == KEY_ESCAPE) editor_entity_select(editor, NULL);
 }
 
 void editor_tool_set(struct Editor* editor, int tool)
@@ -1246,7 +1246,12 @@ void editor_tool_reset(struct Editor* editor)
 
 void editor_on_key_press(const struct Event* event)
 {
-	struct Editor* editor = game_state_get()->editor;
+	struct Game_State* game_state = game_state_get();
+	struct Editor*     editor     = game_state->editor;
+	struct Gui*        gui        = game_state->gui;
+	if(game_state->game_mode != GAME_MODE_EDITOR || nk_window_is_any_hovered(&gui->context) || game_state->console->visible)
+		return;
+
 	if(!nk_window_is_any_hovered(&game_state_get()->gui->context))
 	{
 		if(event->key.key == KEY_ALT && editor->current_tool == EDITOR_TOOL_TRANSLATE && editor->current_axis != EDITOR_AXIS_Y) editor_axis_set(editor, EDITOR_AXIS_Y);
@@ -1307,6 +1312,11 @@ void editor_axis_set(struct Editor* editor, int axis)
 
 void editor_camera_update(struct Editor* editor, float dt)
 {
+	struct Game_State* game_state = game_state_get();
+	struct Gui*        gui        = game_state->gui;
+	if(nk_window_is_any_hovered(&gui->context) || game_state->console->visible)
+		return;
+
     struct Camera* editor_camera = &game_state_get()->scene->cameras[CAM_EDITOR];
     static float total_up_down_rot = 0.f;
     float move_speed = editor->camera_move_speed, turn_speed = editor->camera_turn_speed;

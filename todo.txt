@@ -1,4 +1,16 @@
 Todo:
+	- Entity to file read/write
+	- Console command to read/write entity to file and add it to scene
+	- Editor functionality to add entity from specific file to scene
+	- Scene read/write to file with scene file only containing names of
+	  entity archetypes
+	- Console command to read/write scene to/from file
+	- Editor functionality to read/write scene to/from file
+	? Entity creator window to create new types of entities and write them
+	  to disk
+	- Entity browser window which lists all existing entity types from
+	  where new entities can be creating by dragging and dropping on to
+	  the current scene
 	- Better, more accurate picking
 	- Editor related messages/notifications in the bottom status bar
 	? Disable entity picking when tool is in use or only allow picking when pressing ALT
@@ -31,7 +43,6 @@ Todo:
 	- Quick scene filter and entity selection by popping up a menu which has list of entities and fuzzy matches them based on the typed name
 	- Screen mouse coordinates to world-coordinates for aiming
 	- Player projectiles and sounds
-	- Console commands
 	- Console command history
 	- Console command help
 	- Debug drawing/variable display that also works in game mode. Can be toggled with a console command. Can show variable values or plots their graphs or debug textures etc
@@ -288,4 +299,5 @@ Done:
 	* Fix rotation arc starting and ending degree calculations
 	* Fix releasing ALT in translate tool not reverting back to previous
 	  axis
+	* Disabled editor functionalites when console is toggled
 

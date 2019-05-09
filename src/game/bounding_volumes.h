@@ -4,7 +4,7 @@
 #include "../common/linmath.h"
 #include "../common/num_types.h"
 
-#define MAX_RAYCAST_ENTITIES_INTERSECT 256
+#define MAX_RAYCAST_ENTITIES_INTERSECT 32
 
 struct Bounding_Box
 {

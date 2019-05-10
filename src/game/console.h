@@ -1,13 +1,19 @@
 #ifndef CONSOLE_H
 #define CONSOLE_H
 
+#include "../common/hashmap.h"
+
 #include <stdbool.h>
 #include <stdarg.h>
 
 #define MAX_CONSOLE_MESSAGE_LEN 256
 #define MAX_CONSOLE_MESSAGES 1024
+#define MAX_CONSOLE_COMMAND_LEN 32
 
 struct Gui;
+struct Console; 
+
+typedef void(*Console_Command_Handler)(struct Console* console, const char* command_text);
 
 enum Console_Message_Type
 {
@@ -34,6 +40,7 @@ struct Console
 	int                    current_message_index;
 	char                   console_command_text[MAX_CONSOLE_MESSAGE_LEN];
 	struct Console_Message console_messages[MAX_CONSOLE_MESSAGES];
+	struct Hashmap*        console_commands;
 };
 
 void console_init(struct Console* console);

@@ -3,6 +3,9 @@
 #include "game.h"
 #include "../common/log.h"
 #include "../system/platform.h"
+#include "scene.h"
+#include "entity.h"
+#include "../system/file_io.h"
 
 #include <assert.h>
 #include <string.h>
@@ -11,6 +14,8 @@
 static struct nk_color console_message_color[CMT_MAX];
 
 static int console_filter(const struct nk_text_edit *box, nk_rune unicode);
+
+static void console_command_entity_save(struct Console* console, const char* command);
 
 void console_init(struct Console* console)
 {
@@ -34,6 +39,9 @@ void console_init(struct Console* console)
 		memset(console->console_messages[i].message, '\0', MAX_CONSOLE_MESSAGE_LEN);
 		console->console_messages[i].type = CMT_NONE;
 	}
+
+	console->console_commands = hashmap_new();
+	hashmap_ptr_set(console->console_commands, "entity_save", &console_command_entity_save);
 }
 
 void console_toggle(struct Console* console)
@@ -84,8 +92,24 @@ void console_update(struct Console* console, struct Gui* gui_state, float dt)
 			
 			snprintf(console->console_messages[console->current_message_index].message, MAX_CONSOLE_MESSAGE_LEN, "> %s", console->console_command_text);
 			console->console_messages[console->current_message_index].type = CMT_COMMAND;
-			memset(console->console_command_text, '\0', MAX_CONSOLE_MESSAGE_LEN);
 			console->scroll_to_bottom = true;
+
+			/* Check if a valid command is entered and call the related function or print an error message */
+			static char command_text[MAX_CONSOLE_MESSAGE_LEN];
+			static char command_params[MAX_CONSOLE_MESSAGE_LEN];
+			memset(command_text, '\0', MAX_CONSOLE_MESSAGE_LEN);
+			memset(command_params, '\0', MAX_CONSOLE_MESSAGE_LEN);
+			sscanf(console->console_command_text, "%s %[^\n]", command_text, command_params);
+			if(hashmap_value_exists(console->console_commands, command_text))
+			{
+				Console_Command_Handler command_handler = hashmap_ptr_get(console->console_commands, command_text);
+				command_handler(console, command_params);
+			}
+			else
+			{
+				log_warning("Invalid command '%s'", command_text);
+			}
+			memset(console->console_command_text, '\0', MAX_CONSOLE_MESSAGE_LEN);
 		}
     }
     nk_end(context);
@@ -132,3 +156,31 @@ void console_on_log_error(struct Console* console, const char* context, const ch
 	console->console_messages[console->current_message_index].type = CMT_ERROR;
 	console->scroll_to_bottom = true;
 }
+
+void console_command_entity_save(struct Console* console, const char* command)
+{
+	char filename[64];
+	char entity_name[MAX_ENTITY_NAME_LEN];
+	memset(filename, '\0', 64);
+	memset(entity_name, '\0', MAX_ENTITY_NAME_LEN);
+
+	int params_read = sscanf(command, "%s %s", entity_name, filename);
+	if(params_read != 2)
+	{
+		log_warning("Invalid parameters for command");
+		log_warning("Usage: entity_name [entity name] [file name]");
+		return;
+	}
+
+	struct Entity* entity = scene_find(game_state_get()->scene, entity_name);
+	if(!entity)
+	{
+		log_error("entity_save", "No entity named '%s' in current scene", entity_name);
+		return;
+	}
+
+	if(!entity_save(entity, filename, DIRT_INSTALL))
+		log_error("entity_save", "Command failed");
+	
+}
+

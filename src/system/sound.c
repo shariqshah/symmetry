@@ -63,6 +63,11 @@ void sound_listener_update(struct Sound* sound)
 								   up.x,  up.y,  up.z); // Up
 }
 
+void sound_listener_set(struct Sound* sound, struct Entity* listener)
+{
+	sound->listener = listener;
+}
+
 void sound_master_volume_set(struct Sound* sound, float volume)
 {
 	if(volume < 0.f) volume = 0.f;

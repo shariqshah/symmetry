@@ -15,6 +15,8 @@
 #include "../common/hashmap.h"
 #include "../system/file_io.h"
 #include "../system/physics.h"
+#include "scene.h"
+#include "game.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -221,233 +223,172 @@ bool entity_save(struct Entity* entity, const char* filename, int directory_type
 
 struct Entity* entity_read(struct Parser_Object* object)
 {
-	return NULL;
-	//assert(object);
+	assert(object);
 
-	//if(object->type != PO_ENTITY)
-	//{
-	//	log_error("entity:read", "Invalid object type");
-	//	return NULL;
-	//}
+	struct Scene* scene = game_state_get()->scene;
+	if(object->type != PO_ENTITY)
+	{
+		log_error("entity:read", "Invalid object type");
+		return NULL;
+	}
 
-	//const char* name = hashmap_str_get(object->data, "name");
-	//const char* parent_name = hashmap_str_get(object->data, "parent");
-	//int type = hashmap_int_get(object->data, "type");
+	const char* name = hashmap_str_get(object->data, "name");
+	int type = hashmap_int_get(object->data, "type");
 
-	//if(!name)
-	//{
-	//	log_error("entity:read", "No entity name provided");
-	//	return NULL;
-	//}
+	if(!name)
+	{
+		log_error("entity:read", "No entity name provided");
+		return NULL;
+	}
 
-	//if(!parent_name)
-	//{
-	//	log_error("entity:read", "No parent name provided");
-	//	return NULL;
-	//}
+	if(type < 0 || type >= ET_MAX)
+	{
+		log_error("entity:read", "Invalid entity type");
+		return NULL;
+	}
 
-	//if(type < 0 || type >= ET_MAX)
-	//{
-	//	log_error("entity:read", "Invalid entity type");
-	//	return NULL;
-	//}
+	struct Entity* new_entity = NULL;
+	switch(type)
+	{
+	case ET_CAMERA:
+	{
+		bool has_fbo = false;
+		bool fbo_has_depth_tex = false;
+		bool fbo_has_render_tex = false;
+		int fbo_width = -1;
+		int fbo_height = -1;
+		struct Camera* camera = scene_camera_create(scene, name, NULL, 320, 240);
+		if(hashmap_value_exists(object->data, "fov"))                camera->fov = hashmap_float_get(object->data, "fov");
+		if(hashmap_value_exists(object->data, "resizeable"))         camera->resizeable = hashmap_bool_get(object->data, "resizeable");
+		if(hashmap_value_exists(object->data, "zoom"))               camera->zoom = hashmap_float_get(object->data, "zoom");
+		if(hashmap_value_exists(object->data, "nearz"))              camera->nearz = hashmap_float_get(object->data, "nearz");
+		if(hashmap_value_exists(object->data, "farz"))               camera->farz = hashmap_float_get(object->data, "farz");
+		if(hashmap_value_exists(object->data, "ortho"))              camera->ortho = hashmap_bool_get(object->data, "ortho");
+		if(hashmap_value_exists(object->data, "has_fbo"))            has_fbo = hashmap_bool_get(object->data, "has_fbo");
+		if(hashmap_value_exists(object->data, "fbo_has_depth_tex"))  fbo_has_depth_tex = hashmap_bool_get(object->data, "fbo_has_depth_tex");
+		if(hashmap_value_exists(object->data, "fbo_has_render_tex")) fbo_has_render_tex = hashmap_bool_get(object->data, "fbo_has_render_tex");
+		if(hashmap_value_exists(object->data, "fbo_width"))          fbo_width = hashmap_int_get(object->data, "fbo_width");
+		if(hashmap_value_exists(object->data, "fbo_height"))         fbo_height = hashmap_int_get(object->data, "fbo_height");
+		if(hashmap_value_exists(object->data, "clear_color"))
+		{
+			vec4 color = hashmap_vec4_get(object->data, "clear_color");
+			vec4_assign(&camera->clear_color, &color);
+		}
 
-	//struct Entity* parent = entity_find(parent_name);
-	//struct Entity* entity = entity_create(name, type, parent ? parent->id : -1);
-	//if(!entity)
-	//{
-	//	log_error("entity:read", "Failed to create new entity");
-	//	return NULL;
-	//}
+		float aspect_ratio = (float)fbo_width / (float)fbo_height;
+		camera->aspect_ratio = aspect_ratio <= 0.f ? (4.f / 3.f) : aspect_ratio;
 
-	//// Common entity properties
-	//if(hashmap_value_exists(object->data, "is_listener"))
-	//	entity->is_listener = hashmap_bool_get(object->data, "is_listener");
-	//else
-	//	entity->is_listener = false;
+		camera->fbo = -1;
+		camera->render_tex = -1;
+		camera->depth_tex = -1;
 
-	//if(hashmap_value_exists(object->data, "renderable"))
-	//	entity->renderable= hashmap_bool_get(object->data, "renderable");
-	//else
-	//	entity->renderable= false;
+		if(has_fbo)
+		{
+			camera_attach_fbo(camera, fbo_width, fbo_height, fbo_has_depth_tex,	fbo_has_render_tex, camera->resizeable);
+		}
 
-	//// Transform properties
-	//if(hashmap_value_exists(object->data, "position"))
-	//{
-	//	vec3 position = hashmap_vec3_get(object->data, "position");
-	//	transform_translate(entity, &position, TS_PARENT);
-	//}
+		camera_update_proj(camera);
+		camera_update_view(camera);
+		new_entity = &camera->base;
+	}
+	break;
+	case ET_LIGHT:
+	{
+		struct Light* light = scene_light_create(scene, name, NULL, LT_POINT);
+		if(hashmap_value_exists(object->data, "light_type"))  light->type = hashmap_int_get(object->data, "type");
+		if(hashmap_value_exists(object->data, "outer_angle")) light->outer_angle = hashmap_float_get(object->data, "outer_angle");
+		if(hashmap_value_exists(object->data, "inner_angle")) light->inner_angle = hashmap_float_get(object->data, "inner_angle");
+		if(hashmap_value_exists(object->data, "falloff"))     light->falloff = hashmap_float_get(object->data, "falloff");
+		if(hashmap_value_exists(object->data, "intensity"))   light->intensity = hashmap_float_get(object->data, "intensity");
+		if(hashmap_value_exists(object->data, "depth_bias"))  light->depth_bias = hashmap_float_get(object->data, "depth_bias");
+		if(hashmap_value_exists(object->data, "color"))       light->color = hashmap_vec3_get(object->data, "color");
+		if(hashmap_value_exists(object->data, "cast_shadow")) light->cast_shadow = hashmap_bool_get(object->data, "cast_shadow");
+		if(hashmap_value_exists(object->data, "pcf_enabled")) light->pcf_enabled = hashmap_bool_get(object->data, "pcf_enabled");
+		if(hashmap_value_exists(object->data, "radius"))      light->radius = hashmap_int_get(object->data, "radius");
+		new_entity = &light->base;
+	}
+	break;
+	case ET_SOUND_SOURCE:
+	{
+		struct Sound_Source* sound_source = scene_sound_source_create(scene, name, NULL, "default.wav", ST_WAV, true, true);
+		sound_source->type                = ST_WAV;
+		sound_source->playing             = false;
+		sound_source->loop                = false;
+		sound_source->source_instance     = 0;
+		sound_source->min_distance        = 1.f;
+		sound_source->max_distance        = 1000.f;
+		sound_source->volume              = 1.f;
+		sound_source->rolloff_factor      = 1.f;
+		sound_source->attenuation_type    = SA_EXPONENTIAL;
+		sound_source->source_buffer       = NULL;
 
-	//if(hashmap_value_exists(object->data, "rotation"))
-	//{
-	//	quat rotation = hashmap_quat_get(object->data, "rotation");
-	//	quat_assign(&entity->transform.rotation, &rotation);
-	//}
+		if(hashmap_value_exists(object->data, "playing"))                sound_source->playing          = hashmap_bool_get(object->data, "playing");
+		if(hashmap_value_exists(object->data, "loop"))                   sound_source->loop             = hashmap_bool_get(object->data, "loop");
+		if(hashmap_value_exists(object->data, "sound_min_distance"))     sound_source->min_distance     = hashmap_float_get(object->data, "sound_min_distance");
+		if(hashmap_value_exists(object->data, "sound_max_distance"))     sound_source->max_distance     = hashmap_float_get(object->data, "sound_max_distance");
+		if(hashmap_value_exists(object->data, "volume"))                 sound_source->volume           = hashmap_float_get(object->data, "volume");
+		if(hashmap_value_exists(object->data, "rolloff_factor"))         sound_source->rolloff_factor   = hashmap_float_get(object->data, "rolloff_factor");
+		if(hashmap_value_exists(object->data, "sound_type"))             sound_source->type             = hashmap_int_get(object->data, "sound_type");
+		if(hashmap_value_exists(object->data, "sound_attenuation_type")) sound_source->attenuation_type = hashmap_int_get(object->data, "sound_attenuation_type");
+		if(hashmap_value_exists(object->data, "source_filename"))
+		{
+			struct Sound* sound = game_state_get()->sound;
+			sound_source->source_buffer = sound_source_create(sound, hashmap_str_get(object->data, "source_filename"), sound_source->type);
+			if(sound_source->source_buffer)
+			{
+				sound_source->source_instance = sound_source_instance_create(sound, sound_source->source_buffer, true);
 
-	//if(hashmap_value_exists(object->data, "scale"))
-	//{
-	//	vec3 scale = hashmap_vec3_get(object->data, "scale");
-	//	transform_scale(entity, &scale);
-	//}
+				vec3 abs_pos = {0.f, 0.f,  0.f};
+				transform_get_absolute_position(sound_source, &abs_pos);
+				sound_source_instance_update_position(sound, sound_source->source_instance, abs_pos);
 
-	//switch(entity->type)
-	//{
-	//case ET_CAMERA:
-	//{
-	//	bool has_fbo = false;
-	//	bool fbo_has_depth_tex = false;
-	//	bool fbo_has_render_tex = false;
-	//	int fbo_width = -1;
-	//	int fbo_height = -1;
+				sound_source_instance_loop_set(sound, sound_source->source_instance, sound_source->loop);
+				sound_source_instance_min_max_distance_set(sound, sound_source->source_instance, sound_source->min_distance, sound_source->max_distance);
+				sound_source_instance_attenuation_set(sound, sound_source->source_instance, sound_source->attenuation_type, sound_source->rolloff_factor);
+				sound_source_instance_volume_set(sound, sound_source->source_instance, sound_source->volume);
 
-	//	if(hashmap_value_exists(object->data, "fov"))                entity->camera.fov = hashmap_float_get(object->data, "fov");
-	//	if(hashmap_value_exists(object->data, "resizeable"))         entity->camera.resizeable = hashmap_bool_get(object->data, "resizeable");
-	//	if(hashmap_value_exists(object->data, "zoom"))               entity->camera.zoom = hashmap_float_get(object->data, "zoom");
-	//	if(hashmap_value_exists(object->data, "nearz"))              entity->camera.nearz = hashmap_float_get(object->data, "nearz");
-	//	if(hashmap_value_exists(object->data, "farz"))               entity->camera.farz = hashmap_float_get(object->data, "farz");
-	//	if(hashmap_value_exists(object->data, "ortho"))              entity->camera.ortho = hashmap_bool_get(object->data, "ortho");
-	//	if(hashmap_value_exists(object->data, "has_fbo"))            has_fbo = hashmap_bool_get(object->data, "has_fbo");
-	//	if(hashmap_value_exists(object->data, "fbo_has_depth_tex"))  fbo_has_depth_tex = hashmap_bool_get(object->data, "fbo_has_depth_tex");
-	//	if(hashmap_value_exists(object->data, "fbo_has_render_tex")) fbo_has_render_tex = hashmap_bool_get(object->data, "fbo_has_render_tex");
-	//	if(hashmap_value_exists(object->data, "fbo_width"))          fbo_width = hashmap_int_get(object->data, "fbo_width");
-	//	if(hashmap_value_exists(object->data, "fbo_height"))         fbo_height = hashmap_int_get(object->data, "fbo_height");
-	//	if(hashmap_value_exists(object->data, "clear_color"))
-	//	{
-	//		vec4 color = hashmap_vec4_get(object->data, "clear_color");
-	//		vec4_assign(&entity->camera.clear_color, &color);
-	//	}
+				sound_update_3d(sound);
+				if(sound_source->playing)
+					sound_source_instance_play(sound, sound_source->source_instance);
+			}
+			else
+			{
+				log_error("Failed to create sound source from '%s'", hashmap_str_get(object->data, "source_filename"));
+			}
+		}
+		else
+		{
+			log_error("entity:read", "No filename provided for sound source for entity '%s'", name);
+		}
+		new_entity = &sound_source->base;
+	}
+	break;
+	case ET_PLAYER:
+	{
 
-	//	float aspect_ratio = (float)fbo_width / (float)fbo_height;
-	//	entity->camera.aspect_ratio = aspect_ratio <= 0.f ? (4.f / 3.f) : aspect_ratio;
+	}
+	break;
+	case ET_STATIC_MESH:
+	{
+		const char* geometry_name = NULL;
+		int material_type = MAT_UNSHADED;
+		if(hashmap_value_exists(object->data, "geometry")) geometry_name = hashmap_str_get(object->data, "geometry");
+		if(hashmap_value_exists(object->data, "material_type")) material_type = hashmap_int_get(object->data, "material_type");
+		struct Static_Mesh* mesh = scene_static_mesh_create(scene, name, NULL, geometry_name, material_type);
+		new_entity = &mesh->base;
+	}
+	break;
+	case ET_ROOT:
+	{
+		//scene_root_set(entity);
+	}
+	break;
+	default:
+		log_warning("Unhandled Entity type '%d' detected", type);
+		break;
+	}
 
-	//	entity->camera.fbo = -1;
-	//	entity->camera.render_tex = -1;
-	//	entity->camera.depth_tex = -1;
-
-	//	if(has_fbo)
-	//	{
-	//		camera_attach_fbo(entity, fbo_width, fbo_height, fbo_has_depth_tex,	fbo_has_render_tex, entity->camera.resizeable);
-	//	}
-
-	//	camera_update_proj(entity);
-	//	camera_update_view(entity);
-
-	//}
-	//break;
-	//case ET_LIGHT:
-	//{
-	//	if(hashmap_value_exists(object->data, "light_type"))  entity->light.type = hashmap_int_get(object->data, "type");
-	//	if(hashmap_value_exists(object->data, "outer_angle")) entity->light.outer_angle = hashmap_float_get(object->data, "outer_angle");
-	//	if(hashmap_value_exists(object->data, "inner_angle")) entity->light.inner_angle = hashmap_float_get(object->data, "inner_angle");
-	//	if(hashmap_value_exists(object->data, "falloff"))     entity->light.falloff = hashmap_float_get(object->data, "falloff");
-	//	if(hashmap_value_exists(object->data, "intensity"))   entity->light.intensity = hashmap_float_get(object->data, "intensity");
-	//	if(hashmap_value_exists(object->data, "depth_bias"))  entity->light.depth_bias = hashmap_float_get(object->data, "depth_bias");
-	//	if(hashmap_value_exists(object->data, "color"))       entity->light.color = hashmap_vec3_get(object->data, "color");
-	//	if(hashmap_value_exists(object->data, "cast_shadow")) entity->light.cast_shadow = hashmap_bool_get(object->data, "cast_shadow");
-	//	if(hashmap_value_exists(object->data, "pcf_enabled")) entity->light.pcf_enabled = hashmap_bool_get(object->data, "pcf_enabled");
-	//	if(hashmap_value_exists(object->data, "radius"))      entity->light.radius = hashmap_int_get(object->data, "radius");
-	//	light_add(entity);
-	//}
-	//break;
-	//case ET_SOUND_SOURCE:
-	//{
-	//	struct Sound_Source* sound_source = &entity->sound_source;
-	//	sound_source->type                = ST_WAV;
-	//	sound_source->playing             = false;
-	//	sound_source->loop                = false;
-	//	sound_source->source_instance     = 0;
-	//	sound_source->min_distance        = 1.f;
-	//	sound_source->max_distance        = 1000.f;
-	//	sound_source->volume              = 1.f;
-	//	sound_source->rolloff_factor      = 1.f;
-	//	sound_source->attenuation_type    = SA_EXPONENTIAL;
-	//	sound_source->source_buffer              = NULL;
-	//	sound_source->source_filename     = NULL;
-
-	//	if(hashmap_value_exists(object->data, "playing"))                sound_source->playing          = hashmap_bool_get(object->data, "playing");
-	//	if(hashmap_value_exists(object->data, "loop"))                   sound_source->loop             = hashmap_bool_get(object->data, "loop");
-	//	if(hashmap_value_exists(object->data, "sound_min_distance"))     sound_source->min_distance     = hashmap_float_get(object->data, "sound_min_distance");
-	//	if(hashmap_value_exists(object->data, "sound_max_distance"))     sound_source->max_distance     = hashmap_float_get(object->data, "sound_max_distance");
-	//	if(hashmap_value_exists(object->data, "volume"))                 sound_source->volume           = hashmap_float_get(object->data, "volume");
-	//	if(hashmap_value_exists(object->data, "rolloff_factor"))         sound_source->rolloff_factor   = hashmap_float_get(object->data, "rolloff_factor");
-	//	if(hashmap_value_exists(object->data, "source_filename"))        sound_source->source_filename  = str_new(hashmap_str_get(object->data, "source_filename"));
-	//	if(hashmap_value_exists(object->data, "sound_type"))             sound_source->type             = hashmap_int_get(object->data, "sound_type");
-	//	if(hashmap_value_exists(object->data, "sound_attenuation_type")) sound_source->attenuation_type = hashmap_int_get(object->data, "sound_attenuation_type");
-	//	if(sound_source->source_filename)
-	//	{
-	//		sound_source->source_buffer = platform->sound.source_create(sound_source->source_filename, sound_source->type);
-	//		if(sound_source->source_buffer)
-	//		{
-	//			sound_source->source_instance = platform->sound.source_instance_create(sound_source->source_buffer, true);
-
-	//			vec3 abs_pos = {0.f, 0.f,  0.f};
-	//			vec3 abs_fwd = {0.f, 0.f, -1.f};
-	//			vec3 abs_up  = {0.f, 1.f, 0.f};
-	//			transform_get_absolute_position(entity, &abs_pos);
-	//			transform_get_absolute_forward(entity, &abs_fwd);
-	//			transform_get_absolute_up(entity, &abs_up);
-	//			platform->sound.source_instance_update_position(entity->sound_source.source_instance, abs_pos.x, abs_pos.y, abs_pos.z);
-
-	//			platform->sound.source_instance_loop_set(sound_source->source_instance, sound_source->loop);
-	//			platform->sound.source_instance_min_max_distance_set(sound_source->source_instance, sound_source->min_distance, sound_source->max_distance);
-	//			platform->sound.source_instance_attenuation_set(sound_source->source_instance, sound_source->attenuation_type, sound_source->rolloff_factor);
-	//			platform->sound.source_instance_volume_set(sound_source->source_instance, sound_source->volume);
-
-	//			platform->sound.update_3d();
-	//			if(sound_source->playing) platform->sound.source_instance_play(sound_source->source_instance);
-	//		}
-	//		else
-	//		{
-	//			log_error("Failed to create sound source from '%s'", sound_source->source_filename);
-	//			free(sound_source->source_filename);
-	//			sound_source->source_filename = NULL;
-	//		}
-	//	}
-	//	else
-	//	{
-	//		log_error("entity:read", "No filename provided for sound source for entity '%s'", entity->name);
-	//	}
-	//}
-	//break;
-	//case ET_PLAYER:
-	//{
-
-	//}
-	//break;
-	//case ET_STATIC_MODEL:
-	//{
-	//	char* geometry_name = NULL;
-	//	char* material_name = NULL;
-	//	if(hashmap_value_exists(object->data, "geometry")) geometry_name = hashmap_str_get(object->data, "geometry");
-	//	if(hashmap_value_exists(object->data, "material")) material_name = hashmap_str_get(object->data, "material");
-	//	model_create(entity, geometry_name, material_name);
-	//}
-	//break;
-	//case ET_ROOT:
-	//{
-	//	scene_root_set(entity);
-	//}
-	//break;
-	//default:
-	//	log_warning("Unhandled Entity type '%d' detected", entity->type);
-	//	break;
-	//}
-
-	//if(entity->is_listener)
-	//{
-	//	vec3 abs_pos = {0.f, 0.f,  0.f};
-	//	vec3 abs_fwd = {0.f, 0.f, -1.f};
-	//	vec3 abs_up  = {0.f, 1.f, 0.f};
-	//	transform_get_absolute_position(entity, &abs_pos);
-	//	transform_get_absolute_forward(entity, &abs_fwd);
-	//	transform_get_absolute_up(entity, &abs_up);
-
-	//	platform->sound.listener_update(abs_pos.x, abs_pos.y, abs_pos.z,
-	//									abs_fwd.x, abs_fwd.y, abs_fwd.z,
-	//									abs_up.x,  abs_up.y,  abs_up.z);
-	//}
-
-	//return entity;
+	return new_entity;
 }
 
 bool entity_load(const char* filename, int directory_type)

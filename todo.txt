@@ -1,5 +1,5 @@
 Todo:
-	- Entity to file read/write
+	- Finish mesh and material properties serialization to and from file 
 	- Console command to read/write entity to file and add it to scene
 	- Editor functionality to add entity from specific file to scene
 	- Scene read/write to file with scene file only containing names of
@@ -302,4 +302,5 @@ Done:
 	* Fix releasing ALT in translate tool not reverting back to previous
 	  axis
 	* Disabled editor functionalites when console is toggled
+	* Entity to file read/write
 

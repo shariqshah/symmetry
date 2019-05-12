@@ -9,16 +9,18 @@
 #include "../common/log.h"
 #include "entity.h"
 #include "../system/config_vars.h"
+#include "../system/platform.h"
 #include "game.h"
 
 void player_init(struct Player* player, struct Scene* scene)
 {
+	struct Game_State* game_state = game_state_get();
     entity_init(player, "Player", &scene->root_entity);
     player->base.active  = true;
     player->base.id      = 1;
     player->base.type    = ET_PLAYER;
 
-    struct Hashmap* config = game_state_get()->cvars;
+    struct Hashmap* config = game_state->cvars;
     player->move_speed            = hashmap_int_get(config, "player_move_speed");
     player->move_speed_multiplier = hashmap_int_get(config, "player_move_speed_multiplier");
     player->turn_speed            = hashmap_int_get(config, "player_turn_speed");
@@ -44,6 +46,8 @@ void player_init(struct Player* player, struct Scene* scene)
 
     vec3 cam_axis = {-1.f, 0.f, 0.f};
     transform_rotate(player_camera, &cam_axis, 85.f, TS_LOCAL);
+
+	sound_listener_set(game_state->sound, player);
 }
 
 void player_destroy(struct Player* player)

@@ -48,6 +48,7 @@ struct Sound
 bool sound_init(struct Sound* sound);
 void sound_cleanup(struct Sound* sound);
 void sound_master_volume_set(struct Sound* sound, float volume);
+void sound_listener_set(struct Sound* sound, struct Entity* listener);
 void sound_update_3d(struct Sound* sound);
 void sound_listener_update(struct Sound* sound);
 

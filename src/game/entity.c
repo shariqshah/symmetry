@@ -52,20 +52,18 @@ void entity_reset(struct Entity * entity, int id)
 
 bool entity_write(struct Entity* entity, struct Parser_Object* object)
 {
-	//if(!object)
-	//{
-	//	log_error("entity:write", "Invalid object");
-	//	return false;
-	//}
+	if(!object)
+	{
+		log_error("entity:write", "Invalid object");
+		return false;
+	}
 
-	///* First write all properties common to all entity types */
-	//struct Hashmap* entity_data = object->data;
+	/* First write all properties common to all entity types */
+	struct Hashmap* entity_data = object->data;
 
-	//hashmap_str_set(entity_data, "name", entity->name);
-	//hashmap_int_set(entity_data, "type", entity->type);
-	//hashmap_bool_set(entity_data, "is_listener", entity->is_listener);
-	//hashmap_bool_set(entity_data, "renderable", entity->renderable);
-	//hashmap_bool_set(entity_data, "has_collision", entity->has_collision);
+	hashmap_str_set(entity_data, "name", entity->name);
+	hashmap_int_set(entity_data, "type", entity->type);
+	hashmap_bool_set(entity_data, "active", entity->active);
 
 	//if(entity->has_collision)
 	//{
@@ -125,72 +123,71 @@ bool entity_write(struct Entity* entity, struct Parser_Object* object)
 	//hashmap_vec3_set(entity_data, "position", &entity->transform.position);
 	//hashmap_vec3_set(entity_data, "scale", &entity->transform.scale);
 	//hashmap_quat_set(entity_data, "rotation", &entity->transform.rotation);
-	//switch(entity->type)
-	//{
-	//case ET_CAMERA:
-	//{
-	//	struct Camera* camera = &entity->camera;
-	//	hashmap_bool_set(entity_data, "ortho", camera->ortho);
-	//	hashmap_bool_set(entity_data, "resizeable", camera->resizeable);
-	//	hashmap_float_set(entity_data, "fov", camera->fov);
-	//	hashmap_float_set(entity_data, "zoom", camera->zoom);
-	//	hashmap_float_set(entity_data, "nearz", camera->nearz);
-	//	hashmap_float_set(entity_data, "farz", camera->farz);
-	//	hashmap_vec4_set(entity_data, "clear_color", &camera->clear_color);
-	//	if(entity->camera.fbo != -1)
-	//	{
-	//		hashmap_bool_set(entity_data, "has_fbo", true);
-	//		hashmap_int_set(entity_data, "fbo_height", framebuffer_height_get(camera->fbo));
-	//		hashmap_int_set(entity_data, "fbo_width", framebuffer_width_get(camera->fbo));
-	//		hashmap_bool_set(entity_data, "fbo_has_render_tex", camera->render_tex == -1 ? false : true);
-	//		hashmap_bool_set(entity_data, "fbo_has_depth_tex", camera->depth_tex == -1 ? false : true);
-	//	}
-	//	else
-	//	{
-	//		hashmap_bool_set(entity_data, "has_fbo", true);
-	//	}
-	//	break;
-	//}
-	//case ET_STATIC_MODEL:
-	//{
-	//	/* TODO: Change this after adding proper support for exported models from blender */
-	//	struct Material* material = material_get(entity->model.material);
-	//	struct Geometry* geom = geom_get(entity->model.geometry_index);
-	//	hashmap_str_set(entity_data, "material", material->name);
-	//	hashmap_str_set(entity_data, "geometry", geom->filename);
-	//	break;
-	//}
-	//case ET_LIGHT:
-	//{
-	//	struct Light* light = &entity->light;
-	//	hashmap_int_set(entity_data, "light_type", light->type);
-	//	hashmap_float_set(entity_data, "outer_angle", light->outer_angle);
-	//	hashmap_float_set(entity_data, "inner_angle", light->inner_angle);
-	//	hashmap_float_set(entity_data, "falloff", light->falloff);
-	//	hashmap_float_set(entity_data, "radius", light->radius);
-	//	hashmap_float_set(entity_data, "intensity", light->intensity);
-	//	hashmap_float_set(entity_data, "depth_bias", light->depth_bias);
-	//	hashmap_bool_set(entity_data, "valid", light->valid);
-	//	hashmap_bool_set(entity_data, "cast_shadow", light->cast_shadow);
-	//	hashmap_bool_set(entity_data, "pcf_enabled", light->pcf_enabled);
-	//	hashmap_vec3_set(entity_data, "color", &light->color);
-	//	break;
-	//}
-	//case ET_SOUND_SOURCE:
-	//{
-	//	struct Sound_Source* sound_source = &entity->sound_source;
-	//	hashmap_str_set(entity_data, "source_filename", sound_source->source_filename);
-	//	hashmap_bool_set(entity_data, "playing", sound_source->playing);
-	//	hashmap_int_set(entity_data, "sound_type", sound_source->type);
-	//	hashmap_bool_set(entity_data, "loop", sound_source->loop);
-	//	hashmap_float_set(entity_data, "volume", sound_source->volume);
-	//	hashmap_float_set(entity_data, "sound_min_distance", sound_source->min_distance);
-	//	hashmap_float_set(entity_data, "sound_max_distance", sound_source->max_distance);
-	//	hashmap_float_set(entity_data, "rolloff_factor", sound_source->rolloff_factor);
-	//	hashmap_int_set(entity_data, "sound_attenuation_type", sound_source->attenuation_type);
-	//	break;
-	//}
-	//};
+	switch(entity->type)
+	{
+	case ET_CAMERA:
+	{
+		struct Camera* camera = (struct Camera*)entity;
+		hashmap_bool_set(entity_data, "ortho", camera->ortho);
+		hashmap_bool_set(entity_data, "resizeable", camera->resizeable);
+		hashmap_float_set(entity_data, "fov", camera->fov);
+		hashmap_float_set(entity_data, "zoom", camera->zoom);
+		hashmap_float_set(entity_data, "nearz", camera->nearz);
+		hashmap_float_set(entity_data, "farz", camera->farz);
+		hashmap_vec4_set(entity_data, "clear_color", &camera->clear_color);
+		if(camera->fbo != -1)
+		{
+			hashmap_bool_set(entity_data, "has_fbo", true);
+			hashmap_int_set(entity_data, "fbo_height", framebuffer_height_get(camera->fbo));
+			hashmap_int_set(entity_data, "fbo_width", framebuffer_width_get(camera->fbo));
+			hashmap_bool_set(entity_data, "fbo_has_render_tex", camera->render_tex == -1 ? false : true);
+			hashmap_bool_set(entity_data, "fbo_has_depth_tex", camera->depth_tex == -1 ? false : true);
+		}
+		else
+		{
+			hashmap_bool_set(entity_data, "has_fbo", true);
+		}
+		break;
+	}
+	case ET_STATIC_MESH:
+	{
+		struct Static_Mesh* mesh = (struct Static_Mesh*)entity;
+		struct Geometry* geom = geom_get(mesh->model.geometry_index);
+		hashmap_int_set(entity_data, "material", mesh->model.material->type);
+		hashmap_str_set(entity_data, "geometry", geom->filename);
+		break;
+	}
+	case ET_LIGHT:
+	{
+		struct Light* light = (struct Light*)entity;
+		hashmap_int_set(entity_data, "light_type", light->type);
+		hashmap_float_set(entity_data, "outer_angle", light->outer_angle);
+		hashmap_float_set(entity_data, "inner_angle", light->inner_angle);
+		hashmap_float_set(entity_data, "falloff", light->falloff);
+		hashmap_float_set(entity_data, "radius", light->radius);
+		hashmap_float_set(entity_data, "intensity", light->intensity);
+		hashmap_float_set(entity_data, "depth_bias", light->depth_bias);
+		hashmap_bool_set(entity_data, "valid", light->valid);
+		hashmap_bool_set(entity_data, "cast_shadow", light->cast_shadow);
+		hashmap_bool_set(entity_data, "pcf_enabled", light->pcf_enabled);
+		hashmap_vec3_set(entity_data, "color", &light->color);
+		break;
+	}
+	case ET_SOUND_SOURCE:
+	{
+		struct Sound_Source* sound_source = (struct Sound_Source*)entity;
+		hashmap_str_set(entity_data, "source_filename", sound_source->source_buffer->filename);
+		hashmap_bool_set(entity_data, "playing", sound_source->playing);
+		hashmap_int_set(entity_data, "sound_type", sound_source->type);
+		hashmap_bool_set(entity_data, "loop", sound_source->loop);
+		hashmap_float_set(entity_data, "volume", sound_source->volume);
+		hashmap_float_set(entity_data, "sound_min_distance", sound_source->min_distance);
+		hashmap_float_set(entity_data, "sound_max_distance", sound_source->max_distance);
+		hashmap_float_set(entity_data, "rolloff_factor", sound_source->rolloff_factor);
+		hashmap_int_set(entity_data, "sound_attenuation_type", sound_source->attenuation_type);
+		break;
+	}
+	};
 
 	return true;
 }
@@ -209,6 +206,7 @@ bool entity_save(struct Entity* entity, const char* filename, int directory_type
     if(!entity_write(entity, object))
     {
         log_error("entity:save", "Failed to save entity : %s to file : %s", entity->name, filename);
+		parser_free(parser);
         fclose(entity_file);
         return false;
     }
@@ -218,7 +216,7 @@ bool entity_save(struct Entity* entity, const char* filename, int directory_type
 
     parser_free(parser);
 	fclose(entity_file);
-	return false;
+	return true;
 }
 
 struct Entity* entity_read(struct Parser_Object* object)

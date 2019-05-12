@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#define MAX_FILENAME_LEN 128
+
 enum Directory_Type
 {
 	DIRT_USER,		 /* User directory or preferences directory */

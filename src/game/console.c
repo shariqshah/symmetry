@@ -159,9 +159,9 @@ void console_on_log_error(struct Console* console, const char* context, const ch
 
 void console_command_entity_save(struct Console* console, const char* command)
 {
-	char filename[64];
+	char filename[MAX_FILENAME_LEN];
 	char entity_name[MAX_ENTITY_NAME_LEN];
-	memset(filename, '\0', 64);
+	memset(filename, '\0', MAX_FILENAME_LEN);
 	memset(entity_name, '\0', MAX_ENTITY_NAME_LEN);
 
 	int params_read = sscanf(command, "%s %s", entity_name, filename);
@@ -179,7 +179,9 @@ void console_command_entity_save(struct Console* console, const char* command)
 		return;
 	}
 
-	if(!entity_save(entity, filename, DIRT_INSTALL))
+	char full_filename[MAX_FILENAME_LEN];
+	snprintf(full_filename, MAX_FILENAME_LEN, "entities/%s.symtres", filename);
+	if(!entity_save(entity, full_filename, DIRT_INSTALL))
 		log_error("entity_save", "Command failed");
 	
 }

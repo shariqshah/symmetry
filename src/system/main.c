@@ -87,12 +87,6 @@ bool init(void)
         return false;
     }
 
-    if(!sound_init())
-    {
-        log_error("main:init", "Failed to initialize sound");
-        return false;
-    }
-
     return true;
 }
 
@@ -101,7 +95,6 @@ void cleanup(void)
 	game_cleanup();
     if(window) window_destroy(window);
     log_reset_all_callbacks(); // Now that the game library has been unloaded, reset all callbacks to stubs so we don't crash on exit
-    sound_cleanup();
     platform_unload_gl();
     platform_cleanup();
 	config_vars_cleanup(cvars);

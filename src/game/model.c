@@ -18,15 +18,15 @@ void model_init(struct Model* model, struct Static_Mesh* mesh, const char* geome
 	assert(model && material_type > -1 && material_type < MAT_MAX);
 
 	/* if no name is given for geometry, use default */
-	int geo_index = geom_create_from_file(geometry_name ? geometry_name : "default.pamesh");
+	int geo_index = geom_create_from_file(geometry_name ? geometry_name : "default.symbres");
 
 	if(geo_index == -1)
 	{
 		log_error("model:init", "Failed to load model %s", geometry_name);
-		geo_index = geom_create_from_file("default.pamesh");
+		geo_index = geom_create_from_file("default.symbres");
 		if(geo_index == -1)
 		{
-			log_error("model:init", "Could not load default model 'default.pamesh' ");
+			log_error("model:init", "Could not load default model 'default.symbres' ");
 			return;
 		}
 	}
@@ -35,7 +35,7 @@ void model_init(struct Model* model, struct Static_Mesh* mesh, const char* geome
 	struct Material* material = &game_state_get()->renderer->materials[material_type];
 	if(!material_register_static_mesh(material, mesh))
 	{
-		log_error("model:create", "Unable to register model with Unshaded material, component not added");
+		log_error("model:create", "Unable to register model with Unshaded material");
 		model_reset(model, mesh);
 	}
 }

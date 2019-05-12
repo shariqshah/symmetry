@@ -8,7 +8,6 @@
 #include "material.h"
 
 #define MAX_ENTITY_NAME_LEN 128
-#define MAX_SOUND_SOURCE_BUFFERS 5
 
 
 struct Entity;

@@ -77,6 +77,7 @@ bool game_init(struct Window* window, struct Hashmap* cvars)
 		game_state->editor         = calloc(1, sizeof(*game_state->editor));
 		game_state->gui            = calloc(1, sizeof(*game_state->gui));
 		game_state->event_manager  = calloc(1, sizeof(*game_state->event_manager));
+		game_state->sound          = calloc(1, sizeof(*game_state->sound));
 
 		log_message_callback_set(game_on_log_message);
 		log_warning_callback_set(game_on_log_warning);
@@ -105,6 +106,7 @@ bool game_init(struct Window* window, struct Hashmap* cvars)
 		physics_gravity_set(0.f, -9.8f, 0.f);
 		physics_body_set_moved_callback(entity_rigidbody_on_move);
 		physics_body_set_collision_callback(entity_rigidbody_on_collision);
+		sound_init(game_state->sound);
 
 		scene_init(game_state->scene);
 		editor_init(game_state->editor);
@@ -545,7 +547,7 @@ void game_post_update(float dt)
 {
     input_post_update();
     scene_post_update(game_state->scene);
-    sound_update_3d();
+    sound_update_3d(game_state->sound);
 }
 
 void game_debug_gui(float dt)
@@ -1887,6 +1889,7 @@ void game_cleanup(void)
 			framebuffer_cleanup();
 			texture_cleanup();
 			shader_cleanup();
+			sound_cleanup(game_state->sound);
 			event_manager_cleanup(game_state->event_manager);
 
 			free(game_state->editor);
@@ -1895,6 +1898,7 @@ void game_cleanup(void)
 			free(game_state->renderer);
 			free(game_state->event_manager);
 			free(game_state->gui);
+			free(game_state->sound);
 		}
 		free(game_state);
 		game_state = NULL;

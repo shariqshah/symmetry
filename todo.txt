@@ -50,6 +50,8 @@ Todo:
 	- Move Gui_State and Editor_State into game_state and modify usage as needed
 	- Get editor camera speed and other settings from config file
 	- Recompile Soloud on windows to use static sdl2 backend
+	- Refactor input sub-system to be the same as other sub-systems embedded
+	  in game state.
 	- Figure out a way to reduce of remove snprintf calls from render code
 	- Re-Implement saving/loading scene to/from files
 	- Implement storing console's scroll location and restore it when console is toggled

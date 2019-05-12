@@ -130,12 +130,14 @@ bool material_register_static_mesh(struct Material* material, struct Static_Mesh
 				variant_assign_int(&mesh->model.material_params[MMP_DIFFUSE_TEX], texture_create_from_file("default.tga", TU_DIFFUSE));
 				variant_assign_float(&mesh->model.material_params[MMP_SPECULAR], 1.f);
 				variant_assign_float(&mesh->model.material_params[MMP_SPECULAR_STRENGTH], 50.f);
+				mesh->model.material = material;
 			}
 			break;
 			case MAT_UNSHADED:
 			{
 				variant_assign_vec4f(&mesh->model.material_params[MMP_DIFFUSE_COL], 1.f, 0.f, 1.f, 1.f);
 				variant_assign_int(&mesh->model.material_params[MMP_DIFFUSE_TEX], texture_create_from_file("default.tga", TU_DIFFUSE));
+				mesh->model.material = material;
 			}
 			break;
 			default:

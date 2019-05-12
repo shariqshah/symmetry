@@ -96,6 +96,7 @@ void scene_update(struct Scene* scene, float dt)
 void scene_post_update(struct Scene* scene)
 {
 	assert(scene);
+	struct Sound* sound = game_state_get()->sound;
 
 	for(int i = 0; i < MAX_ENTITIES; i++)
 	{
@@ -144,7 +145,7 @@ void scene_post_update(struct Scene* scene)
 		{
 			vec3 abs_pos = { 0.f, 0.f,  0.f };
 			transform_get_absolute_position(&sound_source->base, &abs_pos);
-			sound_source_instance_update_position(sound_source->source_instance, abs_pos.x, abs_pos.y, abs_pos.z);
+			sound_source_instance_update_position(sound, sound_source->source_instance, abs_pos);
 			sound_source->base.transform.is_modified = false;
 		}
 	}
@@ -198,16 +199,7 @@ void scene_post_update(struct Scene* scene)
 
 	if(scene->player.base.transform.is_modified)
 	{
-		vec3 abs_pos = { 0.f, 0.f,  0.f };
-		vec3 abs_fwd = { 0.f, 0.f, -1.f };
-		vec3 abs_up = { 0.f, 1.f, 0.f };
-		transform_get_absolute_position(&scene->player, &abs_pos);
-		transform_get_absolute_forward(&scene->player, &abs_fwd);
-		transform_get_absolute_up(&scene->player, &abs_up);
-
-		sound_listener_update(abs_pos.x, abs_pos.y, abs_pos.z,
-			abs_fwd.x, abs_fwd.y, abs_fwd.z,
-			abs_up.x, abs_up.y, abs_up.z);
+		sound_listener_update(sound);
 		scene->player.base.transform.is_modified = false;
 	}
 }
@@ -329,6 +321,7 @@ struct Static_Mesh* scene_static_mesh_create(struct Scene* scene, const char* na
 struct Sound_Source* scene_sound_source_create(struct Scene* scene, const char* name, struct Entity* parent, const char* filename, int type, bool loop, bool play)
 {
 	assert(scene && filename);
+	struct Sound* sound = game_state_get()->sound;
 	struct Sound_Source* new_sound_source = NULL;
 	for(int i = 0; i < MAX_SOUND_SOURCES; i++)
 	{
@@ -346,7 +339,7 @@ struct Sound_Source* scene_sound_source_create(struct Scene* scene, const char* 
 		new_sound_source->base.type = ET_SOUND_SOURCE;
 		struct Entity* entity = &new_sound_source->base;
 
-		new_sound_source->source_buffer = sound_source_create(filename, type);
+		new_sound_source->source_buffer = sound_source_create(sound, filename, type);
 		if(!new_sound_source->source_buffer)
 		{
 			log_error("entity:sync_sound_params", "Failed to load file '%s' to provide sound source for entity %s", filename, entity->name);
@@ -354,14 +347,10 @@ struct Sound_Source* scene_sound_source_create(struct Scene* scene, const char* 
 			return new_sound_source;
 		}
 
-		new_sound_source->source_instance = sound_source_instance_create(new_sound_source->source_buffer, true);
+		new_sound_source->source_instance = sound_source_instance_create(sound, new_sound_source->source_buffer, true);
 		vec3 abs_pos = { 0.f, 0.f,  0.f };
-		vec3 abs_fwd = { 0.f, 0.f, -1.f };
-		vec3 abs_up = { 0.f, 1.f, 0.f };
 		transform_get_absolute_position(entity, &abs_pos);
-		transform_get_absolute_forward(entity, &abs_fwd);
-		transform_get_absolute_up(entity, &abs_up);
-		sound_source_instance_update_position(new_sound_source->source_instance, abs_pos.x, abs_pos.y, abs_pos.z);
+		sound_source_instance_update_position(sound, new_sound_source->source_instance, abs_pos);
 
 		new_sound_source->loop = loop;
 		new_sound_source->min_distance = 0.f;
@@ -372,13 +361,13 @@ struct Sound_Source* scene_sound_source_create(struct Scene* scene, const char* 
 		new_sound_source->volume = 1.f;
 		new_sound_source->type = type;
 
-		sound_source_instance_loop_set(new_sound_source->source_instance, new_sound_source->loop);
-		sound_source_instance_min_max_distance_set(new_sound_source->source_instance, new_sound_source->min_distance, new_sound_source->max_distance);
-		sound_source_instance_attenuation_set(new_sound_source->source_instance, new_sound_source->attenuation_type, new_sound_source->rolloff_factor);
-		sound_source_instance_volume_set(new_sound_source->source_instance, new_sound_source->volume);
+		sound_source_instance_loop_set(sound, new_sound_source->source_instance, new_sound_source->loop);
+		sound_source_instance_min_max_distance_set(sound, new_sound_source->source_instance, new_sound_source->min_distance, new_sound_source->max_distance);
+		sound_source_instance_attenuation_set(sound, new_sound_source->source_instance, new_sound_source->attenuation_type, new_sound_source->rolloff_factor);
+		sound_source_instance_volume_set(sound, new_sound_source->source_instance, new_sound_source->volume);
 
-		sound_update_3d();
-		if(new_sound_source->playing) sound_source_instance_play(new_sound_source->source_instance);
+		sound_update_3d(sound);
+		if(new_sound_source->playing) sound_source_instance_play(sound, new_sound_source->source_instance);
 	}
 	else
 	{
@@ -429,7 +418,7 @@ void scene_sound_source_remove(struct Scene* scene, struct Sound_Source* source)
 {
 	assert(scene && source);
 
-	sound_source_instance_destroy(source->source_instance);
+	sound_source_instance_destroy(game_state_get()->sound, source->source_instance);
 	source->source_instance = 0;
 	scene_entity_remove(scene, &source->base);
 }
@@ -456,7 +445,7 @@ struct Light* scene_light_find(struct Scene* scene, const char* name)
 	assert(scene && name);
 	struct Light* light = NULL;
 
-	for(int i = 0; i < MAX_ENTITIES; i++)
+	for(int i = 0; i < MAX_LIGHTS; i++)
 	{
 		if(strncmp(name, scene->lights[i].base.name, MAX_ENTITY_NAME_LEN) == 0)
 		{
@@ -473,7 +462,7 @@ struct Camera* scene_camera_find(struct Scene* scene, const char* name)
 	assert(scene && name);
 	struct Camera* camera = NULL;
 
-	for(int i = 0; i < MAX_ENTITIES; i++)
+	for(int i = 0; i < MAX_CAMERAS; i++)
 	{
 		if(strncmp(name, scene->cameras[i].base.name, MAX_ENTITY_NAME_LEN) == 0)
 		{
@@ -490,7 +479,7 @@ struct Static_Mesh* scene_static_mesh_find(struct Scene* scene, const char* name
 	assert(scene && name);
 	struct Static_Mesh* static_mesh = NULL;
 
-	for(int i = 0; i < MAX_ENTITIES; i++)
+	for(int i = 0; i < MAX_STATIC_MESHES; i++)
 	{
 		if(strncmp(name, scene->static_meshes[i].base.name, MAX_ENTITY_NAME_LEN) == 0)
 		{
@@ -507,7 +496,7 @@ struct Sound_Source* scene_sound_source_find(struct Scene* scene, const char* na
 	assert(scene && name);
 	struct Sound_Source* sound_source = NULL;
 
-	for(int i = 0; i < MAX_ENTITIES; i++)
+	for(int i = 0; i < MAX_SOUND_SOURCES; i++)
 	{
 		if(strncmp(name, scene->sound_sources[i].base.name, MAX_ENTITY_NAME_LEN) == 0)
 		{

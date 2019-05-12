@@ -13,6 +13,7 @@ struct Gui;
 struct Event_Manager;
 struct Editor;
 struct Hashmap;
+struct Sound;
 
 enum Game_Mode
 {
@@ -32,6 +33,7 @@ struct Game_State
 	struct Event_Manager* event_manager;
 	struct Editor*        editor;
 	struct Hashmap*       cvars;
+	struct Sound*         sound;
 };
 
 

@@ -1164,6 +1164,12 @@ void editor_on_key_release(const struct Event* event)
 
 	if(event->key.key == KEY_G) editor->grid_enabled = !editor->grid_enabled;
 	if(event->key.key == KEY_ESCAPE) editor_entity_select(editor, NULL);
+
+	if(event->key.key == KEY_DELETE && editor->selected_entity)
+	{
+		editor->selected_entity->marked_for_deletion = true;
+		editor_entity_select(editor, NULL);
+	}
 }
 
 void editor_tool_set(struct Editor* editor, int tool)

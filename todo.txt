@@ -112,6 +112,7 @@ Bugs:
 	- Fix hang on fullscreen toggle
 	- Fix axis lines not aligning with grid lines
 	- Fix arc angles resetting when rotating
+	- Fix editor camera right-click behaviour
 	
 Done:
 	* Input
@@ -303,4 +304,5 @@ Done:
 	  axis
 	* Disabled editor functionalites when console is toggled
 	* Entity to file read/write
+	* Added editor shortcut key to delete selected entity
 

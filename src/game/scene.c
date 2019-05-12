@@ -78,7 +78,7 @@ void scene_destroy(struct Scene* scene)
 {
 	assert(scene);
 
-	for(int i = 0; i < MAX_ENTITIES; i++) scene_entity_remove(scene, &scene->entities[i]);
+	for(int i = 0; i < MAX_ENTITIES; i++) scene_entity_base_remove(scene, &scene->entities[i]);
 	for(int i = 0; i < MAX_CAMERAS; i++) scene_camera_remove(scene, &scene->cameras[i]);
 	for(int i = 0; i < MAX_LIGHTS; i++) scene_light_remove(scene, &scene->lights[i]);
 	for(int i = 0; i < MAX_STATIC_MESHES; i++) scene_static_mesh_remove(scene, &scene->static_meshes[i]);
@@ -105,7 +105,7 @@ void scene_post_update(struct Scene* scene)
 
 		if(entity->marked_for_deletion)
 		{
-			scene_entity_remove(scene, entity);
+			scene_entity_base_remove(scene, entity);
 			continue;
 		}
 
@@ -377,7 +377,7 @@ struct Sound_Source* scene_sound_source_create(struct Scene* scene, const char* 
 	return new_sound_source;
 }
 
-void scene_entity_remove(struct Scene* scene, struct Entity* entity)
+void scene_entity_base_remove(struct Scene* scene, struct Entity* entity)
 {
 	assert(scene && entity && entity->id >= 0);
 
@@ -393,13 +393,13 @@ void scene_entity_remove(struct Scene* scene, struct Entity* entity)
 void scene_light_remove(struct Scene* scene, struct Light* light)
 {
 	assert(scene && light);
-	scene_entity_remove(scene, &light->base);
+	scene_entity_base_remove(scene, &light->base);
 }
 
 void scene_camera_remove(struct Scene* scene, struct Camera* camera)
 {
 	assert(scene && camera);
-	scene_entity_remove(scene, &camera->base);
+	scene_entity_base_remove(scene, &camera->base);
 }
 
 void scene_static_mesh_remove(struct Scene* scene, struct Static_Mesh* mesh)
@@ -411,7 +411,7 @@ void scene_static_mesh_remove(struct Scene* scene, struct Static_Mesh* mesh)
 	if(mesh->collision.rigidbody) physics_body_remove(mesh->collision.rigidbody);
 
 	model_reset(&mesh->model, mesh);
-	scene_entity_remove(scene, &mesh->base);
+	scene_entity_base_remove(scene, &mesh->base);
 }
 
 void scene_sound_source_remove(struct Scene* scene, struct Sound_Source* source)
@@ -420,7 +420,7 @@ void scene_sound_source_remove(struct Scene* scene, struct Sound_Source* source)
 
 	sound_source_instance_destroy(game_state_get()->sound, source->source_instance);
 	source->source_instance = 0;
-	scene_entity_remove(scene, &source->base);
+	scene_entity_base_remove(scene, &source->base);
 }
 
 struct Entity* scene_entity_find(struct Scene* scene, const char* name)

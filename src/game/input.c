@@ -35,9 +35,9 @@ void input_init(void)
 	struct Key_Binding left_keys           = {KEY_A,      KMOD_NONE, KEY_LEFT,   KMOD_NONE, KS_INACTIVE};
 	struct Key_Binding right_keys          = {KEY_D,      KMOD_NONE, KEY_RIGHT,  KMOD_NONE, KS_INACTIVE};
 	struct Key_Binding turn_right_keys     = {KEY_L,      KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
-	struct Key_Binding turn_left_keys      = {KEY_J,      KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
-	struct Key_Binding turn_up_keys        = {KEY_I,      KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
-	struct Key_Binding turn_down_keys      = {KEY_K,      KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
+	struct Key_Binding turn_left_keys      = {KEY_H,      KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
+	struct Key_Binding turn_up_keys        = {KEY_K,      KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
+	struct Key_Binding turn_down_keys      = {KEY_J,      KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
 	struct Key_Binding sprint_keys         = {KEY_LSHIFT, KMOD_NONE, KEY_RSHIFT, KMOD_NONE, KS_INACTIVE};
 	struct Key_Binding editor_toggle_keys  = {KEY_F1,     KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
 	struct Key_Binding console_toggle_keys = {KEY_TILDE,  KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};

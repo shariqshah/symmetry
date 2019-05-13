@@ -295,22 +295,22 @@ struct Entity* entity_read(struct Parser_Object* object)
 	case ET_LIGHT:
 	{
 		struct Light* light = scene_light_create(scene, name, NULL, LT_POINT);
-		if(hashmap_value_exists(object->data, "light_type"))  light->type = hashmap_int_get(object->data, "type");
+		if(hashmap_value_exists(object->data, "light_type"))  light->type        = hashmap_int_get(object->data, "light_type");
 		if(hashmap_value_exists(object->data, "outer_angle")) light->outer_angle = hashmap_float_get(object->data, "outer_angle");
 		if(hashmap_value_exists(object->data, "inner_angle")) light->inner_angle = hashmap_float_get(object->data, "inner_angle");
-		if(hashmap_value_exists(object->data, "falloff"))     light->falloff = hashmap_float_get(object->data, "falloff");
-		if(hashmap_value_exists(object->data, "intensity"))   light->intensity = hashmap_float_get(object->data, "intensity");
-		if(hashmap_value_exists(object->data, "depth_bias"))  light->depth_bias = hashmap_float_get(object->data, "depth_bias");
-		if(hashmap_value_exists(object->data, "color"))       light->color = hashmap_vec3_get(object->data, "color");
+		if(hashmap_value_exists(object->data, "falloff"))     light->falloff     = hashmap_float_get(object->data, "falloff");
+		if(hashmap_value_exists(object->data, "intensity"))   light->intensity   = hashmap_float_get(object->data, "intensity");
+		if(hashmap_value_exists(object->data, "depth_bias"))  light->depth_bias  = hashmap_float_get(object->data, "depth_bias");
+		if(hashmap_value_exists(object->data, "color"))       light->color       = hashmap_vec3_get(object->data, "color");
 		if(hashmap_value_exists(object->data, "cast_shadow")) light->cast_shadow = hashmap_bool_get(object->data, "cast_shadow");
 		if(hashmap_value_exists(object->data, "pcf_enabled")) light->pcf_enabled = hashmap_bool_get(object->data, "pcf_enabled");
-		if(hashmap_value_exists(object->data, "radius"))      light->radius = hashmap_int_get(object->data, "radius");
+		if(hashmap_value_exists(object->data, "radius"))      light->radius      = hashmap_int_get(object->data, "radius");
 		new_entity = &light->base;
 	}
 	break;
 	case ET_SOUND_SOURCE:
 	{
-		struct Sound_Source* sound_source = scene_sound_source_create(scene, name, NULL, "default.wav", ST_WAV, true, true);
+		struct Sound_Source* sound_source = scene_sound_source_create(scene, name, NULL, "teh_beatz.wav", ST_WAV, true, true);
 		sound_source->type                = ST_WAV;
 		sound_source->playing             = false;
 		sound_source->loop                = false;

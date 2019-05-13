@@ -757,7 +757,7 @@ void editor_on_mousebutton_release(const struct Event* event)
 	struct Editor*     editor     = game_state->editor;
 	struct Gui*        gui        = game_state->gui;
 
-	if(game_state->game_mode != GAME_MODE_EDITOR || nk_window_is_any_hovered(&gui->context) || game_state->console->visible)
+	if(game_state->game_mode != GAME_MODE_EDITOR || game_state->console->visible)
 		return;
 
 	if(editor->camera_looking_around)
@@ -771,6 +771,9 @@ void editor_on_mousebutton_release(const struct Event* event)
 		if(editor->selected_entity && editor->current_tool == EDITOR_TOOL_ROTATE && editor->previous_axis != EDITOR_AXIS_NONE)
 			editor_axis_set(editor, editor->previous_axis);
 	}
+
+	if(nk_window_is_any_hovered(&gui->context))
+		return;
 
 	if(event->mousebutton.button == MSB_LEFT &&
 		!editor->camera_looking_around &&
@@ -1320,7 +1323,7 @@ void editor_camera_update(struct Editor* editor, float dt)
 {
 	struct Game_State* game_state = game_state_get();
 	struct Gui*        gui        = game_state->gui;
-	if(nk_window_is_any_hovered(&gui->context) || game_state->console->visible)
+	if(game_state->console->visible)
 		return;
 
     struct Camera* editor_camera = &game_state_get()->scene->cameras[CAM_EDITOR];

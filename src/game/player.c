@@ -47,7 +47,8 @@ void player_init(struct Player* player, struct Scene* scene)
     vec3 cam_axis = {-1.f, 0.f, 0.f};
     transform_rotate(player_camera, &cam_axis, 85.f, TS_LOCAL);
 
-	sound_listener_set(game_state->sound, player);
+	sound_listener_set(game_state->sound, player_camera);
+	sound_listener_update(game_state->sound);
 }
 
 void player_destroy(struct Player* player)

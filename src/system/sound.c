@@ -77,6 +77,7 @@ void sound_master_volume_set(struct Sound* sound, float volume)
 
 void sound_update_3d(struct Sound* sound)
 {
+	sound_listener_update(sound);
 	Soloud_update3dAudio(sound->soloud_context);
 }
 
@@ -85,12 +86,9 @@ void sound_cleanup(struct Sound* sound)
 	for(int i = 0; i < MAX_SOUND_BUFFERS; i++ )
 	{
 		struct Sound_Source_Buffer* source = &sound->sound_buffers[i];
-		sound_source_stop_all(sound, source);
-		switch(source->type)
-		{
-		case ST_WAV: Wav_destroy(source->wav); break;
-		case ST_WAV_STREAM: WavStream_destroy(source->wavstream); break;
-		}
+		if(source->type != ST_NONE)
+			sound_source_destroy(sound, source);
+
 	}
 
 	Soloud_deinit(sound->soloud_context);
@@ -253,13 +251,13 @@ struct Sound_Source_Buffer* sound_source_create(struct Sound* sound, const char*
 			return 0;
 		}
 		source->type = ST_WAV_STREAM;
+		source->wavstream = wave_stream;
 	}
 	break;
 	default: log_error("sound:source_create", "Invalid source type %d", type); break;
 	}
 
 	strncpy(source->filename, filename, MAX_FILENAME_LEN);
-	free(memory);
 	return source;
 }
 
@@ -280,9 +278,8 @@ struct Sound_Source_Buffer* sound_source_get(struct Sound* sound, const char* na
 	return source;
 }
 
-void sound_source_destroy(struct Sound* sound, const char* name)
+void sound_source_destroy(struct Sound* sound, struct Sound_Source_Buffer* source)
 {
-	struct Sound_Source_Buffer* source = sound_source_get(sound, name);
 	if(source)
 	{
 		sound_source_stop_all(sound, source);

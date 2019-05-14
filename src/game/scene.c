@@ -199,7 +199,6 @@ void scene_post_update(struct Scene* scene)
 
 	if(scene->player.base.transform.is_modified)
 	{
-		sound_listener_update(sound);
 		scene->player.base.transform.is_modified = false;
 	}
 }
@@ -325,7 +324,7 @@ struct Sound_Source* scene_sound_source_create(struct Scene* scene, const char* 
 	struct Sound_Source* new_sound_source = NULL;
 	for(int i = 0; i < MAX_SOUND_SOURCES; i++)
 	{
-		struct Sound_Source* sound_source = &scene->static_meshes[i];
+		struct Sound_Source* sound_source = &scene->sound_sources[i];
 		if(!sound_source->base.active)
 		{
 			new_sound_source = sound_source;
@@ -356,7 +355,7 @@ struct Sound_Source* scene_sound_source_create(struct Scene* scene, const char* 
 		new_sound_source->min_distance = 0.f;
 		new_sound_source->max_distance = 10.f;
 		new_sound_source->playing = play;
-		new_sound_source->attenuation_type = SA_INVERSE;
+		new_sound_source->attenuation_type = SA_LINEAR;
 		new_sound_source->rolloff_factor = 0.95f;
 		new_sound_source->volume = 1.f;
 		new_sound_source->type = type;
@@ -385,7 +384,7 @@ void scene_entity_base_remove(struct Scene* scene, struct Entity* entity)
 
 	transform_destroy(entity);
 	entity->active              = false;
-	entity->selected_in_editor     = false;
+	entity->selected_in_editor  = false;
 	entity->marked_for_deletion = false;
 	memset(entity->name, '\0', MAX_ENTITY_NAME_LEN);
 }
@@ -394,6 +393,7 @@ void scene_light_remove(struct Scene* scene, struct Light* light)
 {
 	assert(scene && light);
 	scene_entity_base_remove(scene, &light->base);
+	light->valid = false;
 }
 
 void scene_camera_remove(struct Scene* scene, struct Camera* camera)
@@ -581,21 +581,6 @@ void scene_ray_intersect(struct Scene* scene, struct Ray* ray, struct Raycast_Re
 		}
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

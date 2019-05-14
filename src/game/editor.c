@@ -1539,6 +1539,7 @@ void editor_window_scene_heirarchy(struct nk_context* context, struct Editor* ed
 			for(int i = 0; i < MAX_CAMERAS; i++)       editor_show_entity_in_list(editor, context, scene, &scene->cameras[i]);
 			for(int i = 0; i < MAX_LIGHTS; i++)        editor_show_entity_in_list(editor, context, scene, &scene->lights[i]);
 			for(int i = 0; i < MAX_STATIC_MESHES; i++) editor_show_entity_in_list(editor, context, scene, &scene->static_meshes[i]);
+			for(int i = 0; i < MAX_SOUND_SOURCES; i++) editor_show_entity_in_list(editor, context, scene, &scene->sound_sources[i]);
 
 			nk_group_end(context);
 		}
@@ -1751,6 +1752,63 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 					}
 					nk_tree_pop(context);
 				}
+			}
+
+			/* Sound Source */
+			if(entity->type == ET_SOUND_SOURCE)
+			{
+				struct Sound* sound = game_state->sound;
+				struct Sound_Source* sound_source = (struct Sound_Source*)entity;
+				if(nk_tree_push(context, NK_TREE_TAB, "Sound Source", NK_MAXIMIZED))
+				{
+					nk_layout_row_dynamic(context, row_height, 2);
+					nk_label(context, "Playing", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+					int is_playing = sound_source_instance_is_paused(sound, sound_source->source_instance);
+					int playing = nk_check_label(context, "", is_playing);
+					if(is_playing && !playing)
+						sound_source_instance_pause(sound, sound_source->source_instance);
+					else if(!is_playing && playing)
+						sound_source_instance_play(sound, sound_source->source_instance);
+
+
+					nk_label(context, "Loop", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+					int is_looping = sound_source_instance_loop_get(sound, sound_source->source_instance);
+					int looping = nk_check_label(context, "", is_looping);
+					if(is_looping != looping)
+						sound_source_instance_loop_set(sound, sound_source->source_instance, looping);
+
+					nk_layout_row_dynamic(context, row_height, 1);
+					float volume = sound_source_instance_volume_get(sound, sound_source->source_instance);
+					volume = nk_propertyf(context, "Volume", 0.f, volume, 10.f, 0.5f, 0.1f);
+					sound_source_instance_volume_set(sound, sound_source->source_instance, volume);
+
+					nk_layout_row_dynamic(context, 30, 2);
+					static char filename_buffer[MAX_FILENAME_LEN];
+					strncpy(filename_buffer, sound_source->source_buffer->filename, MAX_FILENAME_LEN);
+					nk_label(context, "File", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+					int edit_flags = NK_EDIT_GOTO_END_ON_ACTIVATE | NK_EDIT_FIELD | NK_EDIT_SIG_ENTER;
+					int edit_state = nk_edit_string_zero_terminated(context, edit_flags, filename_buffer, MAX_FILENAME_LEN, NULL);
+					if(edit_state & NK_EDIT_COMMITED)
+					{
+						if(strncmp(filename_buffer, sound_source->source_buffer->filename, MAX_FILENAME_LEN) != 0)
+						{
+							struct Sound_Source_Buffer* new_source_buffer = sound_source_create(sound, filename_buffer, ST_WAV_STREAM);
+							if(new_source_buffer)
+							{
+								sound_source_stop_all(sound, sound_source->source_buffer);
+								sound_source_instance_destroy(sound, sound_source->source_instance);
+								sound_source->source_instance = sound_source_instance_create(sound, new_source_buffer, true);
+								sound_source->source_buffer = new_source_buffer;
+								sound_source->base.transform.is_modified = true; // Fake a transformation so that post-update the new sound source position is updated
+								if(playing)
+									sound_source_instance_play(sound, sound_source->source_instance);
+							}
+						}
+					}
+
+					nk_tree_pop(context);
+				}
+
 			}
 		}
 		else

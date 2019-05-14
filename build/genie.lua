@@ -102,14 +102,14 @@ solution "Symmetry"
 		configuration {"windows", "Debug", "vs2017"}
 			postbuildcommands 
 			{
-				"copy ..\\..\\lib\\windows\\sdl2\\SDL2d.dll debug\\ /Y",
+				"copy ..\\..\\lib\\windows\\sdl2\\SDL2.dll debug\\ /Y",
 				"copy ..\\..\\lib\\windows\\soloud\\soloud_x64_d.dll debug\\ /Y",
 				"copy ..\\..\\lib\\windows\\ode\\ode_doubled.dll debug\\ /Y",
 				"copy ..\\..\\lib\\windows\\ode\\ode_doubled.pdb debug\\ /Y",
 				"rmdir debug\\assets",
 				"mklink /D debug\\assets ..\\..\\..\\assets"
 			}
-			links {"ode_doubled", "SDL2d"}
+			links {"ode_doubled", "SDL2"}
 
 	newaction {
 	   trigger = "build_addon",

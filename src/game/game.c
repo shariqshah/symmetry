@@ -310,6 +310,10 @@ void game_scene_setup(void)
 
     }
 
+	//struct Sound_Source* sound_source = scene_sound_source_create(game_state->scene, "Beats", NULL, "sounds/windy_ambience.ogg", ST_WAV_STREAM, true, true);
+	struct Sound_Source* sound_source = scene_sound_source_create(game_state->scene, "Beats", NULL, "sounds/algebra_loop.ogg", ST_WAV_STREAM, true, true);
+	//struct Sound_Source* sound_source = scene_sound_source_create(game_state->scene, "Beats", NULL, "sounds/teh_beatz.wav", ST_WAV, true, true);
+	transform_translate(sound_source, &(vec3){0.f, 3.f, 0.f}, TS_WORLD);
 
     struct Light* light = scene_light_create(game_state->scene, "Test_Light", NULL, LT_POINT);
     light->color.x = 1.f;
@@ -1890,6 +1894,7 @@ void game_cleanup(void)
 			texture_cleanup();
 			shader_cleanup();
 			sound_cleanup(game_state->sound);
+			physics_cleanup();
 			event_manager_cleanup(game_state->event_manager);
 
 			free(game_state->editor);
@@ -1903,8 +1908,6 @@ void game_cleanup(void)
 		free(game_state);
 		game_state = NULL;
     }
-
-	physics_cleanup();
 }
 
 struct Game_State* game_state_get(void)

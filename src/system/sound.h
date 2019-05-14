@@ -70,7 +70,7 @@ bool  sound_source_instance_is_paused(struct Sound* sound, uint source_instance)
 
 struct Sound_Source_Buffer* sound_source_create(struct Sound* sound, const char* filename, int type);
 struct Sound_Source_Buffer* sound_source_get(struct Sound* sound, const char* name);
-void                        sound_source_destroy(struct Sound* sound, const char* buffer_name);
+void                        sound_source_destroy(struct Sound* sound, struct Sound_Source_Buffer* source);
 void                        sound_source_volume_set(struct Sound* sound, struct Sound_Source_Buffer* source, float volume);
 void                        sound_source_loop_set(struct Sound* sound, struct Sound_Source_Buffer* source, bool loop);
 void                        sound_source_stop_all(struct Sound* sound, struct Sound_Source_Buffer* source);

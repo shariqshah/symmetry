@@ -1,0 +1,18 @@
+Entity
+{
+	type : 5
+	inner_angle : 20.0000
+	falloff : 1.5000
+	light_type : 2
+	depth_bias : 0.0005
+	cast_shadow : false
+	intensity : 1.0000
+	color : 1.000 1.000 1.000
+	active : true
+	radius : 20.0000
+	outer_angle : 30.0000
+	name : Test_Light
+	pcf_enabled : false
+	valid : true
+}
+

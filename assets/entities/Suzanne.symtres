@@ -1,0 +1,9 @@
+Entity
+{
+	type : 6
+	material : 0
+	geometry : suzanne.symbres
+	active : true
+	name : Suzanne_0
+}
+

@@ -249,6 +249,7 @@ void im_render(struct Camera* active_viewer)
 	glDepthFunc(GL_LEQUAL);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
+	glEnable(GL_MULTISAMPLE);
 	shader_bind(IM_State.im_shader);
 	{
 		static mat4 mvp, translation, rotation, scale;
@@ -292,6 +293,7 @@ void im_render(struct Camera* active_viewer)
 	shader_unbind();
 	glDisable(GL_BLEND);
 	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_MULTISAMPLE);
 
 	IM_State.curr_geom   = -1;
 	IM_State.curr_vertex =  0;

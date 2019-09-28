@@ -26,6 +26,13 @@ bool material_init(struct Material* material, int material_type)
 	{
 		material->lit  = true;
 		material->shader = shader_create("blinn_phong.vert", "blinn_phong.frag");
+        
+        if(material->shader == -1)
+        {
+            log_error("material:init", "Failed to compile shader for Blinn, resetting material");
+            material_reset(material);
+            return false;
+        }
 
 		material->pipeline_params[MPP_INV_MODEL_MAT].type = UT_MAT4;
 		material->pipeline_params[MPP_INV_MODEL_MAT].location = shader_get_uniform_location(material->shader, "inv_model_mat");
@@ -59,6 +66,13 @@ bool material_init(struct Material* material, int material_type)
 	{
 		material->lit = false;
 		material->shader = shader_create("unshaded.vert", "unshaded.frag");
+        
+        if(material->shader == -1)
+        {
+            log_error("material:init", "Failed to compile shader for Unshaded, resetting material");
+            material_reset(material);
+            return false;
+        }
 
 		material->model_params[MMP_DIFFUSE_TEX].type = UT_TEX;
 		material->model_params[MMP_DIFFUSE_TEX].location = shader_get_uniform_location(material->shader, "diffuse_texture");

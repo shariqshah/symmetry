@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #include "file_io.h"
 #include "../common/log.h"
@@ -14,8 +15,8 @@ static char* relative_path_get(const int directory_type);
 void io_file_init(const char* install_dir, const char* user_dir)
 {
 	executable_directory = str_new("%s", install_dir);
-	install_directory    = str_new("%s/assets/", install_dir);
-	user_directory       = str_new("%s/", user_dir);
+	install_directory    = str_new("%sassets/", install_dir);
+	user_directory       = str_new("%s", user_dir);
 }
 
 void io_file_cleanup(void)
@@ -78,7 +79,11 @@ FILE* io_file_open(const int directory_type, const char* path, const char* mode)
 	relative_path = str_concat(relative_path, path);
 	FILE* file = fopen(relative_path, mode);
 	if(!file)
-		log_error("io:file_open", "Failed to open file '%s'", relative_path);
+    {
+        char err_str[256];
+        perror(err_str);
+		log_error("io:file_open", "Failed to open file '%s' (%s)", relative_path, err_str);
+    }
 	free(relative_path);
 	return file;
 }

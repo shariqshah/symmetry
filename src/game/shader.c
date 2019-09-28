@@ -155,15 +155,15 @@ int shader_create(const char* vert_shader_name, const char* frag_shader_name)
 	GL_CHECK(glBindAttribLocation(program, ATTRIB_LOC_POSITION, "vPosition"));
 	GL_CHECK(glBindAttribLocation(program, ATTRIB_LOC_NORMAL,   "vNormal"));
 	GL_CHECK(glBindAttribLocation(program, ATRRIB_LOC_UV,       "vUV"));
-	GL_CHECK(glBindAttribLocation(program, ATTRIB_LOC_COLOR,    "vColor"));
+	//GL_CHECK(glBindAttribLocation(program, ATTRIB_LOC_COLOR,    "vColor"));
 	GL_CHECK(glLinkProgram(program));
 
 	GLint is_linked = 0;
 	GL_CHECK(glGetProgramiv(program, GL_LINK_STATUS, &is_linked));
-	if(!is_linked)
+	if(is_linked != GL_TRUE)
 	{
 		GLint log_size = 0;
-		GL_CHECK(glGetProgramiv(program, GL_LINK_STATUS, &log_size));
+		GL_CHECK(glGetProgramiv(program, GL_INFO_LOG_LENGTH, &log_size));
 		char* message = (char *)malloc(sizeof(char) * log_size);
 		GL_CHECK(glGetProgramInfoLog(program, log_size, NULL, message));
 		log_error("shader:create", "LINK SHADER : %s", message);

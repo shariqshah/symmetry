@@ -1,4 +1,7 @@
 Todo:
+	- Fix Deployment target issue in xcode build on macos 
+	- Implement/Fix copying libraries to executable folder after build completes on mac os
+	- Fix symlink issue in genie for macos which interferes with fopen operations
 	- Fix all sound related bugs before moving on and finish sound
 	  serialization to file
 	- Finish mesh and material properties serialization to and from file 

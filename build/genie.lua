@@ -3,9 +3,9 @@ solution "Symmetry"
 	platforms {"x64"}
 	location(_ACTION)
 
-	configuration {"linux"}
+	configuration {"linux", "macosx"}
 	    postbuildcommands {"ln -fs " .. os.getcwd()  .. "/../assets debug/assets"}
-	    postbuildcommands {"ln -fs " .. os.getcwd()  .. "/../assets release/assets"}
+	    postbuildcommands {"ln -fs " .. os.getcwd()  .. "/../assets " .. os.getcwd() .. "release"}
 		buildoptions {"-Wall", "-std=c99"}
 
 	configuration {"windows", "vs2017"}	
@@ -72,15 +72,22 @@ solution "Symmetry"
 		    linkoptions {"'-Wl,-rpath,$$ORIGIN'"}
 		    links {"SDL2", "m", "ode", "pthread"}
 
+		configuration "macosx"
+		    includedirs {"../include/mac/sdl2/", "../include/common/soloud/", "../include/mac/"}
+		    libdirs {"../lib/mac/sdl2/", "../lib/mac/soloud/", "../lib/mac/ode/"}
+		    links {"SDL2", "m", "ode", "pthread", "soloud"}
+
 		configuration {"windows", "vs2017"}
 		    includedirs	{"../include/windows/sdl2/", "../include/common/soloud/", "../include/windows/"}
 		    libdirs {"../lib/windows/sdl2/", "../lib/windows/soloud/", "../lib/windows/ode/"}
 			
-		configuration "Debug"
+		configuration {"not macosx", "Debug"}
 		    links {"soloud_x64_d"}
-		    defines {"GL_DEBUG_CONTEXT", "GL_BREAK_ON_ERROR"}
+		 
+		configuration "Debug"
+			defines {"GL_DEBUG_CONTEXT", "GL_BREAK_ON_ERROR"}
 		
-		configuration "Release"
+		configuration {"not macosx", "Release"}
 			links {"soloud_x64"}
 			
 		configuration {"windows", "Release", "vs2017"}

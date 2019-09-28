@@ -1,4 +1,5 @@
 #define NK_IMPLEMENTATION
+#include <stdarg.h>
 #include "gui.h"
 #include "../common/linmath.h"
 #include "../common/log.h"

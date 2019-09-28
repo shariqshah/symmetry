@@ -105,7 +105,7 @@ All the code in this repository is under GPLv3, see LICENSE for more information
 
 - ### Level/Scene
 
-  - Binary format with header attached at the top
+  - A Binary format with header attached at the top
   - Save child entities first
   - Copy paste all entites in the file one by one. Since the entites all look
     the same in memory and are made up of tagged unions, a simple memcpy approach

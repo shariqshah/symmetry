@@ -103,7 +103,7 @@ void log_message(const char* message, ...)
 	va_copy(file_list, console_list);
 	vfprintf(log_file, message, file_list);
 	vprintf(message, console_list);
-	message_callback(message, console_list);
+	//message_callback(message, console_list);
 	va_end(console_list);
 	va_end(file_list);
 	printf("\n%s", COL_RESET);
@@ -120,7 +120,7 @@ void log_warning(const char* message, ...)
 	va_copy(file_list, console_list);
 	vfprintf(log_file, message, file_list);
 	vprintf(message, console_list);
-	warning_callback(message, console_list);
+	//warning_callback(message, console_list);
 	va_end(console_list);
 	va_end(file_list);
 	printf("\n");
@@ -137,7 +137,7 @@ void log_error(const char* context, const char* error, ...)
 	va_copy(file_list, console_list);
 	vfprintf(log_file, error, file_list);
 	vprintf(error, console_list);
-	error_callback(context, error, console_list);
+	//error_callback(context, error, console_list);
 	va_end(console_list);
 	va_end(file_list);
 	printf("\n%s", COL_RESET);

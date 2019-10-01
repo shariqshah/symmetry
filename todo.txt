@@ -1,8 +1,5 @@
 Todo:
-	- Fix bug with blinn shader reaching maximum uniform number on mac
-	- Fix Deployment target issue in xcode build on macos 
 	- Implement/Fix copying libraries to executable folder after build completes on mac os
-	- Fix symlink issue in genie for macos which interferes with fopen operations
 	- Fix all sound related bugs before moving on and finish sound
 	  serialization to file
 	- Finish mesh and material properties serialization to and from file 
@@ -118,6 +115,8 @@ Bugs:
 	- Fix axis lines not aligning with grid lines
 	- Fix arc angles resetting when rotating
 	- Fix shader preprocessor failing when the file in //include directive is empty
+	- Fix bug with blinn shader reaching maximum uniform number on mac
+	- Fix Deployment target issue in xcode build on macos 
 	
 Done:
 	* Input
@@ -315,3 +314,4 @@ Done:
 	* Moved #version definition from shaders to c code for easier control
 	* Moved MAX_LIGHTS shader definition from inside the shader to be dynamically defined and added to the shader code when it is compiled 
       to reduce inconsistencies
+	* Fixed symlink issue in genie for macos which interferes with fopen operations

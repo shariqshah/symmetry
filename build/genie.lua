@@ -4,7 +4,7 @@ solution "Symmetry"
 	location(_ACTION)
 
 	configuration {"linux", "macosx"}
-	    postbuildcommands {"ln -fs " .. os.getcwd()  .. "/../assets debug/assets"}
+	    postbuildcommands {"ln -fs " .. os.getcwd()  .. "/../assets " .. os.getcwd() .. "debug"}
 	    postbuildcommands {"ln -fs " .. os.getcwd()  .. "/../assets " .. os.getcwd() .. "release"}
 		buildoptions {"-Wall", "-std=c99"}
 
@@ -117,6 +117,10 @@ solution "Symmetry"
 				"mklink /D debug\\assets ..\\..\\..\\assets"
 			}
 			links {"ode_doubled", "SDL2"}
+
+		configuration {"not windows"}
+			postbuildcommands {"ln -fs " .. os.getcwd()  .. "/../assets " .. os.getcwd() .. "/" .. _ACTION .. "/debug"}
+			postbuildcommands {"ln -fs " .. os.getcwd()  .. "/../assets " .. os.getcwd() .. "/" .. _ACTION .. "/release"}
 
 	newaction {
 	   trigger = "build_addon",

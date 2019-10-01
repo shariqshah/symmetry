@@ -47,11 +47,11 @@ void sprite_batch_create(struct Sprite_Batch* batch, const char* texture_name, c
 	}
 	batch->texture = texture;
 
-	int shader = shader_create(vert_shader, frag_shader);
+	int shader = shader_create(vert_shader, frag_shader, NULL);
 	if(shader < -1)
 	{
 		log_error("sprite_batch:create", "Failed to create shader from '%s'/'%s' sprite batch", vert_shader, frag_shader);
-		shader = shader_create("default.vert", "default.frag");
+		shader = shader_create("default.vert", "default.frag", NULL);
 	}
 	batch->shader = shader;
 	batch->draw_mode = draw_mode;

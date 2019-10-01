@@ -59,7 +59,7 @@ void im_init(void)
 	IM_State.curr_geom   = -1;
 	IM_State.curr_vertex =  0;
 
-	IM_State.im_shader = shader_create("im_geom.vert", "im_geom.frag");
+	IM_State.im_shader = shader_create("im_geom.vert", "im_geom.frag", NULL);
 }
 
 void im_cleanup(void)

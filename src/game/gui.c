@@ -46,7 +46,7 @@ bool gui_init(struct Gui* gui)
     gui->context.clip.paste    = gui_on_clipbard_paste;
     gui->context.clip.userdata = nk_handle_ptr(0);
 	gui->current_font          = NULL;
-	gui->shader                = shader_create("gui.vert", "gui.frag");
+	gui->shader                = shader_create("gui.vert", "gui.frag", NULL);
 	if(gui->shader < 0)
 	{
 		log_error("gui:init", "Failed to create shader for gui");

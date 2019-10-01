@@ -6,6 +6,7 @@
 #include "../common/log.h"
 #include "texture.h"
 #include "light.h"
+#include "scene.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -25,7 +26,9 @@ bool material_init(struct Material* material, int material_type)
 	case MAT_BLINN:
 	{
 		material->lit  = true;
-		material->shader = shader_create("blinn_phong.vert", "blinn_phong.frag");
+        char custom_defines[64];
+        snprintf(custom_defines, 64, "#define MAX_LIGHTS %d", MAX_LIGHTS);
+		material->shader = shader_create("blinn_phong.vert", "blinn_phong.frag", custom_defines);
         
         if(material->shader == -1)
         {
@@ -65,7 +68,7 @@ bool material_init(struct Material* material, int material_type)
 	case MAT_UNSHADED:
 	{
 		material->lit = false;
-		material->shader = shader_create("unshaded.vert", "unshaded.frag");
+		material->shader = shader_create("unshaded.vert", "unshaded.frag", NULL);
         
         if(material->shader == -1)
         {

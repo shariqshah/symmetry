@@ -23,7 +23,7 @@ enum Uniform_Type
 	UT_TEX
 };
 
-int  shader_create(const char* vert_shader_name, const char* frag_shader_name);
+int  shader_create(const char* vert_shader_name, const char* frag_shader_name, const char* custom_defines);
 void shader_init(void);
 void shader_bind(const int shader_index);
 void shader_remove(const int shader_index);

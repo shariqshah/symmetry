@@ -1,6 +1,4 @@
 Todo:
-	- Move MAX_LIGHTS shader definition from inside the shader to be dynamically defined and added to the shader code when it is compiled 
-      to reduce inconsistencies
 	- Fix bug with blinn shader reaching maximum uniform number on mac
 	- Fix Deployment target issue in xcode build on macos 
 	- Implement/Fix copying libraries to executable folder after build completes on mac os
@@ -315,3 +313,5 @@ Done:
 	* Console command to read/write entity to file and add it to scene
 	* Fix editor camera right-click behaviour
 	* Moved #version definition from shaders to c code for easier control
+	* Moved MAX_LIGHTS shader definition from inside the shader to be dynamically defined and added to the shader code when it is compiled 
+      to reduce inconsistencies

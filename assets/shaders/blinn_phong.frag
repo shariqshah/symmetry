@@ -19,8 +19,6 @@ const int LT_SPOT    = 0;
 const int LT_DIR     = 1;
 const int LT_POINT   = 2;
 
-const int MAX_LIGHTS = 12;
-
 uniform sampler2D diffuse_texture;
 uniform Light lights[MAX_LIGHTS];
 uniform int total_active_lights;

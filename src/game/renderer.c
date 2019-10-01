@@ -119,8 +119,8 @@ void renderer_init(struct Renderer* renderer)
     renderer->def_fbo = framebuffer_create(width, height, true, false, true);
     framebuffer_texture_set(renderer->def_fbo, renderer->def_albedo_tex, FA_COLOR_ATTACHMENT0);
     framebuffer_texture_set(renderer->def_fbo, renderer->def_depth_tex, FA_DEPTH_ATTACHMENT);
-    renderer->composition_shader = shader_create("fbo.vert", "fbo.frag");
-    renderer->debug_shader       = shader_create("debug.vert", "debug.frag");
+    renderer->composition_shader = shader_create("fbo.vert", "fbo.frag", NULL);
+    renderer->debug_shader       = shader_create("debug.vert", "debug.frag", NULL);
 
     renderer->num_culled_slot   = editor_debugvar_slot_create("Culled Geom",   VT_INT);
     renderer->num_rendered_slot = editor_debugvar_slot_create("Rendered Geom", VT_INT);

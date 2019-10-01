@@ -34,7 +34,7 @@ void debug_print_shader(const char* shaderText)
 	log_raw("\n END_DEBUG_PRINT\n\n");
 }
 
-char* run_preprocessor(char* shader_text)
+char* run_preprocessor(char* shader_text, const char* custom_defines)
 {
 	char* include_loc = strstr(shader_text, "//include");
 	if(include_loc)
@@ -66,6 +66,20 @@ char* run_preprocessor(char* shader_text)
 			filename = strtok(NULL, " ");
 		}
 	}
+    
+    //If there are other #defines, add them too
+    if(custom_defines)
+    {
+        char* shader_text_with_custom_defines = str_new("%s\n%s", custom_defines, shader_text);
+        free(shader_text);
+        shader_text = shader_text_with_custom_defines;
+    }
+    
+    // Insert #version line at the top
+    char* shader_text_with_version = str_new("%s\n%s", GLSL_VERSION_STR, shader_text);
+    free(shader_text);
+    shader_text = shader_text_with_version;
+    
 	return shader_text;
 }
 
@@ -75,7 +89,7 @@ void shader_init(void)
 	empty_indices = array_new(int);
 }
 	
-int shader_create(const char* vert_shader_name, const char* frag_shader_name)
+int shader_create(const char* vert_shader_name, const char* frag_shader_name, const char* custom_defines)
 {
 	char* vs_path = str_new("shaders/");
 	vs_path = str_concat(vs_path, vert_shader_name);
@@ -91,14 +105,14 @@ int shader_create(const char* vert_shader_name, const char* frag_shader_name)
 	assert(vert_source != NULL);
 	assert(frag_source != NULL);
 
-	vert_source = run_preprocessor(vert_source);		
-	frag_source = run_preprocessor(frag_source);
+	vert_source = run_preprocessor(vert_source, custom_defines);
+	frag_source = run_preprocessor(frag_source, custom_defines);
 		
-    const char* vert_sourcePtr[2] = { GLSL_VERSION_STR, vert_source };
-    const char* frag_sourcePtr[2] = { GLSL_VERSION_STR, frag_source };
+    const char* vert_sourcePtr = vert_source;
+    const char* frag_sourcePtr = frag_source;
 		
-	GL_CHECK(glShaderSource(vert_shader, 2, &vert_sourcePtr, NULL));
-	GL_CHECK(glShaderSource(frag_shader, 2, &frag_sourcePtr, NULL));
+	GL_CHECK(glShaderSource(vert_shader, 1, &vert_sourcePtr, NULL));
+	GL_CHECK(glShaderSource(frag_shader, 1, &frag_sourcePtr, NULL));
 
 	GL_CHECK(glCompileShader(vert_shader));
 	GL_CHECK(glCompileShader(frag_shader));

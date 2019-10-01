@@ -1,4 +1,4 @@
-//include fog.glsl common.glsl commonFrag.glsl version.glsl
+//include fog.glsl common.glsl commonFrag.glsl 
 
 struct Light
 {

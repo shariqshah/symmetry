@@ -1,5 +1,3 @@
-//include version.glsl
-
 uniform mat4 mvp;
 
 in vec2 vPosition;

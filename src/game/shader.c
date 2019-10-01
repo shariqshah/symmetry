@@ -13,10 +13,11 @@
 #include <string.h>
 #include <assert.h>
 
+#define MAX_INCLUDE_LINE_LEN 256
+
 static uint* shader_list;
 static int*  empty_indices;
-
-#define MAX_INCLUDE_LINE_LEN 256
+static const char* GLSL_VERSION_STR = "#version 330\n";
 
 void debug_print_shader(const char* shaderText)
 {
@@ -93,17 +94,11 @@ int shader_create(const char* vert_shader_name, const char* frag_shader_name)
 	vert_source = run_preprocessor(vert_source);		
 	frag_source = run_preprocessor(frag_source);
 		
-	GLint v_size = (GLint)strlen(vert_source);
-	GLint f_size = (GLint)strlen(frag_source);
+    const char* vert_sourcePtr[2] = { GLSL_VERSION_STR, vert_source };
+    const char* frag_sourcePtr[2] = { GLSL_VERSION_STR, frag_source };
 		
-	const char* vert_sourcePtr = vert_source;
-	const char* frag_sourcePtr = frag_source;
-		
-	const GLint* vert_size = &v_size;
-	const GLint* frag_size = &f_size;
-		
-	GL_CHECK(glShaderSource(vert_shader, 1, &vert_sourcePtr, vert_size));
-	GL_CHECK(glShaderSource(frag_shader, 1, &frag_sourcePtr, frag_size));
+	GL_CHECK(glShaderSource(vert_shader, 2, &vert_sourcePtr, NULL));
+	GL_CHECK(glShaderSource(frag_shader, 2, &frag_sourcePtr, NULL));
 
 	GL_CHECK(glCompileShader(vert_shader));
 	GL_CHECK(glCompileShader(frag_shader));

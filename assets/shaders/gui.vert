@@ -1,5 +1,3 @@
-//include version.glsl
-
 uniform mat4 proj_mat;
 
 in vec2 vPosition;

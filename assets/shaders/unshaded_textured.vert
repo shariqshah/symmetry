@@ -1,4 +1,4 @@
-//include commonVert.glsl version.glsl
+//include commonVert.glsl 
 
 void main()
 {

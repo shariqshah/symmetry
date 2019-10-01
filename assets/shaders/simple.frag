@@ -1,5 +1,3 @@
-#version 130
-
 uniform sampler2D sampler;
 
 in  vec2 uv;

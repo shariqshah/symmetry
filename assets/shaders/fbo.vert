@@ -1,5 +1,3 @@
-//include version.glsl
-
 in vec2 vPosition;
 in vec2 vUV;
 

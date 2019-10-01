@@ -1,4 +1,4 @@
-//include fog.glsl phongCommon.glsl common.glsl commonFrag.glsl version.glsl 
+//include fog.glsl phongCommon.glsl common.glsl commonFrag.glsl 
 
 uniform sampler2D sampler;
 

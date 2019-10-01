@@ -1,5 +1,3 @@
-//include version.glsl
-
 in vec2 uv;
 
 out vec4 frag_color;

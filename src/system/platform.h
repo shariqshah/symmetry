@@ -14,7 +14,7 @@ enum Video_Drivers_Linux
 // Window Related functions
 struct Window;
 
-struct Window* window_create(const char* title, int width, int height, int msaa, int msaa_levels);
+struct Window* window_create(const char* title, int width, int height, int msaa, int msaa_levels, bool vsync);
 void           window_destroy(struct Window* window);
 void           window_show(struct Window* window);
 void           window_hide(struct Window* window);

@@ -1,5 +1,3 @@
-//include version.glsl
-
 in vec2 uv;
 in vec4 color;
 

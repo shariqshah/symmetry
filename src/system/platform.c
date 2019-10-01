@@ -18,7 +18,7 @@ struct Window
     bool          is_fullscreen;
 };
 
-struct Window* window_create(const char* title, int width, int height, int msaa, int msaa_levels)
+struct Window* window_create(const char* title, int width, int height, int msaa, int msaa_levels, bool vsync)
 {
     struct Window* new_window = NULL;
     if(!new_window)
@@ -83,7 +83,8 @@ struct Window* window_create(const char* title, int width, int height, int msaa,
     SDL_Window* current_window = SDL_GL_GetCurrentWindow();
     SDL_GLContext current_context = SDL_GL_GetCurrentContext();
     SDL_GL_MakeCurrent((SDL_Window*)new_window->sdl_window, new_window->gl_context);
-    SDL_GL_SetSwapInterval(0);	/* 0: Vsync disabled, 1: Vsync enabled*/
+    
+    SDL_GL_SetSwapInterval(vsync ? 1 : 0);	/* 0: Vsync disabled, 1: Vsync enabled*/
     if(current_window && current_context) SDL_GL_MakeCurrent(current_window, current_context);
 
     int major = 0, minor = 0;

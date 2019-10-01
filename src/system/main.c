@@ -76,11 +76,12 @@ bool init(void)
         return false;
     }
 
-    int width       = hashmap_int_get(cvars,  "render_width");
-    int height      = hashmap_int_get(cvars,  "render_height");
-    int msaa        = hashmap_bool_get(cvars, "msaa_enabled");
-    int msaa_levels = hashmap_int_get(cvars,  "msaa_levels");
-    window = window_create("Symmetry", width, height, msaa, msaa_levels);
+    int  width       = hashmap_int_get(cvars,  "render_width");
+    int  height      = hashmap_int_get(cvars,  "render_height");
+    int  msaa        = hashmap_bool_get(cvars, "msaa_enabled");
+    int  msaa_levels = hashmap_int_get(cvars,  "msaa_levels");
+    bool vsync       = hashmap_bool_get(cvars, "vsync_enabled");
+    window = window_create("Symmetry", width, height, msaa, msaa_levels, vsync);
     if(!window)
     {
         log_error("main:init", "Window creation failed");

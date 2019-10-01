@@ -1,4 +1,7 @@
 Todo:
+	- Move MAX_LIGHTS shader definition from inside the shader to be dynamically defined and added to the shader code when it is compiled 
+      to reduce inconsistencies
+	- Fix bug with blinn shader reaching maximum uniform number on mac
 	- Fix Deployment target issue in xcode build on macos 
 	- Implement/Fix copying libraries to executable folder after build completes on mac os
 	- Fix symlink issue in genie for macos which interferes with fopen operations
@@ -116,6 +119,7 @@ Bugs:
 	- Fix hang on fullscreen toggle
 	- Fix axis lines not aligning with grid lines
 	- Fix arc angles resetting when rotating
+	- Fix shader preprocessor failing when the file in //include directive is empty
 	
 Done:
 	* Input
@@ -310,4 +314,4 @@ Done:
 	* Added editor shortcut key to delete selected entity
 	* Console command to read/write entity to file and add it to scene
 	* Fix editor camera right-click behaviour
-
+	* Moved #version definition from shaders to c code for easier control

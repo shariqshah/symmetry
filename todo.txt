@@ -1,4 +1,5 @@
 Todo:
+	- Implement HiDPI support
 	- Implement/Fix copying libraries to executable folder after build completes on mac os
 	- Fix all sound related bugs before moving on and finish sound
 	  serialization to file

@@ -77,6 +77,30 @@ solution "Symmetry"
 		    libdirs {"../lib/mac/sdl2/", "../lib/mac/soloud/", "../lib/mac/ode/"}
 		    links {"SDL2", "m", "ode", "pthread", "soloud"}
 
+		configuration {"macosx", "Debug"}
+			postbuildcommands
+			{
+				'cp ../../lib/mac/sdl2/libSDL2-2.0.0.dylib debug/',
+				'cp ../../lib/mac/soloud/libsoloud.dylib debug/',
+				'cp ../../lib/mac/ode/libode.0.16.0.dylib debug/',
+				'install_name_tool -add_rpath @executable_path/. debug/Symmetry',
+				'install_name_tool -change "/usr/local/opt/sdl2/lib/libSDL2-2.0.0.dylib" "@rpath/libSDL2-2.0.0.dylib" debug/Symmetry',
+				'install_name_tool -change "/Users/shariqshah/Dev/ode/build_cmake/libode.0.16.0.dylib" "@rpath/libode.0.16.0.dylib" debug/Symmetry',
+				'install_name_tool -change "/usr/local/lib/libsoloud.dylib" "@rpath/libsoloud.dylib" debug/Symmetry',
+			}
+
+		configuration {"macosx", "Release"}
+			postbuildcommands
+			{
+				'cp ../../lib/mac/sdl2/libSDL2-2.0.0.dylib release/',
+				'cp ../../lib/mac/soloud/libsoloud.dylib release/',
+				'cp ../../lib/mac/ode/libode.0.16.0.dylib release/',
+				'install_name_tool -add_rpath @executable_path/. release/Symmetry',
+				'install_name_tool -change "/usr/local/opt/sdl2/lib/libSDL2-2.0.0.dylib" "@rpath/libSDL2-2.0.0.dylib" release/Symmetry',
+				'install_name_tool -change "/Users/shariqshah/Dev/ode/build_cmake/libode.0.16.0.dylib" "@rpath/libode.0.16.0.dylib" release/Symmetry',
+				'install_name_tool -change "/usr/local/lib/libsoloud.dylib" "@rpath/libsoloud.dylib" release/Symmetry',
+			}
+
 		configuration {"windows", "vs2017"}
 		    includedirs	{"../include/windows/sdl2/", "../include/common/soloud/", "../include/windows/"}
 		    libdirs {"../lib/windows/sdl2/", "../lib/windows/soloud/", "../lib/windows/ode/"}

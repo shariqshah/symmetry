@@ -326,7 +326,7 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
     int width, height;
     struct Game_State* game_state = game_state_get();
     window_get_size(game_state->window, &width, &height);
-    glViewport(0, 0, width, height);
+    glViewport(0, 0, width * 2, height * 2);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     shader_bind(renderer->composition_shader);
     int final_render_tex = active_camera->render_tex == -1 ? renderer->def_albedo_tex : active_camera->render_tex;

@@ -91,6 +91,13 @@ struct Window* window_create(const char* title, int width, int height, int msaa,
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
     log_message("Window created and initialized with opengl core context %d.%d", major, minor);
+
+
+	int msaa_recieved = 0, msaa_recieved_levels = 0;
+	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &msaa_recieved);
+	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &msaa_recieved_levels);
+	log_message("MSAA : %d MSAA Levels : %d", msaa_recieved, msaa_recieved_levels);
+	
     return new_window;
 }
 

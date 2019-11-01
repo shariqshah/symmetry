@@ -1,6 +1,4 @@
 Todo:
-	- Implement HiDPI support
-	- Implement/Fix copying libraries to executable folder after build completes on mac os
 	- Fix all sound related bugs before moving on and finish sound
 	  serialization to file
 	- Finish mesh and material properties serialization to and from file 
@@ -82,6 +80,7 @@ Todo:
 	? Better handling incase assets folder is not found
 	- Write entity to/from file
 	- Ogg format loading and playback
+	- Implement HiDPI support
 	- Sound streaming
 	- Implment missing sound source properties (inner/outer cone, getting sound source data)
 	- Shadow maps
@@ -105,6 +104,7 @@ Improvements:
 	- Improve picking and automatically improve everything in editor
 	- Improve culling
 	- Allow scaling on all axes at once
+	- Improve grid/immediate mode drawing by switching to glDrawElements instead of glDrawArrays. 
 
 Bugs:
 	- Better handling of wav format checking at load time
@@ -316,3 +316,4 @@ Done:
 	* Moved MAX_LIGHTS shader definition from inside the shader to be dynamically defined and added to the shader code when it is compiled 
       to reduce inconsistencies
 	* Fixed symlink issue in genie for macos which interferes with fopen operations
+	* Implement/Fix copying libraries to executable folder after build completes on mac os

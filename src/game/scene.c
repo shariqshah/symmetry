@@ -544,6 +544,9 @@ void* scene_find(struct Scene* scene, const char* name)
 	entity = scene_static_mesh_find(scene, name);
 	if(entity) return entity;
 
+	entity = scene_sound_source_find(scene, name);
+	if(entity) return entity;
+
 	return entity;
 }
 

@@ -114,7 +114,7 @@ void editor_init(struct Editor* editor)
     editor->selected_entity                    = NULL;
     editor->hovered_entity                     = NULL;
     editor->top_panel_height                   = 30;
-    editor->camera_turn_speed                  = 50.f;
+    editor->camera_turn_speed                  = 90.f;
     editor->camera_move_speed                  = 20.f;
     editor->camera_sprint_multiplier           = 2.f;
 	editor->current_tool                       = EDITOR_TOOL_NORMAL;
@@ -1344,7 +1344,7 @@ void editor_camera_update(struct Editor* editor, float dt)
 
     if(input_mousebutton_state_get(MSB_RIGHT, KS_PRESSED))
     {
-		const float scale = 0.1f;
+		const float scale = 0.5f;
 		int cursor_lr, cursor_ud;
 		input_mouse_delta_get(&cursor_lr, &cursor_ud);
 		editor->camera_looking_around = true;

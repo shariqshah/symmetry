@@ -17,6 +17,7 @@ static int console_filter(const struct nk_text_edit *box, nk_rune unicode);
 
 static void console_command_entity_save(struct Console* console, const char* command);
 static void console_command_entity_load(struct Console* console, const char* command);
+static void console_command_help(struct Console* console, const char* command);
 
 void console_init(struct Console* console)
 {
@@ -44,6 +45,7 @@ void console_init(struct Console* console)
 	console->console_commands = hashmap_new();
 	hashmap_ptr_set(console->console_commands, "entity_save", &console_command_entity_save);
 	hashmap_ptr_set(console->console_commands, "entity_load", &console_command_entity_load);
+	hashmap_ptr_set(console->console_commands, "help", &console_command_help);
 }
 
 void console_toggle(struct Console* console)
@@ -207,4 +209,18 @@ void console_command_entity_load(struct Console* console, const char* command)
 		log_error("entity_load", "Could not create entity from '%s'", full_filename);
 		return;
 	}
+}
+
+void console_command_help(struct Console* console, const char* command)
+{
+	char* key = NULL;
+	Console_Command_Handler value;
+	log_message("======================================");
+	log_message("Available Commands");
+	log_message("======================================");
+	HASHMAP_FOREACH(console->console_commands, key, value)
+	{
+		log_message("%s", key);
+	}
+	log_message("======================================");
 }

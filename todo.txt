@@ -1,6 +1,7 @@
 Todo:
-	- Fix all sound related bugs before moving on and finish sound
-	  serialization to file
+	- Display default mesh when selected entity type in editor does not have a mesh
+	- Allow picking and selecting other entity types in editor i.e. the ones that don't have meshes
+	- Separate entity types in entity heirarchy view by the entity type or use a tree view to show parent/child relation or use differnt colours for different entity types
 	- Finish mesh and material properties serialization to and from file 
 	- Editor functionality to add entity from specific file to scene
 	- Scene read/write to file with scene file only containing names of
@@ -117,7 +118,7 @@ Bugs:
 	- Fix arc angles resetting when rotating
 	- Fix shader preprocessor failing when the file in //include directive is empty
 	- Fix bug with blinn shader reaching maximum uniform number on mac
-	- Fix Deployment target issue in xcode build on macos 
+	- Fix delete in editor not working when the cursor is hovering over scene heirarchy window
 	
 Done:
 	* Input
@@ -317,3 +318,4 @@ Done:
       to reduce inconsistencies
 	* Fixed symlink issue in genie for macos which interferes with fopen operations
 	* Implement/Fix copying libraries to executable folder after build completes on mac os
+	* Fixed all sound related bugs and completede sound to/from file

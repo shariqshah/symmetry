@@ -310,29 +310,22 @@ struct Entity* entity_read(struct Parser_Object* object)
 	break;
 	case ET_SOUND_SOURCE:
 	{
-		struct Sound_Source* sound_source = scene_sound_source_create(scene, name, NULL, "teh_beatz.wav", ST_WAV, true, true);
-		sound_source->type                = ST_WAV;
-		sound_source->playing             = false;
-		sound_source->loop                = false;
-		sound_source->source_instance     = 0;
-		sound_source->min_distance        = 1.f;
-		sound_source->max_distance        = 1000.f;
-		sound_source->volume              = 1.f;
-		sound_source->rolloff_factor      = 1.f;
-		sound_source->attenuation_type    = SA_EXPONENTIAL;
-		sound_source->source_buffer       = NULL;
+		struct Sound_Source* sound_source = scene_sound_source_create(scene, name, NULL, "sounds/teh_beatz.wav", ST_WAV, true, true);
+		struct Sound_Source_Buffer* default_source_buffer = sound_source->source_buffer;
+		uint default_source_instance = sound_source->source_instance;
 
-		if(hashmap_value_exists(object->data, "playing"))                sound_source->playing          = hashmap_bool_get(object->data, "playing");
-		if(hashmap_value_exists(object->data, "loop"))                   sound_source->loop             = hashmap_bool_get(object->data, "loop");
-		if(hashmap_value_exists(object->data, "sound_min_distance"))     sound_source->min_distance     = hashmap_float_get(object->data, "sound_min_distance");
-		if(hashmap_value_exists(object->data, "sound_max_distance"))     sound_source->max_distance     = hashmap_float_get(object->data, "sound_max_distance");
-		if(hashmap_value_exists(object->data, "volume"))                 sound_source->volume           = hashmap_float_get(object->data, "volume");
-		if(hashmap_value_exists(object->data, "rolloff_factor"))         sound_source->rolloff_factor   = hashmap_float_get(object->data, "rolloff_factor");
-		if(hashmap_value_exists(object->data, "sound_type"))             sound_source->type             = hashmap_int_get(object->data, "sound_type");
-		if(hashmap_value_exists(object->data, "sound_attenuation_type")) sound_source->attenuation_type = hashmap_int_get(object->data, "sound_attenuation_type");
+		sound_source->playing          = (hashmap_value_exists(object->data, "playing"))                ? hashmap_bool_get(object->data, "playing")               : true;
+		sound_source->loop             = (hashmap_value_exists(object->data, "loop"))                   ? hashmap_bool_get(object->data, "loop")                  : true;
+		sound_source->min_distance     = (hashmap_value_exists(object->data, "sound_min_distance"))     ? hashmap_float_get(object->data, "sound_min_distance")   : 1.f;
+		sound_source->max_distance     = (hashmap_value_exists(object->data, "sound_max_distance"))     ? hashmap_float_get(object->data, "sound_max_distance")   : 1000.f;
+		sound_source->volume           = (hashmap_value_exists(object->data, "volume"))                 ? hashmap_float_get(object->data, "volume")               : 1.f;
+		sound_source->rolloff_factor   = (hashmap_value_exists(object->data, "rolloff_factor"))         ? hashmap_float_get(object->data, "rolloff_factor")       : 1.f;
+		sound_source->type             = (hashmap_value_exists(object->data, "sound_type"))             ? hashmap_int_get(object->data, "sound_type")             : ST_WAV;
+		sound_source->attenuation_type = (hashmap_value_exists(object->data, "sound_attenuation_type")) ? hashmap_int_get(object->data, "sound_attenuation_type") : SA_EXPONENTIAL;
 		if(hashmap_value_exists(object->data, "source_filename"))
 		{
 			struct Sound* sound = game_state_get()->sound;
+			
 			sound_source->source_buffer = sound_source_create(sound, hashmap_str_get(object->data, "source_filename"), sound_source->type);
 			if(sound_source->source_buffer)
 			{
@@ -350,6 +343,9 @@ struct Entity* entity_read(struct Parser_Object* object)
 				sound_update_3d(sound);
 				if(sound_source->playing)
 					sound_source_instance_play(sound, sound_source->source_instance);
+
+				//Stop the default sound source from playing now that we have loaded the actual buffer
+				sound_source_instance_destroy(sound, default_source_instance);
 			}
 			else
 			{

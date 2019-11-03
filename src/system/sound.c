@@ -229,29 +229,32 @@ struct Sound_Source_Buffer* sound_source_create(struct Sound* sound, const char*
 	case ST_WAV:
 	{
 		Wav* wave = Wav_create();
-		int rc = Wav_loadMem(wave, memory, (uint)size);
+		// Tell soloud to copy the memory and not to take ownership of memory provided in order 
+		// to avoid crash when soloud tries to free the memory allocated by us across the dll boundary
+		int rc = Wav_loadMemEx(wave, memory, (uint)size, true, false); 
 		if(rc != 0)
 		{
 			log_error("sound:source_create", "Failed to load %s, Soloud: %s", filename, Soloud_getErrorString(sound->soloud_context, rc));
-			free(memory);
 			return 0;
 		}
 		source->type = ST_WAV;
 		source->wav = wave;
+		free(memory);
 	}
 	break;
 	case ST_WAV_STREAM:
 	{
 		WavStream* wave_stream = WavStream_create();
-		int rc = WavStream_loadMem(wave_stream, memory, (uint)size);
+		//int rc = WavStream_loadMem(wave_stream, memory, (uint)size);
+		int rc = WavStream_loadMemEx(wave_stream, memory, (uint)size, true, false);
 		if(rc != 0)
 		{
 			log_error("sound:source_create", "Failed to load %s, Soloud: %s", filename, Soloud_getErrorString(sound->soloud_context, rc));
-			free(memory);
 			return 0;
 		}
 		source->type = ST_WAV_STREAM;
 		source->wavstream = wave_stream;
+		free(memory);
 	}
 	break;
 	default: log_error("sound:source_create", "Invalid source type %d", type); break;

@@ -212,6 +212,8 @@ bool entity_save(struct Entity* entity, const char* filename, int directory_type
         fclose(entity_file);
         return false;
     }
+	// See if the entity has any children, if it does,
+	// write the entity first then, write all its children
 
     if(parser_write_objects(parser, entity_file, filename))
         log_message("Entity %s saved to %s", entity->name, filename);
@@ -314,14 +316,14 @@ struct Entity* entity_read(struct Parser_Object* object)
 		struct Sound_Source_Buffer* default_source_buffer = sound_source->source_buffer;
 		uint default_source_instance = sound_source->source_instance;
 
-		sound_source->playing          = (hashmap_value_exists(object->data, "playing"))                ? hashmap_bool_get(object->data, "playing")               : true;
-		sound_source->loop             = (hashmap_value_exists(object->data, "loop"))                   ? hashmap_bool_get(object->data, "loop")                  : true;
-		sound_source->min_distance     = (hashmap_value_exists(object->data, "sound_min_distance"))     ? hashmap_float_get(object->data, "sound_min_distance")   : 1.f;
-		sound_source->max_distance     = (hashmap_value_exists(object->data, "sound_max_distance"))     ? hashmap_float_get(object->data, "sound_max_distance")   : 1000.f;
-		sound_source->volume           = (hashmap_value_exists(object->data, "volume"))                 ? hashmap_float_get(object->data, "volume")               : 1.f;
-		sound_source->rolloff_factor   = (hashmap_value_exists(object->data, "rolloff_factor"))         ? hashmap_float_get(object->data, "rolloff_factor")       : 1.f;
-		sound_source->type             = (hashmap_value_exists(object->data, "sound_type"))             ? hashmap_int_get(object->data, "sound_type")             : ST_WAV;
-		sound_source->attenuation_type = (hashmap_value_exists(object->data, "sound_attenuation_type")) ? hashmap_int_get(object->data, "sound_attenuation_type") : SA_EXPONENTIAL;
+		if(hashmap_value_exists(object->data, "playing"))                sound_source->playing          = hashmap_bool_get(object->data,  "playing");
+		if(hashmap_value_exists(object->data, "loop"))                   sound_source->loop             = hashmap_bool_get(object->data,  "loop");
+		if(hashmap_value_exists(object->data, "sound_min_distance"))     sound_source->min_distance     = hashmap_float_get(object->data, "sound_min_distance");
+		if(hashmap_value_exists(object->data, "sound_max_distance"))     sound_source->max_distance     = hashmap_float_get(object->data, "sound_max_distance");
+		if(hashmap_value_exists(object->data, "volume"))                 sound_source->volume           = hashmap_float_get(object->data, "volume");
+		if(hashmap_value_exists(object->data, "rolloff_factor"))         sound_source->rolloff_factor   = hashmap_float_get(object->data, "rolloff_factor");
+		if(hashmap_value_exists(object->data, "sound_type"))             sound_source->type             = hashmap_int_get(object->data,   "sound_type");
+		if(hashmap_value_exists(object->data, "sound_attenuation_type")) sound_source->attenuation_type = hashmap_int_get(object->data,   "sound_attenuation_type");
 		if(hashmap_value_exists(object->data, "source_filename"))
 		{
 			struct Sound* sound = game_state_get()->sound;

@@ -322,6 +322,24 @@ void game_scene_setup(void)
     light->radius  = 20;
     vec3 light_pos = {0.f, 5.f, 0.f};
     transform_translate(light, &light_pos, TS_WORLD);
+
+	struct Static_Mesh* suzanne = scene_static_mesh_create(game_state->scene, "Suz", NULL, "suzanne.symbres", MAT_BLINN);
+	suzanne->model.material_params[MMP_DIFFUSE_TEX].val_int = texture_create_from_file("white.tga", TU_DIFFUSE);
+	suzanne->model.material_params[MMP_DIFFUSE].val_float = 0.5f;
+	suzanne->model.material_params[MMP_SPECULAR].val_float = 1.f;
+	suzanne->model.material_params[MMP_SPECULAR_STRENGTH].val_float = 1.f;
+	vec3_fill(&suzanne->model.material_params[MMP_DIFFUSE_COL].val_vec3, 1.f, 0.f, 1.f);
+	suz_pos.x = 0.f;
+	suz_pos.y = 5.f;
+	suz_pos.z = 5.f;
+	transform_set_position(suzanne, &suz_pos);
+
+	struct Light* suz_light = scene_light_create(game_state->scene, "Suz_Light", suzanne, LT_POINT);
+	suz_light->color.x = 1.f;
+	suz_light->color.y = 0.f;
+	suz_light->color.z = 0.f;
+    vec3 suz_light_pos = {0.f, 3.f, 0.f};
+    transform_translate(suz_light, &suz_light_pos, TS_PARENT);
 }
 
 void game_debug(float dt)

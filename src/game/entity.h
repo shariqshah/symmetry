@@ -155,8 +155,8 @@ void           entity_init(struct Entity* entity, const char* name, struct Entit
 void           entity_reset(struct Entity* entity, int id);
 bool           entity_save(struct Entity* entity, const char* filename, int directory_type);
 bool           entity_load(const char* filename, int directory_type);
-bool           entity_write(struct Entity* entity, struct Parser_Object* object);
-struct Entity* entity_read(struct Parser_Object* object);
+bool           entity_write(struct Entity* entity, struct Parser_Object* object, bool write_transform);
+struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_entity);
 const char*    entity_type_name_get(struct Entity* entity);
 void           entity_rigidbody_on_move(Rigidbody body);
 void           entity_rigidbody_on_collision(Rigidbody body_A, Rigidbody body_B);

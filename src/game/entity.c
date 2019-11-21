@@ -52,7 +52,7 @@ void entity_reset(struct Entity * entity, int id)
 }
 
 
-bool entity_write(struct Entity* entity, struct Parser_Object* object)
+bool entity_write(struct Entity* entity, struct Parser_Object* object, bool write_transform)
 {
 	if(!object)
 	{
@@ -121,10 +121,14 @@ bool entity_write(struct Entity* entity, struct Parser_Object* object)
 	//struct Entity* parent = entity_get_parent(entity->id);
 	//hashmap_str_set(entity_data, "parent", parent ? parent->name  : "NONE");
 
-	///* Transform */
-	//hashmap_vec3_set(entity_data, "position", &entity->transform.position);
-	//hashmap_vec3_set(entity_data, "scale", &entity->transform.scale);
-	//hashmap_quat_set(entity_data, "rotation", &entity->transform.rotation);
+	/* Transform */
+	if(write_transform)
+	{
+		hashmap_vec3_set(entity_data, "position", &entity->transform.position);
+		hashmap_vec3_set(entity_data, "scale", &entity->transform.scale);
+		hashmap_quat_set(entity_data, "rotation", &entity->transform.rotation);
+	}
+
 	switch(entity->type)
 	{
 	case ET_CAMERA:
@@ -205,15 +209,29 @@ bool entity_save(struct Entity* entity, const char* filename, int directory_type
 
     struct Parser* parser = parser_new();
     struct Parser_Object* object = parser_object_new(parser, PO_ENTITY);
-    if(!entity_write(entity, object))
+    if(!entity_write(entity, object, false))
     {
         log_error("entity:save", "Failed to save entity : %s to file : %s", entity->name, filename);
 		parser_free(parser);
         fclose(entity_file);
         return false;
     }
+
 	// See if the entity has any children, if it does,
 	// write the entity first then, write all its children
+	int num_children = array_len(entity->transform.children);
+	for (int i = 0; i < num_children; i++)
+	{
+		struct Parser_Object* child_object = parser_object_new(parser, PO_ENTITY);
+		struct Entity* child_entity = entity->transform.children[i];
+		if (!entity_write(child_entity, child_object, true))
+		{
+			log_error("entity:save", "Failed to write child entity : %s for parent entity : %s to file : %s", entity->name, child_entity->name, filename);
+			parser_free(parser);
+			fclose(entity_file);
+			return false;
+		}
+	}
 
     if(parser_write_objects(parser, entity_file, filename))
         log_message("Entity %s saved to %s", entity->name, filename);
@@ -223,7 +241,7 @@ bool entity_save(struct Entity* entity, const char* filename, int directory_type
 	return true;
 }
 
-struct Entity* entity_read(struct Parser_Object* object)
+struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_entity)
 {
 	assert(object);
 
@@ -259,7 +277,7 @@ struct Entity* entity_read(struct Parser_Object* object)
 		bool fbo_has_render_tex = false;
 		int fbo_width = -1;
 		int fbo_height = -1;
-		struct Camera* camera = scene_camera_create(scene, name, NULL, 320, 240);
+		struct Camera* camera = scene_camera_create(scene, name, parent_entity, 320, 240);
 		if(hashmap_value_exists(object->data, "fov"))                camera->fov = hashmap_float_get(object->data, "fov");
 		if(hashmap_value_exists(object->data, "resizeable"))         camera->resizeable = hashmap_bool_get(object->data, "resizeable");
 		if(hashmap_value_exists(object->data, "zoom"))               camera->zoom = hashmap_float_get(object->data, "zoom");
@@ -296,7 +314,7 @@ struct Entity* entity_read(struct Parser_Object* object)
 	break;
 	case ET_LIGHT:
 	{
-		struct Light* light = scene_light_create(scene, name, NULL, LT_POINT);
+		struct Light* light = scene_light_create(scene, name, parent_entity, LT_POINT);
 		if(hashmap_value_exists(object->data, "light_type"))  light->type        = hashmap_int_get(object->data, "light_type");
 		if(hashmap_value_exists(object->data, "outer_angle")) light->outer_angle = hashmap_float_get(object->data, "outer_angle");
 		if(hashmap_value_exists(object->data, "inner_angle")) light->inner_angle = hashmap_float_get(object->data, "inner_angle");
@@ -312,7 +330,7 @@ struct Entity* entity_read(struct Parser_Object* object)
 	break;
 	case ET_SOUND_SOURCE:
 	{
-		struct Sound_Source* sound_source = scene_sound_source_create(scene, name, NULL, "sounds/teh_beatz.wav", ST_WAV, true, true);
+		struct Sound_Source* sound_source = scene_sound_source_create(scene, name, parent_entity, "sounds/teh_beatz.wav", ST_WAV, true, true);
 		struct Sound_Source_Buffer* default_source_buffer = sound_source->source_buffer;
 		uint default_source_instance = sound_source->source_instance;
 
@@ -372,7 +390,7 @@ struct Entity* entity_read(struct Parser_Object* object)
 		int material_type = MAT_UNSHADED;
 		if(hashmap_value_exists(object->data, "geometry")) geometry_name = hashmap_str_get(object->data, "geometry");
 		if(hashmap_value_exists(object->data, "material_type")) material_type = hashmap_int_get(object->data, "material_type");
-		struct Static_Mesh* mesh = scene_static_mesh_create(scene, name, NULL, geometry_name, material_type);
+		struct Static_Mesh* mesh = scene_static_mesh_create(scene, name, parent_entity, geometry_name, material_type);
 		new_entity = &mesh->base;
 	}
 	break;
@@ -384,6 +402,24 @@ struct Entity* entity_read(struct Parser_Object* object)
 	default:
 		log_warning("Unhandled Entity type '%d' detected", type);
 		break;
+	}
+	
+	//If there's a parent entity then it means this is a child entity and we shoud load it's relative transform values
+	if(parent_entity)
+	{
+		vec3 position = { 0.f, 0.f, 0.f };
+		quat rotation = { 0.f, 0.f, 0.f, 1.f };
+		vec3 scale    = { 1.f, 1.f, 1.f };
+
+		if(hashmap_value_exists(object->data, "position")) position = hashmap_vec3_get(object->data, "position");
+		if(hashmap_value_exists(object->data, "rotation")) rotation = hashmap_quat_get(object->data, "rotation");
+		if(hashmap_value_exists(object->data, "scale"))    scale    = hashmap_vec3_get(object->data, "scale");
+
+		transform_set_position(new_entity, &position);
+		transform_scale(new_entity, &scale);
+		quat_mul(&new_entity->transform.rotation, &new_entity->transform.rotation, &rotation);
+		transform_update_transmat(new_entity);
+
 	}
 
 	return new_entity;
@@ -417,14 +453,17 @@ bool entity_load(const char* filename, int directory_type)
 	}
 
 	int num_entites_loaded = 0;
+	struct Entity* parent_entity = NULL;
 	for(int i = 0; i < array_len(parsed_file->objects); i++)
 	{
 		struct Parser_Object* object = &parsed_file->objects[i];
 		if(object->type != PO_ENTITY) continue;
 
-		new_entity = entity_read(object);
+		new_entity = entity_read(object, parent_entity);
 		if(new_entity)
 		{
+			if(i == 0)
+				parent_entity = new_entity;
 			num_entites_loaded++;
 			log_message("Entity %s loaded from %s", new_entity->name, filename);
 		}

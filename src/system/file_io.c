@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <string.h>
 
 #include "file_io.h"
 #include "../common/log.h"
@@ -81,7 +82,8 @@ FILE* io_file_open(const int directory_type, const char* path, const char* mode)
 	if(!file)
     {
         char err_str[256];
-        perror(err_str);
+		memset(&err_str[0], '\0', 256);
+        perror(&err_str[0]);
 		log_error("io:file_open", "Failed to open file '%s' (%s)", relative_path, err_str);
     }
 	free(relative_path);

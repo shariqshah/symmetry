@@ -1,13 +1,12 @@
 Todo:
-	- Display default mesh when selected entity type in editor does not have a mesh
-	- Allow picking and selecting other entity types in editor i.e. the ones that don't have meshes
-	- Separate entity types in entity heirarchy view by the entity type or use a tree view to show parent/child relation or use differnt colours for different entity types
 	- Finish mesh and material properties serialization to and from file 
-	- Editor functionality to add entity from specific file to scene
 	- Scene read/write to file with scene file only containing names of
 	  entity archetypes
 	- Console command to read/write scene to/from file
 	- Editor functionality to read/write scene to/from file
+	- Display default mesh when selected entity type in editor does not have a mesh
+	- Allow picking and selecting other entity types in editor i.e. the ones that don't have meshes
+	- Separate entity types in entity heirarchy view by the entity type or use a tree view to show parent/child relation or use different colours for different entity types
 	? Entity creator window to create new types of entities and write them
 	  to disk
 	- Entity browser window which lists all existing entity types from
@@ -319,3 +318,5 @@ Done:
 	* Fixed symlink issue in genie for macos which interferes with fopen operations
 	* Implement/Fix copying libraries to executable folder after build completes on mac os
 	* Fixed all sound related bugs and completede sound to/from file
+	* Implemented saving/loading entity children when reading/writing entity to file  
+	* Editor functionality to add entity from specific file to scene

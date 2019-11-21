@@ -28,7 +28,13 @@ void transform_child_add(struct Entity* parent, struct Entity* child, bool updat
 
     /* Check if already added */
 	for(int i = 0; i < array_len(parent_transform->children); i++)
-		if(parent_transform->children[i] == child) return;
+	{
+		if(parent_transform->children[i] == child)
+		{
+			log_warning("Parent : %s already has a child named %s", parent->name, parent_transform->children[i]->name);
+			return;
+		}
+	}
 	
 	struct Entity** new_child_loc = array_grow(parent_transform->children, struct Entity*);
 	*new_child_loc = child;
@@ -44,7 +50,7 @@ bool transform_child_remove(struct Entity* parent, struct Entity* child)
 	{
 		if(parent_transform->children[i] == child)
 		{
-			array_remove_at(parent_transform, i);
+			array_remove_at(parent_transform->children, i);
 			child->transform.parent = NULL;
 			success = true;
 			return success;
@@ -233,6 +239,7 @@ void transform_update_transmat(struct Entity* entity)
 void transform_destroy(struct Entity* entity)
 {
 	struct Transform* transform = &entity->transform;
+	// Remove children
 	int children = array_len(transform->children);
 	if(children > 0)
 	{
@@ -242,7 +249,11 @@ void transform_destroy(struct Entity* entity)
 			child->marked_for_deletion = true;
 		}
 	}
-	
+
+	// Remove this entity from parent's children
+	if(entity->transform.parent)
+		transform_child_remove(entity->transform.parent, entity);
+		
 	/* Remove transform */
 	array_free(transform->children);
 	vec3_fill(&transform->position, 0.f, 0.f, 0.f);

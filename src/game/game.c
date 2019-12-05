@@ -328,7 +328,7 @@ void game_scene_setup(void)
 	suzanne->model.material_params[MMP_DIFFUSE].val_float = 0.5f;
 	suzanne->model.material_params[MMP_SPECULAR].val_float = 1.f;
 	suzanne->model.material_params[MMP_SPECULAR_STRENGTH].val_float = 1.f;
-	vec3_fill(&suzanne->model.material_params[MMP_DIFFUSE_COL].val_vec3, 1.f, 0.f, 1.f);
+	vec4_fill(&suzanne->model.material_params[MMP_DIFFUSE_COL].val_vec4, 1.f, 0.f, 1.f, 1.f);
 	suz_pos.x = 0.f;
 	suz_pos.y = 5.f;
 	suz_pos.z = 5.f;

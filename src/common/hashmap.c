@@ -101,7 +101,10 @@ struct Variant* hashmap_value_get(const struct Hashmap* hashmap, const char* key
     int compare_len       = key_len < HASH_MAX_KEY_LEN ? key_len : HASH_MAX_KEY_LEN;
 	for(int i = 0; i < array_len(hashmap->buckets[index]); i++)
 	{
-		if(strncmp(key, hashmap->buckets[index][i].key, compare_len) == 0)
+		// Check for the length of the key to avoid partial matches. We might be looking for 
+		// "Diffuse" and we'll get matched to "Diffuse_Color" if we're relying on the length
+		// of "Diffuse" only
+		if(strnlen(hashmap->buckets[index][i].key, HASH_MAX_KEY_LEN) == compare_len && strncmp(key, hashmap->buckets[index][i].key, compare_len) == 0)
 		{
 			value = &hashmap->buckets[index][i].value;
 			break;

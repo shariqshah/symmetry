@@ -1783,16 +1783,16 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 					sound_source_instance_volume_set(sound, sound_source->source_instance, volume);
 
 					nk_layout_row_dynamic(context, 30, 2);
-					static char filename_buffer[MAX_FILENAME_LEN];
-					strncpy(filename_buffer, sound_source->source_buffer->filename, MAX_FILENAME_LEN);
+					static char sound_source_filename_buffer[MAX_FILENAME_LEN];
+					strncpy(sound_source_filename_buffer, sound_source->source_buffer->filename, MAX_FILENAME_LEN);
 					nk_label(context, "File", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
 					int edit_flags = NK_EDIT_GOTO_END_ON_ACTIVATE | NK_EDIT_FIELD | NK_EDIT_SIG_ENTER;
-					int edit_state = nk_edit_string_zero_terminated(context, edit_flags, filename_buffer, MAX_FILENAME_LEN, NULL);
+					int edit_state = nk_edit_string_zero_terminated(context, edit_flags, sound_source_filename_buffer, MAX_FILENAME_LEN, NULL);
 					if(edit_state & NK_EDIT_COMMITED)
 					{
-						if(strncmp(filename_buffer, sound_source->source_buffer->filename, MAX_FILENAME_LEN) != 0)
+						if(strncmp(sound_source_filename_buffer, sound_source->source_buffer->filename, MAX_FILENAME_LEN) != 0)
 						{
-							struct Sound_Source_Buffer* new_source_buffer = sound_source_create(sound, filename_buffer, ST_WAV_STREAM);
+							struct Sound_Source_Buffer* new_source_buffer = sound_source_create(sound, sound_source_filename_buffer, ST_WAV_STREAM);
 							if(new_source_buffer)
 							{
 								sound_source_stop_all(sound, sound_source->source_buffer);
@@ -1809,6 +1809,79 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 					nk_tree_pop(context);
 				}
 
+			}
+
+			/* Static Mesh */
+			if(entity->type == ET_STATIC_MESH)
+			{
+				struct Static_Mesh* mesh = (struct Static_Mesh*)entity;
+				if(nk_tree_push(context, NK_TREE_TAB, "Static Mesh", NK_MAXIMIZED))
+				{
+					nk_layout_row_dynamic(context, 30, 2);
+					nk_label(context, "Geometry", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+
+					static char geometry_filename_buffer[MAX_FILENAME_LEN];
+					int edit_flags = NK_EDIT_GOTO_END_ON_ACTIVATE | NK_EDIT_FIELD | NK_EDIT_SIG_ENTER;
+					struct Geometry* geometry = geom_get(mesh->model.geometry_index);
+					strncpy(geometry_filename_buffer, geometry->filename, MAX_FILENAME_LEN);
+					int geometry_buffer_edit_state = nk_edit_string_zero_terminated(context, edit_flags, geometry_filename_buffer, MAX_FILENAME_LEN, NULL);
+					if(geometry_buffer_edit_state & NK_EDIT_COMMITED)
+					{
+						if(strncmp(geometry->filename, geometry_filename_buffer, MAX_FILENAME_LEN) != 0)
+						{
+							model_geometry_set(&mesh->model, &geometry_filename_buffer);
+						}
+					}
+
+					nk_layout_row_dynamic(context, row_height, 2);
+					nk_label(context, "Material", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+					static const char* material_types[] = { "Blinn", "Unshaded" };
+					int selected_material = nk_combo(context, material_types, 2, mesh->model.material->type, row_height, nk_vec2(180, 180));
+					if(selected_material != mesh->model.material->type)
+					{
+						material_unregister_static_mesh(mesh->model.material, mesh);
+						struct Material* new_material = &game_state_get()->renderer->materials[selected_material];
+						if(!material_register_static_mesh(new_material, mesh))
+						{
+							log_error("editor:update", "Failed to register mesh with material");
+						}
+					}
+
+					nk_layout_row_dynamic(context, row_height, 2);
+					nk_label(context, "Diffuse Color", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+					editor_widget_color_combov4(context, &mesh->model.material_params[MMP_DIFFUSE_COL].val_vec4, 200, 300);
+
+					nk_layout_row_dynamic(context, row_height, 1);
+					mesh->model.material_params[MMP_DIFFUSE].val_float = nk_propertyf(context, "Diffuse", 0.f, mesh->model.material_params[MMP_DIFFUSE].val_float, 10.f, 0.5f, 0.1f);
+
+					nk_layout_row_dynamic(context, 30, 2);
+					nk_label(context, "Diffuse Texture", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+					static char diffuse_tex_filename_buffer[MAX_FILENAME_LEN];
+					const char* texture_name = texture_get_name(mesh->model.material_params[MMP_DIFFUSE_TEX].val_int);
+					strncpy(diffuse_tex_filename_buffer, texture_name, MAX_FILENAME_LEN);
+					int diffuse_texture_buffer_edit_state = nk_edit_string_zero_terminated(context, edit_flags, diffuse_tex_filename_buffer, MAX_FILENAME_LEN, NULL);
+					if(diffuse_texture_buffer_edit_state & NK_EDIT_COMMITED)
+					{
+						if(strncmp(texture_name, diffuse_tex_filename_buffer, MAX_FILENAME_LEN) != 0)
+						{
+							int new_diffuse_texture = texture_create_from_file(&diffuse_tex_filename_buffer, TU_DIFFUSE);
+							if(new_diffuse_texture != -1)
+							{
+								mesh->model.material_params[MMP_DIFFUSE_TEX].val_int = new_diffuse_texture;
+							}
+						}
+					}
+
+					if(mesh->model.material->type == MAT_BLINN)
+					{
+						nk_layout_row_dynamic(context, row_height, 1);
+						mesh->model.material_params[MMP_SPECULAR].val_float = nk_propertyf(context, "Specular", 0.f, mesh->model.material_params[MMP_SPECULAR].val_float, 10.f, 0.5f, 0.1f);
+						nk_layout_row_dynamic(context, row_height, 1);
+						mesh->model.material_params[MMP_SPECULAR_STRENGTH].val_float = nk_propertyf(context, "Specular Strength", 0.f, mesh->model.material_params[MMP_SPECULAR_STRENGTH].val_float, 100.f, 0.5f, 0.1f);
+					}
+					
+					nk_tree_pop(context);
+				}
 			}
 		}
 		else
@@ -1835,13 +1908,13 @@ void editor_window_renderer_settings(struct nk_context* context, struct Editor* 
 		struct Render_Settings* render_settings = &game_state->renderer->settings;
 		if(nk_tree_push(context, NK_TREE_TAB, "Debug", NK_MAXIMIZED))
 		{
-			static const char* draw_modes[] = { "Triangles", "Lines", "Points" };
 			nk_layout_row_dynamic(context, row_height, 2);
 			nk_label(context, "Debug Draw", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
 			render_settings->debug_draw_enabled = nk_check_label(context, "", render_settings->debug_draw_enabled);
 
 			nk_layout_row_dynamic(context, row_height, 2);
 			nk_label(context, "Debug Draw Mode", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+			static const char* draw_modes[] = { "Triangles", "Lines", "Points" };
 			render_settings->debug_draw_mode = nk_combo(context, draw_modes, 3, render_settings->debug_draw_mode, 20, nk_vec2(180, 100));
 
 			nk_layout_row_dynamic(context, row_height, 2);

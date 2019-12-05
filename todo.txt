@@ -1,5 +1,4 @@
 Todo:
-	- Finish mesh and material properties serialization to and from file 
 	- Scene read/write to file with scene file only containing names of
 	  entity archetypes
 	- Console command to read/write scene to/from file
@@ -98,6 +97,7 @@ Todo:
 	- Profit!
 
 Improvements:
+	- Make selected mesh wireframe alpha in editor configurable
 	- Better naming semantics for example, init/deinit for initialization and cleanup and create/destroy when memory is allocated or deallocated
 	- Categorized entity list in editor for example different subtree for lights and static meshes
 	- Depth testing for editor grid
@@ -320,3 +320,6 @@ Done:
 	* Fixed all sound related bugs and completede sound to/from file
 	* Implemented saving/loading entity children when reading/writing entity to file  
 	* Editor functionality to add entity from specific file to scene
+	* Finished mesh and material properties serialization to and from file 
+	* Fixed issue of partial matches returning incorrect hashmap values
+	* Implemented Static Mesh property viewing/editing in editor

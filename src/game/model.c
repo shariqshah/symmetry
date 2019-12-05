@@ -20,24 +20,33 @@ void model_init(struct Model* model, struct Static_Mesh* mesh, const char* geome
 	/* if no name is given for geometry, use default */
 	int geo_index = geom_create_from_file(geometry_name ? geometry_name : "default.symbres");
 
-	if(geo_index == -1)
-	{
-		log_error("model:init", "Failed to load model %s", geometry_name);
-		geo_index = geom_create_from_file("default.symbres");
-		if(geo_index == -1)
-		{
-			log_error("model:init", "Could not load default model 'default.symbres' ");
-			return;
-		}
-	}
+	if(!model_geometry_set(model, geometry_name))
+		return;
 
-	model->geometry_index = geo_index;
 	struct Material* material = &game_state_get()->renderer->materials[material_type];
 	if(!material_register_static_mesh(material, mesh))
 	{
 		log_error("model:create", "Unable to register model with Unshaded material");
 		model_reset(model, mesh);
 	}
+}
+
+bool model_geometry_set(struct Model* model, const char* geometry_name)
+{
+	/* if no name is given for geometry, use default */
+	int geo_index = geom_create_from_file(geometry_name ? geometry_name : "default.symbres");
+	if(geo_index == -1)
+	{
+		log_error("model:geometry_set", "Failed to load model %s", geometry_name);
+		geo_index = geom_create_from_file("default.symbres");
+		if(geo_index == -1)
+		{
+			log_error("model:geometry_set", "Could not load default model 'default.symbres' ");
+			return false;
+		}
+	}
+	model->geometry_index = geo_index;
+	return true;
 }
 
 void model_reset(struct Model* model, struct Static_Mesh* mesh)

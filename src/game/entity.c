@@ -17,6 +17,7 @@
 #include "../system/physics.h"
 #include "scene.h"
 #include "game.h"
+#include "texture.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -160,6 +161,24 @@ bool entity_write(struct Entity* entity, struct Parser_Object* object, bool writ
 		struct Static_Mesh* mesh = (struct Static_Mesh*)entity;
 		struct Geometry* geom = geom_get(mesh->model.geometry_index);
 		hashmap_int_set(entity_data, "material", mesh->model.material->type);
+
+		//Set material model params for this particular mesh
+		struct Model* model = &mesh->model;
+		switch(model->material->type)
+		{
+		case MAT_BLINN:
+			hashmap_vec4_set(entity_data, "diffuse_color", &model->material_params[MMP_DIFFUSE_COL].val_vec4);
+			hashmap_str_set(entity_data, "diffuse_texture", texture_get_name(model->material_params[MMP_DIFFUSE_TEX].val_int));
+			hashmap_float_set(entity_data, "diffuse", model->material_params[MMP_DIFFUSE].val_float);
+			hashmap_float_set(entity_data, "specular", model->material_params[MMP_SPECULAR].val_float);
+			hashmap_float_set(entity_data, "specular_strength", model->material_params[MMP_SPECULAR_STRENGTH].val_float);
+			break;
+		case MAT_UNSHADED:
+			hashmap_vec3_set(entity_data, "diffuse_color", &mesh->model.material_params[MMP_DIFFUSE_COL].val_vec3);
+			hashmap_int_set(entity_data, "diffuse_texture", mesh->model.material_params[MMP_DIFFUSE_TEX].val_int);
+			break;
+		};
+
 		hashmap_str_set(entity_data, "geometry", geom->filename);
 		break;
 	}
@@ -389,9 +408,34 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 		const char* geometry_name = NULL;
 		int material_type = MAT_UNSHADED;
 		if(hashmap_value_exists(object->data, "geometry")) geometry_name = hashmap_str_get(object->data, "geometry");
-		if(hashmap_value_exists(object->data, "material_type")) material_type = hashmap_int_get(object->data, "material_type");
+		if(hashmap_value_exists(object->data, "material")) material_type = hashmap_int_get(object->data, "material");
 		struct Static_Mesh* mesh = scene_static_mesh_create(scene, name, parent_entity, geometry_name, material_type);
 		new_entity = &mesh->base;
+
+		//Set material model params for this particular mesh
+		struct Model* model = &mesh->model;
+		switch(model->material->type)
+		{
+		case MAT_BLINN:
+			if(hashmap_value_exists(object->data, "diffuse_color")) model->material_params[MMP_DIFFUSE_COL].val_vec4 = hashmap_vec4_get(object->data, "diffuse_color");
+			if(hashmap_value_exists(object->data, "diffuse_texture"))
+			{
+				const char* texture_name = hashmap_str_get(object->data, "diffuse_texture");
+				model->material_params[MMP_DIFFUSE_TEX].val_int = texture_create_from_file(texture_name, TU_DIFFUSE);
+			}
+			if(hashmap_value_exists(object->data, "diffuse")) model->material_params[MMP_DIFFUSE].val_float = hashmap_float_get(object->data, "diffuse");
+			if(hashmap_value_exists(object->data, "specular")) model->material_params[MMP_SPECULAR].val_float = hashmap_float_get(object->data, "specular");
+			if(hashmap_value_exists(object->data, "specular_strength")) model->material_params[MMP_SPECULAR_STRENGTH].val_float = hashmap_float_get(object->data, "specular_strength");
+			break;
+		case MAT_UNSHADED:
+			if(hashmap_value_exists(object->data, "diffuse_color")) model->material_params[MMP_DIFFUSE_COL].val_vec4 = hashmap_vec4_get(object->data, "diffuse_color");
+			if(hashmap_value_exists(object->data, "diffuse_texture"))
+			{
+				const char* texture_name = hashmap_str_get(object->data, "diffuse_texture");
+				model->material_params[MMP_DIFFUSE_TEX].val_int = texture_create_from_file(texture_name, TU_DIFFUSE);
+			}
+			break;
+		};
 	}
 	break;
 	case ET_ROOT:

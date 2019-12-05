@@ -441,3 +441,9 @@ void texture_resize(int index, int width, int height, const void* data)
 	if(curr_texture != 0)
 		glBindTexture(GL_TEXTURE_2D, curr_texture);
 }
+
+const char* texture_get_name(int index)
+{
+	assert(index > -1 && index < array_len(texture_list));
+	return texture_list[index].name;
+}

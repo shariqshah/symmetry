@@ -31,5 +31,6 @@ int  texture_create(const char* name,
 					int         type,
 					const void* data);
 void texture_resize(int index, int width, int height, const void* data);
+const char* texture_get_name(int index);
 
 #endif

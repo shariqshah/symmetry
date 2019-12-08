@@ -65,12 +65,6 @@ enum Editor_Axis
 	EDITOR_AXIS_YZ,
 };
 
-static struct
-{
-	bool diffuse_texture;
-	bool sound_source;
-} Popup_States;
-
 static struct Debug_Variable* debug_vars_list = NULL;
 static int*                   empty_indices   = NULL;
 static int                    window_flags    = NK_WINDOW_BORDER |
@@ -164,9 +158,6 @@ void editor_init(struct Editor* editor)
 	event_manager_subscribe(event_manager, EVT_KEY_RELEASED, &editor_on_key_release);
 
 	editor->cursor_entity = scene_static_mesh_create(game_state_get()->scene, "EDITOR_SELECTED_ENTITY_WIREFRAME", NULL, "sphere.symbres", MAT_UNSHADED);
-
-	Popup_States.diffuse_texture = false;
-	Popup_States.sound_source    = false;
 }
 
 void editor_init_camera(struct Editor* editor, struct Hashmap* cvars)
@@ -1224,11 +1215,6 @@ void editor_entity_select(struct Editor* editor, struct Entity* entity)
 		editor->selected_entity = entity;
 		transform_copy(editor->cursor_entity, editor->selected_entity, false);
 	}
-
-	//Reset all popups
-	Popup_States.diffuse_texture = false;
-	Popup_States.sound_source = false;
-	log_message("Popups reset");
 }
 
 void editor_tool_reset(struct Editor* editor)
@@ -1796,28 +1782,46 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 					volume = nk_propertyf(context, "Volume", 0.f, volume, 10.f, 0.5f, 0.1f);
 					sound_source_instance_volume_set(sound, sound_source->source_instance, volume);
 
-					nk_layout_row_dynamic(context, 30, 2);
+					nk_layout_row_dynamic(context, row_height, 2);
 					static char sound_source_filename_buffer[MAX_FILENAME_LEN];
-					strncpy(sound_source_filename_buffer, sound_source->source_buffer->filename, MAX_FILENAME_LEN);
-					nk_label(context, "File", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
-					int edit_flags = NK_EDIT_GOTO_END_ON_ACTIVATE | NK_EDIT_FIELD | NK_EDIT_SIG_ENTER;
-					int edit_state = nk_edit_string_zero_terminated(context, edit_flags, sound_source_filename_buffer, MAX_FILENAME_LEN, NULL);
-					if(edit_state & NK_EDIT_COMMITED)
+					static bool sound_source_filename_copied = false;
+					if(!sound_source_filename_copied)
 					{
-						if(strncmp(sound_source_filename_buffer, sound_source->source_buffer->filename, MAX_FILENAME_LEN) != 0)
+						strncpy(sound_source_filename_buffer, sound_source->source_buffer->filename, MAX_FILENAME_LEN);
+						sound_source_filename_copied = true;
+					}
+					nk_label(context, "File", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+					struct nk_rect sound_source_filename_bounds = nk_widget_bounds(context);
+					nk_button_label(context, sound_source->source_buffer->filename);
+					if(nk_input_is_mouse_hovering_rect(context, sound_source_filename_bounds))
+						nk_tooltip(context, "Right-click to change");
+					
+					if(nk_contextual_begin(context, 0, nk_vec2(200, 120), sound_source_filename_bounds))
+					{
+						nk_layout_row_dynamic(context, 28, 1);
+						int edit_flags = NK_EDIT_GOTO_END_ON_ACTIVATE | NK_EDIT_FIELD | NK_EDIT_SIG_ENTER;
+						int edit_state = nk_edit_string_zero_terminated(context, edit_flags, sound_source_filename_buffer, MAX_FILENAME_LEN, NULL);
+						nk_layout_row_dynamic(context, row_height, 1);
+						if(edit_state & NK_EDIT_COMMITED || nk_button_label(context, "OK"))
 						{
-							struct Sound_Source_Buffer* new_source_buffer = sound_source_create(sound, sound_source_filename_buffer, ST_WAV_STREAM);
-							if(new_source_buffer)
+							if(strncmp(sound_source_filename_buffer, sound_source->source_buffer->filename, MAX_FILENAME_LEN) != 0)
 							{
-								sound_source_stop_all(sound, sound_source->source_buffer);
-								sound_source_instance_destroy(sound, sound_source->source_instance);
-								sound_source->source_instance = sound_source_instance_create(sound, new_source_buffer, true);
-								sound_source->source_buffer = new_source_buffer;
-								sound_source->base.transform.is_modified = true; // Fake a transformation so that post-update the new sound source position is updated
-								if(playing)
-									sound_source_instance_play(sound, sound_source->source_instance);
+								struct Sound_Source_Buffer* new_source_buffer = sound_source_create(sound, sound_source_filename_buffer, ST_WAV_STREAM);
+								if(new_source_buffer)
+								{
+									sound_source_stop_all(sound, sound_source->source_buffer);
+									sound_source_instance_destroy(sound, sound_source->source_instance);
+									sound_source->source_instance = sound_source_instance_create(sound, new_source_buffer, true);
+									sound_source->source_buffer = new_source_buffer;
+									sound_source->base.transform.is_modified = true; // Fake a transformation so that post-update the new sound source position is updated
+									if(playing)
+										sound_source_instance_play(sound, sound_source->source_instance);
+								}
 							}
+							sound_source_filename_copied = false;
+							nk_contextual_close(context);
 						}
+						nk_contextual_end(context);
 					}
 
 					nk_tree_pop(context);
@@ -1831,7 +1835,7 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 				struct Static_Mesh* mesh = (struct Static_Mesh*)entity;
 				if(nk_tree_push(context, NK_TREE_TAB, "Static Mesh", NK_MAXIMIZED))
 				{
-					nk_layout_row_dynamic(context, 30, 2);
+					nk_layout_row_dynamic(context, row_height, 2);
 					nk_label(context, "Geometry", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
 
 					static char geometry_filename_buffer[MAX_FILENAME_LEN];
@@ -1845,7 +1849,7 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 					}
 
 					struct nk_rect geometry_name_bounds = nk_widget_bounds(context);
-					nk_label(context, geometry->filename, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+					nk_button_label(context, geometry->filename);
 					if(nk_input_is_mouse_hovering_rect(context, geometry_name_bounds))
 						nk_tooltip(context, "Right-click to change");
 

@@ -1835,16 +1835,36 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 					nk_label(context, "Geometry", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
 
 					static char geometry_filename_buffer[MAX_FILENAME_LEN];
-					int edit_flags = NK_EDIT_GOTO_END_ON_ACTIVATE | NK_EDIT_FIELD | NK_EDIT_SIG_ENTER;
+					static bool geometry_name_copied = false;
 					struct Geometry* geometry = geom_get(mesh->model.geometry_index);
-					strncpy(geometry_filename_buffer, geometry->filename, MAX_FILENAME_LEN);
-					int geometry_buffer_edit_state = nk_edit_string_zero_terminated(context, edit_flags, geometry_filename_buffer, MAX_FILENAME_LEN, NULL);
-					if(geometry_buffer_edit_state & NK_EDIT_COMMITED)
+
+					if(!geometry_name_copied)
+					{ 
+						strncpy(geometry_filename_buffer, geometry->filename, MAX_FILENAME_LEN);
+						geometry_name_copied = true;
+					}
+
+					struct nk_rect geometry_name_bounds = nk_widget_bounds(context);
+					nk_label(context, geometry->filename, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+					if(nk_input_is_mouse_hovering_rect(context, geometry_name_bounds))
+						nk_tooltip(context, "Right-click to change");
+
+					if(nk_contextual_begin(context, 0, nk_vec2(250, 120), geometry_name_bounds))
 					{
-						if(strncmp(geometry->filename, geometry_filename_buffer, MAX_FILENAME_LEN) != 0)
+						nk_layout_row_dynamic(context, 28, 1);
+						int edit_flags = NK_EDIT_GOTO_END_ON_ACTIVATE | NK_EDIT_FIELD | NK_EDIT_SIG_ENTER;
+						int geometry_buffer_edit_state = nk_edit_string_zero_terminated(context, edit_flags, geometry_filename_buffer, MAX_FILENAME_LEN, NULL);
+						nk_layout_row_dynamic(context, row_height, 1);
+						if(geometry_buffer_edit_state & NK_EDIT_COMMITED || nk_button_label(context, "OK"))
 						{
-							model_geometry_set(&mesh->model, &geometry_filename_buffer);
+							if(strncmp(geometry->filename, geometry_filename_buffer, MAX_FILENAME_LEN) != 0)
+							{
+								model_geometry_set(&mesh->model, &geometry_filename_buffer);
+							}
+							geometry_name_copied = false;
+							nk_contextual_close(context);
 						}
+						nk_contextual_end(context);
 					}
 
 					nk_layout_row_dynamic(context, row_height, 2);
@@ -1877,30 +1897,17 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 						diffuse_texture_name_copied = true;
 					}
 
-					struct nk_rect bounds = nk_widget_bounds(context);
+					struct nk_rect diffuse_texture_bounds = nk_widget_bounds(context);
 					nk_button_image(context, nk_image_id(mesh->model.material_params[MMP_DIFFUSE_TEX].val_int));
-					if(nk_input_is_mouse_hovering_rect(context, bounds))
+					if(nk_input_is_mouse_hovering_rect(context, diffuse_texture_bounds))
 						nk_tooltip(context, "Right-click to change");
-					if(nk_contextual_begin(context, 0, nk_vec2(250, 100), bounds))
+					if(nk_contextual_begin(context, 0, nk_vec2(250, 120), diffuse_texture_bounds))
 					{
 						nk_layout_row_dynamic(context, 26, 1);
+						int edit_flags = NK_EDIT_GOTO_END_ON_ACTIVATE | NK_EDIT_FIELD | NK_EDIT_SIG_ENTER;
 						int diffuse_texture_buffer_edit_state = nk_edit_string_zero_terminated(context, edit_flags, diffuse_tex_filename_buffer, MAX_FILENAME_LEN, NULL);
-						if(diffuse_texture_buffer_edit_state & NK_EDIT_COMMITED)
-						{
-							if(strncmp(diffuse_texture_name, diffuse_tex_filename_buffer, MAX_FILENAME_LEN) != 0)
-							{
-								int new_diffuse_texture = texture_create_from_file(&diffuse_tex_filename_buffer, TU_DIFFUSE);
-								if(new_diffuse_texture != -1)
-								{
-									mesh->model.material_params[MMP_DIFFUSE_TEX].val_int = new_diffuse_texture;
-								}
-							}
-							diffuse_texture_name_copied = false;
-							nk_contextual_close(context);
-						}
-
 						nk_layout_row_dynamic(context, row_height, 1);
-						if(nk_button_label(context, "OK"))
+						if(diffuse_texture_buffer_edit_state & NK_EDIT_COMMITED || nk_button_label(context, "OK"))
 						{
 							if(strncmp(diffuse_texture_name, diffuse_tex_filename_buffer, MAX_FILENAME_LEN) != 0)
 							{
@@ -1913,7 +1920,6 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 							diffuse_texture_name_copied = false;
 							nk_contextual_close(context);
 						}
-
 						nk_contextual_end(context);
 					}
 

@@ -1,4 +1,5 @@
 Todo:
+	- Change mouse behaviour to lock cursor when looking around so as not to interfere with gui elements when in editor mode
 	- Scene read/write to file with scene file only containing names of
 	  entity archetypes
 	- Console command to read/write scene to/from file

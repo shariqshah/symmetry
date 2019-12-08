@@ -65,6 +65,12 @@ enum Editor_Axis
 	EDITOR_AXIS_YZ,
 };
 
+static struct
+{
+	bool diffuse_texture;
+	bool sound_source;
+} Popup_States;
+
 static struct Debug_Variable* debug_vars_list = NULL;
 static int*                   empty_indices   = NULL;
 static int                    window_flags    = NK_WINDOW_BORDER |
@@ -138,13 +144,13 @@ void editor_init(struct Editor* editor)
 	editor->draw_cursor_entity                 = false;
 	editor->tool_scale_started                 = false;
 
-	vec4_fill(&editor->cursor_entity_color, 0.f, 1.f, 1.f, 1.f);
-	vec4_fill(&editor->hovered_entity_color, 0.53, 0.87, 0.28, 1.f);
-	vec4_fill(&editor->selected_entity_color, 0.96, 0.61, 0.17, 1.f);
+	vec4_fill(&editor->cursor_entity_color, 0.f, 1.f, 1.f, 0.7f);
+	vec4_fill(&editor->hovered_entity_color, 0.53, 0.87, 0.28, 0.5f);
+	vec4_fill(&editor->selected_entity_color, 0.96, 0.61, 0.17, 0.5f);
 	vec4_fill(&editor->grid_color, 0.3f, 0.3f, 0.3f, 0.7f);
-	vec4_fill(&editor->axis_color_x, 0.87, 0.32, 0.40, 1.f);
-	vec4_fill(&editor->axis_color_y, 0.53, 0.67, 0.28, 1.f);
-	vec4_fill(&editor->axis_color_z, 0.47, 0.67, 0.89, 1.f);
+	vec4_fill(&editor->axis_color_x, 0.87, 0.32, 0.40, 0.8f);
+	vec4_fill(&editor->axis_color_y, 0.53, 0.67, 0.28, 0.8f);
+	vec4_fill(&editor->axis_color_z, 0.47, 0.67, 0.89, 0.8f);
 	vec3_fill(&editor->tool_scale_amount, 1.f, 1.f, 1.f);
 
     debug_vars_list = array_new(struct Debug_Variable);
@@ -158,6 +164,9 @@ void editor_init(struct Editor* editor)
 	event_manager_subscribe(event_manager, EVT_KEY_RELEASED, &editor_on_key_release);
 
 	editor->cursor_entity = scene_static_mesh_create(game_state_get()->scene, "EDITOR_SELECTED_ENTITY_WIREFRAME", NULL, "sphere.symbres", MAT_UNSHADED);
+
+	Popup_States.diffuse_texture = false;
+	Popup_States.sound_source    = false;
 }
 
 void editor_init_camera(struct Editor* editor, struct Hashmap* cvars)
@@ -1215,6 +1224,11 @@ void editor_entity_select(struct Editor* editor, struct Entity* entity)
 		editor->selected_entity = entity;
 		transform_copy(editor->cursor_entity, editor->selected_entity, false);
 	}
+
+	//Reset all popups
+	Popup_States.diffuse_texture = false;
+	Popup_States.sound_source = false;
+	log_message("Popups reset");
 }
 
 void editor_tool_reset(struct Editor* editor)
@@ -1342,7 +1356,7 @@ void editor_camera_update(struct Editor* editor, float dt)
     if(input_map_state_get("Turn_Right", KS_PRESSED)) turn_left_right += turn_speed;
     if(input_map_state_get("Turn_Left",  KS_PRESSED)) turn_left_right -= turn_speed;
 
-    if(input_mousebutton_state_get(MSB_RIGHT, KS_PRESSED))
+    if(input_mousebutton_state_get(MSB_RIGHT, KS_PRESSED) && !nk_item_is_any_active(&game_state_get()->gui->context))
     {
 		const float scale = 0.5f;
 		int cursor_lr, cursor_ud;
@@ -1585,7 +1599,7 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 	window_get_drawable_size(game_state->window, &win_width, &win_height);
 	if(nk_begin(context, "Properties", nk_recti(win_width - 300, editor->top_panel_height, 300, 600), window_flags))
 	{
-		const int row_height = 18;
+		const int row_height = 20;
 		if(editor->selected_entity)
 		{
 			struct Scene* scene = game_state_get()->scene;
@@ -1851,26 +1865,60 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 					nk_label(context, "Diffuse Color", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
 					editor_widget_color_combov4(context, &mesh->model.material_params[MMP_DIFFUSE_COL].val_vec4, 200, 300);
 
-					nk_layout_row_dynamic(context, row_height, 1);
-					mesh->model.material_params[MMP_DIFFUSE].val_float = nk_propertyf(context, "Diffuse", 0.f, mesh->model.material_params[MMP_DIFFUSE].val_float, 10.f, 0.5f, 0.1f);
 
-					nk_layout_row_dynamic(context, 30, 2);
+					nk_layout_row_dynamic(context, row_height * 4, 2);
+					const char* diffuse_texture_name = texture_get_name(mesh->model.material_params[MMP_DIFFUSE_TEX].val_int);
 					nk_label(context, "Diffuse Texture", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
 					static char diffuse_tex_filename_buffer[MAX_FILENAME_LEN];
-					const char* texture_name = texture_get_name(mesh->model.material_params[MMP_DIFFUSE_TEX].val_int);
-					strncpy(diffuse_tex_filename_buffer, texture_name, MAX_FILENAME_LEN);
-					int diffuse_texture_buffer_edit_state = nk_edit_string_zero_terminated(context, edit_flags, diffuse_tex_filename_buffer, MAX_FILENAME_LEN, NULL);
-					if(diffuse_texture_buffer_edit_state & NK_EDIT_COMMITED)
+					static bool diffuse_texture_name_copied = false;
+					if(!diffuse_texture_name_copied)
 					{
-						if(strncmp(texture_name, diffuse_tex_filename_buffer, MAX_FILENAME_LEN) != 0)
-						{
-							int new_diffuse_texture = texture_create_from_file(&diffuse_tex_filename_buffer, TU_DIFFUSE);
-							if(new_diffuse_texture != -1)
-							{
-								mesh->model.material_params[MMP_DIFFUSE_TEX].val_int = new_diffuse_texture;
-							}
-						}
+						strncpy(diffuse_tex_filename_buffer, diffuse_texture_name, MAX_FILENAME_LEN);
+						diffuse_texture_name_copied = true;
 					}
+
+					struct nk_rect bounds = nk_widget_bounds(context);
+					nk_button_image(context, nk_image_id(mesh->model.material_params[MMP_DIFFUSE_TEX].val_int));
+					if(nk_input_is_mouse_hovering_rect(context, bounds))
+						nk_tooltip(context, "Right-click to change");
+					if(nk_contextual_begin(context, 0, nk_vec2(250, 100), bounds))
+					{
+						nk_layout_row_dynamic(context, 26, 1);
+						int diffuse_texture_buffer_edit_state = nk_edit_string_zero_terminated(context, edit_flags, diffuse_tex_filename_buffer, MAX_FILENAME_LEN, NULL);
+						if(diffuse_texture_buffer_edit_state & NK_EDIT_COMMITED)
+						{
+							if(strncmp(diffuse_texture_name, diffuse_tex_filename_buffer, MAX_FILENAME_LEN) != 0)
+							{
+								int new_diffuse_texture = texture_create_from_file(&diffuse_tex_filename_buffer, TU_DIFFUSE);
+								if(new_diffuse_texture != -1)
+								{
+									mesh->model.material_params[MMP_DIFFUSE_TEX].val_int = new_diffuse_texture;
+								}
+							}
+							diffuse_texture_name_copied = false;
+							nk_contextual_close(context);
+						}
+
+						nk_layout_row_dynamic(context, row_height, 1);
+						if(nk_button_label(context, "OK"))
+						{
+							if(strncmp(diffuse_texture_name, diffuse_tex_filename_buffer, MAX_FILENAME_LEN) != 0)
+							{
+								int new_diffuse_texture = texture_create_from_file(&diffuse_tex_filename_buffer, TU_DIFFUSE);
+								if(new_diffuse_texture != -1)
+								{
+									mesh->model.material_params[MMP_DIFFUSE_TEX].val_int = new_diffuse_texture;
+								}
+							}
+							diffuse_texture_name_copied = false;
+							nk_contextual_close(context);
+						}
+
+						nk_contextual_end(context);
+					}
+
+					nk_layout_row_dynamic(context, row_height, 1);
+					mesh->model.material_params[MMP_DIFFUSE].val_float = nk_propertyf(context, "Diffuse", 0.f, mesh->model.material_params[MMP_DIFFUSE].val_float, 10.f, 0.5f, 0.1f);
 
 					if(mesh->model.material->type == MAT_BLINN)
 					{

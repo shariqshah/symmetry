@@ -417,14 +417,14 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 		switch(model->material->type)
 		{
 		case MAT_BLINN:
-			if(hashmap_value_exists(object->data, "diffuse_color")) model->material_params[MMP_DIFFUSE_COL].val_vec4 = hashmap_vec4_get(object->data, "diffuse_color");
 			if(hashmap_value_exists(object->data, "diffuse_texture"))
 			{
 				const char* texture_name = hashmap_str_get(object->data, "diffuse_texture");
 				model->material_params[MMP_DIFFUSE_TEX].val_int = texture_create_from_file(texture_name, TU_DIFFUSE);
 			}
-			if(hashmap_value_exists(object->data, "diffuse")) model->material_params[MMP_DIFFUSE].val_float = hashmap_float_get(object->data, "diffuse");
-			if(hashmap_value_exists(object->data, "specular")) model->material_params[MMP_SPECULAR].val_float = hashmap_float_get(object->data, "specular");
+			if(hashmap_value_exists(object->data, "diffuse_color"))     model->material_params[MMP_DIFFUSE_COL].val_vec4        = hashmap_vec4_get(object->data, "diffuse_color");
+			if(hashmap_value_exists(object->data, "diffuse"))           model->material_params[MMP_DIFFUSE].val_float           = hashmap_float_get(object->data, "diffuse");
+			if(hashmap_value_exists(object->data, "specular"))          model->material_params[MMP_SPECULAR].val_float          = hashmap_float_get(object->data, "specular");
 			if(hashmap_value_exists(object->data, "specular_strength")) model->material_params[MMP_SPECULAR_STRENGTH].val_float = hashmap_float_get(object->data, "specular_strength");
 			break;
 		case MAT_UNSHADED:

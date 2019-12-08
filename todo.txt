@@ -323,3 +323,4 @@ Done:
 	* Finished mesh and material properties serialization to and from file 
 	* Fixed issue of partial matches returning incorrect hashmap values
 	* Implemented Static Mesh property viewing/editing in editor
+	* Implemented contextual menu for re-entering diffuse texture name 

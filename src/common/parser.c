@@ -238,11 +238,13 @@ int parser_object_type_from_str(const char* str)
 {
     int object_type = PO_UNKNOWN;
 
-    if(strncmp(str, "Entity", HASH_MAX_KEY_LEN) == 0)        object_type = PO_ENTITY;
-    else if(strncmp(str, "Model", HASH_MAX_KEY_LEN) == 0)    object_type = PO_MODEL;
-    else if(strncmp(str, "Material", HASH_MAX_KEY_LEN) == 0) object_type = PO_MATERIAL;
-    else if(strncmp(str, "Config", HASH_MAX_KEY_LEN) == 0)   object_type = PO_CONFIG;
-    else if(strncmp(str, "Key", HASH_MAX_KEY_LEN) == 0)      object_type = PO_KEY;
+    if(strncmp(str, "Entity", HASH_MAX_KEY_LEN) == 0)                  object_type = PO_ENTITY;
+    else if(strncmp(str, "Model", HASH_MAX_KEY_LEN) == 0)              object_type = PO_MODEL;
+    else if(strncmp(str, "Material", HASH_MAX_KEY_LEN) == 0)           object_type = PO_MATERIAL;
+    else if(strncmp(str, "Config", HASH_MAX_KEY_LEN) == 0)             object_type = PO_CONFIG;
+    else if(strncmp(str, "Key", HASH_MAX_KEY_LEN) == 0)                object_type = PO_KEY;
+    else if(strncmp(str, "Scene_Entity_Entry", HASH_MAX_KEY_LEN) == 0) object_type = PO_SCENE_ENTITY_ENTRY;
+    else if(strncmp(str, "Scene_Config", HASH_MAX_KEY_LEN) == 0)       object_type = PO_SCENE_CONFIG;
 
     return object_type;
 }
@@ -251,12 +253,14 @@ const char* parser_object_type_to_str(int type)
 {
     switch(type)
     {
-    case PO_ENTITY:   return "Entity";
-    case PO_MODEL:    return "Model";
-    case PO_MATERIAL: return "Material";
-    case PO_CONFIG:   return "Config";
-    case PO_KEY:   return "Key";
-    case PO_UNKNOWN:  return "Unknown";
+    case PO_ENTITY:             return "Entity";
+    case PO_MODEL:              return "Model";
+    case PO_MATERIAL:           return "Material";
+    case PO_CONFIG:             return "Config";
+    case PO_KEY:                return "Key";
+    case PO_UNKNOWN:            return "Unknown";
+    case PO_SCENE_CONFIG:       return "Scene_Config";
+    case PO_SCENE_ENTITY_ENTRY: return "Scene_Entity_Entry";
     default: return "Unknown";
     }
 }

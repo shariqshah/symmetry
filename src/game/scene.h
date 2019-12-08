@@ -15,7 +15,6 @@ struct Raycast_Result;
 
 struct Scene
 {
-    struct Render_Settings renderer_profile;
     struct Entity          root_entity;
     struct Player          player;
     struct Entity          entities[MAX_ENTITIES];
@@ -27,8 +26,8 @@ struct Scene
 };
 
 void scene_init(struct Scene* scene);
-bool scene_load(struct Scene* scene, const char* filename, int dir_type);
-bool scene_save(struct Scene* scene, const char* filename, int dir_type);
+bool scene_load(struct Scene* scene, const char* filename, int directory_type);
+bool scene_save(struct Scene* scene, const char* filename, int directory_type);
 void scene_destroy(struct Scene* scene);
 void scene_update(struct Scene* scene, float dt);
 void scene_post_update(struct Scene* scene);

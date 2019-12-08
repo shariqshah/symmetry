@@ -1,9 +1,11 @@
 Todo:
+	- Implement entitie storing a reference or name of file they've been loaded from to help when they're being saved
 	- Change mouse behaviour to lock cursor when looking around so as not to interfere with gui elements when in editor mode
 	- Scene read/write to file with scene file only containing names of
 	  entity archetypes
 	- Console command to read/write scene to/from file
 	- Editor functionality to read/write scene to/from file
+	- Folder management api to create/delete folders when none exist. Dirent would suffice for our simple needs?
 	- Display default mesh when selected entity type in editor does not have a mesh
 	- Allow picking and selecting other entity types in editor i.e. the ones that don't have meshes
 	- Separate entity types in entity heirarchy view by the entity type or use a tree view to show parent/child relation or use different colours for different entity types

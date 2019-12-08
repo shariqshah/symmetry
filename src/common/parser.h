@@ -8,6 +8,8 @@ enum Parser_Object_Type
 {
     PO_CONFIG,
     PO_ENTITY,
+	PO_SCENE_CONFIG,
+	PO_SCENE_ENTITY_ENTRY,
     PO_MATERIAL,
     PO_MODEL,
 	PO_KEY,

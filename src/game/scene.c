@@ -15,6 +15,8 @@
 #include "../system/sound.h"
 #include "../system/physics.h"
 #include "../system/platform.h"
+#include "../common/hashmap.h"
+#include "renderer.h"
 
 #include <assert.h>
 #include <string.h>
@@ -64,14 +66,59 @@ void scene_init(struct Scene* scene)
 	scene->active_camera_index = game_state_get()->game_mode == GAME_MODE_GAME ? CAM_GAME : CAM_EDITOR;
 }
 
-bool scene_load(struct Scene* scene, const char* filename, int dir_type)
+bool scene_load(struct Scene* scene, const char* filename, int directory_type)
 {
 	return false;
 }
 
-bool scene_save(struct Scene* scene, const char* filename, int dir_type)
+bool scene_save(struct Scene* scene, const char* filename, int directory_type)
 {
-	return false;
+    FILE* scene_file = io_file_open(directory_type, filename, "w");
+	if(!scene_file)
+	{
+		log_error("scene:save", "Failed to open scene file %s for writing");
+		return false;
+	}
+
+    struct Parser* parser = parser_new();
+
+	//Start by saving the scene configuration information
+    struct Parser_Object* scene_config_object = parser_object_new(parser, PO_SCENE_CONFIG);
+	struct Render_Settings* render_settings = &game_state_get()->renderer->settings;
+	struct Hashmap* scene_data = scene_config_object->data;
+	hashmap_int_set(scene_data, "fog_type", render_settings->fog.mode);
+	hashmap_float_set(scene_data, "fog_density", render_settings->fog.density);
+	hashmap_float_set(scene_data, "fog_start_distance", render_settings->fog.start_dist);
+	hashmap_float_set(scene_data, "fog_max_distance", render_settings->fog.max_dist);
+	hashmap_vec3_set(scene_data, "fog_color", &render_settings->fog.color);
+	hashmap_vec3_set(scene_data, "ambient_light", &render_settings->ambient_light);
+	hashmap_vec4_set(scene_data, "debug_draw_color", &render_settings->debug_draw_color);
+	hashmap_bool_set(scene_data, "debug_draw_enabled", render_settings->debug_draw_enabled);
+	hashmap_int_set(scene_data, "debug_draw_mode", render_settings->debug_draw_mode);
+	hashmap_bool_set(scene_data, "debug_draw_physics", render_settings->debug_draw_physics);
+
+	for(int i = 0; i < MAX_ENTITIES; i++)
+	{
+		struct Entity* entity = &scene->entities[i];
+		if(!entity->active)
+			continue;
+
+		struct Parser_Object* object = parser_object_new(parser, PO_ENTITY);
+		if(!entity_write(entity, object, false))
+		{
+			log_error("scene:save", "Failed to save entity : %s to file : %s", entity->name, filename);
+			parser_free(parser);
+			fclose(scene_file);
+			return false;
+		}
+	}
+
+    if(parser_write_objects(parser, scene_file, filename))
+        log_message("Scene saved to %s", filename);
+
+    parser_free(parser);
+	fclose(scene_file);
+	return true;
 }
 
 void scene_destroy(struct Scene* scene)

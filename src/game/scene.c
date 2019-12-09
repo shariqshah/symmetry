@@ -22,6 +22,9 @@
 #include <string.h>
 #include <stdlib.h>
 
+static void scene_write_entity_entry(struct Scene* scene, struct Entity* entity, struct Parser* parser);
+static void scene_write_entity_list(struct Scene* scene, int entity_type, struct Parser* parser);
+
 void scene_init(struct Scene* scene)
 {
 	assert(scene);
@@ -39,6 +42,7 @@ void scene_init(struct Scene* scene)
 		entity_reset(&scene->lights[i], i);
 		scene->lights[i].type = ET_LIGHT;
 	}
+	
 	for(int i = 0; i < MAX_STATIC_MESHES; i++)
 	{
 		entity_reset(&scene->static_meshes[i], i);
@@ -49,6 +53,7 @@ void scene_init(struct Scene* scene)
 		mesh->model.geometry_index = -1;
 		mesh->model.material = NULL;
 	}
+
 	for(int i = 0; i < MAX_SOUND_SOURCES; i++) entity_reset(&scene->sound_sources[i], i);
 	int width = 1280, height = 720;
 	window_get_drawable_size(game_state->window, &width, &height);
@@ -57,8 +62,12 @@ void scene_init(struct Scene* scene)
 	{
 		entity_init(&scene->cameras[i], NULL, &scene->root_entity);
 		camera_init(&scene->cameras[i], width, height);
+		scene->cameras[i].base.active = false;
 		scene->cameras[i].base.id = i;
 	}
+
+	for(int i = 0; i < MAX_ENTITY_ARCHETYPES; i++)
+		memset(&scene->entity_archetypes[i][0], '\0', MAX_FILENAME_LEN);
 
 	player_init(&scene->player, scene);
 	editor_init_camera(game_state->editor, game_state->cvars);
@@ -68,7 +77,98 @@ void scene_init(struct Scene* scene)
 
 bool scene_load(struct Scene* scene, const char* filename, int directory_type)
 {
-	return false;
+    FILE* scene_file = io_file_open(directory_type, filename, "rb");
+	if(!scene_file)
+	{
+		log_error("scene:load", "Failed to open scene file %s for reading");
+		return false;
+	}
+
+	// Load scene config and apply renderer settings
+	struct Parser* parsed_file = parser_load_objects(scene_file, filename);
+
+	if(!parsed_file)
+	{
+		log_error("scene:load", "Failed to parse file '%s' for loading scene", filename);
+		fclose(scene_file);
+		return false;
+	}
+
+	if(array_len(parsed_file->objects) == 0)
+	{
+		log_error("scene:load", "No objects found in file %s", filename);
+		parser_free(parsed_file);
+		fclose(scene_file);
+		return false;
+	}
+
+	//Clear previous scene and re-initialize
+	scene_destroy(scene);
+	scene_post_update(scene);
+	scene_init(scene);
+
+	int num_objects_loaded = 0;
+	for(int i = 0; i < array_len(parsed_file->objects); i++)
+	{
+		struct Parser_Object* object = &parsed_file->objects[i];
+		if(object->type == PO_SCENE_CONFIG)
+		{
+			struct Hashmap* scene_data = object->data;
+			struct Render_Settings* render_settings = &game_state_get()->renderer->settings;
+
+			if(hashmap_value_exists(scene_data, "fog_type"))           render_settings->fog.mode           = hashmap_int_get(scene_data, "fog_type");
+			if(hashmap_value_exists(scene_data, "fog_density"))        render_settings->fog.density        = hashmap_float_get(scene_data, "fog_density");
+			if(hashmap_value_exists(scene_data, "fog_start_distance")) render_settings->fog.start_dist     = hashmap_float_get(scene_data, "fog_start_distance");
+			if(hashmap_value_exists(scene_data, "fog_max_distance"))   render_settings->fog.max_dist       = hashmap_float_get(scene_data, "fog_max_distance");
+			if(hashmap_value_exists(scene_data, "fog_color"))          render_settings->fog.color          = hashmap_vec3_get(scene_data, "fog_color");
+			if(hashmap_value_exists(scene_data, "ambient_light"))      render_settings->ambient_light      = hashmap_vec3_get(scene_data, "ambient_light");
+			if(hashmap_value_exists(scene_data, "debug_draw_color"))   render_settings->debug_draw_color   = hashmap_vec4_get(scene_data, "debug_draw_color");
+			if(hashmap_value_exists(scene_data, "debug_draw_enabled")) render_settings->debug_draw_enabled = hashmap_bool_get(scene_data, "debug_draw_enabled");
+			if(hashmap_value_exists(scene_data, "debug_draw_mode"))    render_settings->debug_draw_mode    = hashmap_int_get(scene_data, "debug_draw_mode");
+			if(hashmap_value_exists(scene_data, "debug_draw_physics")) render_settings->debug_draw_physics = hashmap_bool_get(scene_data, "debug_draw_physics");
+			num_objects_loaded++;
+		}
+		else if(object->type == PO_ENTITY)
+		{
+			if(entity_read(object, &scene->root_entity))
+				num_objects_loaded++;
+		}
+		else if(object->type == PO_SCENE_ENTITY_ENTRY)
+		{
+			struct Hashmap* entity_entry_data = object->data;
+			if(hashmap_value_exists(object->data, "filename"))
+			{
+				struct Entity* loaded_entity = entity_load(hashmap_str_get(entity_entry_data, "filename"), DIRT_INSTALL);
+				if(loaded_entity)
+				{
+					vec3 position = { 0.f, 0.f, 0.f };
+					quat rotation = { 0.f, 0.f, 0.f, 1.f };
+					vec3 scale    = { 1.f, 1.f, 1.f };
+
+					if(hashmap_value_exists(entity_entry_data, "position")) position = hashmap_vec3_get(entity_entry_data, "position");
+					if(hashmap_value_exists(entity_entry_data, "rotation")) rotation = hashmap_quat_get(entity_entry_data, "rotation");
+					if(hashmap_value_exists(entity_entry_data, "scale"))    scale    = hashmap_vec3_get(entity_entry_data, "scale");
+
+					transform_set_position(loaded_entity, &position);
+					transform_scale(loaded_entity, &scale);
+					quat_assign(&loaded_entity->transform.rotation, &rotation);
+					transform_update_transmat(loaded_entity);
+
+					if(hashmap_value_exists(entity_entry_data, "name")) strncpy(loaded_entity->name, hashmap_str_get(entity_entry_data, "name"), MAX_ENTITY_NAME_LEN);
+					num_objects_loaded++;
+				}
+			}
+		}
+		else
+		{
+			log_warning("Unknown object type '%s' in scene file %s", parser_object_type_to_str(object->type), filename);
+			continue;
+		}
+	}
+
+	parser_free(parsed_file);
+	fclose(scene_file);
+	return num_objects_loaded > 0 ? true : false;
 }
 
 bool scene_save(struct Scene* scene, const char* filename, int directory_type)
@@ -97,21 +197,11 @@ bool scene_save(struct Scene* scene, const char* filename, int directory_type)
 	hashmap_int_set(scene_data, "debug_draw_mode", render_settings->debug_draw_mode);
 	hashmap_bool_set(scene_data, "debug_draw_physics", render_settings->debug_draw_physics);
 
-	for(int i = 0; i < MAX_ENTITIES; i++)
-	{
-		struct Entity* entity = &scene->entities[i];
-		if(!entity->active)
-			continue;
-
-		struct Parser_Object* object = parser_object_new(parser, PO_ENTITY);
-		if(!entity_write(entity, object, false))
-		{
-			log_error("scene:save", "Failed to save entity : %s to file : %s", entity->name, filename);
-			parser_free(parser);
-			fclose(scene_file);
-			return false;
-		}
-	}
+	scene_write_entity_list(scene, ET_DEFAULT, parser);
+	scene_write_entity_list(scene, ET_LIGHT, parser);
+	scene_write_entity_list(scene, ET_STATIC_MESH, parser);
+	scene_write_entity_list(scene, ET_CAMERA, parser);
+	scene_write_entity_list(scene, ET_SOUND_SOURCE, parser);
 
     if(parser_write_objects(parser, scene_file, filename))
         log_message("Scene saved to %s", filename);
@@ -121,15 +211,87 @@ bool scene_save(struct Scene* scene, const char* filename, int directory_type)
 	return true;
 }
 
+void scene_write_entity_list(struct Scene* scene, int entity_type, struct Parser* parser)
+{
+	int max_length = 0;
+	size_t stride = 0;
+	struct Entity* entity = NULL;
+
+	switch(entity_type)
+	{
+	case ET_DEFAULT:
+		max_length = MAX_ENTITIES;
+		entity = &scene->entities[0];
+		stride = sizeof(struct Entity);
+		break;
+	case ET_LIGHT:
+		max_length = MAX_LIGHTS;
+		entity = &scene->lights[0].base;
+		stride = sizeof(struct Light);
+		break;
+	case ET_STATIC_MESH:
+		max_length = MAX_STATIC_MESHES;
+		entity = &scene->static_meshes[0].base;
+		stride = sizeof(struct Static_Mesh);
+		break;
+	case ET_CAMERA:
+		max_length = MAX_CAMERAS;
+		entity = &scene->cameras[0].base;
+		stride = sizeof(struct Camera);
+		break;
+	case ET_SOUND_SOURCE:
+		max_length = MAX_SOUND_SOURCES;
+		entity = &scene->sound_sources[0].base;
+		stride = sizeof(struct Sound_Source);
+		break;
+	default: return;
+	}
+
+	size_t count = 0;
+	while(count < max_length)
+	{
+		//((char*)entity) += stride * count;
+		((char*)entity) += stride;
+		
+		if(entity->active)
+		{
+			if(entity->archetype_index != -1)
+			{
+				scene_write_entity_entry(scene, entity, parser);
+			}
+			else
+			{
+				struct Parser_Object* object = parser_object_new(parser, PO_ENTITY);
+				if(!entity_write(entity, object, true))
+					log_error("scene:save", "Failed to save entity : %s", entity->name);
+			}
+		}
+		count++;
+	}
+}
+
+void scene_write_entity_entry(struct Scene* scene, struct Entity* entity, struct Parser* parser)
+{
+	// For entities with archetypes, we only write the name of the archetype to load 
+	// them from and their transformation info
+	struct Parser_Object* object = parser_object_new(parser, PO_SCENE_ENTITY_ENTRY);
+	hashmap_str_set(object->data, "filename", &scene->entity_archetypes[entity->archetype_index][0]);
+	hashmap_str_set(object->data, "name", entity->name);
+	hashmap_vec3_set(object->data, "position", &entity->transform.position);
+	hashmap_vec3_set(object->data, "scale", &entity->transform.scale);
+	hashmap_quat_set(object->data, "rotation", &entity->transform.rotation);
+}
+
 void scene_destroy(struct Scene* scene)
 {
 	assert(scene);
 
-	for(int i = 0; i < MAX_ENTITIES; i++) scene_entity_base_remove(scene, &scene->entities[i]);
-	for(int i = 0; i < MAX_CAMERAS; i++) scene_camera_remove(scene, &scene->cameras[i]);
-	for(int i = 0; i < MAX_LIGHTS; i++) scene_light_remove(scene, &scene->lights[i]);
-	for(int i = 0; i < MAX_STATIC_MESHES; i++) scene_static_mesh_remove(scene, &scene->static_meshes[i]);
-	for(int i = 0; i < MAX_SOUND_SOURCES; i++) scene_sound_source_remove(scene, &scene->sound_sources[i]);
+	for(int i = 0; i < MAX_ENTITIES; i++)          scene_entity_base_remove(scene, &scene->entities[i]);
+	for(int i = 0; i < MAX_CAMERAS; i++)           scene_camera_remove(scene, &scene->cameras[i]);
+	for(int i = 0; i < MAX_LIGHTS; i++)            scene_light_remove(scene, &scene->lights[i]);
+	for(int i = 0; i < MAX_STATIC_MESHES; i++)     scene_static_mesh_remove(scene, &scene->static_meshes[i]);
+	for(int i = 0; i < MAX_SOUND_SOURCES; i++)     scene_sound_source_remove(scene, &scene->sound_sources[i]);
+	for(int i = 0; i < MAX_ENTITY_ARCHETYPES; i++) memset(&scene->entity_archetypes[i][0], '\0', MAX_FILENAME_LEN);
 	player_destroy(&scene->player);
 	entity_reset(&scene->root_entity, 0);
 	scene->root_entity.active = false;

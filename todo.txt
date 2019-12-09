@@ -1,9 +1,9 @@
 Todo:
-	- Implement entitie storing a reference or name of file they've been loaded from to help when they're being saved
+	- Implement flags that specify whether an entity should be written to file or not for example to avoid writing cameras and player to file
+	- Implment/Test reading/writing scene that has a mixture of default entites and entity archetypes
+	- Serialize player, camera properties to file
+	- Implement behaviour that avoids writing normal entities that do not have children or parent to file to avoid inconsistencies when loading them
 	- Change mouse behaviour to lock cursor when looking around so as not to interfere with gui elements when in editor mode
-	- Scene read/write to file with scene file only containing names of
-	  entity archetypes
-	- Console command to read/write scene to/from file
 	- Editor functionality to read/write scene to/from file
 	- Folder management api to create/delete folders when none exist. Dirent would suffice for our simple needs?
 	- Display default mesh when selected entity type in editor does not have a mesh
@@ -328,3 +328,7 @@ Done:
 	* Implemented Static Mesh property viewing/editing in editor
 	* Implemented contextual menu for re-entering diffuse texture name 
 	* Implemented contextual menus for entering geometry and sound source names
+	* Implemented entities storing a reference or name of file they've been loaded from to help when they're being saved
+	* Scene read/write to file with scene file only containing names of
+	  entity archetypes
+	* Console command to read/write scene to/from file

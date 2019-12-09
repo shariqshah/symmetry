@@ -36,6 +36,7 @@ void entity_init(struct Entity* entity, const char* name, struct Entity* parent)
 	strncpy(entity->name, name ? name : "DEFAULT_ENTITY_NAME", MAX_ENTITY_NAME_LEN);
 	entity->name[MAX_ENTITY_NAME_LEN - 1] = '\0';
 	entity->type                = ET_DEFAULT;
+	entity->archetype_index     = -1;
 	entity->active              = true;
 	entity->marked_for_deletion = false;
 	entity->selected_in_editor     = false;
@@ -46,12 +47,13 @@ void entity_reset(struct Entity * entity, int id)
 {
 	assert(entity);
 	entity->id                  = id;
+	entity->type                = ET_DEFAULT;
+	entity->archetype_index     = -1;
 	entity->active              = false;
 	entity->marked_for_deletion = false;
 	entity->selected_in_editor     = false;
 	memset(entity->name, '\0', MAX_ENTITY_NAME_LEN);
 }
-
 
 bool entity_write(struct Entity* entity, struct Parser_Object* object, bool write_transform)
 {
@@ -168,14 +170,14 @@ bool entity_write(struct Entity* entity, struct Parser_Object* object, bool writ
 		{
 		case MAT_BLINN:
 			hashmap_vec4_set(entity_data, "diffuse_color", &model->material_params[MMP_DIFFUSE_COL].val_vec4);
-			hashmap_str_set(entity_data, "diffuse_texture", texture_get_name(model->material_params[MMP_DIFFUSE_TEX].val_int));
+			hashmap_str_set(entity_data, "diffuse_texture", model->material_params[MMP_DIFFUSE_TEX].val_int == -1 ? "default.tga" : texture_get_name(model->material_params[MMP_DIFFUSE_TEX].val_int));
 			hashmap_float_set(entity_data, "diffuse", model->material_params[MMP_DIFFUSE].val_float);
 			hashmap_float_set(entity_data, "specular", model->material_params[MMP_SPECULAR].val_float);
 			hashmap_float_set(entity_data, "specular_strength", model->material_params[MMP_SPECULAR_STRENGTH].val_float);
 			break;
 		case MAT_UNSHADED:
 			hashmap_vec3_set(entity_data, "diffuse_color", &mesh->model.material_params[MMP_DIFFUSE_COL].val_vec3);
-			hashmap_int_set(entity_data, "diffuse_texture", mesh->model.material_params[MMP_DIFFUSE_TEX].val_int);
+			hashmap_str_set(entity_data, "diffuse_texture", model->material_params[MMP_DIFFUSE_TEX].val_int == -1 ? "default.tga" : texture_get_name(model->material_params[MMP_DIFFUSE_TEX].val_int));
 			break;
 		};
 
@@ -297,6 +299,7 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 		int fbo_width = -1;
 		int fbo_height = -1;
 		struct Camera* camera = scene_camera_create(scene, name, parent_entity, 320, 240);
+		if(!camera) return new_entity;
 		if(hashmap_value_exists(object->data, "fov"))                camera->fov = hashmap_float_get(object->data, "fov");
 		if(hashmap_value_exists(object->data, "resizeable"))         camera->resizeable = hashmap_bool_get(object->data, "resizeable");
 		if(hashmap_value_exists(object->data, "zoom"))               camera->zoom = hashmap_float_get(object->data, "zoom");
@@ -469,7 +472,7 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 	return new_entity;
 }
 
-bool entity_load(const char* filename, int directory_type)
+struct Entity* entity_load(const char* filename, int directory_type)
 {
     FILE* entity_file = io_file_open(directory_type, filename, "rb");
 	if(!entity_file)
@@ -519,7 +522,7 @@ bool entity_load(const char* filename, int directory_type)
 
 	parser_free(parsed_file);
 	fclose(entity_file);
-	return num_entites_loaded > 0 ? true : false;
+	return parent_entity;
 }
 
 const char* entity_type_name_get(struct Entity* entity)

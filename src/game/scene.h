@@ -4,11 +4,12 @@
 #include "entity.h"
 #include "renderer.h"
 
-#define MAX_ENTITIES      1024
-#define MAX_LIGHTS        30
-#define MAX_CAMERAS       2
-#define MAX_STATIC_MESHES 1024
-#define MAX_SOUND_SOURCES 128
+#define MAX_ENTITIES          1024
+#define MAX_LIGHTS            30
+#define MAX_CAMERAS           2
+#define MAX_STATIC_MESHES     1024
+#define MAX_SOUND_SOURCES     128
+#define MAX_ENTITY_ARCHETYPES 32
 
 struct Ray;
 struct Raycast_Result;
@@ -22,6 +23,7 @@ struct Scene
     struct Camera          cameras[MAX_CAMERAS];
     struct Light           lights[MAX_LIGHTS];
     struct Sound_Source    sound_sources[MAX_SOUND_SOURCES];
+	char                   entity_archetypes[MAX_ENTITY_ARCHETYPES][MAX_FILENAME_LEN];
     int                    active_camera_index;
 };
 

@@ -14,7 +14,7 @@ i'll make my own additions like SIMD etc later on.
     #define M_PI		        3.14159265358979323846f
 #endif
 #define EPSILON             0.000001
-#define TO_RADIANS(degrees) ((degrees * M_PI) / 180.0)
+#define TO_RADIANS(degrees) ((degrees * M_PI) / 180.f)
 #define TO_DEGREES(radians) ((radians * 180.0) / M_PI)
 
 typedef struct vec2_t

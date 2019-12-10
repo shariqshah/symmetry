@@ -13,6 +13,7 @@ enum Parser_Object_Type
     PO_MATERIAL,
     PO_MODEL,
 	PO_KEY,
+	PO_PLAYER,
     PO_UNKNOWN
 };
 

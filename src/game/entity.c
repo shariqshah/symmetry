@@ -37,9 +37,7 @@ void entity_init(struct Entity* entity, const char* name, struct Entity* parent)
 	entity->name[MAX_ENTITY_NAME_LEN - 1] = '\0';
 	entity->type                = ET_DEFAULT;
 	entity->archetype_index     = -1;
-	entity->active              = true;
-	entity->marked_for_deletion = false;
-	entity->selected_in_editor     = false;
+	entity->flags               = EF_ACTIVE;
 	transform_init(entity, parent);
 }
 
@@ -49,9 +47,7 @@ void entity_reset(struct Entity * entity, int id)
 	entity->id                  = id;
 	entity->type                = ET_DEFAULT;
 	entity->archetype_index     = -1;
-	entity->active              = false;
-	entity->marked_for_deletion = false;
-	entity->selected_in_editor     = false;
+	entity->flags               = EF_NONE;
 	memset(entity->name, '\0', MAX_ENTITY_NAME_LEN);
 }
 
@@ -68,7 +64,7 @@ bool entity_write(struct Entity* entity, struct Parser_Object* object, bool writ
 
 	hashmap_str_set(entity_data, "name", entity->name);
 	hashmap_int_set(entity_data, "type", entity->type);
-	hashmap_bool_set(entity_data, "active", entity->active);
+	hashmap_bool_set(entity_data, "active", entity->flags & EF_ACTIVE ? true : false);
 
 	//if(entity->has_collision)
 	//{

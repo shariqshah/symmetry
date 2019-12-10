@@ -246,7 +246,7 @@ void transform_destroy(struct Entity* entity)
 		for(int i = 0; i < children; i++)
 		{
 			struct Entity* child = transform->children[i];
-			child->marked_for_deletion = true;
+			child->flags |= EF_MARKED_FOR_DELETION;
 		}
 	}
 

@@ -1,5 +1,4 @@
 Todo:
-	- Implement flags that specify whether an entity should be written to file or not for example to avoid writing cameras and player to file
 	- Implment/Test reading/writing scene that has a mixture of default entites and entity archetypes
 	- Serialize player, camera properties to file
 	- Implement behaviour that avoids writing normal entities that do not have children or parent to file to avoid inconsistencies when loading them
@@ -332,3 +331,4 @@ Done:
 	* Scene read/write to file with scene file only containing names of
 	  entity archetypes
 	* Console command to read/write scene to/from file
+	* Implemented flags that specify whether an entity should be written to file or not for example to avoid writing cameras and player to file

@@ -245,6 +245,7 @@ int parser_object_type_from_str(const char* str)
     else if(strncmp(str, "Key", HASH_MAX_KEY_LEN) == 0)                object_type = PO_KEY;
     else if(strncmp(str, "Scene_Entity_Entry", HASH_MAX_KEY_LEN) == 0) object_type = PO_SCENE_ENTITY_ENTRY;
     else if(strncmp(str, "Scene_Config", HASH_MAX_KEY_LEN) == 0)       object_type = PO_SCENE_CONFIG;
+    else if(strncmp(str, "Player", HASH_MAX_KEY_LEN) == 0)             object_type = PO_PLAYER;
 
     return object_type;
 }
@@ -261,6 +262,7 @@ const char* parser_object_type_to_str(int type)
     case PO_UNKNOWN:            return "Unknown";
     case PO_SCENE_CONFIG:       return "Scene_Config";
     case PO_SCENE_ENTITY_ENTRY: return "Scene_Entity_Entry";
+    case PO_PLAYER:             return "Player";
     default: return "Unknown";
     }
 }

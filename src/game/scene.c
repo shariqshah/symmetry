@@ -32,7 +32,7 @@ void scene_init(struct Scene* scene)
 
 	//Initialize the root entity
 	entity_init(&scene->root_entity, "ROOT_ENTITY", NULL);
-	scene->root_entity.active = true;
+	scene->root_entity.flags |= EF_ACTIVE;
 	scene->root_entity.id = 0;
 	scene->root_entity.type = ET_ROOT;
 
@@ -62,7 +62,7 @@ void scene_init(struct Scene* scene)
 	{
 		entity_init(&scene->cameras[i], NULL, &scene->root_entity);
 		camera_init(&scene->cameras[i], width, height);
-		scene->cameras[i].base.active = false;
+		scene->cameras[i].base.flags &= ~EF_ACTIVE;
 		scene->cameras[i].base.id = i;
 	}
 
@@ -182,7 +182,7 @@ bool scene_save(struct Scene* scene, const char* filename, int directory_type)
 
     struct Parser* parser = parser_new();
 
-	//Start by saving the scene configuration information
+	// Scene configuration
     struct Parser_Object* scene_config_object = parser_object_new(parser, PO_SCENE_CONFIG);
 	struct Render_Settings* render_settings = &game_state_get()->renderer->settings;
 	struct Hashmap* scene_data = scene_config_object->data;
@@ -196,6 +196,10 @@ bool scene_save(struct Scene* scene, const char* filename, int directory_type)
 	hashmap_bool_set(scene_data, "debug_draw_enabled", render_settings->debug_draw_enabled);
 	hashmap_int_set(scene_data, "debug_draw_mode", render_settings->debug_draw_mode);
 	hashmap_bool_set(scene_data, "debug_draw_physics", render_settings->debug_draw_physics);
+
+	// Player
+	struct Parser_Object* player_object = parser_object_new(parser, PO_PLAYER);
+	entity_write(&scene->player, player_object, true);
 
 	scene_write_entity_list(scene, ET_DEFAULT, parser);
 	scene_write_entity_list(scene, ET_LIGHT, parser);
@@ -253,7 +257,7 @@ void scene_write_entity_list(struct Scene* scene, int entity_type, struct Parser
 		//((char*)entity) += stride * count;
 		((char*)entity) += stride;
 		
-		if(entity->active)
+		if(entity->flags & EF_ACTIVE)
 		{
 			if(entity->archetype_index != -1)
 			{
@@ -294,7 +298,7 @@ void scene_destroy(struct Scene* scene)
 	for(int i = 0; i < MAX_ENTITY_ARCHETYPES; i++) memset(&scene->entity_archetypes[i][0], '\0', MAX_FILENAME_LEN);
 	player_destroy(&scene->player);
 	entity_reset(&scene->root_entity, 0);
-	scene->root_entity.active = false;
+	scene->root_entity.flags &= ~EF_ACTIVE;
 }
 
 void scene_update(struct Scene* scene, float dt)
@@ -310,9 +314,9 @@ void scene_post_update(struct Scene* scene)
 	for(int i = 0; i < MAX_ENTITIES; i++)
 	{
 		struct Entity* entity = &scene->entities[i];
-		if(!entity->active) continue;
+		if(!(entity->flags & EF_ACTIVE)) continue;
 
-		if(entity->marked_for_deletion)
+		if(entity->flags & EF_MARKED_FOR_DELETION)
 		{
 			scene_entity_base_remove(scene, entity);
 			continue;
@@ -324,9 +328,9 @@ void scene_post_update(struct Scene* scene)
 	for(int i = 0; i < MAX_CAMERAS; i++)
 	{
 		struct Camera* camera = &scene->cameras[i];
-		if(!camera->base.active) continue;
+		if(!(camera->base.flags & EF_ACTIVE)) continue;
 
-		if(camera->base.marked_for_deletion)
+		if(camera->base.flags & EF_MARKED_FOR_DELETION)
 		{
 			scene_camera_remove(scene, camera);
 			continue;
@@ -342,9 +346,9 @@ void scene_post_update(struct Scene* scene)
 	for(int i = 0; i < MAX_SOUND_SOURCES; i++)
 	{
 		struct Sound_Source* sound_source = &scene->sound_sources[i];
-		if(!sound_source->base.active) continue;
+		if(!(sound_source->base.flags & EF_ACTIVE)) continue;
 
-		if(sound_source->base.marked_for_deletion)
+		if(sound_source->base.flags & EF_MARKED_FOR_DELETION)
 		{
 			scene_sound_source_remove(scene, sound_source);
 			continue;
@@ -362,9 +366,9 @@ void scene_post_update(struct Scene* scene)
 	for(int i = 0; i < MAX_STATIC_MESHES; i++)
 	{
 		struct Static_Mesh* static_mesh = &scene->static_meshes[i];
-		if(!static_mesh->base.active) continue;
+		if(!(static_mesh->base.flags & EF_ACTIVE)) continue;
 
-		if(static_mesh->base.marked_for_deletion)
+		if(static_mesh->base.flags & EF_MARKED_FOR_DELETION)
 		{
 			scene_static_mesh_remove(scene, static_mesh);
 			continue;
@@ -389,9 +393,9 @@ void scene_post_update(struct Scene* scene)
 	for(int i = 0; i < MAX_LIGHTS; i++)
 	{
 		struct Light* light = &scene->lights[i];
-		if(!light->base.active) continue;
+		if(!(light->base.flags & EF_ACTIVE)) continue;
 
-		if(light->base.marked_for_deletion)
+		if(light->base.flags & EF_MARKED_FOR_DELETION)
 		{
 			scene_light_remove(scene, light);
 			continue;
@@ -403,7 +407,7 @@ void scene_post_update(struct Scene* scene)
 	for(int i = 0; i < MAX_ENTITIES; i++)
 	{
 		struct Entity* entity = &scene->entities[i];
-		if(!entity->active) continue;
+		if(!(entity->flags & EF_ACTIVE)) continue;
 	}
 
 	if(scene->player.base.transform.is_modified)
@@ -420,7 +424,7 @@ struct Entity* scene_entity_create(struct Scene* scene, const char* name, struct
 	for(int i = 0; i < MAX_ENTITIES; i++)
 	{
 		struct Entity* entity = &scene->entities[i];
-		if(!entity->active)
+		if(!(entity->flags & EF_ACTIVE))
 		{
 			new_entity = entity;
 			break;
@@ -448,7 +452,7 @@ struct Light* scene_light_create(struct Scene* scene, const char* name, struct E
 	for(int i = 0; i < MAX_LIGHTS; i++)
 	{
 		struct Light* light = &scene->lights[i];
-		if(!light->base.active)
+		if(!(light->base.flags & EF_ACTIVE))
 		{
 			new_light = light;
 			break;
@@ -476,7 +480,7 @@ struct Camera* scene_camera_create(struct Scene* scene, const char* name, struct
 	for(int i = 0; i < MAX_CAMERAS; i++)
 	{
 		struct Camera* camera = &scene->cameras[i];
-		if(!camera->base.active)
+		if(!(camera->base.flags & EF_ACTIVE))
 		{
 			new_camera = camera;
 			break;
@@ -504,7 +508,7 @@ struct Static_Mesh* scene_static_mesh_create(struct Scene* scene, const char* na
 	for(int i = 0; i < MAX_STATIC_MESHES; i++)
 	{
 		struct Static_Mesh* static_mesh = &scene->static_meshes[i];
-		if(!static_mesh->base.active)
+		if(!(static_mesh->base.flags & EF_ACTIVE))
 		{
 			new_static_mesh = static_mesh;
 			break;
@@ -534,7 +538,7 @@ struct Sound_Source* scene_sound_source_create(struct Scene* scene, const char* 
 	for(int i = 0; i < MAX_SOUND_SOURCES; i++)
 	{
 		struct Sound_Source* sound_source = &scene->sound_sources[i];
-		if(!sound_source->base.active)
+		if(!(sound_source->base.flags & EF_ACTIVE))
 		{
 			new_sound_source = sound_source;
 			break;
@@ -589,12 +593,10 @@ void scene_entity_base_remove(struct Scene* scene, struct Entity* entity)
 {
 	assert(scene && entity && entity->id >= 0);
 
-	if(!entity->active) return;
+	if(!(entity->flags & EF_ACTIVE)) return;
 
 	transform_destroy(entity);
-	entity->active              = false;
-	entity->selected_in_editor  = false;
-	entity->marked_for_deletion = false;
+	entity->flags = EF_NONE;
 	memset(entity->name, '\0', MAX_ENTITY_NAME_LEN);
 }
 
@@ -781,7 +783,7 @@ void scene_ray_intersect(struct Scene* scene, struct Ray* ray, struct Raycast_Re
 	for(int i = 0; i < MAX_STATIC_MESHES; i++)
 	{
 		struct Static_Mesh* mesh = &scene->static_meshes[i];
-		if(!mesh->base.active) continue;
+		if(!(mesh->base.flags & EF_ACTIVE)) continue;
 		vec3 abs_pos = { 0.f };
 		transform_get_absolute_position(mesh, &abs_pos);
 

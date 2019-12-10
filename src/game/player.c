@@ -16,9 +16,9 @@ void player_init(struct Player* player, struct Scene* scene)
 {
 	struct Game_State* game_state = game_state_get();
     entity_init(player, "Player", &scene->root_entity);
-    player->base.active  = true;
-    player->base.id      = 1;
-    player->base.type    = ET_PLAYER;
+    player->base.flags   |= EF_ACTIVE;
+    player->base.id      =  1;
+    player->base.type    =  ET_PLAYER;
 
     struct Hashmap* config = game_state->cvars;
     player->move_speed            = hashmap_int_get(config, "player_move_speed");
@@ -29,7 +29,7 @@ void player_init(struct Player* player, struct Scene* scene)
 
     struct Camera* player_camera = &scene->cameras[CAM_GAME];
     entity_rename(player_camera, "Player_Camera");
-    player_camera->base.active = true;
+    player_camera->base.flags |= EF_ACTIVE;
     player_camera->clear_color.x = 0.6f;
     player_camera->clear_color.y = 0.6f;
     player_camera->clear_color.z = 0.9f;
@@ -54,7 +54,7 @@ void player_init(struct Player* player, struct Scene* scene)
 void player_destroy(struct Player* player)
 {
     entity_reset(player, player->base.id);
-    player->base.active = false;
+    player->base.flags = EF_NONE;
 }
 
 void player_update(struct Player* player, struct Scene* scene, float dt)

@@ -176,7 +176,7 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
 				for(int j = 0; j < MAX_LIGHTS; j++)
 				{
 					struct Light* light = &scene->lights[j]; /* TODO: Cull lights according to camera frustum */
-					if(!light->base.active || !light->valid) continue;
+					if(!(light->base.flags & EF_ACTIVE) || !light->valid) continue;
 					light_count++;
 
 					vec3 light_pos = { 0, 0, 0 };
@@ -346,7 +346,7 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
 			for(int i = 0; i < MAX_STATIC_MESHES; i++)
 			{
 				struct Static_Mesh* mesh = &scene->static_meshes[i];
-				if(!mesh->base.active) continue;
+				if(!(mesh->base.flags & EF_ACTIVE)) continue;
 				struct Model*     model     = &mesh->model;
 				struct Transform* transform = &mesh->base.transform;
 				int               geometry  = model->geometry_index;
@@ -367,7 +367,7 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
 		for(int i = 0; i < MAX_STATIC_MESHES; i++)
 		{
 			struct Static_Mesh* mesh = &scene->static_meshes[i];
-			if(!mesh->base.active || (!mesh->collision.collision_shape && !mesh->collision.rigidbody)) continue;
+			if(!(mesh->base.flags & EF_ACTIVE) || (!mesh->collision.collision_shape && !mesh->collision.rigidbody)) continue;
 
 			//Get collision mesh and it's props then render it
 			vec3 pos = {0.f};

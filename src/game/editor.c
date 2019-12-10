@@ -164,7 +164,7 @@ void editor_init_camera(struct Editor* editor, struct Hashmap* cvars)
 {
     struct Camera* editor_camera = &game_state_get()->scene->cameras[CAM_EDITOR];
     entity_rename(editor_camera, "Editor_Camera");
-    editor_camera->base.active = true;
+    editor_camera->base.flags |= EF_ACTIVE;
     editor_camera->clear_color.x = 0.3f;
     editor_camera->clear_color.y = 0.6f;
     editor_camera->clear_color.z = 0.9f;
@@ -1170,7 +1170,7 @@ void editor_on_key_release(const struct Event* event)
 
 	if(event->key.key == KEY_DELETE && editor->selected_entity)
 	{
-		editor->selected_entity->marked_for_deletion = true;
+		editor->selected_entity->flags |= EF_MARKED_FOR_DELETION;
 		editor_entity_select(editor, NULL);
 	}
 }
@@ -1193,15 +1193,16 @@ void editor_entity_select(struct Editor* editor, struct Entity* entity)
 {
 	if(!entity && editor->selected_entity) // Deselect
 	{
-		editor->selected_entity->selected_in_editor = false;
+		editor->selected_entity->flags &= ~EF_SELECTED_IN_EDITOR;
 		editor->selected_entity = NULL;
 		editor_tool_reset(editor);
 	}
 	else if(entity) // Select
 	{
+		// Deselect already selected entity
 		if(editor->selected_entity && editor->selected_entity != entity)
 		{
-			editor->selected_entity->selected_in_editor = false;
+			editor->selected_entity->flags &= ~EF_SELECTED_IN_EDITOR;
 			editor->selected_entity = NULL;
 		}
 
@@ -1211,7 +1212,7 @@ void editor_entity_select(struct Editor* editor, struct Entity* entity)
 				editor_axis_set(editor, EDITOR_AXIS_XZ);
 			editor->draw_cursor_entity = true;
 		}
-		entity->selected_in_editor = true;
+		entity->flags |= EF_SELECTED_IN_EDITOR;
 		editor->selected_entity = entity;
 		transform_copy(editor->cursor_entity, editor->selected_entity, false);
 	}
@@ -1508,17 +1509,23 @@ bool editor_widget_v3(struct nk_context* context, vec3* value, const char* name_
 
 void editor_show_entity_in_list(struct Editor* editor, struct nk_context* context, struct Scene* scene, struct Entity* entity)
 {
-	if(!entity->active) return;
+	if(!(entity->flags & EF_ACTIVE)) return;
 
 	nk_layout_row_dynamic(context, 20, 1);
-	if(nk_selectable_label(context, entity->name, NK_TEXT_ALIGN_LEFT, &entity->selected_in_editor))
+	int selected = entity->flags & EF_SELECTED_IN_EDITOR;
+	if(nk_selectable_label(context, entity->name, NK_TEXT_ALIGN_LEFT, &selected))
 	{
+		if(selected)
+			entity->flags |= EF_SELECTED_IN_EDITOR;
+		else
+			entity->flags &= ~EF_SELECTED_IN_EDITOR;
+
 		if(editor->selected_entity && editor->selected_entity != entity)
 			editor_entity_select(editor, entity);
-		else if(editor->selected_entity && editor->selected_entity == entity && !entity->selected_in_editor)
+		else if(editor->selected_entity && editor->selected_entity == entity && !(entity->flags & EF_SELECTED_IN_EDITOR))
 			editor_entity_select(editor, NULL);
 
-		if(entity->selected_in_editor)
+		if(entity->flags & EF_SELECTED_IN_EDITOR)
 		{
 			editor->selected_entity = entity;
 			if(!editor->window_property_inspector) editor->window_property_inspector = true;
@@ -1594,7 +1601,7 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 			struct Entity* parent_ent = entity->transform.parent;
 			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Name", NK_TEXT_ALIGN_LEFT); nk_label(context, entity->name, NK_TEXT_ALIGN_RIGHT);
 			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "ID", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%d", entity->id);
-			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Selected", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%s", entity->selected_in_editor ? "True" : "False");
+			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Selected", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%s", (entity->flags & EF_SELECTED_IN_EDITOR) ? "True" : "False");
 			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Entity Type", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%s", entity_type_name_get(entity));
 			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Parent Name", NK_TEXT_ALIGN_LEFT); nk_label(context, parent_ent ? parent_ent->name : "NONE", NK_TEXT_ALIGN_RIGHT);
 

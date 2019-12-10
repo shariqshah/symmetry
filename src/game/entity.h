@@ -45,6 +45,16 @@ enum Camera_Type
     CAM_MAX
 };
 
+enum Entity_Flags
+{
+	EF_NONE                           = 0,
+	EF_ACTIVE                         = 1 << 0,
+	EF_SELECTED_IN_EDITOR             = 1 << 1,
+	EF_MARKED_FOR_DELETION            = 1 << 2,
+	EF_SERIALIZE_IN_SCENE             = 1 << 3,
+	EF_SHOW_IN_EDITOR_SCENE_HIERARCHY = 1 << 4
+};
+
 struct Transform
 {
     vec3            position;
@@ -62,10 +72,8 @@ struct Entity
     int              id;
     int              type;
 	int              archetype_index;
+	uchar            flags;
     char             name[MAX_ENTITY_NAME_LEN];
-    bool             marked_for_deletion;
-    bool             active;
-    bool             selected_in_editor;
     struct Transform transform;
 };
 

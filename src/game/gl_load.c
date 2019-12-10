@@ -57,7 +57,7 @@ void gl_check_error(const char * expression, unsigned int line, const char * fil
 	{
 	case GL_INVALID_OPERATION: 			   error_string = "Invalid Operation"; 		       break;
 	case GL_NO_ERROR:		   			   error_string = "No Error";		  		       break;
-	case GL_INVALID_ENUM:	   			   error_string = "Invalid ENUM";	  		       break;
+	case GL_INVALID_ENUM:	   			   error_string = "Invalid Enum";	  		       break;
 	case GL_INVALID_VALUE:	   			   error_string = "Invalid Value";	  		       break;
 	case GL_INVALID_FRAMEBUFFER_OPERATION: error_string = "Invalid FrameBuffer Operation"; break;
 	case GL_OUT_OF_MEMORY:		           error_string = "Out of Memory";		           break;

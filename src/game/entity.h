@@ -52,7 +52,8 @@ enum Entity_Flags
 	EF_SELECTED_IN_EDITOR             = 1 << 1,
 	EF_MARKED_FOR_DELETION            = 1 << 2,
 	EF_TRANSIENT                      = 1 << 3,
-	EF_HIDE_IN_EDITOR_SCENE_HIERARCHY = 1 << 4
+	EF_HIDE_IN_EDITOR_SCENE_HIERARCHY = 1 << 4,
+	EF_SKIP_RENDER                    = 1 << 5
 };
 
 struct Transform

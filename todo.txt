@@ -1,4 +1,6 @@
 Todo:
+	- Save default entity archetype to be loaded when there is not other archetype or in case of an error as fallback
+	- Bring back debug variable display in editor and allow showing colours, textures etc
 	- Implment/Test reading/writing scene that has a mixture of default entites and entity archetypes
 	- Serialize player, camera properties to file
 	- Implement behaviour that avoids writing normal entities that do not have children or parent to file to avoid inconsistencies when loading them
@@ -107,6 +109,7 @@ Improvements:
 	- Improve culling
 	- Allow scaling on all axes at once
 	- Improve grid/immediate mode drawing by switching to glDrawElements instead of glDrawArrays. 
+	- Investigate why transparency is not working for materials
 
 Bugs:
 	- Better handling of wav format checking at load time
@@ -333,3 +336,5 @@ Done:
 	* Console command to read/write scene to/from file
 	* Implemented flags that specify whether an entity should be written to file or not for example to avoid writing cameras and player to file
 	* In editor, only show entities with specific flags
+	* Fixed bugs with meshes being registered to uninitialized materials and not rendering
+	* Added EF_SKIP_RENDER flag to allow entites to skip rendering

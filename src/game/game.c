@@ -108,9 +108,9 @@ bool game_init(struct Window* window, struct Hashmap* cvars)
 		physics_body_set_collision_callback(entity_rigidbody_on_collision);
 		sound_init(game_state->sound);
 
+		renderer_init(game_state->renderer);
 		scene_init(game_state->scene);
 		editor_init(game_state->editor);
-		renderer_init(game_state->renderer);
     }
 	
     /* Debug scene setup */

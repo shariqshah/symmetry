@@ -4,12 +4,12 @@
 #include "entity.h"
 #include "renderer.h"
 
-#define MAX_ENTITIES          1024
-#define MAX_LIGHTS            30
-#define MAX_CAMERAS           2
-#define MAX_STATIC_MESHES     1024
-#define MAX_SOUND_SOURCES     128
-#define MAX_ENTITY_ARCHETYPES 32
+#define MAX_ENTITIES             1024
+#define MAX_LIGHTS               30
+#define MAX_CAMERAS              2
+#define MAX_STATIC_MESHES        1024
+#define MAX_SOUND_SOURCES        128
+#define MAX_ENTITY_ARCHETYPES    32
 
 struct Ray;
 struct Raycast_Result;

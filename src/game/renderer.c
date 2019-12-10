@@ -122,9 +122,9 @@ void renderer_init(struct Renderer* renderer)
     renderer->composition_shader = shader_create("fbo.vert", "fbo.frag", NULL);
     renderer->debug_shader       = shader_create("debug.vert", "debug.frag", NULL);
 
-    renderer->num_culled_slot   = editor_debugvar_slot_create("Culled Geom",   VT_INT);
-    renderer->num_rendered_slot = editor_debugvar_slot_create("Rendered Geom", VT_INT);
-    renderer->num_indices_slot  = editor_debugvar_slot_create("Total Indices", VT_INT);
+    // renderer->num_culled_slot   = editor_debugvar_slot_create("Culled Geom",   VT_INT);
+    // renderer->num_rendered_slot = editor_debugvar_slot_create("Rendered Geom", VT_INT);
+    // renderer->num_indices_slot  = editor_debugvar_slot_create("Total Indices", VT_INT);
 
     renderer->sprite_batch = malloc(sizeof(*renderer->sprite_batch));
     if(!renderer->sprite_batch)
@@ -248,7 +248,7 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
 
 			for(int j = 0; j < MAX_MATERIAL_REGISTERED_STATIC_MESHES; j++)
 			{
-				if(!material->registered_static_meshes[j]) continue;
+				if(!material->registered_static_meshes[j] || (material->registered_static_meshes[j]->base.flags & EF_SKIP_RENDER)) continue;
 
 				/* for each registered model, set up uniforms and render */
 				struct Static_Mesh* mesh = material->registered_static_meshes[j];
@@ -311,9 +311,9 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
 			}
 			shader_unbind();
 		}
-		editor_debugvar_slot_set_int(renderer->num_rendered_slot, renderer->num_rendered);
-		editor_debugvar_slot_set_int(renderer->num_culled_slot, renderer->num_culled);
-		editor_debugvar_slot_set_int(renderer->num_indices_slot, renderer->num_indices);
+		//editor_debugvar_slot_set_int(renderer->num_rendered_slot, renderer->num_rendered);
+		//editor_debugvar_slot_set_int(renderer->num_culled_slot, renderer->num_culled);
+		//editor_debugvar_slot_set_int(renderer->num_indices_slot, renderer->num_indices);
 
 		renderer->num_culled = renderer->num_rendered = renderer->num_indices = 0;
 	}

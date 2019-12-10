@@ -156,9 +156,12 @@ void editor_init(struct Editor* editor)
 	event_manager_subscribe(event_manager, EVT_MOUSEMOTION, &editor_on_mousemotion);
 	event_manager_subscribe(event_manager, EVT_KEY_PRESSED, &editor_on_key_press);
 	event_manager_subscribe(event_manager, EVT_KEY_RELEASED, &editor_on_key_release);
+}
 
+void editor_init_entities(struct Editor* editor)
+{
 	editor->cursor_entity = scene_static_mesh_create(game_state_get()->scene, "EDITOR_SELECTED_ENTITY_WIREFRAME", NULL, "sphere.symbres", MAT_UNSHADED);
-	editor->cursor_entity->base.flags |= EF_TRANSIENT | EF_HIDE_IN_EDITOR_SCENE_HIERARCHY;
+	editor->cursor_entity->base.flags |= EF_TRANSIENT | EF_SKIP_RENDER | EF_HIDE_IN_EDITOR_SCENE_HIERARCHY;
 }
 
 void editor_init_camera(struct Editor* editor, struct Hashmap* cvars)
@@ -1897,7 +1900,6 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 					nk_label(context, "Diffuse Color", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
 					editor_widget_color_combov4(context, &mesh->model.material_params[MMP_DIFFUSE_COL].val_vec4, 200, 300);
 
-
 					nk_layout_row_dynamic(context, row_height * 4, 2);
 					const char* diffuse_texture_name = texture_get_name(mesh->model.material_params[MMP_DIFFUSE_TEX].val_int);
 					nk_label(context, "Diffuse Texture", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
@@ -1935,11 +1937,10 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 						nk_contextual_end(context);
 					}
 
-					nk_layout_row_dynamic(context, row_height, 1);
-					mesh->model.material_params[MMP_DIFFUSE].val_float = nk_propertyf(context, "Diffuse", 0.f, mesh->model.material_params[MMP_DIFFUSE].val_float, 10.f, 0.5f, 0.1f);
-
 					if(mesh->model.material->type == MAT_BLINN)
 					{
+						nk_layout_row_dynamic(context, row_height, 1);
+						mesh->model.material_params[MMP_DIFFUSE].val_float = nk_propertyf(context, "Diffuse", 0.f, mesh->model.material_params[MMP_DIFFUSE].val_float, 10.f, 0.5f, 0.1f);
 						nk_layout_row_dynamic(context, row_height, 1);
 						mesh->model.material_params[MMP_SPECULAR].val_float = nk_propertyf(context, "Specular", 0.f, mesh->model.material_params[MMP_SPECULAR].val_float, 10.f, 0.5f, 0.1f);
 						nk_layout_row_dynamic(context, row_height, 1);

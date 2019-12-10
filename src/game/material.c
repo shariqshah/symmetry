@@ -137,6 +137,9 @@ bool material_register_static_mesh(struct Material* material, struct Static_Mesh
 		{
 			material->registered_static_meshes[i] = mesh;
 
+			for(int j = 0; j < MMP_MAX; j++)
+				variant_init_empty(&mesh->model.material_params[j]);
+
 			// Set default values for instance parameters
 			switch(material->type)
 			{

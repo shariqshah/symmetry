@@ -332,3 +332,4 @@ Done:
 	  entity archetypes
 	* Console command to read/write scene to/from file
 	* Implemented flags that specify whether an entity should be written to file or not for example to avoid writing cameras and player to file
+	* In editor, only show entities with specific flags

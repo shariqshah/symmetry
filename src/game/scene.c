@@ -111,7 +111,9 @@ bool scene_load(struct Scene* scene, const char* filename, int directory_type)
 	for(int i = 0; i < array_len(parsed_file->objects); i++)
 	{
 		struct Parser_Object* object = &parsed_file->objects[i];
-		if(object->type == PO_SCENE_CONFIG)
+		switch(object->type)
+		{
+		case PO_SCENE_CONFIG:
 		{
 			struct Hashmap* scene_data = object->data;
 			struct Render_Settings* render_settings = &game_state_get()->renderer->settings;
@@ -128,12 +130,14 @@ bool scene_load(struct Scene* scene, const char* filename, int directory_type)
 			if(hashmap_value_exists(scene_data, "debug_draw_physics")) render_settings->debug_draw_physics = hashmap_bool_get(scene_data, "debug_draw_physics");
 			num_objects_loaded++;
 		}
-		else if(object->type == PO_ENTITY)
+		break;
+		case PO_ENTITY:
 		{
 			if(entity_read(object, &scene->root_entity))
 				num_objects_loaded++;
 		}
-		else if(object->type == PO_SCENE_ENTITY_ENTRY)
+		break;
+		case PO_SCENE_ENTITY_ENTRY:
 		{
 			struct Hashmap* entity_entry_data = object->data;
 			if(hashmap_value_exists(object->data, "filename"))
@@ -159,8 +163,27 @@ bool scene_load(struct Scene* scene, const char* filename, int directory_type)
 				}
 			}
 		}
-		else
+		break;
+		case PO_PLAYER:
 		{
+			struct Hashmap* player_data = object->data;
+			vec3 position = { 0.f, 0.f, 0.f };
+			quat rotation = { 0.f, 0.f, 0.f, 1.f };
+			vec3 scale = { 1.f, 1.f, 1.f };
+
+			if(hashmap_value_exists(player_data, "position")) position = hashmap_vec3_get(player_data, "position");
+			if(hashmap_value_exists(player_data, "rotation")) rotation = hashmap_quat_get(player_data, "rotation");
+			if(hashmap_value_exists(player_data, "scale"))    scale    = hashmap_vec3_get(player_data, "scale");
+
+			struct Player* player = &scene->player;
+			transform_set_position(player, &position);
+			transform_scale(player, &scale);
+			quat_assign(&player->base.transform.rotation, &rotation);
+			transform_update_transmat(player);
+			num_objects_loaded++;
+		}
+		break;
+		default:
 			log_warning("Unknown object type '%s' in scene file %s", parser_object_type_to_str(object->type), filename);
 			continue;
 		}
@@ -257,7 +280,7 @@ void scene_write_entity_list(struct Scene* scene, int entity_type, struct Parser
 		//((char*)entity) += stride * count;
 		((char*)entity) += stride;
 		
-		if(entity->flags & EF_ACTIVE)
+		if(!(entity->flags & EF_TRANSIENT) && (entity->flags & EF_ACTIVE))
 		{
 			if(entity->archetype_index != -1)
 			{

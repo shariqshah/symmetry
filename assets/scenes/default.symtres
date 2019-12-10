@@ -1,0 +1,969 @@
+Scene_Config
+{
+	debug_draw_color : 0.800 0.400 0.100 1.000
+	fog_type : 1
+	fog_density : 0.1000
+	fog_color : 0.170 0.490 0.630
+	debug_draw_physics : false
+	fog_start_distance : 10.0000
+	fog_max_distance : 450.0000
+	debug_draw_enabled : false
+	debug_draw_mode : 0
+	ambient_light : 0.100 0.100 0.100
+}
+
+Player
+{
+	type : 2
+	scale : 1.000 1.000 1.000
+	rotation : 0.000 0.000 0.000 1.000
+	active : true
+	position : 5.970 1.130 16.740
+	name : Player
+}
+
+Entity
+{
+	type : 5
+	scale : 1.000 1.000 1.000
+	inner_angle : 20.0000
+	falloff : 1.5000
+	light_type : 2
+	depth_bias : 0.0005
+	rotation : 0.000 0.000 0.000 1.000
+	cast_shadow : false
+	intensity : 1.0000
+	color : 1.000 0.000 0.000
+	active : true
+	radius : 20.0000
+	position : 0.000 3.000 0.000
+	outer_angle : 30.0000
+	name : Suz_Light
+	pcf_enabled : false
+	valid : true
+}
+
+Entity
+{
+	type : 7
+	scale : 1.000 1.000 1.000
+	volume : 1.0000
+	rolloff_factor : 0.9500
+	rotation : 0.000 0.000 0.000 1.000
+	loop : true
+	sound_min_distance : 0.0000
+	active : true
+	playing : true
+	position : 0.000 3.000 0.000
+	source_filename : sounds/teh_beatz.wav
+	sound_type : 1
+	sound_max_distance : 10.0000
+	name : Beats
+	sound_attenuation_type : 2
+}
+
+Entity
+{
+	type : 6
+	scale : 200.000 1.000 200.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : default.pamesh
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 0.000 0.000 0.000
+	specular_strength : 1.0000
+	name : Ground_Mesh
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 10.000 5.000 5.000
+	specular_strength : 1.0000
+	name : Suzanne_0
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 11.000 5.000 6.000
+	specular_strength : 1.0000
+	name : Suzanne_1
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 12.000 5.000 7.000
+	specular_strength : 1.0000
+	name : Suzanne_2
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 13.000 5.000 8.000
+	specular_strength : 1.0000
+	name : Suzanne_3
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 14.000 5.000 9.000
+	specular_strength : 1.0000
+	name : Suzanne_4
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 15.000 5.000 10.000
+	specular_strength : 1.0000
+	name : Suzanne_5
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 16.000 5.000 11.000
+	specular_strength : 1.0000
+	name : Suzanne_6
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 17.000 5.000 12.000
+	specular_strength : 1.0000
+	name : Suzanne_7
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 18.000 5.000 13.000
+	specular_strength : 1.0000
+	name : Suzanne_8
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 19.000 5.000 14.000
+	specular_strength : 1.0000
+	name : Suzanne_9
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 20.000 5.000 15.000
+	specular_strength : 1.0000
+	name : Suzanne_10
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 21.000 5.000 16.000
+	specular_strength : 1.0000
+	name : Suzanne_11
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 22.000 5.000 17.000
+	specular_strength : 1.0000
+	name : Suzanne_12
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 23.000 5.000 18.000
+	specular_strength : 1.0000
+	name : Suzanne_13
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 24.000 5.000 19.000
+	specular_strength : 1.0000
+	name : Suzanne_14
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 25.000 5.000 20.000
+	specular_strength : 1.0000
+	name : Suzanne_15
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 26.000 5.000 21.000
+	specular_strength : 1.0000
+	name : Suzanne_16
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 27.000 5.000 22.000
+	specular_strength : 1.0000
+	name : Suzanne_17
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 28.000 5.000 23.000
+	specular_strength : 1.0000
+	name : Suzanne_18
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 29.000 5.000 24.000
+	specular_strength : 1.0000
+	name : Suzanne_19
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 30.000 5.000 25.000
+	specular_strength : 1.0000
+	name : Suzanne_20
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 31.000 5.000 26.000
+	specular_strength : 1.0000
+	name : Suzanne_21
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 32.000 5.000 27.000
+	specular_strength : 1.0000
+	name : Suzanne_22
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 33.000 5.000 28.000
+	specular_strength : 1.0000
+	name : Suzanne_23
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 34.000 5.000 29.000
+	specular_strength : 1.0000
+	name : Suzanne_24
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 35.000 5.000 30.000
+	specular_strength : 1.0000
+	name : Suzanne_25
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 36.000 5.000 31.000
+	specular_strength : 1.0000
+	name : Suzanne_26
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 37.000 5.000 32.000
+	specular_strength : 1.0000
+	name : Suzanne_27
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 38.000 5.000 33.000
+	specular_strength : 1.0000
+	name : Suzanne_28
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 39.000 5.000 34.000
+	specular_strength : 1.0000
+	name : Suzanne_29
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 40.000 5.000 35.000
+	specular_strength : 1.0000
+	name : Suzanne_30
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 41.000 5.000 36.000
+	specular_strength : 1.0000
+	name : Suzanne_31
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 42.000 5.000 37.000
+	specular_strength : 1.0000
+	name : Suzanne_32
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 43.000 5.000 38.000
+	specular_strength : 1.0000
+	name : Suzanne_33
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 44.000 5.000 39.000
+	specular_strength : 1.0000
+	name : Suzanne_34
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 45.000 5.000 40.000
+	specular_strength : 1.0000
+	name : Suzanne_35
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 46.000 5.000 41.000
+	specular_strength : 1.0000
+	name : Suzanne_36
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 47.000 5.000 42.000
+	specular_strength : 1.0000
+	name : Suzanne_37
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 48.000 5.000 43.000
+	specular_strength : 1.0000
+	name : Suzanne_38
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 49.000 5.000 44.000
+	specular_strength : 1.0000
+	name : Suzanne_39
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 50.000 5.000 45.000
+	specular_strength : 1.0000
+	name : Suzanne_40
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 51.000 5.000 46.000
+	specular_strength : 1.0000
+	name : Suzanne_41
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 52.000 5.000 47.000
+	specular_strength : 1.0000
+	name : Suzanne_42
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 53.000 5.000 48.000
+	specular_strength : 1.0000
+	name : Suzanne_43
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 54.000 5.000 49.000
+	specular_strength : 1.0000
+	name : Suzanne_44
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 55.000 5.000 50.000
+	specular_strength : 1.0000
+	name : Suzanne_45
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 56.000 5.000 51.000
+	specular_strength : 1.0000
+	name : Suzanne_46
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 57.000 5.000 52.000
+	specular_strength : 1.0000
+	name : Suzanne_47
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 58.000 5.000 53.000
+	specular_strength : 1.0000
+	name : Suzanne_48
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 59.000 5.000 54.000
+	specular_strength : 1.0000
+	name : Suzanne_49
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 0.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : white.tga
+	diffuse : 0.5000
+	position : 0.000 5.000 5.000
+	specular_strength : 1.0000
+	name : Suz
+}
+
+Entity
+{
+	type : 5
+	scale : 1.000 1.000 1.000
+	inner_angle : 20.0000
+	falloff : 1.5000
+	light_type : 2
+	depth_bias : 0.0005
+	rotation : 0.000 0.000 0.000 1.000
+	cast_shadow : false
+	intensity : 1.0000
+	color : 1.000 1.000 1.000
+	active : true
+	radius : 20.0000
+	position : 0.000 5.000 0.000
+	outer_angle : 30.0000
+	name : Test_Light
+	pcf_enabled : false
+	valid : true
+}
+

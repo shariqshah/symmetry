@@ -36,6 +36,10 @@ void player_init(struct Player* player, struct Scene* scene)
     player_camera->clear_color.w = 1.f;
     player->camera_node = player_camera;
 
+	// Mark player camera and mesh as transient for now. We don't need to save them to file since we recreate them here anyway
+	player->camera_node->base.flags |= EF_TRANSIENT;
+	player->mesh->base.flags |= EF_TRANSIENT;
+
     int render_width  = hashmap_int_get(config, "render_width");
     int render_height = hashmap_int_get(config, "render_height");
     camera_attach_fbo(player_camera, render_width, render_height, true, true, true);

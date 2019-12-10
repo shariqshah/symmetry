@@ -114,7 +114,7 @@ bool game_init(struct Window* window, struct Hashmap* cvars)
     }
 	
     /* Debug scene setup */
-    game_scene_setup();
+    //game_scene_setup();
     game_state->is_initialized = true;
 	return game_state->is_initialized;
 }

@@ -158,13 +158,14 @@ void editor_init(struct Editor* editor)
 	event_manager_subscribe(event_manager, EVT_KEY_RELEASED, &editor_on_key_release);
 
 	editor->cursor_entity = scene_static_mesh_create(game_state_get()->scene, "EDITOR_SELECTED_ENTITY_WIREFRAME", NULL, "sphere.symbres", MAT_UNSHADED);
+	editor->cursor_entity->base.flags |= EF_TRANSIENT | EF_HIDE_IN_EDITOR_SCENE_HIERARCHY;
 }
 
 void editor_init_camera(struct Editor* editor, struct Hashmap* cvars)
 {
     struct Camera* editor_camera = &game_state_get()->scene->cameras[CAM_EDITOR];
     entity_rename(editor_camera, "Editor_Camera");
-    editor_camera->base.flags |= EF_ACTIVE;
+    editor_camera->base.flags |= EF_ACTIVE | EF_TRANSIENT;
     editor_camera->clear_color.x = 0.3f;
     editor_camera->clear_color.y = 0.6f;
     editor_camera->clear_color.z = 0.9f;
@@ -1509,7 +1510,7 @@ bool editor_widget_v3(struct nk_context* context, vec3* value, const char* name_
 
 void editor_show_entity_in_list(struct Editor* editor, struct nk_context* context, struct Scene* scene, struct Entity* entity)
 {
-	if(!(entity->flags & EF_ACTIVE)) return;
+	if(!(entity->flags & EF_ACTIVE) || (entity->flags & EF_HIDE_IN_EDITOR_SCENE_HIERARCHY)) return;
 
 	nk_layout_row_dynamic(context, 20, 1);
 	int selected = entity->flags & EF_SELECTED_IN_EDITOR;

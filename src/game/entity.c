@@ -506,7 +506,14 @@ struct Entity* entity_load(const char* filename, int directory_type)
 		if(new_entity)
 		{
 			if(i == 0)
+			{
+				new_entity->archetype_index = scene_entity_archetype_add(game_state_get()->scene, filename);
 				parent_entity = new_entity;
+			}
+			// We don't want this entity to be saved when we're saving the scene because 
+			// this entity and its parent will be loaded from this same file next time the scene is loaded
+			if(i != 0)
+				new_entity->flags |= EF_TRANSIENT;
 			num_entites_loaded++;
 			log_message("Entity %s loaded from %s", new_entity->name, filename);
 		}

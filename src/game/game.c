@@ -102,10 +102,10 @@ bool game_init(struct Window* window, struct Hashmap* cvars)
 		gui_init(game_state->gui);
 		console_init(game_state->console);
 		geom_init();
-		physics_init();
-		physics_gravity_set(0.f, -9.8f, 0.f);
-		physics_body_set_moved_callback(entity_rigidbody_on_move);
-		physics_body_set_collision_callback(entity_rigidbody_on_collision);
+		//physics_init();
+		//physics_gravity_set(0.f, -9.8f, 0.f);
+		//physics_body_set_moved_callback(entity_rigidbody_on_move);
+		//physics_body_set_collision_callback(entity_rigidbody_on_collision);
 		sound_init(game_state->sound);
 
 		renderer_init(game_state->renderer);
@@ -115,6 +115,7 @@ bool game_init(struct Window* window, struct Hashmap* cvars)
 	
     /* Debug scene setup */
     //game_scene_setup();
+	scene_load(game_state->scene, "scenes/default.symtres", DIRT_INSTALL);
     game_state->is_initialized = true;
 	return game_state->is_initialized;
 }
@@ -557,7 +558,7 @@ void game_update(float dt, bool* window_should_close)
     scene_update(game_state->scene, dt);
     if(game_state->game_mode == GAME_MODE_GAME)
     {
-		physics_step(dt);
+		//physics_step(dt);
     }
     else if(game_state->game_mode == GAME_MODE_EDITOR)
     {
@@ -1912,7 +1913,7 @@ void game_cleanup(void)
 			texture_cleanup();
 			shader_cleanup();
 			sound_cleanup(game_state->sound);
-			physics_cleanup();
+			//physics_cleanup();
 			event_manager_cleanup(game_state->event_manager);
 
 			free(game_state->editor);

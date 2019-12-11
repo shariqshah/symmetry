@@ -15,6 +15,7 @@ static struct nk_color console_message_color[CMT_MAX];
 
 static int console_filter(const struct nk_text_edit *box, nk_rune unicode);
 
+static void console_command_scene_empty(struct Console* console, const char* command);
 static void console_command_scene_save(struct Console* console, const char* command);
 static void console_command_scene_load(struct Console* console, const char* command);
 static void console_command_entity_save(struct Console* console, const char* command);
@@ -45,6 +46,7 @@ void console_init(struct Console* console)
 	}
 
 	console->console_commands = hashmap_new();
+	hashmap_ptr_set(console->console_commands, "scene_empty", &console_command_scene_empty);
 	hashmap_ptr_set(console->console_commands, "scene_save", &console_command_scene_save);
 	hashmap_ptr_set(console->console_commands, "scene_load", &console_command_scene_load);
 	hashmap_ptr_set(console->console_commands, "entity_save", &console_command_entity_save);
@@ -265,4 +267,15 @@ void console_command_scene_load(struct Console* console, const char* command)
 	snprintf(full_filename, MAX_FILENAME_LEN, "scenes/%s.symtres", filename);
 	if(!scene_load(game_state_get()->scene, full_filename, DIRT_INSTALL))
 		log_error("scene_load", "Command failed");
+}
+
+void console_command_scene_empty(struct Console* console, const char* command)
+{
+	char filename[MAX_FILENAME_LEN];
+	memset(filename, '\0', MAX_FILENAME_LEN);
+
+	struct Scene* scene = game_state_get()->scene;
+	scene_destroy(scene);
+	scene_post_update(scene);
+	scene_init(scene);
 }

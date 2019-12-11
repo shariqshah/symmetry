@@ -279,7 +279,6 @@ void scene_write_entity_list(struct Scene* scene, int entity_type, struct Parser
 	while(count < max_length)
 	{
 		//((char*)entity) += stride * count;
-		((char*)entity) += stride;
 		
 		if(!(entity->flags & EF_TRANSIENT) && (entity->flags & EF_ACTIVE))
 		{
@@ -295,6 +294,7 @@ void scene_write_entity_list(struct Scene* scene, int entity_type, struct Parser
 			}
 		}
 		count++;
+		((char*)entity) += stride;
 	}
 }
 
@@ -634,6 +634,7 @@ void scene_light_remove(struct Scene* scene, struct Light* light)
 void scene_camera_remove(struct Scene* scene, struct Camera* camera)
 {
 	assert(scene && camera);
+	camera_reset(camera);
 	scene_entity_base_remove(scene, &camera->base);
 }
 
@@ -925,4 +926,37 @@ bool scene_save_(const char* filename, int directory_type)
 	  fclose(scene_file);*/
 
 	return success;
+}
+
+int scene_entity_archetype_add(struct Scene* scene, const char* filename)
+{
+	// check if we have already added this archetype, if we have, return that index
+	// otherwise add it and return the index
+	int index = -1;
+	for(int i = 0; i < MAX_ENTITY_ARCHETYPES; i++)
+	{
+		if(strncmp(filename, &scene->entity_archetypes[i][0], MAX_FILENAME_LEN) == 0)
+		{
+			index = i;
+			break;
+		}
+	}
+
+	if(index == -1)
+	{
+		for(int i = 0; i < MAX_ENTITY_ARCHETYPES; i++)
+		{
+			if(scene->entity_archetypes[i][0] == '\0')
+			{
+				strncpy(&scene->entity_archetypes[i][0], filename, MAX_FILENAME_LEN);
+				index = i;
+				break;
+			}
+		}
+	}
+
+	if(index == -1)
+		log_warning("Out of archetype indices!");
+
+	return index;
 }

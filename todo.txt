@@ -1,5 +1,7 @@
 Todo:
-	- Save default entity archetype to be loaded when there is not other archetype or in case of an error as fallback
+	- Fix cameras not resizing to current resolution when scene is loaded/reloaded
+	- Allow renaming scene objects in editor
+	- Add parameter to entity_load command that renames the newly loaded object to whatever the second specified parameter is
 	- Bring back debug variable display in editor and allow showing colours, textures etc
 	- Implment/Test reading/writing scene that has a mixture of default entites and entity archetypes
 	- Serialize player, camera properties to file
@@ -18,6 +20,7 @@ Todo:
 	- Better, more accurate picking
 	- Editor related messages/notifications in the bottom status bar
 	? Disable entity picking when tool is in use or only allow picking when pressing ALT
+	? Maybe remove physics engine and ode all together if we're not using it or investigate the memory leaks that it causes if we're going to keep it?
 	- Disable editor event recievers on game mode change
 	- Editor Undo
 	- Duplicate with Ctrl-D
@@ -123,6 +126,7 @@ Bugs:
 	- Fix shader preprocessor failing when the file in //include directive is empty
 	- Fix bug with blinn shader reaching maximum uniform number on mac
 	- Fix delete in editor not working when the cursor is hovering over scene heirarchy window
+	- Investigate memory leaks caused by nuklear or opengl related operations in gui_update
 	
 Done:
 	* Input
@@ -338,3 +342,5 @@ Done:
 	* In editor, only show entities with specific flags
 	* Fixed bugs with meshes being registered to uninitialized materials and not rendering
 	* Added EF_SKIP_RENDER flag to allow entites to skip rendering
+	* Save default entity archetype to be loaded when there is not other archetype or in case of an error as fallback
+	* Ensure cameras are not initialized multiple times

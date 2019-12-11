@@ -174,9 +174,12 @@ void editor_init_camera(struct Editor* editor, struct Hashmap* cvars)
     editor_camera->clear_color.z = 0.9f;
     editor_camera->clear_color.w = 1.f;
 
-    int render_width  = hashmap_int_get(cvars, "render_width");
-    int render_height = hashmap_int_get(cvars, "render_height");
-    camera_attach_fbo(editor_camera, render_width, render_height, true, true, true);
+	if(editor_camera->fbo == -1)
+	{
+		int render_width = hashmap_int_get(cvars, "render_width");
+		int render_height = hashmap_int_get(cvars, "render_height");
+		camera_attach_fbo(editor_camera, render_width, render_height, true, true, true);
+	}
 
     vec3 cam_pos = {5.f, 20.f, 50.f};
     transform_translate(editor_camera, &cam_pos, TS_WORLD);
@@ -1328,10 +1331,10 @@ void editor_camera_update(struct Editor* editor, float dt)
 {
 	struct Game_State* game_state = game_state_get();
 	struct Gui*        gui        = game_state->gui;
-	if(game_state->console->visible)
+	if(game_state->console->visible || nk_item_is_any_active(&gui->context))
 		return;
 
-    struct Camera* editor_camera = &game_state_get()->scene->cameras[CAM_EDITOR];
+    struct Camera* editor_camera = &game_state->scene->cameras[CAM_EDITOR];
     static float total_up_down_rot = 0.f;
     float move_speed = editor->camera_move_speed, turn_speed = editor->camera_turn_speed;
     float turn_up_down        = 0.f;
@@ -1347,7 +1350,7 @@ void editor_camera_update(struct Editor* editor, float dt)
     if(input_map_state_get("Turn_Right", KS_PRESSED)) turn_left_right += turn_speed;
     if(input_map_state_get("Turn_Left",  KS_PRESSED)) turn_left_right -= turn_speed;
 
-    if(input_mousebutton_state_get(MSB_RIGHT, KS_PRESSED) && !nk_item_is_any_active(&game_state_get()->gui->context))
+    if(input_mousebutton_state_get(MSB_RIGHT, KS_PRESSED) && !nk_item_is_any_active(&gui->context))
     {
 		const float scale = 0.5f;
 		int cursor_lr, cursor_ud;
@@ -1488,10 +1491,16 @@ void editor_widget_color_combov4(struct nk_context* context, vec4* color, int wi
 
 void editor_cleanup(struct Editor* editor)
 {
-	event_manager_unsubscribe(game_state_get()->event_manager, EVT_MOUSEBUTTON_PRESSED, &editor_on_mousebutton_press);
-	event_manager_unsubscribe(game_state_get()->event_manager, EVT_MOUSEBUTTON_RELEASED, &editor_on_mousebutton_release);
+	struct Event_Manager* event_manager = game_state_get()->event_manager;
+	event_manager_unsubscribe(event_manager, EVT_MOUSEBUTTON_PRESSED, &editor_on_mousebutton_press);
+	event_manager_unsubscribe(event_manager, EVT_MOUSEBUTTON_RELEASED, &editor_on_mousebutton_release);
+	event_manager_unsubscribe(event_manager, EVT_MOUSEMOTION, &editor_on_mousemotion);
+	event_manager_unsubscribe(event_manager, EVT_KEY_PRESSED, &editor_on_key_press);
+	event_manager_unsubscribe(event_manager, EVT_KEY_RELEASED, &editor_on_key_release);
+
     for(int i = 0; i < array_len(debug_vars_list); i++)
-	editor_debugvar_slot_remove(i);
+		editor_debugvar_slot_remove(i);
+
     array_free(debug_vars_list);
     array_free(empty_indices);
 }

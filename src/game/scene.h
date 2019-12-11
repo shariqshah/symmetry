@@ -56,6 +56,7 @@ struct Entity*       scene_base_entity_get(struct Scene* scene, int id, int type
 
 void scene_entity_parent_set(struct Scene* scene, struct Entity* entity, struct Entity* parent);
 void scene_entity_parent_reset(struct Scene* scene, struct Entity* entity); // Sets root entity as parent
+int  scene_entity_archetype_add(struct Scene* scene, const char* filename);
 
 void scene_ray_intersect(struct Scene* scene, struct Ray* ray, struct Raycast_Result* out_results);
 

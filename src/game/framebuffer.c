@@ -95,6 +95,7 @@ int framebuffer_create(int width, int height, bool has_depth, bool has_color, bo
 		{
 			index = *array_get_last(empty_indices, int);
 			array_pop(empty_indices);
+			framebuffer = &fbo_list[index];
 		}
 		
 		framebuffer->handle             = fbo;

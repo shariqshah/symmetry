@@ -459,8 +459,11 @@ void renderer_on_framebuffer_size_changed(const struct Event* event)
     for(int i = 0; i < MAX_CAMERAS; i++)
     {
 		struct Camera* viewer = &scene->cameras[i];
-		viewer->aspect_ratio = aspect > 0.f ? aspect : 4.f / 3.f;
-		camera_update_proj(viewer);
+		if(viewer->resizeable)
+		{
+			viewer->aspect_ratio = aspect > 0.f ? aspect : 4.f / 3.f;
+			camera_update_proj(viewer);
+		}
     }
 	
     framebuffer_resize_all(width, height);

@@ -6,9 +6,9 @@ Entity
 	geometry : suzanne.symbres
 	specular : 1.0000
 	active : true
-	diffuse_texture : white.tga
-	diffuse : 0.5000
+	diffuse_texture : default.tga
+	diffuse : 1.0000
 	specular_strength : 1.0000
-	name : Suzanne_Saved
+	name : Suzanne_Default
 }
 

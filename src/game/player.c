@@ -40,9 +40,13 @@ void player_init(struct Player* player, struct Scene* scene)
 	player->camera_node->base.flags |= EF_TRANSIENT;
 	player->mesh->base.flags |= EF_TRANSIENT;
 
-    int render_width  = hashmap_int_get(config, "render_width");
-    int render_height = hashmap_int_get(config, "render_height");
-    camera_attach_fbo(player_camera, render_width, render_height, true, true, true);
+	if(player_camera->fbo == -1)
+	{
+		int render_width = hashmap_int_get(config, "render_width");
+		int render_height = hashmap_int_get(config, "render_height");
+		camera_attach_fbo(player_camera, render_width, render_height, true, true, true);
+	}
+
     transform_parent_set(player_camera, player, true);
 
     vec3 cam_translation = {0.f, 20.f, 2.f};
@@ -58,6 +62,7 @@ void player_init(struct Player* player, struct Scene* scene)
 void player_destroy(struct Player* player)
 {
     entity_reset(player, player->base.id);
+	scene_entity_base_remove(game_state_get()->scene, &player->base);
     player->base.flags = EF_NONE;
 }
 

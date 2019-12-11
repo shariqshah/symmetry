@@ -20,7 +20,7 @@ int   array_copy_(void* arr_src, void** arr_dest);
 #define array_grow(array, type)          (type*) array_grow_((void**)&array)
 #define array_push(array, value, type)   {type* new_val = array_grow(array, type); \
 		                                  *new_val      = value;}
-#define array_get_last(array, type)      (type*) (&array[array_len(array)])
+#define array_get_last(array, type)      (type*) (&array[array_len(array) - 1])
 #define array_set_last(array, val, type) {type* last = array_get_last(array, type);	\
 		                                  *last = val}
 #define array_pop(array)                 array_pop_((void**)&array)

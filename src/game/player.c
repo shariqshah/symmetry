@@ -44,6 +44,7 @@ void player_init(struct Player* player, struct Scene* scene)
 	{
 		int render_width = hashmap_int_get(config, "render_width");
 		int render_height = hashmap_int_get(config, "render_height");
+		window_get_drawable_size(game_state->window, &render_width, &render_height);
 		camera_attach_fbo(player_camera, render_width, render_height, true, true, true);
 	}
 

@@ -178,6 +178,7 @@ void editor_init_camera(struct Editor* editor, struct Hashmap* cvars)
 	{
 		int render_width = hashmap_int_get(cvars, "render_width");
 		int render_height = hashmap_int_get(cvars, "render_height");
+		window_get_drawable_size(game_state_get()->window, &render_width, &render_height);
 		camera_attach_fbo(editor_camera, render_width, render_height, true, true, true);
 	}
 

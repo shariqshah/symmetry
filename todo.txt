@@ -1,6 +1,5 @@
 Todo:
 	- Allow renaming scene objects in editor
-	- Add parameter to entity_load command that renames the newly loaded object to whatever the second specified parameter is
 	- Bring back debug variable display in editor and allow showing colours, textures etc
 	- Implment/Test reading/writing scene that has a mixture of default entites and entity archetypes
 	- Serialize player, camera properties to file
@@ -344,3 +343,4 @@ Done:
 	* Save default entity archetype to be loaded when there is not other archetype or in case of an error as fallback
 	* Ensure cameras are not initialized multiple times
 	* Fixed cameras not resizing to current resolution when scene is loaded/reloaded
+	* Added parameter to entity_load command that renames the newly loaded object to whatever the second specified parameter is

@@ -198,23 +198,28 @@ void console_command_entity_save(struct Console* console, const char* command)
 void console_command_entity_load(struct Console* console, const char* command)
 {
 	char filename[MAX_FILENAME_LEN];
+	char new_entity_name[MAX_ENTITY_NAME_LEN];
 	memset(filename, '\0', MAX_FILENAME_LEN);
+	memset(new_entity_name, '\0', MAX_ENTITY_NAME_LEN);
 
-	int params_read = sscanf(command, "%s", filename);
-	if(params_read != 1)
+	int params_read = sscanf(command, "%s %s", filename, new_entity_name);
+	if(params_read < 1 && params_read > 2)
 	{
 		log_warning("Invalid parameters for command");
-		log_warning("Usage: entity_load [file name]");
+		log_warning("Usage: entity_load [file name] [optional: new entity name]");
 		return;
 	}
 
 	char full_filename[MAX_FILENAME_LEN];
 	snprintf(full_filename, MAX_FILENAME_LEN, "entities/%s.symtres", filename);
-	if(!entity_load(full_filename, DIRT_INSTALL))
+	struct Entity* new_entity = entity_load(full_filename, DIRT_INSTALL);
+	if(!new_entity)
 	{
 		log_error("entity_load", "Could not create entity from '%s'", full_filename);
 		return;
 	}
+
+	if(params_read == 2) entity_rename(new_entity, new_entity_name);
 }
 
 void console_command_help(struct Console* console, const char* command)

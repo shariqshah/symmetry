@@ -222,7 +222,7 @@ void transform_update_transmat(struct Entity* entity)
 	if(transform->parent)
 	{
 		struct Transform* parent_tran = &transform->parent->transform;
-		mat4_mul(&transform->trans_mat, &transform->trans_mat, &parent_tran->trans_mat);
+		mat4_mul(&transform->trans_mat, &parent_tran->trans_mat, &transform->trans_mat);
 	}
 
 	/* Update all children */

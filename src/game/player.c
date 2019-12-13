@@ -50,11 +50,11 @@ void player_init(struct Player* player, struct Scene* scene)
 
     transform_parent_set(player_camera, player, true);
 
-    vec3 cam_translation = {0.f, 20.f, 2.f};
+    vec3 cam_translation = {0.f, 1.5f, 0.f};
     transform_translate(player_camera, &cam_translation, TS_LOCAL);
 
-    vec3 cam_axis = {-1.f, 0.f, 0.f};
-    transform_rotate(player_camera, &cam_axis, 85.f, TS_LOCAL);
+    //vec3 cam_axis = {-1.f, 0.f, 0.f};
+    //transform_rotate(player_camera, &cam_axis, 85.f, TS_LOCAL);
 
 	sound_listener_set(game_state->sound, player_camera);
 	sound_listener_update(game_state->sound);
@@ -69,10 +69,56 @@ void player_destroy(struct Player* player)
 
 void player_update(struct Player* player, struct Scene* scene, float dt)
 {
+    /* Look around */
+    static float total_pitch = 0.f;
+    float pitch              = 0.f;
+    float yaw                = 0.f;
+    float max_pitch          = 80.f;
+	vec3  rot_axis_pitch     = { 1, 0, 0 };
+	vec3  rot_axis_yaw       = { 0, 1, 0 };
+
+    if(input_map_state_get("Turn_Up",    KS_PRESSED)) pitch    += player->turn_speed;
+    if(input_map_state_get("Turn_Down",  KS_PRESSED)) pitch    -= player->turn_speed;
+    if(input_map_state_get("Turn_Right", KS_PRESSED)) yaw += player->turn_speed;
+    if(input_map_state_get("Turn_Left",  KS_PRESSED)) yaw -= player->turn_speed;
+
+	int cursor_yaw, cursor_pitch;
+	input_mouse_delta_get(&cursor_yaw, &cursor_pitch);
+	if(input_mouse_mode_get() != MM_RELATIVE)
+	{
+		input_mouse_mode_set(MM_RELATIVE);
+		cursor_yaw = cursor_pitch = 0;
+	}
+
+	pitch = -cursor_pitch * player->turn_speed * dt;
+	yaw = cursor_yaw * player->turn_speed * dt;
+
+    total_pitch += pitch;
+    if(total_pitch >= max_pitch)
+    {
+		total_pitch = max_pitch;
+		pitch = 0.f;
+    }
+    else if(total_pitch <= -max_pitch)
+    {
+		total_pitch = -max_pitch;
+		pitch = 0.f;
+    }
+
+    if(yaw != 0.f)
+    {
+		transform_rotate(player->camera_node, &rot_axis_yaw, -yaw, TS_WORLD);
+    }
+
+    if(pitch != 0.f)
+    {
+		transform_rotate(player->camera_node, &rot_axis_pitch, pitch, TS_LOCAL);
+    }
+
+    /* Movement */
     float move_speed = player->move_speed;
     vec3 offset = {0.f, 0.f, 0.f};
 
-    /* Movement */
     if(input_map_state_get("Sprint",        KS_PRESSED)) move_speed *= player->move_speed_multiplier;
     if(input_map_state_get("Move_Forward",  KS_PRESSED)) offset.z   -= move_speed;
     if(input_map_state_get("Move_Backward", KS_PRESSED)) offset.z   += move_speed;
@@ -84,6 +130,7 @@ void player_update(struct Player* player, struct Scene* scene, float dt)
     vec3_scale(&offset, &offset, dt);
 	if(offset.x != 0 || offset.y != 0 || offset.z != 0)
 	{
+		quat_mul_vec3(&offset, &player->camera_node->base.transform.rotation, &offset);
 		transform_translate(player, &offset, TS_LOCAL);
 	}
 

@@ -1,11 +1,14 @@
 Todo:
+	- Fix gimbal lock in fps camera
+	- Fix weird rotational bug when rotation resets or inverts after 180 degrees
+	- Better, more accurate picking
 	- Add editor undo for transformation operations
-	- Add simple player fps controls 
 	- Add material export for blender exporter?
 	- Remove flickering from selection in editor
-	- Better, more accurate picking
 	- Allow renaming scene objects in editor
 	- Check if we still need to rotate by 90 degrees when exporting from blender
+	- Fire an event when the game mode is changed so that editor camera state and other game related systems know when to update
+	- Add config file reloading and fire event that notifies potential listeners to update values from the new config file
 	- Command to reload entities only
 	- Command history in console
 	- Bring back debug variable display in editor and allow showing colours, textures etc
@@ -351,3 +354,4 @@ Done:
 	* Fixed cameras not resizing to current resolution when scene is loaded/reloaded
 	* Added parameter to entity_load command that renames the newly loaded object to whatever the second specified parameter is
 	* Implment/Test reading/writing scene that has a mixture of default entites and entity archetypes
+	* Add simple player fps controls 

@@ -319,7 +319,8 @@ void transform_get_absolute_rot(struct Entity* entity, quat* res)
 			done = true;
 			break;
 		}
-		quat_mul(res, res, &parent->transform.rotation);
+		//quat_mul(res, res, &parent->transform.rotation);
+		quat_mul(res, &parent->transform.rotation, res);
 		parent = parent->transform.parent;
 	}
 }

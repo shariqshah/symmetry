@@ -77,10 +77,10 @@ void player_update(struct Player* player, struct Scene* scene, float dt)
 	vec3  rot_axis_pitch     = { 1, 0, 0 };
 	vec3  rot_axis_yaw       = { 0, 1, 0 };
 
-    if(input_map_state_get("Turn_Up",    KS_PRESSED)) pitch    += player->turn_speed;
-    if(input_map_state_get("Turn_Down",  KS_PRESSED)) pitch    -= player->turn_speed;
-    if(input_map_state_get("Turn_Right", KS_PRESSED)) yaw += player->turn_speed;
-    if(input_map_state_get("Turn_Left",  KS_PRESSED)) yaw -= player->turn_speed;
+    if(input_map_state_get("Turn_Up",    KS_PRESSED)) pitch += player->turn_speed;
+    if(input_map_state_get("Turn_Down",  KS_PRESSED)) pitch -= player->turn_speed;
+    if(input_map_state_get("Turn_Right", KS_PRESSED)) yaw   += player->turn_speed;
+    if(input_map_state_get("Turn_Left",  KS_PRESSED)) yaw   -= player->turn_speed;
 
 	int cursor_yaw, cursor_pitch;
 	input_mouse_delta_get(&cursor_yaw, &cursor_pitch);
@@ -106,14 +106,10 @@ void player_update(struct Player* player, struct Scene* scene, float dt)
     }
 
     if(yaw != 0.f)
-    {
-		transform_rotate(player->camera_node, &rot_axis_yaw, -yaw, TS_WORLD);
-    }
+		transform_rotate(player, &rot_axis_yaw, -yaw, TS_WORLD);
 
     if(pitch != 0.f)
-    {
 		transform_rotate(player->camera_node, &rot_axis_pitch, pitch, TS_LOCAL);
-    }
 
     /* Movement */
     float move_speed = player->move_speed;

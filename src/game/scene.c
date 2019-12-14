@@ -428,12 +428,6 @@ void scene_post_update(struct Scene* scene)
 		if(light->base.transform.is_modified) light->base.transform.is_modified = false;
 	}
 
-	for(int i = 0; i < MAX_ENTITIES; i++)
-	{
-		struct Entity* entity = &scene->entities[i];
-		if(!(entity->flags & EF_ACTIVE)) continue;
-	}
-
 	if(scene->player.base.transform.is_modified)
 	{
 		scene->player.base.transform.is_modified = false;

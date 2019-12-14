@@ -1,6 +1,4 @@
 Todo:
-	- Fix hierarchical transforms not working in editor mode
-	- Fix weird rotational bug when rotation resets or inverts after 180 degrees
 	- Better, more accurate picking
 	- Add editor undo for transformation operations
 	- Add material export for blender exporter?
@@ -14,13 +12,14 @@ Todo:
 	- Command history in console
 	- Bring back debug variable display in editor and allow showing colours, textures etc
 	- Serialize player, camera properties to file
+	- Multisampled buffers to bring back aa
 	- Implement behaviour that avoids writing normal entities that do not have children or parent to file to avoid inconsistencies when loading them
 	- Change mouse behaviour to lock cursor when looking around so as not to interfere with gui elements when in editor mode
 	- Editor functionality to read/write scene to/from file
 	- Folder management api to create/delete folders when none exist. Dirent would suffice for our simple needs?
 	- Display default mesh when selected entity type in editor does not have a mesh
 	- Allow picking and selecting other entity types in editor i.e. the ones that don't have meshes
-	- Separate entity types in entity heirarchy view by the entity type or use a tree view to show parent/child relation or use different colours for different entity types
+	- Separate entity types in entity hierarchy view by the entity type or use a tree view to show parent/child relation or use different colours for different entity types
 	? Entity creator window to create new types of entities and write them
 	  to disk
 	- Entity browser window which lists all existing entity types from
@@ -53,14 +52,14 @@ Todo:
 	- Refactor all global application state into 'Application_Context' struct. A single global instance of which is available everywhere
 	? Improve bounding sphere calculation
 	- Change the way lights are set as uniforms to remove snprintf calls per frame for every light attribute
-	- Filter Scene heirarchy by search using entity name
+	- Filter Scene hierarchy by search using entity name
 	- Command interface that allows applying commands to selected entity like r x 30 would rotate the selected entity or entities on x axis by 30 degrees
 	- Quick scene filter and entity selection by popping up a menu which has list of entities and fuzzy matches them based on the typed name
 	- Screen mouse coordinates to world-coordinates for aiming
 	- Player projectiles and sounds
 	- Console command history
 	- Console command help
-	- Debug drawing/variable display that also works in game mode. Can be toggled with a console command. Can show variable values or plots their graphs or debug textures etc
+	- Debug drawing/variable display that also works in game mode. Can be toggled with a console command. Can show variable values or plots thier graphs or debug textures etc
 	- Space partitioning and scene handling
 	- Move Gui_State and Editor_State into game_state and modify usage as needed
 	- Get editor camera speed and other settings from config file
@@ -99,7 +98,7 @@ Todo:
 	- Implment missing sound source properties (inner/outer cone, getting sound source data)
 	- Shadow maps
 	- Print processor stats and machine capabilites RAM etc on every run to log.
-	- Do input maps really need to be queried by their string names?
+	- Do input maps really need to be queried by thier string names?
 	- Write default config/keybindings etc to file if none are found in preferences dir
 	- Multisampled textures and framebuffers
 	- Validate necessary assets at game launch
@@ -133,8 +132,9 @@ Bugs:
 	- Fix arc angles resetting when rotating
 	- Fix shader preprocessor failing when the file in //include directive is empty
 	- Fix bug with blinn shader reaching maximum uniform number on mac
-	- Fix delete in editor not working when the cursor is hovering over scene heirarchy window
+	- Fix delete in editor not working when the cursor is hovering over scene hierarchy window
 	- Investigate memory leaks caused by nuklear or opengl related operations in gui_update
+	- Fix weird rotational bug when rotation resets or inverts after 180 degrees
 	
 Done:
 	* Input
@@ -184,7 +184,7 @@ Done:
 	* 3d sound using OpenAL
 	* Fix frustum culling bugs
 	* Array-based Hashmaps
-	* Fix bugs with heirarchical transformations
+	* Fix bugs with hierarchical transformations
 	* Remove reduntant "settings" structures and move all configuration stuff to config variables
 	* Log output to file on every run
 	* Add option to specify where to read/write files from instead of being hard-coded assets dir
@@ -357,3 +357,4 @@ Done:
 	* Implment/Test reading/writing scene that has a mixture of default entites and entity archetypes
 	* Add simple player fps controls 
 	* Fixed gimbal lock in fps camera by fixing the order of quaternion multiplication when getting absolute rotation
+	* Fix hierarchical transforms not working in editor mode

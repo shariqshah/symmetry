@@ -91,9 +91,9 @@ void transform_copy(struct Entity* copy_to, struct Entity* copy_from, bool copy_
 	{
 		copy_to->transform.parent = current_parent;
 	}
-
 	copy_to->transform.is_modified = true;
 	copy_to->transform.children = current_children;
+	transform_update_transmat(copy_to);
 }
 
 void transform_translate(struct Entity* entity, vec3* amount, enum Transform_Space space)

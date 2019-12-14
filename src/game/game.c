@@ -345,30 +345,30 @@ void game_scene_setup(void)
 
 void game_debug(float dt)
 {
-    if(input_is_key_pressed(KEY_SPACE))
+    if(input_is_key_pressed(KEY_PAGEDOWN))
     {
-		struct Entity* model = scene_find(game_state->scene, "Light_Ent");
+		struct Entity* model = scene_find(game_state->scene, "Suzanne_Test_Parent");
 		vec3 x_axis = {0, 1, 0};
 		transform_rotate(model, &x_axis, 25.f * dt, TS_WORLD);
     }
 
-    if(input_is_key_pressed(KEY_M))
+    if(input_is_key_pressed(KEY_PAGEUP))
     {
-		struct Entity* model = scene_find(game_state->scene, "Model_Entity");
+		struct Entity* model = scene_find(game_state->scene, "Suzanne_Test_Parent");
 		//vec3 y_axis = {0, 0, 1};
 		//transform_rotate(mod_tran, &y_axis, 25.f * dt, TS_LOCAL);
 		vec3 amount = {0, 0, -5 * dt};
 		transform_translate(model, &amount, TS_LOCAL);
     }
 
-    if(input_is_key_pressed(KEY_N))
-    {
-		struct Entity* model = scene_find(game_state->scene, "Model_Entity");
-		/* vec3 y_axis = {0, 0, 1}; */
-		/* transform_rotate(mod_tran, &y_axis, 25.f * dt, TS_WORLD); */
-		vec3 amount = {0, 0, 5 * dt};
-		transform_translate(model, &amount, TS_LOCAL);
-    }
+//    if(input_is_key_pressed(KEY_N))
+//    {
+//		struct Entity* model = scene_find(game_state->scene, "Model_Entity");
+//		/* vec3 y_axis = {0, 0, 1}; */
+//		/* transform_rotate(mod_tran, &y_axis, 25.f * dt, TS_WORLD); */
+//		vec3 amount = {0, 0, 5 * dt};
+//		transform_translate(model, &amount, TS_LOCAL);
+//    }
 
     /*struct Entity* model = scene_find("Model_Entity");
       vec3 x_axis = {0, 1, 0};
@@ -549,6 +549,10 @@ void game_update(float dt, bool* window_should_close)
 		{
 			game_state->game_mode = GAME_MODE_EDITOR;
 			game_state->scene->active_camera_index = CAM_EDITOR;
+			input_mouse_mode_set(MM_NORMAL);
+			int width = 0, height = 0;
+			window_get_drawable_size(game_state_get()->window, &width, &height);
+			platform_mouse_position_set(game_state_get()->window, width / 2, height / 2);
 		}
     }
 	

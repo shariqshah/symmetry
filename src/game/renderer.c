@@ -325,7 +325,8 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
     struct Camera* active_camera = &scene->cameras[scene->active_camera_index];
     int width, height;
     struct Game_State* game_state = game_state_get();
-    window_get_size(game_state->window, &width, &height);
+    //window_get_size(game_state->window, &width, &height);
+	window_get_drawable_size(game_state->window, &width, &height);
     glViewport(0, 0, width, height);
     GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
     shader_bind(renderer->composition_shader);

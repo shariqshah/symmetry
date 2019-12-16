@@ -82,21 +82,24 @@ bool bv_intersect_frustum_point(vec4* frustum, const vec3* point)
 	return success;
 }
 
-bool bv_intersect_sphere_ray(struct Bounding_Sphere* sphere, vec3* sphere_abs_position, struct Ray* ray)
+int bv_intersect_sphere_ray(struct Bounding_Sphere* sphere, vec3* sphere_abs_position, vec3* sphere_abs_scale, struct Ray* ray)
 {
-
-	vec3 center = {0.f};
+	int intersection_type = IT_OUTSIDE;
+	vec3 center = {0.f, 0.f, 0.f};
 	vec3_add(&center, &sphere->center, sphere_abs_position);
-	float squared_radius = sphere->radius * sphere->radius;
+	float radius = sphere->radius * sphere_abs_scale->x;
+	//float squared_radius = sphere->radius * sphere->radius;
+	float squared_radius = radius * radius;
 
 	vec3 centered_origin;
 	vec3_sub(&centered_origin, &ray->origin, &center);
+	//vec3_sub(&centered_origin, &center, &ray->origin);
 	float centered_origin_len_sqrd = vec3_len(&centered_origin);
 	centered_origin_len_sqrd *= centered_origin_len_sqrd;
 
 	//Check if ray originates inside the sphere
 	if(centered_origin_len_sqrd <= squared_radius)
-		return true;
+		return IT_INSIDE;
 
 	// Calculate the intersection by quatratic equation'
 	float a = vec3_dot(&ray->direction, &ray->direction);
@@ -106,24 +109,24 @@ bool bv_intersect_sphere_ray(struct Bounding_Sphere* sphere, vec3* sphere_abs_po
 
 	//No solution
 	if(d < 0.f)
-		return false;
+		return IT_OUTSIDE;
 
 	//Get the near solution
 	float d_sqrt = sqrtf(d);
 	float dist = (-b - d_sqrt) / (2.f * a);
 	if(dist >= 0.f)
-		return true;
+		return IT_INTERSECT;
 	else
-		return true;
+		return IT_OUTSIDE;
 
 	//float tca = vec3_dot(&centered_origin, &ray->direction);
-	//if(tca < 0.0) return false;
+	//if(tca < 0.0) return IT_OUTSIDE;
 
 	//float L_dot = vec3_dot(&centered_origin, &centered_origin);
-	//float d2 = L_dot - (tca);
-	//float radius_sqr = sphere->radius * sphere->radius;
+	//float d2 = L_dot - (tca * tca);
+	//float radius_sqr = radius * radius;
 
-	//if (d2 > radius_sqr) return false;
+	//if (d2 > radius_sqr) return IT_OUTSIDE;
 	//float thc = sqrtf(radius_sqr - d2);
 	//float t0 = tca - thc;
 	//float t1 = tca + thc;
@@ -138,10 +141,10 @@ bool bv_intersect_sphere_ray(struct Bounding_Sphere* sphere, vec3* sphere_abs_po
 	//if(t0 < 0)
 	//{
 	//	t0 = t1;
-	//	if(t0 < 0) return false;
+	//	if(t0 < 0) return IT_OUTSIDE;
 	//}
 
-	//return true;
+	//return IT_INTERSECT;
 }
 
 float bv_distance_ray_plane(struct Ray* ray, Plane* plane)

@@ -161,7 +161,7 @@ void editor_init(struct Editor* editor)
 void editor_init_entities(struct Editor* editor)
 {
 	editor->cursor_entity = scene_static_mesh_create(game_state_get()->scene, "EDITOR_SELECTED_ENTITY_WIREFRAME", NULL, "sphere.symbres", MAT_UNSHADED);
-	editor->cursor_entity->base.flags |= EF_TRANSIENT | EF_SKIP_RENDER | EF_HIDE_IN_EDITOR_SCENE_HIERARCHY;
+	editor->cursor_entity->base.flags |= EF_TRANSIENT | EF_SKIP_RENDER | EF_HIDE_IN_EDITOR_SCENE_HIERARCHY | EF_IGNORE_RAYCAST;
 }
 
 void editor_init_camera(struct Editor* editor, struct Hashmap* cvars)
@@ -989,8 +989,10 @@ void editor_on_mousemotion(const struct Event* event)
 		if(editor->selected_entity && editor->current_axis < EDITOR_AXIS_XZ)
 		{
 			struct Camera* editor_camera = &game_state->scene->cameras[CAM_EDITOR];
-			vec3 position = { 0.f };
+			vec3 position = { 0.f, 0.f, 0.f };
+			vec3 scale = {1.f, 1.f, 1.f};
 			transform_get_absolute_position(editor->selected_entity, &position);
+			transform_get_absolute_scale(editor->selected_entity, &scale);
 			struct Ray cam_ray;
 			cam_ray = camera_screen_coord_to_ray(editor_camera, event->mousemotion.x, event->mousemotion.y);
 
@@ -1005,7 +1007,7 @@ void editor_on_mousemotion(const struct Event* event)
 			//vec3_assign(&gizmo_sphere.center, &position);
 			gizmo_sphere.center = (vec3) { 0.f, 0.f, 0.f };
 			gizmo_sphere.radius = editor->tool_rotate_arc_radius;
-			if(bv_intersect_sphere_ray(&gizmo_sphere, &position, &cam_ray))
+			if(bv_intersect_sphere_ray(&gizmo_sphere, &position, &scale, &cam_ray) == IT_INTERSECT)
 			{
 				//Plane ground_plane;
 				//plane_init(&ground_plane, &UNIT_X, &position);
@@ -1099,17 +1101,8 @@ void editor_on_mousemotion(const struct Event* event)
 	if(ray_result.num_entities_intersected > 0)
 	{
 		struct Entity* intersected_entity = ray_result.entities_intersected[0];
-		if(intersected_entity == editor->cursor_entity)
-		{
-			if(ray_result.num_entities_intersected > 1)
-				intersected_entity = ray_result.entities_intersected[1];
-			else
-				intersected_entity = NULL;
-		}
 		if(intersected_entity && intersected_entity != editor->hovered_entity)
 			editor->hovered_entity = intersected_entity;
-		else if(editor->hovered_entity)
-			editor->hovered_entity = NULL;
 	}
 	else
 	{

@@ -53,7 +53,8 @@ enum Entity_Flags
 	EF_MARKED_FOR_DELETION            = 1 << 2,
 	EF_TRANSIENT                      = 1 << 3,
 	EF_HIDE_IN_EDITOR_SCENE_HIERARCHY = 1 << 4,
-	EF_SKIP_RENDER                    = 1 << 5
+	EF_SKIP_RENDER                    = 1 << 5,
+	EF_IGNORE_RAYCAST                 = 1 << 6
 };
 
 struct Transform

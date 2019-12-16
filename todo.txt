@@ -1,8 +1,6 @@
 Todo:
-	- Better, more accurate picking
 	- Add editor undo for transformation operations
 	- Add material export for blender exporter?
-	- Remove flickering from selection in editor
 	- Fix crash when exiting from fullscreen mode
 	- Allow renaming scene objects in editor
 	- Check if we still need to rotate by 90 degrees when exporting from blender
@@ -120,6 +118,7 @@ Improvements:
 	- Allow scaling on all axes at once
 	- Improve grid/immediate mode drawing by switching to glDrawElements instead of glDrawArrays. 
 	- Investigate why transparency is not working for materials
+	- Picking for other entity types like lights etc by specifically ray casting for them or in editor switching to pick-mode that specifies if we're picking lights or meshes etc
 
 Bugs:
 	- Better handling of wav format checking at load time
@@ -358,3 +357,5 @@ Done:
 	* Add simple player fps controls 
 	* Fixed gimbal lock in fps camera by fixing the order of quaternion multiplication when getting absolute rotation
 	* Fix hierarchical transforms not working in editor mode
+	* Better, slightly accurate picking
+	* Removed flickering from selection in editor

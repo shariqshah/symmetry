@@ -802,124 +802,19 @@ void scene_ray_intersect(struct Scene* scene, struct Ray* ray, struct Raycast_Re
 	for(int i = 0; i < MAX_STATIC_MESHES; i++)
 	{
 		struct Static_Mesh* mesh = &scene->static_meshes[i];
-		if(!(mesh->base.flags & EF_ACTIVE)) continue;
-		vec3 abs_pos = { 0.f };
+		if(!(mesh->base.flags & EF_ACTIVE) || (mesh->base.flags & EF_IGNORE_RAYCAST)) continue;
+		vec3 abs_pos = { 0.f, 0.f, 0.f };
+		vec3 abs_scale = { 1.f, 1.f, 1.f };
 		transform_get_absolute_position(mesh, &abs_pos);
+		transform_get_absolute_scale(mesh, &abs_scale);
 
 		struct Geometry* geometry = geom_get(mesh->model.geometry_index);
-		if(bv_intersect_sphere_ray(&geometry->bounding_sphere, &abs_pos, ray))
+		if(bv_intersect_sphere_ray(&geometry->bounding_sphere, &abs_pos, &abs_scale, ray) == IT_INTERSECT)
 		{
 			out_results->entities_intersected[out_results->num_entities_intersected] = &mesh->base;
 			out_results->num_entities_intersected++;
 		}
 	}
-}
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool scene_load_(const char* filename, int directory_type)
-{
-	//   FILE* entity_file = platform->file.open(directory_type, filename, "r");
-	//if(!entity_file)
-	//{
-	//       log_error("scene:load", "Failed to open scenefile %s for reading", filename);
-	//       return false;
-	//}
-
-	//int count = 0;
-	//int eof_char = -1;
-	//while(!feof(entity_file))
-	//{
-	//	if(eof_char != -1) ungetc(eof_char, entity_file);
-	//	struct Entity* new_entity = NULL;
-	//	new_entity = entity_read(entity_file);
-	//	if(!new_entity)
-	//	{
-	//		log_error("scene:load", "Error reading entity");
-	//	}
-	//	else
-	//	{
-	//		log_message("Loaded %s", new_entity->name);
-	//		count++;
-	//	}
-	//	eof_char = fgetc(entity_file);
-	//	/* To check end of file, we  get the next character and before beginning
-	//	   loop we check if eof occured, feof only returns true if the last read
-	//	   was an eof. If it wasn't eof then we return the character back to the
-	//	   stream and carry on. */
-	//}
-
-	//log_message("%d entites loaded from %s", count, filename);
-	//fclose(entity_file);
-	return entity_load(filename, directory_type);
-}
-
-bool scene_save_(const char* filename, int directory_type)
-{
-	bool success = false;
-	/*FILE* scene_file = platform->file.open(directory_type, filename, "w");
-	  if(!scene_file)
-	  {
-	  log_error("scene:save", "Failed to create scenefile %s for writing", filename);
-	  return false;
-	  }
-
-	  struct Parser* parser = parser_new();
-	  if(!parser)
-	  {
-	  log_error("scene:save", "Could not create Parser");
-	  fclose(scene_file);
-	  return false;
-	  }
-
-	  int* entities_to_write = array_new(int);
-	  array_push(entities_to_write, root_node, int);
-
-	  bool done = false;
-	  int count = 0;
-	  while(!done)
-	  {
-	  struct Entity* entity = entity_get(entities_to_write[0]);
-	  struct Parser_Object* object = parser_object_new(parser, PO_ENTITY);
-	  if(!object)
-	  {
-	  log_error("scene:save", "Failed to create parser object for %s", entity->name);
-	  continue;
-	  }
-
-	  if(!entity_write(entity, object))
-	  {
-	  log_error("scene:save", "Failed to write '%s' into parser object", entity->name);
-	  continue;
-	  }
-
-	  log_message("Entity '%s' written to file", entity->name);
-	  count++;
-	  for(int i = 0; i < array_len(entity->transform.children); i++)
-	  array_push(entities_to_write, entity->transform.children[i], int);
-
-	  array_remove_at(entities_to_write, 0);
-	  if(array_len(entities_to_write) == 0) done = true;
-	  }
-
-	  if(parser_write_objects(parser, scene_file, filename))
-	  {
-	  log_message("%d entities written to %s", count, filename);
-	  }
-	  else
-	  {
-	  log_error("scene:save", "Failed to write scene to %s", filename);
-	  success = false;
-	  }
-
-	  array_free(entities_to_write);
-	  parser_free(parser);
-	  fclose(scene_file);*/
-
-	return success;
 }
 
 int scene_entity_archetype_add(struct Scene* scene, const char* filename)

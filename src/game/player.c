@@ -11,6 +11,7 @@
 #include "../system/config_vars.h"
 #include "../system/platform.h"
 #include "game.h"
+#include "debug_vars.h"
 
 void player_init(struct Player* player, struct Scene* scene)
 {
@@ -141,4 +142,8 @@ void player_update(struct Player* player, struct Scene* scene, float dt)
 		struct Raycast_Result ray_result;
 		scene_ray_intersect(scene, &ray, &ray_result);
 	}
+
+	debug_vars_show_vec3("Player Position", &player->base.transform.position);
+	debug_vars_show_texture("Player Camera Render", player->camera_node->render_tex);
+	debug_vars_show_texture("Player Camera Depth", player->camera_node->depth_tex);
 }

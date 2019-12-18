@@ -34,6 +34,7 @@ struct Game_State
 	struct Editor*        editor;
 	struct Hashmap*       cvars;
 	struct Sound*         sound;
+	struct Debug_Vars*    debug_vars;
 };
 
 

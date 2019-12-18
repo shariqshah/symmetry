@@ -32,6 +32,7 @@
 #include "../common/variant.h"
 #include "../system/physics.h"
 #include "../system/platform.h"
+#include "debug_vars.h"
 #include "im_render.h"
 #include "event.h"
 
@@ -78,6 +79,7 @@ bool game_init(struct Window* window, struct Hashmap* cvars)
 		game_state->gui            = calloc(1, sizeof(*game_state->gui));
 		game_state->event_manager  = calloc(1, sizeof(*game_state->event_manager));
 		game_state->sound          = calloc(1, sizeof(*game_state->sound));
+		game_state->debug_vars     = calloc(1, sizeof(*game_state->debug_vars));
 
 		log_message_callback_set(game_on_log_message);
 		log_warning_callback_set(game_on_log_warning);
@@ -107,6 +109,7 @@ bool game_init(struct Window* window, struct Hashmap* cvars)
 		//physics_body_set_moved_callback(entity_rigidbody_on_move);
 		//physics_body_set_collision_callback(entity_rigidbody_on_collision);
 		sound_init(game_state->sound);
+		debug_vars_init(game_state->debug_vars);
 
 		renderer_init(game_state->renderer);
 		scene_init(game_state->scene);
@@ -575,6 +578,7 @@ void game_post_update(float dt)
     input_post_update();
     scene_post_update(game_state->scene);
     sound_update_3d(game_state->sound);
+	debug_vars_post_update(game_state->debug_vars);
 }
 
 void game_debug_gui(float dt)
@@ -1918,6 +1922,7 @@ void game_cleanup(void)
 			shader_cleanup();
 			sound_cleanup(game_state->sound);
 			//physics_cleanup();
+			debug_vars_cleanup(game_state->debug_vars);
 			event_manager_cleanup(game_state->event_manager);
 
 			free(game_state->editor);
@@ -1927,6 +1932,7 @@ void game_cleanup(void)
 			free(game_state->event_manager);
 			free(game_state->gui);
 			free(game_state->sound);
+			free(game_state->debug_vars);
 		}
 		free(game_state);
 		game_state = NULL;

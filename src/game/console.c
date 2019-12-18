@@ -5,6 +5,7 @@
 #include "../system/platform.h"
 #include "scene.h"
 #include "entity.h"
+#include "debug_vars.h"
 #include "../system/file_io.h"
 
 #include <assert.h>
@@ -20,6 +21,8 @@ static void console_command_scene_save(struct Console* console, const char* comm
 static void console_command_scene_load(struct Console* console, const char* command);
 static void console_command_entity_save(struct Console* console, const char* command);
 static void console_command_entity_load(struct Console* console, const char* command);
+static void console_command_debug_vars_toggle(struct Console* console, const char* command);
+static void console_command_debug_vars_location_set(struct Console* console, const char* command);
 static void console_command_help(struct Console* console, const char* command);
 
 void console_init(struct Console* console)
@@ -51,6 +54,8 @@ void console_init(struct Console* console)
 	hashmap_ptr_set(console->console_commands, "scene_load", &console_command_scene_load);
 	hashmap_ptr_set(console->console_commands, "entity_save", &console_command_entity_save);
 	hashmap_ptr_set(console->console_commands, "entity_load", &console_command_entity_load);
+	hashmap_ptr_set(console->console_commands, "debug_vars_toggle", &console_command_debug_vars_toggle);
+	hashmap_ptr_set(console->console_commands, "debug_vars_location", &console_command_debug_vars_location_set);
 	hashmap_ptr_set(console->console_commands, "help", &console_command_help);
 }
 
@@ -127,7 +132,7 @@ void console_update(struct Console* console, struct Gui* gui_state, float dt)
 
 void console_destroy(struct Console* console)
 {
-	
+	hashmap_free(console->console_commands);
 }
 
 int console_filter(const struct nk_text_edit *box, nk_rune unicode)
@@ -283,4 +288,25 @@ void console_command_scene_empty(struct Console* console, const char* command)
 	scene_destroy(scene);
 	scene_post_update(scene);
 	scene_init(scene);
+}
+
+void console_command_debug_vars_toggle(struct Console* console, const char* command)
+{
+	struct Debug_Vars* debug_vars = game_state_get()->debug_vars;
+	debug_vars->visible = !debug_vars->visible;
+}
+
+void console_command_debug_vars_location_set(struct Console* console, const char* command)
+{
+	struct Debug_Vars* debug_vars = game_state_get()->debug_vars;
+	int location = debug_vars->location;
+	int params_read = sscanf(command, "%d", &location);
+	if(params_read != 1)
+	{
+		log_warning("Invalid parameters for command");
+		log_warning("Usage: debug_vars_location [Location 0-4]");
+		return;
+	}
+
+	debug_vars_location_set(debug_vars, location);
 }

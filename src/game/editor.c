@@ -30,6 +30,7 @@
 #include "geometry.h"
 #include "gui.h"
 #include "console.h"
+#include "debug_vars.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,12 +39,6 @@
 #include <float.h>
 #include <limits.h>
 #include <math.h>
-
-struct Debug_Variable
-{
-    struct Variant data;
-    char*          name;
-};
 
 enum Editor_Tool
 {
@@ -65,13 +60,11 @@ enum Editor_Axis
 	EDITOR_AXIS_YZ,
 };
 
-static struct Debug_Variable* debug_vars_list = NULL;
-static int*                   empty_indices   = NULL;
-static int                    window_flags    = NK_WINDOW_BORDER |
-		                                        NK_WINDOW_CLOSABLE |
-		                                        NK_WINDOW_MOVABLE |
-		                                        NK_WINDOW_SCROLL_AUTO_HIDE |
-		                                        NK_WINDOW_SCALABLE;
+static int window_flags = NK_WINDOW_BORDER |
+		                  NK_WINDOW_CLOSABLE |
+		                  NK_WINDOW_MOVABLE |
+		                  NK_WINDOW_SCROLL_AUTO_HIDE |
+		                  NK_WINDOW_SCALABLE;
 
 static void editor_on_mousebutton_press(const struct Event* event);
 static void editor_on_mousebutton_release(const struct Event* event);
@@ -94,7 +87,6 @@ static bool editor_widget_v3(struct nk_context* context,
 			                 int                row_height);
 
 static void editor_window_scene_heirarchy(struct nk_context* context, struct Editor* editor, struct Game_State* game_state);
-static void editor_window_debug_variables(struct nk_context* context, struct Editor* editor);
 static void editor_window_property_inspector(struct nk_context* context, struct Editor* editor, struct Game_State* game_state);
 static void editor_window_renderer_settings(struct nk_context* context, struct Editor* editor, struct Game_State* game_state);
 static void editor_window_settings_editor(struct nk_context* context, struct Editor* editor, struct Game_State* game_state);
@@ -107,7 +99,6 @@ void editor_init(struct Editor* editor)
 {
     editor->window_settings_renderer           = 0;
     editor->window_settings_editor             = 0;
-	editor->window_debug_variables             = 0;
 	editor->window_property_inspector          = 0;
 	editor->window_scene_heirarchy             = 0;
 	editor->camera_looking_around              = 0;
@@ -147,9 +138,6 @@ void editor_init(struct Editor* editor)
 	vec4_fill(&editor->axis_color_z, 0.47, 0.67, 0.89, 0.8f);
 	vec3_fill(&editor->tool_scale_amount, 1.f, 1.f, 1.f);
 
-    debug_vars_list = array_new(struct Debug_Variable);
-    empty_indices   = array_new(int);
-	
 	struct Event_Manager* event_manager = game_state_get()->event_manager;
 	event_manager_subscribe(event_manager, EVT_MOUSEBUTTON_PRESSED, &editor_on_mousebutton_press);
 	event_manager_subscribe(event_manager, EVT_MOUSEBUTTON_RELEASED, &editor_on_mousebutton_release);
@@ -333,79 +321,6 @@ void editor_render(struct Editor* editor, struct Camera * active_camera)
 	}
 }
 
-int editor_debugvar_slot_create(const char* name, int value_type)
-{
-	int index = -1;
-	struct Debug_Variable* debug_var = NULL;
-	if(array_len(empty_indices) > 0)
-	{
-		index = *array_get_last(empty_indices, int);
-		array_pop(empty_indices);
-		debug_var = &debug_vars_list[index];
-	}
-	else
-	{
-		debug_var = array_grow(debug_vars_list, struct Debug_Variable);
-		index = array_len(debug_vars_list) - 1;
-	}
-	debug_var->name = str_new(name);
-	debug_var->data.type = value_type;
-
-	return index;
-}
-
-void editor_debugvar_slot_remove(int index)
-{
-    assert(index > -1 && index < array_len(debug_vars_list));
-    struct Debug_Variable* debug_var = &debug_vars_list[index];
-    variant_free(&debug_var->data);
-    if(debug_var->name) free(debug_var->name);
-    debug_var->name      = NULL;
-    debug_var->data.type = VT_NONE;
-}
-
-void editor_debugvar_slot_set_float(int index, float value)
-{
-    assert(index > -1 && index < array_len(debug_vars_list));
-    variant_assign_float(&debug_vars_list[index].data, value);
-}
-
-void editor_debugvar_slot_set_int(int index, int value)
-{
-    assert(index > -1 && index < array_len(debug_vars_list));
-    variant_assign_int(&debug_vars_list[index].data, value);
-}
-
-void editor_debugvar_slot_set_double(int index, double value)
-{
-    assert(index > -1 && index < array_len(debug_vars_list));
-    variant_assign_double(&debug_vars_list[index].data, value);
-}
-
-void editor_debugvar_slot_set_vec2(int index, vec2* value)
-{
-    assert(index > -1 && index < array_len(debug_vars_list));
-    variant_assign_vec2(&debug_vars_list[index].data, value);
-}
-
-void editor_debugvar_slot_set_vec3(int index, vec3* value)
-{
-    assert(index > -1 && index < array_len(debug_vars_list));
-    variant_assign_vec3(&debug_vars_list[index].data, value);
-}
-
-void editor_debugvar_slot_set_vec4(int index, vec4* value)
-{
-    assert(index > -1 && index < array_len(debug_vars_list));
-    variant_assign_vec4(&debug_vars_list[index].data, value);
-}
-
-void editor_debugvar_slot_set_quat(int index, quat* value)
-{
-    assert(index > -1 && index < array_len(debug_vars_list));
-    variant_assign_quat(&debug_vars_list[index].data, value);
-}
-
 void editor_update(struct Editor* editor, float dt)
 {
 	editor_camera_update(editor, dt);
@@ -449,10 +364,14 @@ void editor_update(struct Editor* editor, float dt)
 		nk_layout_row_push(context, 0.05f);
 		if(nk_menu_begin_label(context, "Windows", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, nk_vec2(180, 100)))
 		{
+			struct Debug_Vars* debug_vars = game_state->debug_vars;
+			int debug_vars_visible = debug_vars->visible;
 			nk_layout_row_dynamic(context, row_height, 1);
 			nk_checkbox_label(context, "Scene Heirarchy", &editor->window_scene_heirarchy);
 			nk_checkbox_label(context, "Property Inspector", &editor->window_property_inspector);
-			nk_checkbox_label(context, "Debug Variables", &editor->window_debug_variables);
+			nk_checkbox_label(context, "Debug Variables", &debug_vars_visible);
+			if(debug_vars_visible != (int)debug_vars->visible)
+				debug_vars->visible = (bool)debug_vars_visible;
 			nk_menu_end(context);
 		}
 
@@ -648,7 +567,6 @@ void editor_update(struct Editor* editor, float dt)
 	nk_end(context);
 
 	if(editor->window_scene_heirarchy) editor_window_scene_heirarchy(context, editor, game_state);
-	if(editor->window_debug_variables) editor_window_debug_variables(context, editor);
 	if(editor->window_property_inspector) editor_window_property_inspector(context, editor, game_state);
 	if(editor->window_settings_renderer) editor_window_renderer_settings(context, editor, game_state);
 	if(editor->window_settings_editor) editor_window_settings_editor(context, editor, game_state);
@@ -1406,6 +1324,9 @@ void editor_camera_update(struct Editor* editor, float dt)
 			//log_message("Position : %s", tostr_vec3(&transform->position));
 		}
 	}
+	
+	debug_vars_show_texture("Editor Cam Depth", editor_camera->depth_tex);
+	debug_vars_show_color_rgba("Editor Cam Clear Color", &editor_camera->clear_color);
 }
 
 void editor_widget_color_combov3(struct nk_context* context, vec3* color, int width, int height)
@@ -1491,12 +1412,6 @@ void editor_cleanup(struct Editor* editor)
 	event_manager_unsubscribe(event_manager, EVT_MOUSEMOTION, &editor_on_mousemotion);
 	event_manager_unsubscribe(event_manager, EVT_KEY_PRESSED, &editor_on_key_press);
 	event_manager_unsubscribe(event_manager, EVT_KEY_RELEASED, &editor_on_key_release);
-
-    for(int i = 0; i < array_len(debug_vars_list); i++)
-		editor_debugvar_slot_remove(i);
-
-    array_free(debug_vars_list);
-    array_free(empty_indices);
 }
 
 
@@ -1561,34 +1476,6 @@ void editor_window_scene_heirarchy(struct nk_context* context, struct Editor* ed
 	else
 	{
 		editor->window_scene_heirarchy = false;
-	}
-	nk_end(context);
-}
-
-void editor_window_debug_variables(struct nk_context* context, struct Editor* editor)
-{
-	if(nk_begin(context, "Debug Variables", nk_recti(0, 500, 300, 400), window_flags))
-	{
-		static char variant_str[MAX_VARIANT_STR_LEN] = { '\0' };
-		nk_layout_row_dynamic(context, 250, 1);
-		if(nk_group_begin(context, "Name", NK_WINDOW_SCROLL_AUTO_HIDE))
-		{
-			for(int i = 0; i < array_len(debug_vars_list); i++)
-			{
-				struct Debug_Variable* debug_var = &debug_vars_list[i];
-				if(debug_var->data.type == VT_NONE) continue;
-				nk_layout_row_dynamic(context, 20, 2);
-				nk_label(context, debug_var->name, NK_TEXT_ALIGN_LEFT);
-				variant_to_str(&debug_var->data, variant_str, MAX_VARIANT_STR_LEN);
-				nk_label(context, variant_str, NK_TEXT_ALIGN_RIGHT);
-				memset(variant_str, '\0', MAX_VARIANT_STR_LEN);
-			}
-			nk_group_end(context);
-		}
-	}
-	else
-	{
-		editor->window_debug_variables = false;
 	}
 	nk_end(context);
 }

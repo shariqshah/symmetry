@@ -25,6 +25,7 @@
 #include "../system/config_vars.h"
 #include "scene.h"
 #include "event.h"
+#include "debug_vars.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -311,6 +312,10 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
 			}
 			shader_unbind();
 		}
+
+		debug_vars_show_int("Rendered", renderer->num_rendered);
+		debug_vars_show_int("Culled", renderer->num_culled);
+		debug_vars_show_int("Num Indices", renderer->num_indices);
 		//editor_debugvar_slot_set_int(renderer->num_rendered_slot, renderer->num_rendered);
 		//editor_debugvar_slot_set_int(renderer->num_culled_slot, renderer->num_culled);
 		//editor_debugvar_slot_set_int(renderer->num_indices_slot, renderer->num_indices);

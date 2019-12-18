@@ -46,7 +46,7 @@ int  			 geom_create_from_file(const char* name);
 int  			 geom_find(const char* filename);
 void 			 geom_remove(int index);
 void 			 geom_cleanup(void);
-void 			 geom_render(int index, enum Geometry_Draw_Mode);
+void 			 geom_render(int index, enum Geometry_Draw_Mode draw_mode);
 void             geom_bounding_volume_generate(int index);
 void             geom_bounding_volume_generate_all(void);
 struct Geometry* geom_get(int index);

@@ -1,5 +1,9 @@
 Todo:
+	- Shortcut key to toggle debug variable display and cycle locations
+	- Move debug vars display settings to debug_vars struct
+	- Command history in console
 	- Add editor undo for transformation operations
+	- Decide how to handle scale when  checking sphere-ray intersection
 	- Add material export for blender exporter?
 	- Fix crash when exiting from fullscreen mode
 	- Allow renaming scene objects in editor
@@ -7,8 +11,6 @@ Todo:
 	- Fire an event when the game mode is changed so that editor camera state and other game related systems know when to update
 	- Add config file reloading and fire event that notifies potential listeners to update values from the new config file
 	- Command to reload entities only
-	- Command history in console
-	- Bring back debug variable display in editor and allow showing colours, textures etc
 	- Serialize player, camera properties to file
 	- Multisampled buffers to bring back aa
 	- Implement behaviour that avoids writing normal entities that do not have children or parent to file to avoid inconsistencies when loading them
@@ -134,6 +136,7 @@ Bugs:
 	- Fix delete in editor not working when the cursor is hovering over scene hierarchy window
 	- Investigate memory leaks caused by nuklear or opengl related operations in gui_update
 	- Fix weird rotational bug when rotation resets or inverts after 180 degrees
+	- Fix crash if player's mesh is deleted in editor
 	
 Done:
 	* Input
@@ -359,3 +362,7 @@ Done:
 	* Fix hierarchical transforms not working in editor mode
 	* Better, slightly accurate picking
 	* Removed flickering from selection in editor
+	* Debug Vars viewbale from game and editor
+	* Console Command to display debug vars
+	* Console command to set the location of debug vars location
+	* Brought back debug variable display in editor and allow showing colours, textures etc

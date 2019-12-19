@@ -10,8 +10,13 @@ static void debug_vars_clear(struct Debug_Vars* debug_vars);
 
 void debug_vars_init(struct Debug_Vars* debug_vars)
 {
-	debug_vars->visible = true;
-	debug_vars->location = DVL_TOP_RIGHT;
+	debug_vars->visible            = true;
+	debug_vars->location           = DVL_TOP_RIGHT;
+	debug_vars->window_width       = 300;
+	debug_vars->window_height      = 500;
+	debug_vars->row_height         = 14;
+	debug_vars->row_height_color   = 16;
+	debug_vars->row_height_texture = 200;
 
 	for(int i = 0; i < MAX_DEBUG_VARS_PER_FRAME_NUMERIC; i++)
 	{
@@ -47,45 +52,46 @@ void debug_vars_post_update(struct Debug_Vars* debug_vars)
 	if(!debug_vars->visible)
 		return;
 
-	const int row_height = 12;
-	const int window_width = 400, window_height = 700;
-	int window_x = 0, window_y = 0;
-	int display_width = 0, display_height = 0;
-	struct Game_State* game_state = game_state_get();
-	struct Gui* gui = game_state->gui;
-	struct nk_context* context = &gui->context;
+	int                window_x       = 0;
+	int                window_y       = 0;
+	int                display_width  = 0;
+	int                display_height = 0;
+	struct Game_State* game_state     = game_state_get();
+	struct Gui*        gui            = game_state->gui;
+	struct nk_context* context        = &gui->context;
+
 	window_get_drawable_size(game_state->window, &display_width, &display_height);
 	int window_flags = NK_WINDOW_BACKGROUND | NK_WINDOW_NO_SCROLLBAR;
 	switch(debug_vars->location)
 	{
 	case DVL_TOP_RIGHT:
-		window_x = display_width - window_width;
+		window_x = display_width - debug_vars->window_width;
 		window_y = 0;
 		break;
 	case DVL_BOTTOM_RIGHT:
-		window_x = display_width - window_width;
-		window_y = display_height - window_height;
+		window_x = display_width - debug_vars->window_width;
+		window_y = display_height - debug_vars->window_height;
 		break;
 	case DVL_BOTTOM_LEFT:
 		window_x = 0;
-		window_y = display_height - window_height;
+		window_y = display_height - debug_vars->window_height;
 		break;
 	case DVL_TOP_LEFT:
 		window_x = 0;
 		window_y = 0;
 		break;
 	case DVL_FREE:
-		window_x = (display_width / 2) - (window_width / 2);
-		window_y = (display_height / 2) - (window_height / 2);
+		window_x = (display_width / 2) - (debug_vars->window_width / 2);
+		window_y = (display_height / 2) - (debug_vars->window_height / 2);
 		window_flags &= ~(NK_WINDOW_BACKGROUND & NK_WINDOW_NO_INPUT);
 		break;
 	}
 
 	nk_byte previous_opacity = context->style.window.background.a;
 	context->style.window.fixed_background.data.color.a = 100;
-	if(nk_begin(context, "Debug Variables", nk_recti(window_x, window_y, window_width, window_height), window_flags))
+	if(nk_begin(context, "Debug Variables", nk_recti(window_x, window_y, debug_vars->window_width, debug_vars->window_height), window_flags))
 	{
-		nk_layout_row_dynamic(context, row_height, 2);
+		nk_layout_row_dynamic(context, debug_vars->row_height, 2);
 		int name_flags = NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_CENTERED;
 		int value_flags = NK_TEXT_ALIGN_RIGHT | NK_TEXT_ALIGN_CENTERED;
 		for(int i = 0; i < MAX_DEBUG_VARS_PER_FRAME_NUMERIC; i++)
@@ -132,22 +138,22 @@ void debug_vars_post_update(struct Debug_Vars* debug_vars)
 			switch(variable->value.type)
 			{
 			case VT_INT: // Texture
-				nk_layout_row_dynamic(context, 200, 2);
+				nk_layout_row_dynamic(context, debug_vars->row_height_texture, 2);
 				nk_label(context, &variable->name[0], name_flags);
 				nk_image_color(context, nk_image_id(texture_get_texture_handle(variable->value.val_int)), nk_rgb_f(1.f, 1.f, 1.f));
 				break;
 			case VT_VEC3: // Color RGB
-				nk_layout_row_dynamic(context, 20, 2);
+				nk_layout_row_dynamic(context, debug_vars->row_height_color, 2);
 				nk_label(context, &variable->name[0], name_flags);
 				nk_button_color(context, nk_rgb_fv(&variable->value.val_vec3));
 				break;
 			case VT_VEC4: // Color RGBA
-				nk_layout_row_dynamic(context, 20, 2);
+				nk_layout_row_dynamic(context, debug_vars->row_height_color, 2);
 				nk_label(context, &variable->name[0], name_flags);
 				nk_button_color(context, nk_rgba_fv(&variable->value.val_vec4));
 				break;
 			default:
-				nk_layout_row_dynamic(context, row_height, 2);
+				nk_layout_row_dynamic(context, debug_vars->row_height, 2);
 				nk_label(context, &variable->name[0], name_flags);
 				nk_label(context, "Unsupported Type", value_flags);
 				break;
@@ -251,4 +257,10 @@ void debug_vars_show_color_rgba(const char* name, const vec4* value)
 	struct Variant temp_var;
 	variant_assign_vec4(&temp_var, value);
 	debug_vars_show(name, &temp_var, false);
+}
+
+void debug_vars_cycle_location(struct Debug_Vars* debug_vars)
+{
+	if(++debug_vars->location >= DVL_MAX)
+		debug_vars->location = 0;
 }

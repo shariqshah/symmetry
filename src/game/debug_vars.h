@@ -27,6 +27,11 @@ struct Debug_Vars
 {
 	bool visible;
 	int  location;
+	int  window_width;
+	int  window_height;
+	int  row_height;
+	int  row_height_color;
+	int  row_height_texture;
 	struct Debug_Variable numeric_vars[MAX_DEBUG_VARS_PER_FRAME_NUMERIC];
 	struct Debug_Variable texture_vars[MAX_DEBUG_VARS_PER_FRAME_NUMERIC];
 };
@@ -35,6 +40,7 @@ void debug_vars_init(struct Debug_Vars* debug_vars);
 void debug_vars_cleanup(struct Debug_Vars* debug_vars);
 void debug_vars_location_set(struct Debug_Vars* debug_vars, int location);
 void debug_vars_post_update(struct Debug_Vars* debug_vars);
+void debug_vars_cycle_location(struct Debug_Vars* debug_vars);
 
 void debug_vars_show(const char* name, const struct Variant* value, bool is_numeric);
 void debug_vars_show_int(const char* name, int value);

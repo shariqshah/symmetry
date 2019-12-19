@@ -1,6 +1,4 @@
 Todo:
-	- Shortcut key to toggle debug variable display and cycle locations
-	- Move debug vars display settings to debug_vars struct
 	- Command history in console
 	- Add editor undo for transformation operations
 	- Decide how to handle scale when  checking sphere-ray intersection
@@ -366,3 +364,5 @@ Done:
 	* Console Command to display debug vars
 	* Console command to set the location of debug vars location
 	* Brought back debug variable display in editor and allow showing colours, textures etc
+	* Shortcut key to toggle debug variable display and cycle locations
+	* Move debug vars display settings to debug_vars struct

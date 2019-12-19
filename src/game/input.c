@@ -28,21 +28,23 @@ void input_init(void)
 	key_bindings = hashmap_new();
 
 	/* Default keys for fallback */
-	struct Key_Binding forward_keys        = {KEY_W,      KMOD_NONE, KEY_UP,     KMOD_NONE, KS_INACTIVE};
-	struct Key_Binding backward_keys       = {KEY_S,      KMOD_NONE, KEY_DOWN,   KMOD_NONE, KS_INACTIVE};
-	struct Key_Binding up_keys             = {KEY_Q,      KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
-	struct Key_Binding down_keys           = {KEY_E,      KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
-	struct Key_Binding left_keys           = {KEY_A,      KMOD_NONE, KEY_LEFT,   KMOD_NONE, KS_INACTIVE};
-	struct Key_Binding right_keys          = {KEY_D,      KMOD_NONE, KEY_RIGHT,  KMOD_NONE, KS_INACTIVE};
-	struct Key_Binding turn_right_keys     = {KEY_L,      KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
-	struct Key_Binding turn_left_keys      = {KEY_H,      KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
-	struct Key_Binding turn_up_keys        = {KEY_K,      KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
-	struct Key_Binding turn_down_keys      = {KEY_J,      KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
-	struct Key_Binding sprint_keys         = {KEY_LSHIFT, KMOD_NONE, KEY_RSHIFT, KMOD_NONE, KS_INACTIVE};
-	struct Key_Binding editor_toggle_keys  = {KEY_F1,     KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
-	struct Key_Binding console_toggle_keys = {KEY_TILDE,  KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
-	struct Key_Binding win_fullscr_keys    = {KEY_F11,    KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
-	struct Key_Binding win_max_keys        = {KEY_F12,    KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
+	struct Key_Binding forward_keys           = {KEY_W,      KMOD_NONE, KEY_UP,     KMOD_NONE, KS_INACTIVE};
+	struct Key_Binding backward_keys          = {KEY_S,      KMOD_NONE, KEY_DOWN,   KMOD_NONE, KS_INACTIVE};
+	struct Key_Binding up_keys                = {KEY_Q,      KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
+	struct Key_Binding down_keys              = {KEY_E,      KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
+	struct Key_Binding left_keys              = {KEY_A,      KMOD_NONE, KEY_LEFT,   KMOD_NONE, KS_INACTIVE};
+	struct Key_Binding right_keys             = {KEY_D,      KMOD_NONE, KEY_RIGHT,  KMOD_NONE, KS_INACTIVE};
+	struct Key_Binding turn_right_keys        = {KEY_L,      KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
+	struct Key_Binding turn_left_keys         = {KEY_H,      KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
+	struct Key_Binding turn_up_keys           = {KEY_K,      KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
+	struct Key_Binding turn_down_keys         = {KEY_J,      KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
+	struct Key_Binding sprint_keys            = {KEY_LSHIFT, KMOD_NONE, KEY_RSHIFT, KMOD_NONE, KS_INACTIVE};
+	struct Key_Binding editor_toggle_keys     = {KEY_F1,     KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
+	struct Key_Binding console_toggle_keys    = {KEY_TILDE,  KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
+	struct Key_Binding debug_vars_toggle_keys = {KEY_F2,     KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
+	struct Key_Binding debug_vars_cycle_keys  = {KEY_F3,     KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
+	struct Key_Binding win_fullscreen_keys    = {KEY_F11,    KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
+	struct Key_Binding win_max_keys           = {KEY_F12,    KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
 	input_map_create("Move_Forward",      forward_keys);
 	input_map_create("Move_Backward",     backward_keys);
 	input_map_create("Move_Up",           up_keys);
@@ -56,7 +58,9 @@ void input_init(void)
 	input_map_create("Sprint",            sprint_keys);
 	input_map_create("Editor_Toggle",     editor_toggle_keys);
 	input_map_create("Console_Toggle",    console_toggle_keys);
-	input_map_create("Window_Fullscreen", win_fullscr_keys);
+	input_map_create("Debug_Vars_Toggle", debug_vars_toggle_keys);
+	input_map_create("Debug_Vars_Cycle",  debug_vars_cycle_keys);
+	input_map_create("Window_Fullscreen", win_fullscreen_keys);
 	input_map_create("Window_Maximize",   win_max_keys);
 
 	if(!input_keybinds_load("keybindings.symtres", DIRT_USER))

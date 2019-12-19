@@ -10,7 +10,7 @@ static void debug_vars_clear(struct Debug_Vars* debug_vars);
 
 void debug_vars_init(struct Debug_Vars* debug_vars)
 {
-	debug_vars->visible            = true;
+	debug_vars->visible            = false;
 	debug_vars->location           = DVL_TOP_RIGHT;
 	debug_vars->window_width       = 300;
 	debug_vars->window_height      = 500;

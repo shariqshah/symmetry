@@ -367,3 +367,4 @@ Done:
 	* Shortcut key to toggle debug variable display and cycle locations
 	* Move debug vars display settings to debug_vars struct
 	* Command history in console
+	* Added button to reset local transformations for selected entity in property inspector

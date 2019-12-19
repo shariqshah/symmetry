@@ -86,7 +86,7 @@ static bool editor_widget_v3(struct nk_context* context,
 			                 float              inc_per_pixel,
 			                 int                row_height);
 
-static void editor_window_scene_heirarchy(struct nk_context* context, struct Editor* editor, struct Game_State* game_state);
+static void editor_window_scene_hierarchy(struct nk_context* context, struct Editor* editor, struct Game_State* game_state);
 static void editor_window_property_inspector(struct nk_context* context, struct Editor* editor, struct Game_State* game_state);
 static void editor_window_renderer_settings(struct nk_context* context, struct Editor* editor, struct Game_State* game_state);
 static void editor_window_settings_editor(struct nk_context* context, struct Editor* editor, struct Game_State* game_state);
@@ -566,7 +566,7 @@ void editor_update(struct Editor* editor, float dt)
 	}
 	nk_end(context);
 
-	if(editor->window_scene_heirarchy) editor_window_scene_heirarchy(context, editor, game_state);
+	if(editor->window_scene_heirarchy) editor_window_scene_hierarchy(context, editor, game_state);
 	if(editor->window_property_inspector) editor_window_property_inspector(context, editor, game_state);
 	if(editor->window_settings_renderer) editor_window_renderer_settings(context, editor, game_state);
 	if(editor->window_settings_editor) editor_window_settings_editor(context, editor, game_state);
@@ -1455,7 +1455,7 @@ void editor_show_entity_in_list(struct Editor* editor, struct nk_context* contex
 	}
 }
 
-void editor_window_scene_heirarchy(struct nk_context* context, struct Editor* editor, struct Game_State* game_state)
+void editor_window_scene_hierarchy(struct nk_context* context, struct Editor* editor, struct Game_State* game_state)
 {
 	if(nk_begin(context, "Scene Heirarchy", nk_recti(0, editor->top_panel_height, 300, 400), window_flags))
 	{
@@ -1501,6 +1501,18 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 
 			/* Transform */
 			{
+				if(nk_widget_is_hovered(context))
+					nk_tooltip(context, "Resets the local transformations for this entity without changing the entity's parent");
+
+				nk_layout_row_dynamic(context, row_height, 1);
+				if(nk_button_label(context, "Reset Transform"))
+				{
+					vec3_fill(&entity->transform.position, 0.f, 0.f, 0.f);
+					vec3_fill(&entity->transform.scale, 1.f, 1.f, 1.f);
+					quat_fill(&entity->transform.rotation, 0.f, 0.f, 0.f, 1.f);
+					transform_update_transmat(entity);
+				}
+
 				nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Position", NK_TEXT_ALIGN_CENTERED);
 				vec3 abs_pos = { 0.f, 0.f, 0.f };
 				transform_get_absolute_position(entity, &abs_pos);

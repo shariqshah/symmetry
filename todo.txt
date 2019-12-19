@@ -1,5 +1,4 @@
 Todo:
-	- Command history in console
 	- Add editor undo for transformation operations
 	- Decide how to handle scale when  checking sphere-ray intersection
 	- Add material export for blender exporter?
@@ -135,6 +134,7 @@ Bugs:
 	- Investigate memory leaks caused by nuklear or opengl related operations in gui_update
 	- Fix weird rotational bug when rotation resets or inverts after 180 degrees
 	- Fix crash if player's mesh is deleted in editor
+	- Fix camera not rotating if the cursor overlaps any ui element
 	
 Done:
 	* Input
@@ -366,3 +366,4 @@ Done:
 	* Brought back debug variable display in editor and allow showing colours, textures etc
 	* Shortcut key to toggle debug variable display and cycle locations
 	* Move debug vars display settings to debug_vars struct
+	* Command history in console

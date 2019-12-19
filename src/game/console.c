@@ -7,6 +7,8 @@
 #include "entity.h"
 #include "debug_vars.h"
 #include "../system/file_io.h"
+#include "event.h"
+#include "input.h"
 
 #include <assert.h>
 #include <string.h>
@@ -14,7 +16,8 @@
 
 static struct nk_color console_message_color[CMT_MAX];
 
-static int console_filter(const struct nk_text_edit *box, nk_rune unicode);
+static int  console_filter(const struct nk_text_edit *box, nk_rune unicode);
+static void console_on_key_release(struct Event* event);
 
 static void console_command_scene_empty(struct Console* console, const char* command);
 static void console_command_scene_save(struct Console* console, const char* command);
@@ -35,34 +38,48 @@ void console_init(struct Console* console)
     console_message_color[CMT_COMMAND] = nk_rgb(114, 173, 224);
     console_message_color[CMT_NONE]    = nk_rgb(255, 0, 255);
 	
-    console->visible               = false;
-    console->scroll_to_bottom      = true;
-    console->text_region_height    = 22.f;
-    console->line_height           = 20.f;
-    console->current_message_index = -1;
+    console->visible                      = false;
+    console->scroll_to_bottom             = true;
+    console->text_region_height           = 22.f;
+    console->line_height                  = 20.f;
+    console->current_message_index        = -1;
+	console->current_history_index        =  0;
+	console->current_history_browse_index =  0;
 
-    memset(console->console_command_text, '\0', MAX_CONSOLE_MESSAGE_LEN);
+	for(int i = 0; i < MAX_CONSOLE_HISTORY; i++)
+		memset(console->command_history[i], '\0', MAX_CONSOLE_MESSAGE_LEN);
+
+    memset(console->command_text, '\0', MAX_CONSOLE_MESSAGE_LEN);
 	for(int i = 0; i < MAX_CONSOLE_MESSAGES; i++)
 	{
-		memset(console->console_messages[i].message, '\0', MAX_CONSOLE_MESSAGE_LEN);
-		console->console_messages[i].type = CMT_NONE;
+		memset(console->messages[i].message, '\0', MAX_CONSOLE_MESSAGE_LEN);
+		console->messages[i].type = CMT_NONE;
 	}
 
-	console->console_commands = hashmap_new();
-	hashmap_ptr_set(console->console_commands, "scene_empty", &console_command_scene_empty);
-	hashmap_ptr_set(console->console_commands, "scene_save", &console_command_scene_save);
-	hashmap_ptr_set(console->console_commands, "scene_load", &console_command_scene_load);
-	hashmap_ptr_set(console->console_commands, "entity_save", &console_command_entity_save);
-	hashmap_ptr_set(console->console_commands, "entity_load", &console_command_entity_load);
-	hashmap_ptr_set(console->console_commands, "debug_vars_toggle", &console_command_debug_vars_toggle);
-	hashmap_ptr_set(console->console_commands, "debug_vars_location", &console_command_debug_vars_location_set);
-	hashmap_ptr_set(console->console_commands, "help", &console_command_help);
+	console->commands = hashmap_new();
+	hashmap_ptr_set(console->commands, "scene_empty", &console_command_scene_empty);
+	hashmap_ptr_set(console->commands, "scene_save", &console_command_scene_save);
+	hashmap_ptr_set(console->commands, "scene_load", &console_command_scene_load);
+	hashmap_ptr_set(console->commands, "entity_save", &console_command_entity_save);
+	hashmap_ptr_set(console->commands, "entity_load", &console_command_entity_load);
+	hashmap_ptr_set(console->commands, "debug_vars_toggle", &console_command_debug_vars_toggle);
+	hashmap_ptr_set(console->commands, "debug_vars_location", &console_command_debug_vars_location_set);
+	hashmap_ptr_set(console->commands, "help", &console_command_help);
+
+	struct Event_Manager* event_manager = game_state_get()->event_manager;
+	event_manager_subscribe(event_manager, EVT_KEY_RELEASED, &console_on_key_release);
 }
 
 void console_toggle(struct Console* console)
 {
     console->visible = !console->visible;
-    if(console->visible) console->scroll_to_bottom = true;
+	if(console->visible)
+	{
+		console->scroll_to_bottom = true;
+		console->current_history_browse_index = console->current_history_index - 1;
+		if(console->current_history_browse_index == -1)
+			console->current_history_browse_index = console->current_history_index;
+	}
 }
 
 void console_update(struct Console* console, struct Gui* gui_state, float dt)
@@ -84,7 +101,7 @@ void console_update(struct Console* console, struct Gui* gui_state, float dt)
 			for(int i = 0; i <= console->current_message_index; i++)
 			{
 				nk_layout_row_dynamic(context, console->line_height, 1);
-				nk_labelf_colored(context, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, console_message_color[console->console_messages[i].type], console->console_messages[i].message);
+				nk_labelf_colored(context, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, console_message_color[console->messages[i].type], console->messages[i].message);
 			}
 
 			if(console->scroll_to_bottom == true) // scroll console message area to the bottom if required
@@ -99,14 +116,14 @@ void console_update(struct Console* console, struct Gui* gui_state, float dt)
 		nk_layout_row_dynamic(context, console->text_region_height, 1);
 		int edit_flags = NK_EDIT_GOTO_END_ON_ACTIVATE | NK_EDIT_FIELD | NK_EDIT_SIG_ENTER;
 		nk_edit_focus(context, edit_flags);
-		int edit_state = nk_edit_string_zero_terminated(context, edit_flags, console->console_command_text, MAX_CONSOLE_MESSAGE_LEN, console_filter);
+		int edit_state = nk_edit_string_zero_terminated(context, edit_flags, console->command_text, MAX_CONSOLE_MESSAGE_LEN, console_filter);
 		if(edit_state & NK_EDIT_COMMITED)
 		{
 			if(++console->current_message_index >= MAX_CONSOLE_MESSAGES)
 				console->current_message_index = 0;
 			
-			snprintf(console->console_messages[console->current_message_index].message, MAX_CONSOLE_MESSAGE_LEN, "> %s", console->console_command_text);
-			console->console_messages[console->current_message_index].type = CMT_COMMAND;
+			snprintf(console->messages[console->current_message_index].message, MAX_CONSOLE_MESSAGE_LEN, "> %s", console->command_text);
+			console->messages[console->current_message_index].type = CMT_COMMAND;
 			console->scroll_to_bottom = true;
 
 			/* Check if a valid command is entered and call the related function or print an error message */
@@ -114,17 +131,26 @@ void console_update(struct Console* console, struct Gui* gui_state, float dt)
 			static char command_params[MAX_CONSOLE_MESSAGE_LEN];
 			memset(command_text, '\0', MAX_CONSOLE_MESSAGE_LEN);
 			memset(command_params, '\0', MAX_CONSOLE_MESSAGE_LEN);
-			sscanf(console->console_command_text, "%s %[^\n]", command_text, command_params);
-			if(hashmap_value_exists(console->console_commands, command_text))
+			sscanf(console->command_text, "%s %[^\n]", command_text, command_params);
+			if(hashmap_value_exists(console->commands, command_text))
 			{
-				Console_Command_Handler command_handler = hashmap_ptr_get(console->console_commands, command_text);
+				Console_Command_Handler command_handler = hashmap_ptr_get(console->commands, command_text);
 				command_handler(console, command_params);
+				
 			}
 			else
 			{
 				log_warning("Invalid command '%s'", command_text);
 			}
-			memset(console->console_command_text, '\0', MAX_CONSOLE_MESSAGE_LEN);
+
+			//Add command to history and reset the current browse index to the recently entered command
+			memset(console->command_history[console->current_history_index], '\0', MAX_CONSOLE_MESSAGE_LEN);
+			strncpy(console->command_history[console->current_history_index], console->command_text, MAX_CONSOLE_MESSAGE_LEN);
+			console->current_history_browse_index = console->current_history_index;
+			if(++console->current_history_index >= MAX_CONSOLE_HISTORY)
+				console->current_history_index = 0;
+
+			memset(console->command_text, '\0', MAX_CONSOLE_MESSAGE_LEN);
 		}
     }
     nk_end(context);
@@ -132,7 +158,7 @@ void console_update(struct Console* console, struct Gui* gui_state, float dt)
 
 void console_destroy(struct Console* console)
 {
-	hashmap_free(console->console_commands);
+	hashmap_free(console->commands);
 }
 
 int console_filter(const struct nk_text_edit *box, nk_rune unicode)
@@ -144,12 +170,33 @@ int console_filter(const struct nk_text_edit *box, nk_rune unicode)
 		return nk_true;
 }
 
+void console_on_key_release(struct Event* event)
+{
+	struct Console* console = game_state_get()->console;
+	if(!console->visible || !(event->key.key == KEY_UP || event->key.key == KEY_DOWN)) return;
+
+	memset(console->command_text, '\0', MAX_CONSOLE_MESSAGE_LEN);
+	strncpy(console->command_text, console->command_history[console->current_history_browse_index], MAX_CONSOLE_MESSAGE_LEN);
+
+	//Check for up and down keys only for moving up and down command history
+	if(event->key.key == KEY_UP)
+	{
+		if(--console->current_history_browse_index < 0)
+			console->current_history_browse_index = console->current_history_index;
+	}
+	else if(event->key.key == KEY_DOWN)
+	{
+		if(++console->current_history_browse_index > console->current_history_index)
+			console->current_history_browse_index = 0;
+	}
+}
+
 void console_on_log_message(struct Console* console, const char* message, va_list args)
 {
 	if(++console->current_message_index >= MAX_CONSOLE_MESSAGES)
 		console->current_message_index = 0;
-	vsnprintf(console->console_messages[console->current_message_index].message, MAX_CONSOLE_MESSAGE_LEN, message, args);
-	console->console_messages[console->current_message_index].type = CMT_MESSAGE;
+	vsnprintf(console->messages[console->current_message_index].message, MAX_CONSOLE_MESSAGE_LEN, message, args);
+	console->messages[console->current_message_index].type = CMT_MESSAGE;
 	console->scroll_to_bottom = true;
 }
 
@@ -157,8 +204,8 @@ void console_on_log_warning(struct Console* console, const char* warning_message
 {
 	if(++console->current_message_index >= MAX_CONSOLE_MESSAGES)
 		console->current_message_index = 0;
-	vsnprintf(console->console_messages[console->current_message_index].message, MAX_CONSOLE_MESSAGE_LEN, warning_message, args);
-	console->console_messages[console->current_message_index].type = CMT_WARNING;
+	vsnprintf(console->messages[console->current_message_index].message, MAX_CONSOLE_MESSAGE_LEN, warning_message, args);
+	console->messages[console->current_message_index].type = CMT_WARNING;
 	console->scroll_to_bottom = true;
 }
 
@@ -166,9 +213,9 @@ void console_on_log_error(struct Console* console, const char* context, const ch
 {
 	if(++console->current_message_index >= MAX_CONSOLE_MESSAGES)
 		console->current_message_index = 0;
-	int loc = snprintf(console->console_messages[console->current_message_index].message, MAX_CONSOLE_MESSAGE_LEN, "(%s)", context);
-	vsnprintf(console->console_messages[console->current_message_index].message + loc, MAX_CONSOLE_MESSAGE_LEN - loc, error, args);
-	console->console_messages[console->current_message_index].type = CMT_ERROR;
+	int loc = snprintf(console->messages[console->current_message_index].message, MAX_CONSOLE_MESSAGE_LEN, "(%s)", context);
+	vsnprintf(console->messages[console->current_message_index].message + loc, MAX_CONSOLE_MESSAGE_LEN - loc, error, args);
+	console->messages[console->current_message_index].type = CMT_ERROR;
 	console->scroll_to_bottom = true;
 }
 
@@ -234,7 +281,7 @@ void console_command_help(struct Console* console, const char* command)
 	log_message("======================================");
 	log_message("Available Commands");
 	log_message("======================================");
-	HASHMAP_FOREACH(console->console_commands, key, value)
+	HASHMAP_FOREACH(console->commands, key, value)
 	{
 		log_message("%s", key);
 	}

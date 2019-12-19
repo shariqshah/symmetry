@@ -9,6 +9,7 @@
 #define MAX_CONSOLE_MESSAGE_LEN 256
 #define MAX_CONSOLE_MESSAGES 1024
 #define MAX_CONSOLE_COMMAND_LEN 32
+#define MAX_CONSOLE_HISTORY 64
 
 struct Gui;
 struct Console; 
@@ -38,9 +39,12 @@ struct Console
 	float                  text_region_height;
 	float                  line_height;
 	int                    current_message_index;
-	char                   console_command_text[MAX_CONSOLE_MESSAGE_LEN];
-	struct Console_Message console_messages[MAX_CONSOLE_MESSAGES];
-	struct Hashmap*        console_commands;
+	int                    current_history_index;
+	int                    current_history_browse_index;
+	char                   command_history[MAX_CONSOLE_HISTORY][MAX_CONSOLE_MESSAGE_LEN];
+	char                   command_text[MAX_CONSOLE_MESSAGE_LEN];
+	struct Console_Message messages[MAX_CONSOLE_MESSAGES];
+	struct Hashmap*        commands;
 };
 
 void console_init(struct Console* console);

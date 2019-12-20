@@ -1,9 +1,9 @@
 Todo:
+	- Implement scene save/load and entity save/load operations via editor
 	- Add editor undo for transformation operations
 	- Decide how to handle scale when  checking sphere-ray intersection
 	- Add material export for blender exporter?
 	- Fix crash when exiting from fullscreen mode
-	- Allow renaming scene objects in editor
 	- Check if we still need to rotate by 90 degrees when exporting from blender
 	- Fire an event when the game mode is changed so that editor camera state and other game related systems know when to update
 	- Add config file reloading and fire event that notifies potential listeners to update values from the new config file
@@ -368,3 +368,4 @@ Done:
 	* Move debug vars display settings to debug_vars struct
 	* Command history in console
 	* Added button to reset local transformations for selected entity in property inspector
+	* Implmented renaming scene objects in editor

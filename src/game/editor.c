@@ -1493,7 +1493,34 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 			struct Entity* entity = editor->selected_entity;
 
 			struct Entity* parent_ent = entity->transform.parent;
-			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Name", NK_TEXT_ALIGN_LEFT); nk_label(context, entity->name, NK_TEXT_ALIGN_RIGHT);
+			nk_layout_row_dynamic(context, row_height + 5, 2); 
+			nk_label(context, "Name", NK_TEXT_ALIGN_LEFT); 
+			static char entity_name[MAX_ENTITY_NAME_LEN];
+			static bool copy_entity_name = true;
+
+			if(copy_entity_name)
+			{
+				memset(entity_name, '\0', MAX_ENTITY_NAME_LEN);
+				strncpy(entity_name, entity->name, MAX_ENTITY_NAME_LEN);
+			}
+
+			int rename_edit_flags = NK_EDIT_GOTO_END_ON_ACTIVATE | NK_EDIT_FIELD | NK_EDIT_SIG_ENTER;
+			int rename_edit_state = nk_edit_string_zero_terminated(context, rename_edit_flags, entity_name, MAX_ENTITY_NAME_LEN, NULL);
+			if(rename_edit_state & NK_EDIT_COMMITED)
+			{
+				entity_rename(entity, entity_name);
+				nk_edit_unfocus(context);
+				copy_entity_name = true;
+			}
+			else if(rename_edit_state & NK_EDIT_ACTIVATED)
+			{
+				copy_entity_name = false;
+			}
+			else if(rename_edit_state & NK_EDIT_DEACTIVATED)
+			{
+				copy_entity_name = true;
+			}
+
 			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "ID", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%d", entity->id);
 			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Selected", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%s", (entity->flags & EF_SELECTED_IN_EDITOR) ? "True" : "False");
 			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Entity Type", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%s", entity_type_name_get(entity));
@@ -1977,3 +2004,4 @@ void editor_window_settings_editor(struct nk_context* context, struct Editor* ed
 	}
 	nk_end(context);
 }
+

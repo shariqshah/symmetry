@@ -15,6 +15,8 @@ struct Editor
     int                 window_settings_editor;
 	int                 window_scene_heirarchy;
 	int                 window_property_inspector;
+	int                 window_scene_dialog;
+	int                 window_entity_dialog;
 	int                 camera_looking_around;
     struct Entity*      selected_entity;
 	struct Static_Mesh* cursor_entity;
@@ -52,6 +54,8 @@ struct Editor
 	vec4                axis_color_y;
 	vec4                axis_color_z;
 	bool                picking_enabled;
+	bool                scene_operation_save;
+	bool                entity_operation_save;
 };
 
 void editor_init(struct Editor* editor_state);

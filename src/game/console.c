@@ -301,9 +301,7 @@ void console_command_scene_save(struct Console* console, const char* command)
 		return;
 	}
 
-	char full_filename[MAX_FILENAME_LEN];
-	snprintf(full_filename, MAX_FILENAME_LEN, "scenes/%s.symtres", filename);
-	if(!scene_save(game_state_get()->scene, full_filename, DIRT_INSTALL))
+	if(!scene_save(game_state_get()->scene, filename, DIRT_INSTALL))
 		log_error("scene_save", "Command failed");
 }
 
@@ -320,9 +318,7 @@ void console_command_scene_load(struct Console* console, const char* command)
 		return;
 	}
 
-	char full_filename[MAX_FILENAME_LEN];
-	snprintf(full_filename, MAX_FILENAME_LEN, "scenes/%s.symtres", filename);
-	if(!scene_load(game_state_get()->scene, full_filename, DIRT_INSTALL))
+	if(!scene_load(game_state_get()->scene, filename, DIRT_INSTALL))
 		log_error("scene_load", "Command failed");
 }
 

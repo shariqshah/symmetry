@@ -118,7 +118,7 @@ bool game_init(struct Window* window, struct Hashmap* cvars)
 	
     /* Debug scene setup */
     //game_scene_setup();
-	scene_load(game_state->scene, "scenes/default.symtres", DIRT_INSTALL);
+	scene_load(game_state->scene, "default", DIRT_INSTALL);
     game_state->is_initialized = true;
 	return game_state->is_initialized;
 }

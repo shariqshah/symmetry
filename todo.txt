@@ -12,7 +12,6 @@ Todo:
 	- Multisampled buffers to bring back aa
 	- Implement behaviour that avoids writing normal entities that do not have children or parent to file to avoid inconsistencies when loading them
 	- Change mouse behaviour to lock cursor when looking around so as not to interfere with gui elements when in editor mode
-	- Editor functionality to read/write scene to/from file
 	- Folder management api to create/delete folders when none exist. Dirent would suffice for our simple needs?
 	- Display default mesh when selected entity type in editor does not have a mesh
 	- Allow picking and selecting other entity types in editor i.e. the ones that don't have meshes
@@ -371,3 +370,4 @@ Done:
 	* Added button to reset local transformations for selected entity in property inspector
 	* Implmented renaming scene objects in editor
 	* Implemented setting/resetting parent entity for entity
+	* Editor functionality to read/write scene to/from file

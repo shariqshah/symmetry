@@ -78,7 +78,9 @@ void scene_init(struct Scene* scene)
 
 bool scene_load(struct Scene* scene, const char* filename, int directory_type)
 {
-    FILE* scene_file = io_file_open(directory_type, filename, "rb");
+	char prefixed_filename[MAX_FILENAME_LEN + 16];
+	snprintf(prefixed_filename, MAX_FILENAME_LEN + 16, "scenes/%s.symtres", filename);
+    FILE* scene_file = io_file_open(directory_type, prefixed_filename, "rb");
 	if(!scene_file)
 	{
 		log_error("scene:load", "Failed to open scene file %s for reading");
@@ -197,7 +199,9 @@ bool scene_load(struct Scene* scene, const char* filename, int directory_type)
 
 bool scene_save(struct Scene* scene, const char* filename, int directory_type)
 {
-    FILE* scene_file = io_file_open(directory_type, filename, "w");
+	char prefixed_filename[MAX_FILENAME_LEN + 16];
+	snprintf(prefixed_filename, MAX_FILENAME_LEN + 16, "scenes/%s.symtres", filename);
+    FILE* scene_file = io_file_open(directory_type, prefixed_filename, "w");
 	if(!scene_file)
 	{
 		log_error("scene:save", "Failed to open scene file %s for writing");

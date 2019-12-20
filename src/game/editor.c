@@ -94,6 +94,8 @@ static void editor_axis_set(struct Editor* editor, int axis);
 static void editor_entity_select(struct Editor* editor, struct Entity* entity);
 static void editor_tool_set(struct Editor* editor, int mode);
 static void editor_tool_reset(struct Editor* editor);
+static void editor_scene_dialog(struct Editor* editor, struct nk_context* context);
+static void editor_entity_dialog(struct Editor* editor, struct nk_context* context);
 
 void editor_init(struct Editor* editor)
 {
@@ -101,6 +103,8 @@ void editor_init(struct Editor* editor)
     editor->window_settings_editor             = 0;
 	editor->window_property_inspector          = 0;
 	editor->window_scene_heirarchy             = 0;
+	editor->window_scene_dialog                = 0;
+	editor->window_entity_dialog               = 0;
 	editor->camera_looking_around              = 0;
     editor->selected_entity                    = NULL;
     editor->hovered_entity                     = NULL;
@@ -128,6 +132,8 @@ void editor_init(struct Editor* editor)
 	editor->picking_enabled                    = true;
 	editor->draw_cursor_entity                 = false;
 	editor->tool_scale_started                 = false;
+	editor->entity_operation_save              = false;
+	editor->scene_operation_save               = false;
 
 	vec4_fill(&editor->cursor_entity_color, 0.f, 1.f, 1.f, 0.7f);
 	vec4_fill(&editor->hovered_entity_color, 0.53, 0.87, 0.28, 0.5f);
@@ -339,11 +345,41 @@ void editor_update(struct Editor* editor, float dt)
 
 		nk_layout_row_begin(context, NK_DYNAMIC, editor->top_panel_height - 5, 8);
 		nk_layout_row_push(context, 0.03f);
-		if(nk_menu_begin_label(context, "File", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, nk_vec2(150, 100)))
+		if(nk_menu_begin_label(context, "File", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, nk_vec2(150, 150)))
 		{
 			nk_layout_row_dynamic(context, row_height, 1);
-			nk_menu_item_label(context, "Open", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
-			nk_menu_item_label(context, "Save", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+			if(nk_menu_item_label(context, "New Scene", NK_TEXT_ALIGN_MIDDLE | NK_TEXT_ALIGN_LEFT))
+			{
+				struct Scene* scene = game_state->scene;
+				scene_destroy(scene);
+				scene_post_update(scene);
+				scene_init(scene);
+			}
+
+			if(nk_menu_item_label(context, "Load Scene", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE))
+			{
+				editor->window_scene_dialog = editor->window_scene_dialog == 0 ? 1 : 0;
+				editor->scene_operation_save = false;
+			}
+
+			if(nk_menu_item_label(context, "Save Scene", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE))
+			{
+				editor->window_scene_dialog = editor->window_scene_dialog == 0 ? 1 : 0;
+				editor->scene_operation_save = true;
+			}
+
+			if(nk_menu_item_label(context, "Load Entity", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE)) 
+			{
+				editor->window_entity_dialog = editor->window_entity_dialog == 0 ? 1 : 0;
+				editor->entity_operation_save = false;
+			}
+
+			if(nk_menu_item_label(context, "Save Entity", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE)) 
+			{
+				editor->window_entity_dialog = editor->window_entity_dialog == 0 ? 1 : 0;
+				editor->entity_operation_save = true;
+			}
+				
 			if(nk_menu_item_label(context, "Back to Game", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE))
 			{
 				game_state->game_mode = GAME_MODE_GAME;
@@ -368,6 +404,8 @@ void editor_update(struct Editor* editor, float dt)
 			int debug_vars_visible = debug_vars->visible;
 			nk_layout_row_dynamic(context, row_height, 1);
 			nk_checkbox_label(context, "Scene Heirarchy", &editor->window_scene_heirarchy);
+
+
 			nk_checkbox_label(context, "Property Inspector", &editor->window_property_inspector);
 			nk_checkbox_label(context, "Debug Variables", &debug_vars_visible);
 			if(debug_vars_visible != (int)debug_vars->visible)
@@ -675,6 +713,92 @@ void editor_update(struct Editor* editor, float dt)
 		}
 	}
 
+	if(editor->window_scene_dialog) editor_scene_dialog(editor, context);
+}
+
+void editor_scene_dialog(struct Editor* editor, struct nk_context* context)
+{
+	struct Game_State* game_state = game_state_get();
+	struct Scene* scene = game_state->scene;
+	bool save = editor->scene_operation_save;
+	int row_height = 25;
+	int popup_x = 0;
+	int popup_y = 0;
+	int popup_width = 200;
+	int popup_height = 200;
+	int display_width = 0;
+	int display_height = 0;
+	int popup_flags = NK_WINDOW_TITLE | NK_WINDOW_BORDER;
+	window_get_drawable_size(game_state_get()->window, &display_width, &display_height);
+	popup_x = (display_width / 2) - (popup_width / 2);
+	popup_y = (display_height / 2) - (popup_height / 2);
+
+	int background_window_flags = NK_WINDOW_BACKGROUND;
+	int previous_opacity = context->style.window.fixed_background.data.color.a;
+	context->style.window.fixed_background.data.color.a = 120;
+	if(nk_begin(context, save ? "Scene Save" : "Scene Load", nk_recti(0, 0, display_width, display_height), background_window_flags))
+	{
+		nk_window_set_focus(context, save ? "Scene Save" : "Scene Load");
+		if(nk_popup_begin(context, NK_POPUP_DYNAMIC, save ? "Save Scene" : "Load Scene", popup_flags, nk_recti(popup_x, popup_y, popup_width, popup_height)))
+		{
+			nk_layout_row_dynamic(context, row_height, 1);
+			nk_label(context, "Enter the name of the scene:", NK_TEXT_ALIGN_CENTERED | NK_TEXT_ALIGN_MIDDLE);
+
+			static char scene_filename[MAX_FILENAME_LEN];
+			static bool copy_scene_filename = true;
+
+			if(copy_scene_filename)
+			{
+				memset(scene_filename, '\0', MAX_FILENAME_LEN);
+			}
+
+			int scene_filename_flags = NK_EDIT_SIG_ENTER | NK_EDIT_GOTO_END_ON_ACTIVATE | NK_EDIT_FIELD;
+			int scene_filename_state = nk_edit_string_zero_terminated(context, scene_filename_flags, scene_filename, MAX_FILENAME_LEN, NULL);
+			if(scene_filename_state & NK_EDIT_ACTIVATED)
+			{
+				copy_scene_filename = false;
+			}
+			else if(scene_filename_state & NK_EDIT_COMMITED)
+			{
+				if(save)
+					scene_save(scene, scene_filename, DIRT_INSTALL);
+				else
+					scene_load(scene, scene_filename, DIRT_INSTALL);
+				copy_scene_filename = true;
+				editor->window_scene_dialog = 0;
+				nk_popup_close(context);
+			}
+
+			nk_layout_row_dynamic(context, row_height, 3);
+			if(nk_button_label(context, "OK"))
+			{
+				if(save)
+					scene_save(scene, scene_filename, DIRT_INSTALL);
+				else
+					scene_load(scene, scene_filename, DIRT_INSTALL);
+				copy_scene_filename = true;
+				editor->window_scene_dialog = 0;
+				nk_popup_close(context);
+			}
+
+			nk_spacing(context, 1);
+
+			if(nk_button_label(context, "Cancel"))
+			{
+				copy_scene_filename = true;
+				editor->window_scene_dialog = 0;
+				nk_popup_close(context);
+			}
+
+			nk_popup_end(context);
+		}
+		nk_end(context);
+	}
+	else
+	{
+		editor->window_scene_dialog = 0;
+	}
+	context->style.window.fixed_background.data.color.a = previous_opacity;
 }
 
 void editor_on_mousebutton_release(const struct Event* event)
@@ -2044,3 +2168,7 @@ void editor_window_settings_editor(struct nk_context* context, struct Editor* ed
 	nk_end(context);
 }
 
+void editor_entity_dialog(struct Editor* editor, struct nk_context* context)
+{
+
+}

@@ -788,7 +788,7 @@ void scene_entity_parent_reset(struct Scene* scene, struct Entity* entity)
 
 void scene_entity_parent_set(struct Scene* scene, struct Entity* entity, struct Entity* parent)
 {
-	assert(scene && entity && parent);
+	assert(scene && entity && parent && entity != parent);
 	transform_parent_set(entity, parent, true);
 }
 

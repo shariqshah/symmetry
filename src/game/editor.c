@@ -1524,7 +1524,46 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "ID", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%d", entity->id);
 			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Selected", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%s", (entity->flags & EF_SELECTED_IN_EDITOR) ? "True" : "False");
 			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Entity Type", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%s", entity_type_name_get(entity));
-			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Parent Name", NK_TEXT_ALIGN_LEFT); nk_label(context, parent_ent ? parent_ent->name : "NONE", NK_TEXT_ALIGN_RIGHT);
+
+			nk_layout_row_dynamic(context, row_height + 5, 2); 
+			nk_label(context, "Parent Name", NK_TEXT_ALIGN_LEFT); 
+			static char parent_name[MAX_ENTITY_NAME_LEN];
+			static bool copy_parent_name = true;
+
+			if(copy_parent_name)
+			{
+				memset(parent_name, '\0', MAX_ENTITY_NAME_LEN);
+				strncpy(parent_name, parent_ent->name, MAX_ENTITY_NAME_LEN);
+			}
+
+			int rename_parent_edit_flags = NK_EDIT_GOTO_END_ON_ACTIVATE | NK_EDIT_FIELD | NK_EDIT_SIG_ENTER;
+			int rename_parent_edit_state = nk_edit_string_zero_terminated(context, rename_parent_edit_flags, parent_name, MAX_ENTITY_NAME_LEN, NULL);
+			if(rename_parent_edit_state & NK_EDIT_ACTIVATED)
+			{
+				copy_parent_name = false;
+			}
+			else if(rename_parent_edit_state & NK_EDIT_DEACTIVATED)
+			{
+				copy_parent_name = true;
+			}
+			else if(rename_parent_edit_state & NK_EDIT_COMMITED)
+			{
+				if(strncmp(parent_name, "NONE", MAX_ENTITY_NAME_LEN) == 0 || strncmp(parent_name, "ROOT", MAX_ENTITY_NAME_LEN) == 0)
+				{
+					scene_entity_parent_reset(scene, entity);
+				}
+				else
+				{
+					struct Entity* new_parent = scene_find(scene, parent_name);
+					if(new_parent)
+						scene_entity_parent_set(scene, entity, new_parent);
+					else
+						log_warning("Could not find new parent %s for %s", parent_name, entity->name);
+				}
+				copy_parent_name = true;
+				nk_edit_unfocus(context);
+			}
+			//nk_label(context, parent_ent ? parent_ent->name : "NONE", NK_TEXT_ALIGN_RIGHT);
 
 			/* Transform */
 			{

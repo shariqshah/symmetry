@@ -135,6 +135,7 @@ Bugs:
 	- Fix weird rotational bug when rotation resets or inverts after 180 degrees
 	- Fix crash if player's mesh is deleted in editor
 	- Fix camera not rotating if the cursor overlaps any ui element
+	- Fix hierarchichal transformations in the editor when the entity being transformed is a child entity of another entity
 	
 Done:
 	* Input
@@ -369,3 +370,4 @@ Done:
 	* Command history in console
 	* Added button to reset local transformations for selected entity in property inspector
 	* Implmented renaming scene objects in editor
+	* Implemented setting/resetting parent entity for entity

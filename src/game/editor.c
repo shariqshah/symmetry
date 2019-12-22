@@ -714,6 +714,7 @@ void editor_update(struct Editor* editor, float dt)
 	}
 
 	if(editor->window_scene_dialog) editor_scene_dialog(editor, context);
+	if(editor->window_entity_dialog) editor_entity_dialog(editor, context);
 }
 
 void editor_scene_dialog(struct Editor* editor, struct nk_context* context)
@@ -1617,8 +1618,8 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 			struct Entity* entity = editor->selected_entity;
 
 			struct Entity* parent_ent = entity->transform.parent;
-			nk_layout_row_dynamic(context, row_height + 5, 2); 
-			nk_label(context, "Name", NK_TEXT_ALIGN_LEFT); 
+			nk_layout_row_dynamic(context, row_height + 5, 2);
+			nk_label(context, "Name", NK_TEXT_ALIGN_LEFT);
 			static char entity_name[MAX_ENTITY_NAME_LEN];
 			static bool copy_entity_name = true;
 
@@ -1649,8 +1650,8 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Selected", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%s", (entity->flags & EF_SELECTED_IN_EDITOR) ? "True" : "False");
 			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Entity Type", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%s", entity_type_name_get(entity));
 
-			nk_layout_row_dynamic(context, row_height + 5, 2); 
-			nk_label(context, "Parent Name", NK_TEXT_ALIGN_LEFT); 
+			nk_layout_row_dynamic(context, row_height + 5, 2);
+			nk_label(context, "Parent Name", NK_TEXT_ALIGN_LEFT);
 			static char parent_name[MAX_ENTITY_NAME_LEN];
 			static bool copy_parent_name = true;
 
@@ -1687,7 +1688,10 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 				copy_parent_name = true;
 				nk_edit_unfocus(context);
 			}
-			//nk_label(context, parent_ent ? parent_ent->name : "NONE", NK_TEXT_ALIGN_RIGHT);
+
+			nk_layout_row_dynamic(context, row_height, 2);
+			nk_label(context, "Children", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+			nk_labelf(context, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, "%d", array_len(entity->transform.children));
 
 			/* Transform */
 			{
@@ -2170,5 +2174,113 @@ void editor_window_settings_editor(struct nk_context* context, struct Editor* ed
 
 void editor_entity_dialog(struct Editor* editor, struct nk_context* context)
 {
+	struct Game_State* game_state = game_state_get();
+	struct Scene* scene = game_state->scene;
+	bool save = editor->entity_operation_save;
+	int row_height = 25;
+	int popup_x = 0;
+	int popup_y = 0;
+	int popup_width = 300;
+	int popup_height = 200;
+	int display_width = 0;
+	int display_height = 0;
+	int popup_flags = NK_WINDOW_TITLE | NK_WINDOW_BORDER;
+	window_get_drawable_size(game_state_get()->window, &display_width, &display_height);
+	popup_x = (display_width / 2) - (popup_width / 2);
+	popup_y = (display_height / 2) - (popup_height / 2);
 
+	int background_window_flags = NK_WINDOW_BACKGROUND;
+	int previous_opacity = context->style.window.fixed_background.data.color.a;
+	context->style.window.fixed_background.data.color.a = 120;
+	if(nk_begin(context, save ? "Entity Save" : "Entity Load", nk_recti(0, 0, display_width, display_height), background_window_flags))
+	{
+		nk_window_set_focus(context, save ? "Entity Save" : "Entity Load");
+		if(nk_popup_begin(context, NK_POPUP_DYNAMIC, save ? "Save Entity" : "Load Entity", popup_flags, nk_recti(popup_x, popup_y, popup_width, popup_height)))
+		{
+			nk_layout_row_dynamic(context, row_height, 1);
+			if(save && !editor->selected_entity)
+			{
+				nk_label_colored(context, "Please select an entity first in order to save it", NK_TEXT_ALIGN_CENTERED | NK_TEXT_ALIGN_MIDDLE, nk_rgb_f(1.f, 1.f, 0.f));
+				if(nk_button_label(context, "OK"))
+				{
+					editor->window_entity_dialog = 0;
+					nk_popup_close(context);
+				}
+			}
+			else
+			{
+				nk_label(context, "Enter the name of the entity:", NK_TEXT_ALIGN_CENTERED | NK_TEXT_ALIGN_MIDDLE);
+
+				static char entity_filename[MAX_FILENAME_LEN];
+				static bool copy_entity_filename = true;
+
+				if(copy_entity_filename)
+				{
+					memset(entity_filename, '\0', MAX_FILENAME_LEN);
+				}
+
+				int entity_filename_flags = NK_EDIT_SIG_ENTER | NK_EDIT_GOTO_END_ON_ACTIVATE | NK_EDIT_FIELD;
+				int entity_filename_state = nk_edit_string_zero_terminated(context, entity_filename_flags, entity_filename, MAX_FILENAME_LEN, NULL);
+				if(entity_filename_state & NK_EDIT_ACTIVATED)
+				{
+					copy_entity_filename = false;
+				}
+				else if(entity_filename_state & NK_EDIT_COMMITED)
+				{
+					if(save)
+					{
+						entity_save(editor->selected_entity, entity_filename, DIRT_INSTALL);
+					}
+					else
+					{
+						struct Entity* new_entity = entity_load(entity_filename, DIRT_INSTALL);
+						if(new_entity)
+						{
+							editor_entity_select(editor, new_entity);
+						}
+					}
+					copy_entity_filename = true;
+					editor->window_entity_dialog = 0;
+					nk_popup_close(context);
+				}
+
+				nk_layout_row_dynamic(context, row_height, 3);
+				if(nk_button_label(context, "OK"))
+				{
+					if(save)
+					{
+						entity_save(editor->selected_entity, entity_filename, DIRT_INSTALL);
+					}
+					else
+					{
+						struct Entity* new_entity = entity_load(entity_filename, DIRT_INSTALL);
+						if(new_entity)
+						{
+							editor_entity_select(editor, new_entity);
+						}
+					}
+					copy_entity_filename = true;
+					editor->window_entity_dialog = 0;
+					nk_popup_close(context);
+				}
+
+				nk_spacing(context, 1);
+
+				if(nk_button_label(context, "Cancel"))
+				{
+					copy_entity_filename = true;
+					editor->window_entity_dialog = 0;
+					nk_popup_close(context);
+				}
+			}
+
+			nk_popup_end(context);
+		}
+		nk_end(context);
+	}
+	else
+	{
+		editor->window_entity_dialog = 0;
+	}
+	context->style.window.fixed_background.data.color.a = previous_opacity;
 }

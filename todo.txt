@@ -1,7 +1,9 @@
 Todo:
-	- Implement scene save/load and entity save/load operations via editor
+	- For entities that have archetypes, check read/write them to the file they were loaded from when showing the save entity dialog
+	- When loading entities, show an additional optional textfield where user can enter the name they want for the entity after it is loaded
+	- Implelement contextual actions for entites that are shown in scene hierarchy
 	- Add editor undo for transformation operations
-	- Decide how to handle scale when  checking sphere-ray intersection
+	- Decide how to handle scale when checking sphere-ray intersection
 	- Add material export for blender exporter?
 	- Fix crash when exiting from fullscreen mode
 	- Check if we still need to rotate by 90 degrees when exporting from blender
@@ -9,8 +11,15 @@ Todo:
 	- Add config file reloading and fire event that notifies potential listeners to update values from the new config file
 	- Command to reload entities only
 	- Serialize player, camera properties to file
+	- Gameplay level features:
+		- Each scene should always have a directional light that serves as the main source of light when there are no other lights
+		- Each scene should always have a texture cube that serves as the sky 
+		- Player/World collision and movement using ray casts only
+		- Triggers
+		- Basic Enemy
+		- Main Menu Scene
+		? Split this todo into gameplay/engine todos
 	- Multisampled buffers to bring back aa
-	- Implement behaviour that avoids writing normal entities that do not have children or parent to file to avoid inconsistencies when loading them
 	- Change mouse behaviour to lock cursor when looking around so as not to interfere with gui elements when in editor mode
 	- Folder management api to create/delete folders when none exist. Dirent would suffice for our simple needs?
 	- Display default mesh when selected entity type in editor does not have a mesh
@@ -34,14 +43,11 @@ Todo:
 	- Implement resetting complete transform or just rotation, translation
 	  or scale for selected entity
 	- Key binding and function to orient entity to camera orientation
-	- Display the name of the hovered entity either as a tooltip under the
-	  cursor of in the top/bottom status bar
 	- Make lights and other entity types pickable
 	- Mouse warp to opposite side of the window when it reaches bounds
 	- Add other axis combinations like YZ and XY to transform tool
 	- Transformation space selection for translation, rotation and scale.
 	- Subscribe and Unsubscribe based on game mode changes
-	- Use actual selected entity's mesh for tool mesh when the entity already has a mesh and use a placeholder like a sphere when there is not mesh 
 	- Add warning to genie build script when running on windows and WindowsSdkVersion cannot be found. This happens when the script is not run from vcvarsall command prompt
 	- Improve README and add a screenshot to make the repository ready for making it public 
 	- Show Transformation deltas for example a line showing where we are to where we are going to be if we click and apply the selected transformation
@@ -53,9 +59,6 @@ Todo:
 	- Quick scene filter and entity selection by popping up a menu which has list of entities and fuzzy matches them based on the typed name
 	- Screen mouse coordinates to world-coordinates for aiming
 	- Player projectiles and sounds
-	- Console command history
-	- Console command help
-	- Debug drawing/variable display that also works in game mode. Can be toggled with a console command. Can show variable values or plots thier graphs or debug textures etc
 	- Space partitioning and scene handling
 	- Move Gui_State and Editor_State into game_state and modify usage as needed
 	- Get editor camera speed and other settings from config file
@@ -371,3 +374,10 @@ Done:
 	* Implmented renaming scene objects in editor
 	* Implemented setting/resetting parent entity for entity
 	* Editor functionality to read/write scene to/from file
+	* Display the name of the hovered entity either as a tooltip under the cursor of in the top/bottom status bar
+	* Debug drawing/variable display that also works in game mode. Can be toggled with a console command. Can show variable values or plots thier graphs or debug textures etc
+	* Console command history
+	* Console command help
+	* Use actual selected entity's mesh for tool mesh when the entity already has a mesh and use a placeholder like a sphere when there is not mesh 
+	* Implmented dialog for loading entities into the scene via editor
+	* Implement behaviour that avoids writing normal entities that do not have children or parent to file to avoid inconsistencies when loading them

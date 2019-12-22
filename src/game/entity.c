@@ -217,7 +217,9 @@ bool entity_write(struct Entity* entity, struct Parser_Object* object, bool writ
 
 bool entity_save(struct Entity* entity, const char* filename, int directory_type)
 {
-    FILE* entity_file = io_file_open(directory_type, filename, "w");
+	char prefixed_filename[MAX_FILENAME_LEN + 16];
+	snprintf(prefixed_filename, MAX_FILENAME_LEN + 16, "entities/%s.symtres", filename);
+    FILE* entity_file = io_file_open(directory_type, prefixed_filename, "w");
 	if(!entity_file)
 	{
 		log_error("entity:save", "Failed to open entity file %s for writing");
@@ -228,7 +230,7 @@ bool entity_save(struct Entity* entity, const char* filename, int directory_type
     struct Parser_Object* object = parser_object_new(parser, PO_ENTITY);
     if(!entity_write(entity, object, false))
     {
-        log_error("entity:save", "Failed to save entity : %s to file : %s", entity->name, filename);
+        log_error("entity:save", "Failed to save entity : %s to file : %s", entity->name, prefixed_filename);
 		parser_free(parser);
         fclose(entity_file);
         return false;
@@ -243,15 +245,15 @@ bool entity_save(struct Entity* entity, const char* filename, int directory_type
 		struct Entity* child_entity = entity->transform.children[i];
 		if (!entity_write(child_entity, child_object, true))
 		{
-			log_error("entity:save", "Failed to write child entity : %s for parent entity : %s to file : %s", entity->name, child_entity->name, filename);
+			log_error("entity:save", "Failed to write child entity : %s for parent entity : %s to file : %s", entity->name, child_entity->name, prefixed_filename);
 			parser_free(parser);
 			fclose(entity_file);
 			return false;
 		}
 	}
 
-    if(parser_write_objects(parser, entity_file, filename))
-        log_message("Entity %s saved to %s", entity->name, filename);
+    if(parser_write_objects(parser, entity_file, prefixed_filename))
+        log_message("Entity %s saved to %s", entity->name, prefixed_filename);
 
     parser_free(parser);
 	fclose(entity_file);
@@ -470,26 +472,28 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 
 struct Entity* entity_load(const char* filename, int directory_type)
 {
-    FILE* entity_file = io_file_open(directory_type, filename, "rb");
+	char prefixed_filename[MAX_FILENAME_LEN + 16];
+	snprintf(prefixed_filename, MAX_FILENAME_LEN + 16, "entities/%s.symtres", filename);
+    FILE* entity_file = io_file_open(directory_type, prefixed_filename, "rb");
 	if(!entity_file)
 	{
-		log_error("entity:load", "Failed to open entity file %s for reading", filename);
+		log_error("entity:load", "Failed to open entity file %s for reading", prefixed_filename);
 		return false;
 	}
 
-	struct Parser* parsed_file = parser_load_objects(entity_file, filename);
+	struct Parser* parsed_file = parser_load_objects(entity_file, prefixed_filename);
 	struct Entity* new_entity = false;
 
 	if(!parsed_file)
 	{
-		log_error("entity:load", "Failed to parse file '%s' for entity definition", filename);
+		log_error("entity:load", "Failed to parse file '%s' for entity definition", prefixed_filename);
 		fclose(entity_file);
 		return false;
 	}
 
 	if(array_len(parsed_file->objects) == 0)
 	{
-		log_error("entity:load", "No objects found in file %s", filename);
+		log_error("entity:load", "No objects found in file %s", prefixed_filename);
 		parser_free(parsed_file);
 		fclose(entity_file);
 		return false;
@@ -515,11 +519,11 @@ struct Entity* entity_load(const char* filename, int directory_type)
 			if(i != 0)
 				new_entity->flags |= EF_TRANSIENT;
 			num_entites_loaded++;
-			log_message("Entity %s loaded from %s", new_entity->name, filename);
+			log_message("Entity %s loaded from %s", new_entity->name, prefixed_filename);
 		}
 		else
 		{
-			log_error("entity:load", "Failed to load entity from %s", filename);
+			log_error("entity:load", "Failed to load entity from %s", prefixed_filename);
 		}
 	}	
 

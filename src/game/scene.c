@@ -88,18 +88,18 @@ bool scene_load(struct Scene* scene, const char* filename, int directory_type)
 	}
 
 	// Load scene config and apply renderer settings
-	struct Parser* parsed_file = parser_load_objects(scene_file, filename);
+	struct Parser* parsed_file = parser_load_objects(scene_file, prefixed_filename);
 
 	if(!parsed_file)
 	{
-		log_error("scene:load", "Failed to parse file '%s' for loading scene", filename);
+		log_error("scene:load", "Failed to parse file '%s' for loading scene", prefixed_filename);
 		fclose(scene_file);
 		return false;
 	}
 
 	if(array_len(parsed_file->objects) == 0)
 	{
-		log_error("scene:load", "No objects found in file %s", filename);
+		log_error("scene:load", "No objects found in file %s", prefixed_filename);
 		parser_free(parsed_file);
 		fclose(scene_file);
 		return false;
@@ -187,7 +187,7 @@ bool scene_load(struct Scene* scene, const char* filename, int directory_type)
 		}
 		break;
 		default:
-			log_warning("Unknown object type '%s' in scene file %s", parser_object_type_to_str(object->type), filename);
+			log_warning("Unknown object type '%s' in scene file %s", parser_object_type_to_str(object->type), prefixed_filename);
 			continue;
 		}
 	}
@@ -235,8 +235,8 @@ bool scene_save(struct Scene* scene, const char* filename, int directory_type)
 	scene_write_entity_list(scene, ET_CAMERA, parser);
 	scene_write_entity_list(scene, ET_SOUND_SOURCE, parser);
 
-    if(parser_write_objects(parser, scene_file, filename))
-        log_message("Scene saved to %s", filename);
+    if(parser_write_objects(parser, scene_file, prefixed_filename))
+        log_message("Scene saved to %s", prefixed_filename);
 
     parser_free(parser);
 	fclose(scene_file);

@@ -241,9 +241,7 @@ void console_command_entity_save(struct Console* console, const char* command)
 		return;
 	}
 
-	char full_filename[MAX_FILENAME_LEN];
-	snprintf(full_filename, MAX_FILENAME_LEN, "entities/%s.symtres", filename);
-	if(!entity_save(entity, full_filename, DIRT_INSTALL))
+	if(!entity_save(entity, filename, DIRT_INSTALL))
 		log_error("entity_save", "Command failed");
 }
 
@@ -262,12 +260,10 @@ void console_command_entity_load(struct Console* console, const char* command)
 		return;
 	}
 
-	char full_filename[MAX_FILENAME_LEN];
-	snprintf(full_filename, MAX_FILENAME_LEN, "entities/%s.symtres", filename);
-	struct Entity* new_entity = entity_load(full_filename, DIRT_INSTALL);
+	struct Entity* new_entity = entity_load(filename, DIRT_INSTALL);
 	if(!new_entity)
 	{
-		log_error("entity_load", "Could not create entity from '%s'", full_filename);
+		log_error("entity_load", "Could not create entity from '%s'", filename);
 		return;
 	}
 

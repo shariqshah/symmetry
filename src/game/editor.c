@@ -1558,6 +1558,7 @@ void editor_show_entity_in_list(struct Editor* editor, struct nk_context* contex
 {
 	if(!(entity->flags & EF_ACTIVE) || (entity->flags & EF_HIDE_IN_EDITOR_SCENE_HIERARCHY)) return;
 
+	struct nk_rect bounds = nk_widget_bounds(context);
 	nk_layout_row_dynamic(context, 20, 1);
 	int selected = entity->flags & EF_SELECTED_IN_EDITOR;
 	if(nk_selectable_label(context, entity->name, NK_TEXT_ALIGN_LEFT, &selected))
@@ -1572,11 +1573,34 @@ void editor_show_entity_in_list(struct Editor* editor, struct nk_context* contex
 		else if(editor->selected_entity && editor->selected_entity == entity && !(entity->flags & EF_SELECTED_IN_EDITOR))
 			editor_entity_select(editor, NULL);
 
+
 		if(entity->flags & EF_SELECTED_IN_EDITOR)
 		{
-			editor->selected_entity = entity;
+			//editor->selected_entity = entity;
+			editor_entity_select(editor, entity);
 			if(!editor->window_property_inspector) editor->window_property_inspector = true;
 		}
+	}
+
+
+	if(nk_contextual_begin(context, 0, nk_vec2(200, 120), bounds))
+	{
+		nk_layout_row_dynamic(context, 20, 1);
+		if(nk_contextual_item_label(context, "Delete", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE))
+		{
+			entity->flags |= EF_MARKED_FOR_DELETION;
+			editor_entity_select(editor, NULL);
+		}
+
+		if(nk_contextual_item_label(context, "Save", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE))
+		{
+			if(!(entity->flags & EF_SELECTED_IN_EDITOR))
+				editor_entity_select(editor, entity);
+
+			editor->window_entity_dialog = 1;
+			editor->entity_operation_save = true;
+		}
+		nk_contextual_end(context);
 	}
 }
 

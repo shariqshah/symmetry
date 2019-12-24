@@ -1,7 +1,5 @@
 Todo:
-	- For entities that have archetypes, check read/write them to the file they were loaded from when showing the save entity dialog
 	- When loading entities, show an additional optional textfield where user can enter the name they want for the entity after it is loaded
-	- Implelement contextual actions for entites that are shown in scene hierarchy
 	- Add editor undo for transformation operations
 	- Decide how to handle scale when checking sphere-ray intersection
 	- Add material export for blender exporter?
@@ -35,7 +33,6 @@ Todo:
 	? Maybe remove physics engine and ode all together if we're not using it or investigate the memory leaks that it causes if we're going to keep it?
 	- Disable editor event recievers on game mode change
 	- Editor Undo
-	- Duplicate with Ctrl-D
 	- Color picker
 	- Color palette, picker and dropper
 	- Key binding and function to snap editor camera to selected entity
@@ -381,3 +378,6 @@ Done:
 	* Use actual selected entity's mesh for tool mesh when the entity already has a mesh and use a placeholder like a sphere when there is not mesh 
 	* Implmented dialog for loading entities into the scene via editor
 	* Implement behaviour that avoids writing normal entities that do not have children or parent to file to avoid inconsistencies when loading them
+	* Implelement contextual actions for entites that are shown in scene hierarchy
+	* For entities that have archetypes, check read/write them to the file they were loaded from when showing the save entity dialog
+	* Duplicate with Ctrl-D

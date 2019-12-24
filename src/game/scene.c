@@ -576,7 +576,7 @@ struct Sound_Source* scene_sound_source_create(struct Scene* scene, const char* 
 		new_sound_source->source_buffer = sound_source_create(sound, filename, type);
 		if(!new_sound_source->source_buffer)
 		{
-			log_error("entity:sync_sound_params", "Failed to load file '%s' to provide sound source for entity %s", filename, entity->name);
+			log_error("scene:sound_source_create", "Failed to load file '%s' to provide sound source for entity %s", filename, entity->name);
 			new_sound_source->source_instance = 0;
 			return new_sound_source;
 		}
@@ -852,4 +852,89 @@ int scene_entity_archetype_add(struct Scene* scene, const char* filename)
 		log_warning("Out of archetype indices!");
 
 	return index;
+}
+
+struct Entity* scene_entity_duplicate(struct Scene* scene, struct Entity* entity)
+{
+	assert(scene && entity);
+
+	struct Entity* new_entity = NULL;
+	if(entity->archetype_index != -1)
+	{
+		new_entity = entity_load(scene->entity_archetypes[entity->archetype_index], DIRT_INSTALL);
+		scene_entity_parent_set(scene, new_entity, entity->transform.parent);
+		return new_entity;
+	}
+
+	switch(entity->type)
+	{
+	case ET_DEFAULT:
+	{
+		new_entity = scene_entity_create(scene, entity->name, entity->transform.parent);
+	}
+	break;
+	case ET_LIGHT:
+	{
+		struct Light* light = (struct Light*)entity;
+		struct Light* new_light = scene_light_create(scene, entity->name, entity->transform.parent, light->type);
+		new_light->inner_angle = light->inner_angle;
+		new_light->outer_angle = light->outer_angle;
+		new_light->falloff     = light->falloff;
+		new_light->intensity   = light->intensity;
+		new_light->cast_shadow = light->cast_shadow;
+		new_light->pcf_enabled = light->pcf_enabled;
+		new_light->valid       = light->valid;
+		new_light->type        = light->type;
+		new_light->radius      = light->radius;
+		new_light->depth_bias  = light->depth_bias;
+		vec3_assign(&new_light->color, &light->color);
+		memcpy(new_light->shadow_map, light->shadow_map, sizeof(int) * 4); // Fix this when we implement shadow mapping
+		new_entity = &new_light->base;
+	}
+	break;
+	case ET_STATIC_MESH:
+	{
+		struct Static_Mesh* mesh = (struct Static_Mesh*)entity;
+		struct Static_Mesh* new_mesh = scene_static_mesh_create(scene, entity->name, entity->transform.parent, geom_get(mesh->model.geometry_index)->filename, mesh->model.material->type);
+		memcpy(new_mesh->model.material_params, mesh->model.material_params, sizeof(struct Variant) * MMP_MAX);
+		new_entity = &new_mesh->base;
+		//Handle collision related information here!
+	}
+	break;
+	case ET_SOUND_SOURCE:
+	{
+		struct Sound_Source* sound_source = (struct Sound_Source*)entity;
+		struct Sound_Source* new_sound_source = scene_sound_source_create(scene, entity->name, entity->transform.parent, sound_source->source_buffer->filename, sound_source->type, sound_source->loop, sound_source->playing);
+		new_sound_source->min_distance     = sound_source->min_distance;
+		new_sound_source->max_distance     = sound_source->max_distance;
+		new_sound_source->rolloff_factor   = sound_source->rolloff_factor;
+		new_sound_source->volume           = sound_source->volume;
+		new_sound_source->attenuation_type = sound_source->attenuation_type;
+
+		struct Sound* sound = game_state_get()->sound;
+		sound_source_instance_attenuation_set(sound, new_sound_source->source_instance, new_sound_source->attenuation_type, new_sound_source->rolloff_factor);
+		sound_source_instance_min_max_distance_set(sound, new_sound_source->source_instance, new_sound_source->min_distance, new_sound_source->max_distance);
+		sound_source_instance_volume_set(sound, new_sound_source->source_instance, new_sound_source->volume);
+		new_entity = &new_sound_source->base;
+	}
+	break;
+	default:
+	{
+		log_message("Cannot duplicate unsupported entity type: %s", entity_type_name_get(entity));
+	}
+	break;
+	}
+
+	transform_copy(new_entity, entity, false);
+
+	for(int i = 0; i < array_len(entity->transform.children); i++)
+	{
+		struct Entity* child_entity = entity->transform.children[i];
+		struct Entity* new_child_entity = scene_entity_duplicate(scene, child_entity);
+		if(new_child_entity)
+			scene_entity_parent_set(scene, new_child_entity, new_entity);
+		else
+			log_error("scene:entity_duplicate", "Failed to create child entity from %s", child_entity->name);
+	}
+	return new_entity;
 }

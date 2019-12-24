@@ -1217,6 +1217,15 @@ void editor_on_key_release(const struct Event* event)
 		editor->selected_entity->flags |= EF_MARKED_FOR_DELETION;
 		editor_entity_select(editor, NULL);
 	}
+
+	if(event->key.key == KEY_D && input_is_key_pressed(KEY_LCTRL) && editor->selected_entity && !editor->camera_looking_around)
+	{
+		struct Entity* new_entity = scene_entity_duplicate(game_state->scene, editor->selected_entity);
+		if(new_entity)
+		{
+			editor_entity_select(editor, new_entity);
+		}
+	}
 }
 
 void editor_tool_set(struct Editor* editor, int tool)
@@ -2241,6 +2250,8 @@ void editor_entity_dialog(struct Editor* editor, struct nk_context* context)
 				if(copy_entity_filename)
 				{
 					memset(entity_filename, '\0', MAX_FILENAME_LEN);
+					if(editor->selected_entity->archetype_index != -1)
+						strncpy(entity_filename, scene->entity_archetypes[editor->selected_entity->archetype_index], MAX_FILENAME_LEN);
 				}
 
 				int entity_filename_flags = NK_EDIT_SIG_ENTER | NK_EDIT_GOTO_END_ON_ACTIVATE | NK_EDIT_FIELD;

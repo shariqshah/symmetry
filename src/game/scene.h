@@ -34,6 +34,7 @@ void scene_destroy(struct Scene* scene);
 void scene_update(struct Scene* scene, float dt);
 void scene_post_update(struct Scene* scene);
 
+struct Entity*       scene_entity_duplicate(struct Scene* scene, struct Entity* entity);
 struct Entity*       scene_entity_create(struct Scene* scene, const char* name, struct Entity* parent);
 struct Light*        scene_light_create(struct Scene* scene, const char* name, struct Entity* parent, int light_type);
 struct Camera*       scene_camera_create(struct Scene* scene, const char* name, struct Entity* parent, int width, int height);

@@ -1,6 +1,8 @@
 Todo:
+	- Re-write/Overhaul bounding volumes and ray intersection
+	- Add uv tiling parameter to materials that can be serialized along with entities
+	- Reduce the opacity of wireframe around selected entity in editor
 	- Allow picking and selecting other entity types in editor i.e. the ones that don't have meshes
-	- Separate entity types in entity hierarchy view by the entity type or use a tree view to show parent/child relation or use different colours for different entity types
 	- When loading entities, show an additional optional textfield where user can enter the name they want for the entity after it is loaded
 	- Add editor undo for transformation operations
 	- Decide how to handle scale when checking sphere-ray intersection
@@ -383,3 +385,5 @@ Done:
 	* Display default mesh when selected entity type in editor does not have a mesh
 	* Associate each scene with a file so that when C-s is pressed the scene is automatically saved to that file
 	* Change the increments in the editor from 5 to 1
+	* Separate entity types in entity hierarchy view by the entity type or use a tree view to show parent/child relation or use different colours for different entity types
+	* Show archetype name in property inspector for selected entity

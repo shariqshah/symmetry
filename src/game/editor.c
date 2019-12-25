@@ -154,6 +154,7 @@ void editor_init(struct Editor* editor)
 
 void editor_init_entities(struct Editor* editor)
 {
+	editor->selected_entity = NULL;
 	editor->cursor_entity = scene_static_mesh_create(game_state_get()->scene, "EDITOR_SELECTED_ENTITY_WIREFRAME", NULL, "sphere.symbres", MAT_UNSHADED);
 	editor->cursor_entity->base.flags |= EF_TRANSIENT | EF_SKIP_RENDER | EF_HIDE_IN_EDITOR_SCENE_HIERARCHY | EF_IGNORE_RAYCAST;
 }
@@ -1643,18 +1644,47 @@ void editor_show_entity_in_list(struct Editor* editor, struct nk_context* contex
 
 void editor_window_scene_hierarchy(struct nk_context* context, struct Editor* editor, struct Game_State* game_state)
 {
-	if(nk_begin(context, "Scene Heirarchy", nk_recti(0, editor->top_panel_height, 300, 400), window_flags))
+	if(nk_begin(context, "Scene Heirarchy", nk_recti(0, editor->top_panel_height, 250, 450), window_flags))
 	{
 		struct Scene* scene = game_state_get()->scene;
-		nk_layout_row_dynamic(context, 350, 1);
+		nk_layout_row_dynamic(context, 380, 1);
 		if(nk_group_begin(context, "Entity Name", NK_WINDOW_SCROLL_AUTO_HIDE))
 		{
 
-			for(int i = 0; i < MAX_ENTITIES; i++)      editor_show_entity_in_list(editor, context, scene, &scene->entities[i]);
-			for(int i = 0; i < MAX_CAMERAS; i++)       editor_show_entity_in_list(editor, context, scene, &scene->cameras[i]);
-			for(int i = 0; i < MAX_LIGHTS; i++)        editor_show_entity_in_list(editor, context, scene, &scene->lights[i]);
-			for(int i = 0; i < MAX_STATIC_MESHES; i++) editor_show_entity_in_list(editor, context, scene, &scene->static_meshes[i]);
-			for(int i = 0; i < MAX_SOUND_SOURCES; i++) editor_show_entity_in_list(editor, context, scene, &scene->sound_sources[i]);
+			if(nk_tree_push(context, NK_TREE_TAB, "Entities", NK_MAXIMIZED))
+			{
+				for(int i = 0; i < MAX_ENTITIES; i++)      
+					editor_show_entity_in_list(editor, context, scene, &scene->entities[i]);
+				nk_tree_pop(context);
+			}
+
+			if(nk_tree_push(context, NK_TREE_TAB, "Cameras", NK_MAXIMIZED))
+			{
+				for(int i = 0; i < MAX_CAMERAS; i++)       
+					editor_show_entity_in_list(editor, context, scene, &scene->cameras[i]);
+				nk_tree_pop(context);
+			}
+
+			if(nk_tree_push(context, NK_TREE_TAB, "Lights", NK_MAXIMIZED))
+			{
+				for(int i = 0; i < MAX_LIGHTS; i++)        
+					editor_show_entity_in_list(editor, context, scene, &scene->lights[i]);
+				nk_tree_pop(context);
+			}
+
+			if(nk_tree_push(context, NK_TREE_TAB, "Static Meshes", NK_MAXIMIZED))
+			{
+				for(int i = 0; i < MAX_STATIC_MESHES; i++) 
+					editor_show_entity_in_list(editor, context, scene, &scene->static_meshes[i]);
+				nk_tree_pop(context);
+			}
+
+			if(nk_tree_push(context, NK_TREE_TAB, "Sound Sources", NK_MAXIMIZED))
+			{
+				for(int i = 0; i < MAX_SOUND_SOURCES; i++)
+					editor_show_entity_in_list(editor, context, scene, &scene->sound_sources[i]);
+				nk_tree_pop(context);
+			}
 
 			nk_group_end(context);
 		}
@@ -1710,7 +1740,7 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "ID", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%d", entity->id);
 			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Selected", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%s", (entity->flags & EF_SELECTED_IN_EDITOR) ? "True" : "False");
 			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Entity Type", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%s", entity_type_name_get(entity));
-
+			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Archetype", NK_TEXT_ALIGN_LEFT); nk_label(context, entity->archetype_index == -1 ? "None" : scene->entity_archetypes[entity->archetype_index], NK_TEXT_ALIGN_RIGHT);
 			nk_layout_row_dynamic(context, row_height + 5, 2);
 			nk_label(context, "Parent Name", NK_TEXT_ALIGN_LEFT);
 			static char parent_name[MAX_ENTITY_NAME_LEN];

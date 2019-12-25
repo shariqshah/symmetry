@@ -16,6 +16,7 @@ struct Raycast_Result;
 
 struct Scene
 {
+	char                   filename[MAX_FILENAME_LEN];
     struct Entity          root_entity;
     struct Player          player;
     struct Entity          entities[MAX_ENTITIES];

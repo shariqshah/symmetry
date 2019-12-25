@@ -1,4 +1,6 @@
 Todo:
+	- Allow picking and selecting other entity types in editor i.e. the ones that don't have meshes
+	- Separate entity types in entity hierarchy view by the entity type or use a tree view to show parent/child relation or use different colours for different entity types
 	- When loading entities, show an additional optional textfield where user can enter the name they want for the entity after it is loaded
 	- Add editor undo for transformation operations
 	- Decide how to handle scale when checking sphere-ray intersection
@@ -20,9 +22,6 @@ Todo:
 	- Multisampled buffers to bring back aa
 	- Change mouse behaviour to lock cursor when looking around so as not to interfere with gui elements when in editor mode
 	- Folder management api to create/delete folders when none exist. Dirent would suffice for our simple needs?
-	- Display default mesh when selected entity type in editor does not have a mesh
-	- Allow picking and selecting other entity types in editor i.e. the ones that don't have meshes
-	- Separate entity types in entity hierarchy view by the entity type or use a tree view to show parent/child relation or use different colours for different entity types
 	? Entity creator window to create new types of entities and write them
 	  to disk
 	- Entity browser window which lists all existing entity types from
@@ -381,3 +380,6 @@ Done:
 	* Implelement contextual actions for entites that are shown in scene hierarchy
 	* For entities that have archetypes, check read/write them to the file they were loaded from when showing the save entity dialog
 	* Duplicate with Ctrl-D
+	* Display default mesh when selected entity type in editor does not have a mesh
+	* Associate each scene with a file so that when C-s is pressed the scene is automatically saved to that file
+	* Change the increments in the editor from 5 to 1

@@ -16,9 +16,9 @@ Player
 {
 	type : 2
 	scale : 1.000 1.000 1.000
-	rotation : 0.000 0.000 0.000 1.000
+	rotation : 0.000 0.002 0.000 1.000
 	active : true
-	position : 5.970 1.130 16.740
+	position : 5.970 1.130 17.850
 	name : Player
 }
 
@@ -45,21 +45,23 @@ Entity
 
 Entity
 {
-	type : 7
+	type : 5
 	scale : 1.000 1.000 1.000
-	volume : 1.0000
-	rolloff_factor : 0.9500
+	inner_angle : 20.0000
+	falloff : 1.5000
+	light_type : 2
+	depth_bias : 0.0005
 	rotation : 0.000 0.000 0.000 1.000
-	loop : true
-	sound_min_distance : 0.0000
+	cast_shadow : false
+	intensity : 1.0000
+	color : 1.000 1.000 1.000
 	active : true
-	playing : true
-	position : 0.000 3.000 0.000
-	source_filename : sounds/teh_beatz.wav
-	sound_type : 1
-	sound_max_distance : 10.0000
-	name : Beats
-	sound_attenuation_type : 2
+	radius : 20.0000
+	position : 0.000 5.000 0.000
+	outer_angle : 30.0000
+	name : Test_Light
+	pcf_enabled : false
+	valid : true
 }
 
 Entity
@@ -948,22 +950,20 @@ Entity
 
 Entity
 {
-	type : 5
+	type : 7
 	scale : 1.000 1.000 1.000
-	inner_angle : 20.0000
-	falloff : 1.5000
-	light_type : 2
-	depth_bias : 0.0005
+	volume : 1.0000
+	rolloff_factor : 0.9500
 	rotation : 0.000 0.000 0.000 1.000
-	cast_shadow : false
-	intensity : 1.0000
-	color : 1.000 1.000 1.000
+	loop : true
+	sound_min_distance : 0.0000
 	active : true
-	radius : 20.0000
-	position : 0.000 5.000 0.000
-	outer_angle : 30.0000
-	name : Test_Light
-	pcf_enabled : false
-	valid : true
+	playing : true
+	position : 0.000 3.000 0.000
+	source_filename : sounds/teh_beatz.wav
+	sound_type : 1
+	sound_max_distance : 10.0000
+	name : Beats
+	sound_attenuation_type : 2
 }
 

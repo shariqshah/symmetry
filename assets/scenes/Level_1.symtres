@@ -1,0 +1,42 @@
+Scene_Config
+{
+	debug_draw_color : 0.800 0.400 0.100 1.000
+	fog_type : 1
+	fog_density : 0.1000
+	fog_color : 0.170 0.490 0.630
+	debug_draw_physics : false
+	fog_start_distance : 10.0000
+	fog_max_distance : 450.0000
+	debug_draw_enabled : false
+	debug_draw_mode : 0
+	ambient_light : 0.100 0.100 0.100
+}
+
+Player
+{
+	type : 2
+	scale : 1.000 1.000 1.000
+	rotation : 0.000 0.997 0.000 -0.078
+	active : true
+	position : 32.290 10.461 -8.782
+	name : Player
+}
+
+Scene_Entity_Entry
+{
+	scale : 68.000 1.000 68.000
+	rotation : 0.000 0.000 0.000 1.000
+	position : -17.000 0.000 -20.000
+	filename : cube
+	name : Cube
+}
+
+Scene_Entity_Entry
+{
+	scale : 68.000 3.000 1.000
+	rotation : 0.000 0.000 0.000 1.000
+	position : -18.000 3.000 -57.000
+	filename : cube
+	name : Cube
+}
+

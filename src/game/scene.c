@@ -30,6 +30,7 @@ void scene_init(struct Scene* scene)
 	assert(scene);
 	struct Game_State* game_state = game_state_get();
 
+	strncpy(scene->filename, "UNNAMED_SCENE", MAX_FILENAME_LEN);
 	//Initialize the root entity
 	entity_init(&scene->root_entity, "ROOT_ENTITY", NULL);
 	scene->root_entity.flags |= EF_ACTIVE;
@@ -194,6 +195,7 @@ bool scene_load(struct Scene* scene, const char* filename, int directory_type)
 
 	parser_free(parsed_file);
 	fclose(scene_file);
+	strncpy(scene->filename, filename, MAX_FILENAME_LEN);
 	return num_objects_loaded > 0 ? true : false;
 }
 

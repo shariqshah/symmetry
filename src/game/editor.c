@@ -725,7 +725,7 @@ void editor_scene_dialog(struct Editor* editor, struct nk_context* context)
 	int row_height = 25;
 	int popup_x = 0;
 	int popup_y = 0;
-	int popup_width = 200;
+	int popup_width = 300;
 	int popup_height = 200;
 	int display_width = 0;
 	int display_height = 0;
@@ -751,11 +751,13 @@ void editor_scene_dialog(struct Editor* editor, struct nk_context* context)
 			if(copy_scene_filename)
 			{
 				memset(scene_filename, '\0', MAX_FILENAME_LEN);
+				strncpy(scene_filename, scene->filename, MAX_FILENAME_LEN);
 			}
 
-			int scene_filename_flags = NK_EDIT_SIG_ENTER | NK_EDIT_GOTO_END_ON_ACTIVATE | NK_EDIT_FIELD;
+			int scene_filename_flags = NK_EDIT_SIG_ENTER | NK_EDIT_FIELD | NK_EDIT_AUTO_SELECT | NK_EDIT_SELECTABLE | NK_EDIT_GOTO_END_ON_ACTIVATE;
+			nk_edit_focus(context, scene_filename_flags);
 			int scene_filename_state = nk_edit_string_zero_terminated(context, scene_filename_flags, scene_filename, MAX_FILENAME_LEN, NULL);
-			if(scene_filename_state & NK_EDIT_ACTIVATED)
+			if(scene_filename_state & NK_EDIT_ACTIVATED || scene_filename_state & NK_EDIT_ACTIVE)
 			{
 				copy_scene_filename = false;
 			}
@@ -1159,9 +1161,24 @@ void editor_on_key_release(const struct Event* event)
 	struct Game_State* game_state = game_state_get();
 	struct Editor*     editor     = game_state->editor;
 	struct Gui*        gui        = game_state->gui;
-	if(game_state->game_mode != GAME_MODE_EDITOR || nk_window_is_any_hovered(&gui->context) || game_state->console->visible)
+	if(game_state->game_mode != GAME_MODE_EDITOR || game_state->console->visible)
 		return;
 
+	/* Valid shortcuts when a ui element is hovered */
+	if(event->key.key == KEY_ESCAPE) 
+	{
+		if(editor->window_entity_dialog == 1)
+			editor->window_entity_dialog = 0;
+		else if(editor->window_scene_dialog == 1)
+			editor->window_scene_dialog = 0;
+		else
+			editor_entity_select(editor, NULL);
+	}
+
+	if(nk_window_is_any_hovered(&gui->context))
+		return;
+
+	/* All other shortcuts*/
 	/* Tool Cycle */
 	if(event->key.key == KEY_TAB)
 	{
@@ -1210,7 +1227,6 @@ void editor_on_key_release(const struct Event* event)
 	if(event->key.key == KEY_0) editor->grid_scale = 0.5f;
 
 	if(event->key.key == KEY_G) editor->grid_enabled = !editor->grid_enabled;
-	if(event->key.key == KEY_ESCAPE) editor_entity_select(editor, NULL);
 
 	if(event->key.key == KEY_DELETE && editor->selected_entity)
 	{
@@ -1225,6 +1241,18 @@ void editor_on_key_release(const struct Event* event)
 		{
 			editor_entity_select(editor, new_entity);
 		}
+	}
+
+	if(event->key.key == KEY_S && input_is_key_pressed(KEY_LCTRL) && !editor->camera_looking_around)
+	{
+		struct Scene* scene = game_state->scene;
+		scene_save(scene, scene->filename, DIRT_INSTALL);
+	}
+
+	if(event->key.key == KEY_O && input_is_key_pressed(KEY_LCTRL) && !editor->camera_looking_around)
+	{
+		editor->scene_operation_save = false;
+		editor->window_scene_dialog = 1;
 	}
 }
 
@@ -1743,7 +1771,7 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 				nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Position", NK_TEXT_ALIGN_CENTERED);
 				vec3 abs_pos = { 0.f, 0.f, 0.f };
 				transform_get_absolute_position(entity, &abs_pos);
-				if(editor_widget_v3(context, &abs_pos, "#X", "#Y", "#Z", -FLT_MAX, FLT_MAX, 5.f, 1.f, row_height)) transform_set_position(entity, &abs_pos);
+				if(editor_widget_v3(context, &abs_pos, "#X", "#Y", "#Z", -FLT_MAX, FLT_MAX, 1.f, 1.f, row_height)) transform_set_position(entity, &abs_pos);
 
 				nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Rotation", NK_TEXT_ALIGN_CENTERED);
 				quat abs_rot = { 0.f, 0.f, 0.f, 1.f };
@@ -2250,13 +2278,14 @@ void editor_entity_dialog(struct Editor* editor, struct nk_context* context)
 				if(copy_entity_filename)
 				{
 					memset(entity_filename, '\0', MAX_FILENAME_LEN);
-					if(editor->selected_entity->archetype_index != -1)
+					if(save && editor->selected_entity->archetype_index != -1)
 						strncpy(entity_filename, scene->entity_archetypes[editor->selected_entity->archetype_index], MAX_FILENAME_LEN);
 				}
 
 				int entity_filename_flags = NK_EDIT_SIG_ENTER | NK_EDIT_GOTO_END_ON_ACTIVATE | NK_EDIT_FIELD;
+				nk_edit_focus(context, entity_filename_flags);
 				int entity_filename_state = nk_edit_string_zero_terminated(context, entity_filename_flags, entity_filename, MAX_FILENAME_LEN, NULL);
-				if(entity_filename_state & NK_EDIT_ACTIVATED)
+				if(entity_filename_state & NK_EDIT_ACTIVATED || entity_filename_state & NK_EDIT_ACTIVE)
 				{
 					copy_entity_filename = false;
 				}

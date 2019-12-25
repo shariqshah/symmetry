@@ -16,10 +16,11 @@ Player
 {
 	type : 2
 	scale : 1.000 1.000 1.000
-	rotation : 0.000 0.767 0.000 -0.642
+	rotation : 0.000 -0.197 0.000 0.981
 	active : true
-	position : 10.833 4.385 -52.631
+	position : 7.444 6.491 0.938
 	name : Player
+	camera_clear_color : 0.298 0.600 0.898 1.000
 }
 
 Scene_Entity_Entry

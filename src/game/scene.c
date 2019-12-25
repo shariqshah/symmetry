@@ -184,6 +184,8 @@ bool scene_load(struct Scene* scene, const char* filename, int directory_type)
 			transform_scale(player, &scale);
 			quat_assign(&player->base.transform.rotation, &rotation);
 			transform_update_transmat(player);
+
+			if(hashmap_value_exists(player_data, "camera_clear_color")) player->camera_node->clear_color = hashmap_vec4_get(player_data, "camera_clear_color");
 			num_objects_loaded++;
 		}
 		break;
@@ -230,6 +232,7 @@ bool scene_save(struct Scene* scene, const char* filename, int directory_type)
 	// Player
 	struct Parser_Object* player_object = parser_object_new(parser, PO_PLAYER);
 	entity_write(&scene->player, player_object, true);
+	hashmap_vec4_set(player_object->data, "camera_clear_color", &scene->player.camera_node->clear_color);
 
 	scene_write_entity_list(scene, ET_DEFAULT, parser);
 	scene_write_entity_list(scene, ET_LIGHT, parser);

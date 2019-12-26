@@ -170,10 +170,12 @@ bool entity_write(struct Entity* entity, struct Parser_Object* object, bool writ
 			hashmap_float_set(entity_data, "diffuse", model->material_params[MMP_DIFFUSE].val_float);
 			hashmap_float_set(entity_data, "specular", model->material_params[MMP_SPECULAR].val_float);
 			hashmap_float_set(entity_data, "specular_strength", model->material_params[MMP_SPECULAR_STRENGTH].val_float);
+			hashmap_vec2_set(entity_data, "uv_scale", &model->material_params[MMP_UV_SCALE].val_vec2);
 			break;
 		case MAT_UNSHADED:
-			hashmap_vec3_set(entity_data, "diffuse_color", &mesh->model.material_params[MMP_DIFFUSE_COL].val_vec3);
+			hashmap_vec3_set(entity_data, "diffuse_color", &model->material_params[MMP_DIFFUSE_COL].val_vec3);
 			hashmap_str_set(entity_data, "diffuse_texture", model->material_params[MMP_DIFFUSE_TEX].val_int == -1 ? "default.tga" : texture_get_name(model->material_params[MMP_DIFFUSE_TEX].val_int));
+			hashmap_vec2_set(entity_data, "uv_scale", &model->material_params[MMP_UV_SCALE].val_vec2);
 			break;
 		};
 
@@ -243,7 +245,7 @@ bool entity_save(struct Entity* entity, const char* filename, int directory_type
 	{
 		struct Parser_Object* child_object = parser_object_new(parser, PO_ENTITY);
 		struct Entity* child_entity = entity->transform.children[i];
-		if (!entity_write(child_entity, child_object, true))
+		if(!entity_write(child_entity, child_object, true))
 		{
 			log_error("entity:save", "Failed to write child entity : %s for parent entity : %s to file : %s", entity->name, child_entity->name, prefixed_filename);
 			parser_free(parser);
@@ -255,6 +257,8 @@ bool entity_save(struct Entity* entity, const char* filename, int directory_type
     if(parser_write_objects(parser, entity_file, prefixed_filename))
         log_message("Entity %s saved to %s", entity->name, prefixed_filename);
 
+	//Update the entity's archetype index to the one we just saved
+	entity->archetype_index = scene_entity_archetype_add(game_state_get()->scene, filename);
     parser_free(parser);
 	fclose(entity_file);
 	return true;
@@ -427,6 +431,7 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 			if(hashmap_value_exists(object->data, "diffuse"))           model->material_params[MMP_DIFFUSE].val_float           = hashmap_float_get(object->data, "diffuse");
 			if(hashmap_value_exists(object->data, "specular"))          model->material_params[MMP_SPECULAR].val_float          = hashmap_float_get(object->data, "specular");
 			if(hashmap_value_exists(object->data, "specular_strength")) model->material_params[MMP_SPECULAR_STRENGTH].val_float = hashmap_float_get(object->data, "specular_strength");
+			if(hashmap_value_exists(object->data, "uv_scale"))          model->material_params[MMP_UV_SCALE].val_vec2           = hashmap_vec2_get(object->data, "uv_scale");
 			break;
 		case MAT_UNSHADED:
 			if(hashmap_value_exists(object->data, "diffuse_color")) model->material_params[MMP_DIFFUSE_COL].val_vec4 = hashmap_vec4_get(object->data, "diffuse_color");
@@ -435,6 +440,7 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 				const char* texture_name = hashmap_str_get(object->data, "diffuse_texture");
 				model->material_params[MMP_DIFFUSE_TEX].val_int = texture_create_from_file(texture_name, TU_DIFFUSE);
 			}
+			if(hashmap_value_exists(object->data, "uv_scale")) model->material_params[MMP_UV_SCALE].val_vec2 = hashmap_vec2_get(object->data, "uv_scale");
 			break;
 		};
 	}

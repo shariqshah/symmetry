@@ -85,6 +85,15 @@ static bool editor_widget_v3(struct nk_context* context,
 			                 float              step,
 			                 float              inc_per_pixel,
 			                 int                row_height);
+static bool editor_widget_v2(struct nk_context* context,
+			                 vec2*              value,
+			                 const char*        name_x,
+			                 const char*        name_y,
+			                 float              min,
+			                 float              max,
+			                 float              step,
+			                 float              inc_per_pixel,
+			                 int                row_height);
 
 static void editor_window_scene_hierarchy(struct nk_context* context, struct Editor* editor, struct Game_State* game_state);
 static void editor_window_property_inspector(struct nk_context* context, struct Editor* editor, struct Game_State* game_state);
@@ -1591,6 +1600,16 @@ bool editor_widget_v3(struct nk_context* context, vec3* value, const char* name_
     return changed;
 }
 
+bool editor_widget_v2(struct nk_context* context, vec2* value, const char* name_x, const char* name_y, float min, float max, float step, float inc_per_pixel, int row_height)
+{
+    bool changed = false;
+    vec2 val_copy = {0.f, 0.f};
+    vec2_assign(&val_copy, value);
+    nk_layout_row_dynamic(context, row_height, 1); nk_property_float(context, name_x, min, &value->x, max, step, inc_per_pixel);
+    nk_layout_row_dynamic(context, row_height, 1); nk_property_float(context, name_y, min, &value->y, max, step, inc_per_pixel);
+    if(!vec2_equals(&val_copy, value)) changed = true;
+    return changed;
+}
 
 void editor_show_entity_in_list(struct Editor* editor, struct nk_context* context, struct Scene* scene, struct Entity* entity)
 {
@@ -2133,6 +2152,10 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 						nk_layout_row_dynamic(context, row_height, 1);
 						mesh->model.material_params[MMP_SPECULAR_STRENGTH].val_float = nk_propertyf(context, "Specular Strength", 0.f, mesh->model.material_params[MMP_SPECULAR_STRENGTH].val_float, 100.f, 0.5f, 0.1f);
 					}
+
+					nk_layout_row_dynamic(context, row_height, 1);
+					nk_label(context, "UV Scale", NK_TEXT_ALIGN_MIDDLE | NK_TEXT_ALIGN_CENTERED);
+					editor_widget_v2(context, &mesh->model.material_params[MMP_UV_SCALE].val_vec2, "U", "V", 0.f, FLT_MAX, 0.1f, 0.1f, row_height);
 					
 					nk_tree_pop(context);
 				}

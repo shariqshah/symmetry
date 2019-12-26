@@ -65,6 +65,15 @@ void vec2_mul(vec2* res, vec2* v1, vec2* v2)
 	res->y = v1->y * v2->y;
 }
 
+int vec2_equals(vec2* v1, vec2* v2)
+{
+	if((v1->x < (v2->x + EPSILON) && v1->x >(v2->x - EPSILON)) &&
+		(v1->y < (v2->y + EPSILON) && v1->y >(v2->y - EPSILON)))
+		return 1;
+
+	return 0;
+}
+
 void vec3_fill(vec3* res, float x, float y, float z)
 {
 	res->x = x;

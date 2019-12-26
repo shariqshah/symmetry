@@ -11,3 +11,4 @@ in vec3 vertex;
 
 uniform vec3 ambient_light;
 uniform vec3 camera_pos;
+uniform vec2 uv_scale;

@@ -109,7 +109,7 @@ vec3 calc_spot_light(in Light light)
 
 void main()
 {
-	vec4 albedo_color = diffuse_color * texture(diffuse_texture, uv);
+	vec4 albedo_color = diffuse_color * texture(diffuse_texture, vec2(uv.x * uv_scale.x, uv.y * uv_scale.y));
 	vec3 light_contribution = vec3(0.0, 0.0, 0.0);
 	
 	for(int i = 0; i < total_active_lights; i++)

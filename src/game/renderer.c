@@ -278,6 +278,7 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
 					{
 					case VT_INT:   GL_CHECK(shader_set_uniform(material->model_params[k].type, material->model_params[k].location, &mesh->model.material_params[k].val_int));   break;
 					case VT_FLOAT: GL_CHECK(shader_set_uniform(material->model_params[k].type, material->model_params[k].location, &mesh->model.material_params[k].val_float)); break;
+					case VT_VEC2:  GL_CHECK(shader_set_uniform(material->model_params[k].type, material->model_params[k].location, &mesh->model.material_params[k].val_vec2));  break;
 					case VT_VEC3:  GL_CHECK(shader_set_uniform(material->model_params[k].type, material->model_params[k].location, &mesh->model.material_params[k].val_vec3));  break;
 					case VT_VEC4:  GL_CHECK(shader_set_uniform(material->model_params[k].type, material->model_params[k].location, &mesh->model.material_params[k].val_vec4));  break;
 					}

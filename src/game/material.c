@@ -63,6 +63,9 @@ bool material_init(struct Material* material, int material_type)
 
 		material->model_params[MMP_SPECULAR_STRENGTH].type = UT_FLOAT;
 		material->model_params[MMP_SPECULAR_STRENGTH].location = shader_get_uniform_location(material->shader, "specular_strength");
+
+		material->model_params[MMP_UV_SCALE].type = UT_VEC2;
+		material->model_params[MMP_UV_SCALE].location = shader_get_uniform_location(material->shader, "uv_scale");
 	}
 	break;
 	case MAT_UNSHADED:
@@ -82,6 +85,9 @@ bool material_init(struct Material* material, int material_type)
 
 		material->model_params[MMP_DIFFUSE_COL].type = UT_VEC4;
 		material->model_params[MMP_DIFFUSE_COL].location = shader_get_uniform_location(material->shader, "diffuse_color");
+
+		material->model_params[MMP_UV_SCALE].type = UT_VEC2;
+		material->model_params[MMP_UV_SCALE].location = shader_get_uniform_location(material->shader, "uv_scale");
 	};
 	break;
 	default:
@@ -150,6 +156,7 @@ bool material_register_static_mesh(struct Material* material, struct Static_Mesh
 				variant_assign_int(&mesh->model.material_params[MMP_DIFFUSE_TEX], texture_create_from_file("default.tga", TU_DIFFUSE));
 				variant_assign_float(&mesh->model.material_params[MMP_SPECULAR], 1.f);
 				variant_assign_float(&mesh->model.material_params[MMP_SPECULAR_STRENGTH], 50.f);
+				variant_assign_vec2f(&mesh->model.material_params[MMP_UV_SCALE], 1.f, 1.f);
 				mesh->model.material = material;
 			}
 			break;
@@ -157,6 +164,7 @@ bool material_register_static_mesh(struct Material* material, struct Static_Mesh
 			{
 				variant_assign_vec4f(&mesh->model.material_params[MMP_DIFFUSE_COL], 1.f, 0.f, 1.f, 1.f);
 				variant_assign_int(&mesh->model.material_params[MMP_DIFFUSE_TEX], texture_create_from_file("default.tga", TU_DIFFUSE));
+				variant_assign_vec2f(&mesh->model.material_params[MMP_UV_SCALE], 1.f, 1.f);
 				mesh->model.material = material;
 			}
 			break;

@@ -30,6 +30,7 @@ enum Mat_Model_Param
     MMP_DIFFUSE,
     MMP_SPECULAR_STRENGTH,
     MMP_SPECULAR,
+	MMP_UV_SCALE,
     MMP_MAX
 };
 

@@ -16,9 +16,9 @@ Player
 {
 	type : 2
 	scale : 1.000 1.000 1.000
-	rotation : 0.000 -0.197 0.000 0.981
+	rotation : 0.000 -0.616 0.000 0.789
 	active : true
-	position : 7.444 6.491 0.938
+	position : -33.936 4.392 -38.211
 	name : Player
 	camera_clear_color : 0.298 0.600 0.898 1.000
 }
@@ -29,7 +29,7 @@ Scene_Entity_Entry
 	rotation : 0.000 0.000 0.000 1.000
 	position : -17.000 0.000 -20.000
 	filename : cube
-	name : Cube
+	name : Ground
 }
 
 Scene_Entity_Entry
@@ -37,7 +37,7 @@ Scene_Entity_Entry
 	scale : 68.000 3.000 1.000
 	rotation : 0.000 0.000 0.000 1.000
 	position : -18.000 3.000 -57.000
-	filename : cube
+	filename : cube_uv
 	name : Cube
 }
 

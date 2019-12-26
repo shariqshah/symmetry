@@ -6,5 +6,5 @@ out vec4 frag_color;
 
 void main()
 {
-	frag_color = apply_fog(diffuse_color * texture(diffuse_texture, uv));
+	frag_color = apply_fog(diffuse_color * texture(diffuse_texture, vec2(uv.x * uv_scale.x, uv.y * uv_scale.y)));
 }

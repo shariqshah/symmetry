@@ -278,6 +278,8 @@ void parser_free(struct Parser *parser)
         object->data = NULL;
         object->type = PO_UNKNOWN;
     }
+	array_free(parser->objects);
+	free(parser);
 }
 
 struct Parser* parser_new(void)

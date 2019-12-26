@@ -140,7 +140,8 @@ void debug_vars_post_update(struct Debug_Vars* debug_vars)
 			case VT_INT: // Texture
 				nk_layout_row_dynamic(context, debug_vars->row_height_texture, 2);
 				nk_label(context, &variable->name[0], name_flags);
-				nk_image_color(context, nk_image_id(texture_get_texture_handle(variable->value.val_int)), nk_rgb_f(1.f, 1.f, 1.f));
+				//nk_image_color(context, nk_image_id(texture_get_texture_handle(variable->value.val_int)), nk_rgb_f(1.f, 1.f, 1.f));
+				nk_image_color(context, nk_image_id(variable->value.val_int), nk_rgb_f(1.f, 1.f, 1.f));
 				break;
 			case VT_VEC3: // Color RGB
 				nk_layout_row_dynamic(context, debug_vars->row_height_color, 2);

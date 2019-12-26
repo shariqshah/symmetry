@@ -1,4 +1,5 @@
 Todo:
+	- Command to create a placeholder entity of a particular type in a file
 	- Re-write/Overhaul bounding volumes and ray intersection
 	- Reduce the opacity of wireframe around selected entity in editor
 	- Allow picking and selecting other entity types in editor i.e. the ones that don't have meshes
@@ -7,10 +8,14 @@ Todo:
 	  this will prevent us from having needless amount of entities with only minor changes from one another 
 	? Split up material declarations into their own separate files. Materials have a base material like Blinn or Unshaded and in the file we save an instance with modified properties.
       when we are assigning materials to entites, we assign the instance of a particular material to them.
+	? Change hierarchical transformations from parent/child to an entity having attachments/slots where another entity can be attached or mounted. This way we can have hierarchical transformations and not have to store
+	  a whole enitity hierarchy when saving the entity. When loading the entity, we load the entity and see which entites are attached to it and get references to those entity in the scene, if they are not loaded we could 
+	  either load them there and then or complain to the scene that we couldn't find the attachements and just carry on as usual
 	- When loading entities, show an additional optional textfield where user can enter the name they want for the entity after it is loaded
 	- Add editor undo for transformation operations
 	- Decide how to handle scale when checking sphere-ray intersection
 	- Add material export for blender exporter?
+	- Show current filename of the scene we are working on and whether we have made any changes to it since the last time we saved
 	- Fix crash when exiting from fullscreen mode
 	- Check if we still need to rotate by 90 degrees when exporting from blender
 	- Fire an event when the game mode is changed so that editor camera state and other game related systems know when to update
@@ -42,10 +47,7 @@ Todo:
 	- Color palette, picker and dropper
 	- Key binding and function to snap editor camera to selected entity
 	  location
-	- Implement resetting complete transform or just rotation, translation
-	  or scale for selected entity
 	- Key binding and function to orient entity to camera orientation
-	- Make lights and other entity types pickable
 	- Mouse warp to opposite side of the window when it reaches bounds
 	- Add other axis combinations like YZ and XY to transform tool
 	- Transformation space selection for translation, rotation and scale.
@@ -393,3 +395,5 @@ Done:
 	* Show archetype name in property inspector for selected entity
 	* Write player camera clear colour when saving scene
 	* Add uv tiling parameter to materials that can be serialized along with entities
+	* Implement resetting complete transform or just rotation, translation
+	  or scale for selected entity

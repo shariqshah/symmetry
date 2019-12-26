@@ -16,9 +16,9 @@ Player
 {
 	type : 2
 	scale : 1.000 1.000 1.000
-	rotation : 0.000 -0.616 0.000 0.789
+	rotation : 0.000 -0.489 0.000 0.873
 	active : true
-	position : -33.936 4.392 -38.211
+	position : -51.333 6.103 -36.095
 	name : Player
 	camera_clear_color : 0.298 0.600 0.898 1.000
 }

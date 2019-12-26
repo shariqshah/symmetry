@@ -121,12 +121,9 @@ bool entity_write(struct Entity* entity, struct Parser_Object* object, bool writ
 	//hashmap_str_set(entity_data, "parent", parent ? parent->name  : "NONE");
 
 	/* Transform */
-	if(write_transform)
-	{
-		hashmap_vec3_set(entity_data, "position", &entity->transform.position);
-		hashmap_vec3_set(entity_data, "scale", &entity->transform.scale);
-		hashmap_quat_set(entity_data, "rotation", &entity->transform.rotation);
-	}
+	hashmap_vec3_set(entity_data, "position", &entity->transform.position);
+	hashmap_vec3_set(entity_data, "scale", &entity->transform.scale);
+	hashmap_quat_set(entity_data, "rotation", &entity->transform.rotation);
 
 	switch(entity->type)
 	{
@@ -456,22 +453,18 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 	}
 	
 	//If there's a parent entity then it means this is a child entity and we shoud load it's relative transform values
-	if(parent_entity)
-	{
-		vec3 position = { 0.f, 0.f, 0.f };
-		quat rotation = { 0.f, 0.f, 0.f, 1.f };
-		vec3 scale    = { 1.f, 1.f, 1.f };
+	vec3 position = { 0.f, 0.f, 0.f };
+	quat rotation = { 0.f, 0.f, 0.f, 1.f };
+	vec3 scale = { 1.f, 1.f, 1.f };
 
-		if(hashmap_value_exists(object->data, "position")) position = hashmap_vec3_get(object->data, "position");
-		if(hashmap_value_exists(object->data, "rotation")) rotation = hashmap_quat_get(object->data, "rotation");
-		if(hashmap_value_exists(object->data, "scale"))    scale    = hashmap_vec3_get(object->data, "scale");
+	if(hashmap_value_exists(object->data, "position")) position = hashmap_vec3_get(object->data, "position");
+	if(hashmap_value_exists(object->data, "rotation")) rotation = hashmap_quat_get(object->data, "rotation");
+	if(hashmap_value_exists(object->data, "scale"))    scale = hashmap_vec3_get(object->data, "scale");
 
-		transform_set_position(new_entity, &position);
-		transform_scale(new_entity, &scale);
-		quat_mul(&new_entity->transform.rotation, &new_entity->transform.rotation, &rotation);
-		transform_update_transmat(new_entity);
-
-	}
+	transform_set_position(new_entity, &position);
+	transform_scale(new_entity, &scale);
+	quat_mul(&new_entity->transform.rotation, &new_entity->transform.rotation, &rotation);
+	transform_update_transmat(new_entity);
 
 	return new_entity;
 }

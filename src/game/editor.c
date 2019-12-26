@@ -1499,6 +1499,8 @@ void editor_camera_update(struct Editor* editor, float dt)
 	
 	debug_vars_show_texture("Editor Cam Depth", editor_camera->depth_tex);
 	debug_vars_show_color_rgba("Editor Cam Clear Color", &editor_camera->clear_color);
+	debug_vars_show_int("Editor Cam Depth Index", editor_camera->depth_tex);
+	debug_vars_show_int("Editor Cam Render Index", editor_camera->render_tex);
 }
 
 void editor_widget_color_combov3(struct nk_context* context, vec3* color, int width, int height)

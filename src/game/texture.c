@@ -158,15 +158,24 @@ void texture_cleanup(void)
 
 void texture_bind(int index)
 {
-	assert(index > -1 && index < array_len(texture_list));
-	glActiveTexture(GL_TEXTURE0 + texture_list[index].texture_unit);
-	glBindTexture(GL_TEXTURE_2D, texture_list[index].handle);
+	if(index < 0 || index >= array_len(texture_list))
+	{
+		log_warning("Cannot bind invalid texture handle");
+		return;
+	}
+	GL_CHECK(glActiveTexture(GL_TEXTURE0 + texture_list[index].texture_unit));
+	GL_CHECK(glBindTexture(GL_TEXTURE_2D, texture_list[index].handle));
 }
 
 void texture_unbind(int index)
 {
-	glActiveTexture(GL_TEXTURE0 + texture_list[index].texture_unit);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	if(index < 0 || index >= array_len(texture_list))
+	{
+		log_warning("Cannot unbind invalid texture handle");
+		return;
+	}
+	GL_CHECK(glActiveTexture(GL_TEXTURE0 + texture_list[index].texture_unit));
+	GL_CHECK(glBindTexture(GL_TEXTURE_2D, 0));
 }
 
 int load_img(FILE* file, GLubyte** image_data, int* width, int* height, int* fmt, int* internal_format)

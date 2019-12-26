@@ -226,13 +226,13 @@ void gui_render(struct Gui* gui, enum nk_anti_aliasing AA)
                 (GLint)(cmd->clip_rect.w * scale.x),
                 (GLint)(cmd->clip_rect.h * scale.y));
             glDrawElements(GL_TRIANGLES, (GLsizei)cmd->elem_count, GL_UNSIGNED_SHORT, offset);
+			texture_unbind(cmd->texture.id);
             offset += cmd->elem_count;
         }
         nk_clear(&gui->context);
     }
 
 	shader_unbind();
-	texture_unbind(gui->font_tex);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindVertexArray(0);

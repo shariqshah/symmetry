@@ -267,8 +267,18 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
 				}
 				else
 				{
-					renderer->num_indices += array_len(geometry->indices);
-					renderer->num_rendered++;
+					//intersection = bv_intersect_frustum_box(&camera->frustum, &geometry->bounding_box, &abs_pos, &abs_scale);
+					intersection = bv_intersect_frustum_box_(&camera->frustum, &mesh->base.transform.bounding_box);
+					if(intersection == IT_INSIDE || intersection == IT_INTERSECT)
+					{
+						renderer->num_indices += array_len(geometry->indices);
+						renderer->num_rendered++;
+					}
+					else
+					{
+						renderer->num_culled++;
+						continue;
+					}
 				}
 
 				/* set material params for the model */

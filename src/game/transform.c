@@ -14,11 +14,40 @@ void transform_init(struct Entity* entity, struct Entity* parent)
 	vec3_fill(&transform->scale, 1.f, 1.f, 1.f);
 	quat_identity(&transform->rotation);
 	mat4_identity(&transform->trans_mat);
+	transform->bounding_box.min = (vec3){ 0.f, 0.f, 0.f };
+	transform->bounding_box.max = (vec3){ 1.f, 1.f, 1.f };
 	transform->children = array_new(struct Entity*);
 	transform->parent   = NULL;
 	if(parent)
 		transform_parent_set(entity, parent, false);
 	transform_update_transmat(entity);
+}
+
+void transform_update_bounding_box(struct Entity* entity)
+{
+	struct Bounding_Box* bounding_box = &entity->transform.bounding_box;
+	vec3 transformed_points[8];
+	vec3_fill(&transformed_points[0], bounding_box->min.x, bounding_box->min.y, bounding_box->min.z);
+	vec3_fill(&transformed_points[1], bounding_box->max.x, bounding_box->min.y, bounding_box->min.z);
+	vec3_fill(&transformed_points[2], bounding_box->min.x, bounding_box->max.y, bounding_box->min.z);
+	vec3_fill(&transformed_points[3], bounding_box->min.x, bounding_box->min.y, bounding_box->max.z);
+
+	vec3_fill(&transformed_points[4], bounding_box->max.x, bounding_box->max.y, bounding_box->max.z);
+	vec3_fill(&transformed_points[5], bounding_box->min.x, bounding_box->max.y, bounding_box->max.z);
+	vec3_fill(&transformed_points[6], bounding_box->max.x, bounding_box->min.y, bounding_box->max.z);
+	vec3_fill(&transformed_points[7], bounding_box->max.x, bounding_box->max.y, bounding_box->min.z);
+
+	for(int i = 0; i < 8; i++)
+	{
+		vec3_mul_mat4(&transformed_points[i], &transformed_points[i], &entity->transform.trans_mat);
+		if(transformed_points[i].x < bounding_box->min.x) bounding_box->min.x = transformed_points[i].x;
+		if(transformed_points[i].y < bounding_box->min.y) bounding_box->min.y = transformed_points[i].y;
+		if(transformed_points[i].z < bounding_box->min.z) bounding_box->min.z = transformed_points[i].z;
+
+		if(transformed_points[i].x > bounding_box->max.x) bounding_box->max.x = transformed_points[i].x;
+		if(transformed_points[i].y > bounding_box->max.y) bounding_box->max.y = transformed_points[i].y;
+		if(transformed_points[i].z > bounding_box->max.z) bounding_box->max.z = transformed_points[i].z;
+	}
 }
 
 void transform_child_add(struct Entity* parent, struct Entity* child, bool update_transmat)
@@ -224,6 +253,8 @@ void transform_update_transmat(struct Entity* entity)
 		struct Transform* parent_tran = &transform->parent->transform;
 		mat4_mul(&transform->trans_mat, &parent_tran->trans_mat, &transform->trans_mat);
 	}
+
+	transform_update_bounding_box(entity);
 
 	/* Update all children */
 	int children = array_len(transform->children);

@@ -548,6 +548,8 @@ struct Static_Mesh* scene_static_mesh_create(struct Scene* scene, const char* na
 		new_static_mesh->base.type = ET_STATIC_MESH;
 		model_init(&new_static_mesh->model, new_static_mesh, geometry_name, material_type);
 		// TODO: handle creating collision mesh for the model at creation
+		vec3_assign(&new_static_mesh->base.transform.bounding_box.min, &geom_get(new_static_mesh->model.geometry_index)->bounding_box.min);
+		vec3_assign(&new_static_mesh->base.transform.bounding_box.max, &geom_get(new_static_mesh->model.geometry_index)->bounding_box.max);
 	}
 	else
 	{

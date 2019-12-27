@@ -2,6 +2,32 @@
 
 #include <math.h>
 
+int bv_intersect_frustum_box_(vec4* frustum, struct Bounding_Box* box)
+{
+	vec3 size, center, half_ext, half_size;
+	vec3_fill(&size, 0.f, 0.f, 0.f);
+	vec3_fill(&center, 0.f, 0.f, 0.f);
+	vec3_fill(&half_ext, 0.f, 0.f, 0.f);
+	vec3_fill(&half_size, 0.f, 0.f, 0.f);
+	
+	vec3_sub(&size, &box->max, &box->min);
+	vec3_add(&center, &box->max, &box->min);
+	vec3_scale(&center, &center, 0.5f);
+	vec3_assign(&half_ext, &size);
+	vec3_scale(&half_size, &size, 0.5f);
+	for(int i = 0; i < 6; i++)
+	{
+		vec3  normal     = {frustum[i].x, frustum[i].y, frustum[i].z};
+		float distance   = frustum[i].w;
+		float d          = vec3_dot(&normal, &center);
+		vec3  abs_normal = {fabsf(normal.x), fabsf(normal.y), fabsf(normal.z)};
+		float r          = vec3_dot(&half_ext, &abs_normal);
+		if(d + r < -distance)
+			return IT_OUTSIDE;
+	}
+	return IT_INSIDE;
+}
+
 int bv_intersect_frustum_box(vec4* frustum, struct Bounding_Box* box, vec3* box_abs_position, vec3* box_abs_scale)
 {
 	vec3 min, max, size, center, half_ext, half_size;

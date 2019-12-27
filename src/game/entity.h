@@ -5,6 +5,7 @@
 #include "../common/num_types.h"
 #include "../system/physics.h"
 #include "../system/sound.h"
+#include "bounding_volumes.h"
 #include "material.h"
 
 #define MAX_ENTITY_NAME_LEN 128
@@ -59,14 +60,15 @@ enum Entity_Flags
 
 struct Transform
 {
-    vec3            position;
-    vec3            scale;
-    quat            rotation;
-    mat4            trans_mat;
-    bool            is_modified;
-    bool            sync_physics;
-    struct Entity*  parent;
-    struct Entity** children;
+    vec3                position;
+    vec3                scale;
+    quat                rotation;
+    mat4                trans_mat;
+    bool                is_modified;
+    bool                sync_physics;
+	struct Bounding_Box bounding_box;
+    struct Entity*      parent;
+    struct Entity**     children;
 };
 
 struct Entity

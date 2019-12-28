@@ -247,6 +247,26 @@ void editor_render(struct Editor* editor, struct Camera * active_camera)
 			break;
 			}
 		}
+		
+		/* Draw bounding box for selected entity */
+		vec3 points[8];
+		bv_bounding_box_vertices_get(&editor->selected_entity->transform.bounding_box, points);
+		
+		//struct Geometry* geom = geom_get(((struct Static_Mesh*)editor->selected_entity)->model.geometry_index);
+		//bv_bounding_box_vertices_get(&geom->bounding_box, points);
+		vec3 abs_position = { 0.f, 0.f, 0.f };
+		transform_get_absolute_position(editor->selected_entity, &abs_position);
+		vec3 scale = { 0.f, 0.f, 0.f };
+		scale.x = editor->selected_entity->transform.bounding_box.max.x - editor->selected_entity->transform.bounding_box.min.x;
+		scale.y = editor->selected_entity->transform.bounding_box.max.y - editor->selected_entity->transform.bounding_box.min.y;
+		scale.z = editor->selected_entity->transform.bounding_box.max.z - editor->selected_entity->transform.bounding_box.min.z;
+		vec3_scale(&scale, &scale, 0.5f);
+		//vec3_sub(&abs_position, &abs_position, &scale);
+		im_box(fabsf(scale.x), fabsf(scale.y), fabsf(scale.z), abs_position, (quat) { 0.f, 0.f, 0.f, 1.f }, editor->cursor_entity_color, GDM_TRIANGLES, 3);
+		im_begin((vec3) { 0.f, 0.f, 0.f }, (quat) { 0.f, 0.f, 0.f, 1.f }, (vec3) { 1.f, 1.f, 1.f }, (vec4) { 1.f, 0.f, 1.f, 1.2f }, GDM_LINE_LOOP, 3);
+		for(int i = 0; i < 8; i++)
+			im_pos(points[i].x, points[i].y, points[i].z);
+		im_end();
 
 		/* Draw selected entity with projected transformation applied  */
 		if(editor->draw_cursor_entity)
@@ -280,10 +300,10 @@ void editor_render(struct Editor* editor, struct Camera * active_camera)
 			{
 				static mat4 mvp;
 				shader_set_uniform_vec4(renderer->debug_shader, "debug_color", &editor->hovered_entity_color);
-				struct Static_Mesh* mesh = editor->hovered_entity;
-				struct Model*       model = &mesh->model;
+				struct Static_Mesh* mesh      = editor->hovered_entity;
+				struct Model*       model     = &mesh->model;
 				struct Transform*   transform = &mesh->base.transform;
-				int                 geometry = model->geometry_index;
+				int                 geometry  = model->geometry_index;
 				mat4_identity(&mvp);
 				mat4_mul(&mvp, &active_camera->view_proj_mat, &transform->trans_mat);
 				shader_set_uniform_mat4(renderer->debug_shader, "mvp", &mvp);

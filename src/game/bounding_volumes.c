@@ -190,3 +190,16 @@ float bv_distance_ray_plane(struct Ray* ray, Plane* plane)
 		return INFINITY;
 
 }
+
+void bv_bounding_box_vertices_get(struct Bounding_Box* bounding_box, vec3 out_vertices[8])
+{
+	vec3_fill(&out_vertices[0], bounding_box->min.x, bounding_box->min.y, bounding_box->min.z);
+	vec3_fill(&out_vertices[1], bounding_box->max.x, bounding_box->min.y, bounding_box->min.z);
+	vec3_fill(&out_vertices[2], bounding_box->min.x, bounding_box->max.y, bounding_box->min.z);
+	vec3_fill(&out_vertices[3], bounding_box->min.x, bounding_box->min.y, bounding_box->max.z);
+
+	vec3_fill(&out_vertices[4], bounding_box->max.x, bounding_box->max.y, bounding_box->max.z);
+	vec3_fill(&out_vertices[5], bounding_box->min.x, bounding_box->max.y, bounding_box->max.z);
+	vec3_fill(&out_vertices[6], bounding_box->max.x, bounding_box->min.y, bounding_box->max.z);
+	vec3_fill(&out_vertices[7], bounding_box->max.x, bounding_box->max.y, bounding_box->min.z);
+}

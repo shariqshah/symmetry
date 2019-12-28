@@ -12,7 +12,7 @@ void debug_vars_init(struct Debug_Vars* debug_vars)
 {
 	debug_vars->visible            = false;
 	debug_vars->location           = DVL_TOP_RIGHT;
-	debug_vars->window_width       = 300;
+	debug_vars->window_width       = 350;
 	debug_vars->window_height      = 500;
 	debug_vars->row_height         = 14;
 	debug_vars->row_height_color   = 16;

@@ -56,5 +56,6 @@ bool  bv_intersect_frustum_point(vec4* frustum, const vec3* point);
 //bool  bv_intersect_sphere_ray(struct Bounding_Sphere* sphere, vec3* sphere_abs_position, struct Ray* ray);
 int bv_intersect_sphere_ray(struct Bounding_Sphere* sphere, vec3* sphere_abs_position, vec3* sphere_abs_scale, struct Ray* ray);
 float bv_distance_ray_plane(struct Ray* ray, Plane* plane);
+void  bv_bounding_box_vertices_get(struct Bounding_Box* box, vec3 out_vertices[8]);
 
 #endif

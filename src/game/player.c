@@ -12,6 +12,7 @@
 #include "../system/platform.h"
 #include "game.h"
 #include "debug_vars.h"
+#include "geometry.h"
 
 void player_init(struct Player* player, struct Scene* scene)
 {
@@ -143,7 +144,15 @@ void player_update(struct Player* player, struct Scene* scene, float dt)
 		scene_ray_intersect(scene, &ray, &ray_result);
 	}
 
+	vec3 mesh_abs = { 0.f, 0.f, 0.f };
+	transform_get_absolute_position(player->mesh, &mesh_abs);
 	debug_vars_show_vec3("Player Position", &player->base.transform.position);
+	debug_vars_show_vec3("Mesh Position", &mesh_abs);
+	debug_vars_show_vec3("Min", &player->mesh->base.transform.bounding_box.min);
+	debug_vars_show_vec3("Max", &player->mesh->base.transform.bounding_box.max);
+	struct Geometry* geom = geom_get(player->mesh->model.geometry_index);
+	debug_vars_show_vec3("Geom Min", &geom->bounding_box.min);
+	debug_vars_show_vec3("Geom Max", &geom->bounding_box.max);
 	debug_vars_show_texture("Player Camera Render", player->camera_node->render_tex);
 	debug_vars_show_texture("Player Camera Depth", player->camera_node->depth_tex);
 }

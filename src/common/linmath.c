@@ -81,11 +81,11 @@ void vec3_fill(vec3* res, float x, float y, float z)
 	res->z = z;
 }
 
-void vec3_add(vec3* res, const vec3* v1, const vec3* v3)
+void vec3_add(vec3* res, const vec3* v1, const vec3* v2)
 {
-	res->x = v1->x + v3->x;
-	res->y = v1->y + v3->y;
-	res->z = v1->z + v3->z;
+	res->x = v1->x + v2->x;
+	res->y = v1->y + v2->y;
+	res->z = v1->z + v2->z;
 }
 
 void vec3_sub(vec3* res, const vec3* v1, const vec3* v2)

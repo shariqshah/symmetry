@@ -1,5 +1,6 @@
 Todo:
 	- Implement bounding box visualization
+	- Fix rotation gizmo for scaled meshes
 	- Implement ray-bounding box picking and determine whether that is enough for our needs or do we need to implement OBB
 	- Command to create a placeholder entity of a particular type in a file
 	- Re-write/Overhaul bounding volumes and ray intersection

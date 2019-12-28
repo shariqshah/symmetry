@@ -71,11 +71,12 @@ void geom_bounding_volume_generate(int index)
 		if(vertex->y < box->min.y) box->min.y = vertex->y;
 		if(vertex->z < box->min.z) box->min.z = vertex->z;
 	}
-	vec3_add(&sphere->center, &box->max, &box->min);
+	vec3_sub(&sphere->center, &box->max, &box->min);
 	vec3_scale(&sphere->center, &sphere->center, 0.5f);
 	vec3 len_vec;
-	vec3_sub(&len_vec, &box->max, &sphere->center);
-	sphere->radius = fabsf(vec3_len(&len_vec));
+	//vec3_sub(&len_vec, &box->max, &sphere->center);
+	//sphere->radius = fabsf(vec3_len(&len_vec));
+	sphere->radius = fabsf(vec3_len(&sphere->center));
 }
 
 void geom_bounding_volume_generate_all(void)

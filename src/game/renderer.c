@@ -366,8 +366,7 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
 				if(!(mesh->base.flags & EF_ACTIVE)) continue;
 				struct Model*     model     = &mesh->model;
 				struct Transform* transform = &mesh->base.transform;
-				//int               geometry  = model->geometry_index;
-				int               geometry = geom_find("sphere.symbres");// ->geometry_index;
+				int               geometry  = model->geometry_index;
 				mat4_identity(&mvp);
 				mat4_mul(&mvp, &active_camera->view_proj_mat, &transform->trans_mat);
 				shader_set_uniform_mat4(renderer->debug_shader, "mvp", &mvp);

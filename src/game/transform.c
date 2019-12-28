@@ -3,9 +3,13 @@
 #include "../common/array.h"
 #include "entity.h"
 #include "../common/utils.h"
+#include "../common/num_types.h"
+#include "bounding_volumes.h"
+#include "geometry.h"
 
 #include <assert.h>
 #include <string.h>
+#include <float.h>
 
 void transform_init(struct Entity* entity, struct Entity* parent)
 {
@@ -25,28 +29,32 @@ void transform_init(struct Entity* entity, struct Entity* parent)
 
 void transform_update_bounding_box(struct Entity* entity)
 {
-	struct Bounding_Box* bounding_box = &entity->transform.bounding_box;
-	vec3 transformed_points[8];
-	vec3_fill(&transformed_points[0], bounding_box->min.x, bounding_box->min.y, bounding_box->min.z);
-	vec3_fill(&transformed_points[1], bounding_box->max.x, bounding_box->min.y, bounding_box->min.z);
-	vec3_fill(&transformed_points[2], bounding_box->min.x, bounding_box->max.y, bounding_box->min.z);
-	vec3_fill(&transformed_points[3], bounding_box->min.x, bounding_box->min.y, bounding_box->max.z);
-
-	vec3_fill(&transformed_points[4], bounding_box->max.x, bounding_box->max.y, bounding_box->max.z);
-	vec3_fill(&transformed_points[5], bounding_box->min.x, bounding_box->max.y, bounding_box->max.z);
-	vec3_fill(&transformed_points[6], bounding_box->max.x, bounding_box->min.y, bounding_box->max.z);
-	vec3_fill(&transformed_points[7], bounding_box->max.x, bounding_box->max.y, bounding_box->min.z);
+	struct Bounding_Box* box = &entity->transform.bounding_box;
+	vec3_fill(&box->min, FLT_MAX, FLT_MAX, FLT_MAX);
+	vec3_fill(&box->max, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+	vec3 box_vertices[8];
+	if(entity->type == ET_STATIC_MESH)
+	{
+		struct Static_Mesh* mesh = (struct Static_Mesh*)entity;
+		struct Geometry* geometry = geom_get(mesh->model.geometry_index);
+		bv_bounding_box_vertices_get(&geometry->bounding_box, box_vertices);
+	}
+	else
+	{
+		bv_bounding_box_vertices_get(box, box_vertices);
+	}
 
 	for(int i = 0; i < 8; i++)
 	{
-		vec3_mul_mat4(&transformed_points[i], &transformed_points[i], &entity->transform.trans_mat);
-		if(transformed_points[i].x < bounding_box->min.x) bounding_box->min.x = transformed_points[i].x;
-		if(transformed_points[i].y < bounding_box->min.y) bounding_box->min.y = transformed_points[i].y;
-		if(transformed_points[i].z < bounding_box->min.z) bounding_box->min.z = transformed_points[i].z;
+		vec3 transformed_vertex = { 0.f, 0.f, 0.f };
+		vec3_mul_mat4(&transformed_vertex, &box_vertices[i], &entity->transform.trans_mat);
+		if(transformed_vertex.x < box->min.x) box->min.x = transformed_vertex.x;
+		if(transformed_vertex.y < box->min.y) box->min.y = transformed_vertex.y;
+		if(transformed_vertex.z < box->min.z) box->min.z = transformed_vertex.z;
 
-		if(transformed_points[i].x > bounding_box->max.x) bounding_box->max.x = transformed_points[i].x;
-		if(transformed_points[i].y > bounding_box->max.y) bounding_box->max.y = transformed_points[i].y;
-		if(transformed_points[i].z > bounding_box->max.z) bounding_box->max.z = transformed_points[i].z;
+		if(transformed_vertex.x > box->max.x) box->max.x = transformed_vertex.x;
+		if(transformed_vertex.y > box->max.y) box->max.y = transformed_vertex.y;
+		if(transformed_vertex.z > box->max.z) box->max.z = transformed_vertex.z;
 	}
 }
 

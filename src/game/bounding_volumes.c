@@ -1,4 +1,5 @@
 #include "bounding_volumes.h"
+#include "../common/log.h"
 
 #include <math.h>
 
@@ -94,7 +95,7 @@ int bv_intersect_frustum_sphere(vec4* frustum, struct Bounding_Sphere* sphere, v
 	return intersect_type;
 }
 
-bool bv_intersect_frustum_point(vec4* frustum, const vec3* point)
+bool bv_point_inside_frustum(vec4* frustum, const vec3* point)
 {
 	bool success = true;
 	for(int i = 0; i < 6; i++)
@@ -297,5 +298,78 @@ int bv_intersect_bounding_box_ray(struct Bounding_Box* box, struct Ray* ray)
 	if(tzmax < tmax)
 		tmax = tzmax;
 
-	return IT_INTERSECT;
+	return tmin < 0.f ? IT_INSIDE : IT_INTERSECT;
+}
+
+float bv_distance_ray_bounding_box(struct Ray* ray, struct Bounding_Box* box)
+{
+	float tmin = (box->min.x - ray->origin.x) / ray->direction.x;
+	float tmax = (box->max.x - ray->origin.x) / ray->direction.x;
+
+	if(tmin > tmax)
+	{
+		float temp = tmin;
+		tmin = tmax;
+		tmax = temp;
+	}
+
+	float tymin = (box->min.y - ray->origin.y) / ray->direction.y;
+	float tymax = (box->max.y - ray->origin.y) / ray->direction.y;
+
+	if(tymin > tymax)
+	{
+		float temp = tymin;
+		tymin = tymax;
+		tymax = temp;
+	}
+
+	if((tmin > tymax) || (tymin > tmax))
+		return INFINITY;
+
+	if(tymin > tmin)
+		tmin = tymin;
+
+	if(tymax < tmax)
+		tmax = tymax;
+
+	float tzmin = (box->min.z - ray->origin.z) / ray->direction.z;
+	float tzmax = (box->max.z - ray->origin.z) / ray->direction.z;
+
+	if(tzmin > tzmax)
+	{
+		float temp = tzmin;
+		tzmin = tzmax;
+		tzmax = temp;
+	}
+
+	if((tmin > tzmax) || (tzmin > tmax))
+		return INFINITY;
+
+	if(tzmin > tmin)
+		tmin = tzmin;
+
+	if(tzmax < tmax)
+		tmax = tzmax;
+
+	return tmin >= 0.f ? tmin : tmax; // if tmin < 0, return the max value since it represents the hit in front of us. We don't care about hits behind us
+}
+
+int bv_intersect_bounding_boxes(struct Bounding_Box* b1, struct Bounding_Box* b2)
+{
+	if(b2->max.x < b1->min.x || b2->min.x > b1->max.x || b2->max.y < b1->min.y || b2->min.y > b1->max.y ||
+	   b2->max.z < b1->min.z || b2->min.z > b1->max.z)
+		return IT_OUTSIDE;
+	else if(b2->min.x < b1->min.x || b2->max.x > b1->max.x || b2->min.y < b1->min.y || b2->max.y > b1->max.y ||
+			b2->min.z < b1->min.z || b2->max.z > b1->max.z)
+		return IT_INTERSECT;
+	else
+		return IT_INSIDE; // b2 is inside b1
+}
+
+bool bv_point_inside_bounding_box(struct Bounding_Box* box, vec3 point)
+{
+	if(point.x < box->min.x || point.x > box->max.x || point.y < box->min.y || point.y > box->max.y || point.z < box->min.z || point.z > box->max.z)
+		return false;
+	else
+		return true;
 }

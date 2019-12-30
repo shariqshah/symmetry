@@ -60,8 +60,9 @@ void scene_entity_parent_set(struct Scene* scene, struct Entity* entity, struct 
 void scene_entity_parent_reset(struct Scene* scene, struct Entity* entity); // Sets root entity as parent
 int  scene_entity_archetype_add(struct Scene* scene, const char* filename);
 
-void  scene_ray_intersect(struct Scene* scene, struct Ray* ray, struct Raycast_Result* out_results);
-float scene_entity_distance(struct Scene* scene, struct Entity* entity1, struct Entity* entity2);
+void           scene_ray_intersect(struct Scene* scene, struct Ray* ray, struct Raycast_Result* out_results);
+struct Entity* scene_ray_intersect_closest(struct Scene* scene, struct Ray* ray);
+float          scene_entity_distance(struct Scene* scene, struct Entity* entity1, struct Entity* entity2);
 
 //
 //void           scene_init(void);

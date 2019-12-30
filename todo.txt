@@ -1,9 +1,10 @@
 Todo:
+	- Implement frustum culling with bounding boxes only or improve frustum-sphere intersection
+	- Imlpement picking entities of all types in editor
 	- Determine whether we should enable or disble picking when a tool is active within an editor
-	- Implement checking if point is inside a bounding box and use that to determine whether a ray is originating inside a bounding box when checking for ray-boundingbox intersection
-	- Fix issue where if an entity is hoverd in editor and deleted, the game crashes because the hovered variable in editor doesn't know that the entity was deleted
+	? Only show bounding box for hovered entity
+	- Fix crash where if an entity is hoverd in editor and deleted, the game crashes because the hovered variable in editor doesn't know that the entity was deleted
 	- Command to create a placeholder entity of a particular type in a file
-	- Re-write/Overhaul bounding volumes and ray intersection
 	- Reduce the opacity of wireframe around selected entity in editor
 	- Release mouse when window loses focus and limit fps
 	- Allow picking and selecting other entity types in editor i.e. the ones that don't have meshes

@@ -21,10 +21,10 @@
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
 static void scene_write_entity_entry(struct Scene* scene, struct Entity* entity, struct Parser* parser);
 static void scene_write_entity_list(struct Scene* scene, int entity_type, struct Parser* parser);
-static int scene_sort_by_distance_from_active_viewer_func(const void* e1, const void* e2);
 
 void scene_init(struct Scene* scene)
 {
@@ -821,32 +821,49 @@ void scene_ray_intersect(struct Scene* scene, struct Ray* ray, struct Raycast_Re
 		transform_get_absolute_scale(mesh, &abs_scale);
 
 		struct Geometry* geometry = geom_get(mesh->model.geometry_index);
-		//if(bv_intersect_sphere_ray(&geometry->bounding_sphere, &abs_pos, &abs_scale, ray) == IT_INTERSECT)
 		if(bv_intersect_bounding_box_ray(&mesh->base.transform.bounding_box, ray) == IT_INTERSECT)
 		{
 			out_results->entities_intersected[out_results->num_entities_intersected] = &mesh->base;
 			out_results->num_entities_intersected++;
 		}
 	}
-
-	if(out_results->num_entities_intersected > 1)
-		qsort(out_results->entities_intersected, out_results->num_entities_intersected, sizeof(struct Entity*), &scene_sort_by_distance_from_active_viewer_func);
 }
 
-int scene_sort_by_distance_from_active_viewer_func(const void* e1, const void* e2)
+struct Entity* scene_ray_intersect_closest(struct Scene* scene, struct Ray* ray)
 {
-	const struct Entity* entity1 = *(struct Entity**)e1;
-	const struct Entity* entity2 = *(struct Entity**)e2;
-	struct Scene* scene = game_state_get()->scene;
-	struct Camera* camera = &scene->cameras[scene->active_camera_index];
-	float d1 = scene_entity_distance(scene, entity1, camera);
-	float d2 = scene_entity_distance(scene, entity2, camera);
-	if(d1 < d2)
-		return -1;
-	else if(d1 == d2)
-		return 0;
-	else
-		return 1;
+	struct Entity* closest = NULL;
+	float current_closest = 0.f;
+	for(int i = 0; i < MAX_STATIC_MESHES; i++)
+	{
+		struct Static_Mesh* mesh = &scene->static_meshes[i];
+		if(!(mesh->base.flags & EF_ACTIVE) || (mesh->base.flags & EF_IGNORE_RAYCAST)) continue;
+		vec3 abs_pos = { 0.f, 0.f, 0.f };
+		vec3 abs_scale = { 1.f, 1.f, 1.f };
+		transform_get_absolute_position(mesh, &abs_pos);
+		transform_get_absolute_scale(mesh, &abs_scale);
+
+		struct Geometry* geometry = geom_get(mesh->model.geometry_index);
+		float distance = bv_distance_ray_bounding_box(ray, &mesh->base.transform.bounding_box);
+		if(distance != INFINITY && distance >= 0.f)
+		{
+			bool assign = false;
+			if(closest == NULL)
+				assign = true;
+			else if(distance > current_closest && 
+					bv_intersect_bounding_box_ray(&mesh->base.transform.bounding_box, ray) == IT_INSIDE && 
+					bv_intersect_bounding_boxes(&mesh->base.transform.bounding_box, &closest->transform.bounding_box) != IT_INSIDE)
+				assign = true;
+			else if(distance < current_closest)
+				assign = true;
+
+			if(assign)
+			{
+				current_closest = distance;
+				closest = &mesh->base;
+			}
+		}
+	}
+	return closest;
 }
 
 float scene_entity_distance(struct Scene* scene, struct Entity* entity1, struct Entity* entity2)

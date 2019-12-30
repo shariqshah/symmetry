@@ -857,21 +857,11 @@ void editor_on_mousebutton_release(const struct Event* event)
 			struct Ray ray = camera_screen_coord_to_ray(editor_camera, mouse_x, mouse_y);
 
 			struct Scene* scene = game_state_get()->scene;
-			struct Raycast_Result ray_result;
-			scene_ray_intersect(scene, &ray, &ray_result);
-
-			if(ray_result.num_entities_intersected > 0)
+			struct Entity* intersected_entity = scene_ray_intersect_closest(scene, &ray);
+			if(intersected_entity)
 			{
-				//For now, just select the first entity that is intersected 
-				struct Entity* intersected_entity = ray_result.entities_intersected[0];
-				if(intersected_entity == editor->cursor_entity)
-				{
-					if(ray_result.num_entities_intersected > 1)
-						intersected_entity = ray_result.entities_intersected[1];
-					else
-						intersected_entity = NULL;
-				}
-				if(intersected_entity) editor_entity_select(editor, intersected_entity);
+				if(intersected_entity != editor->selected_entity)
+					editor_entity_select(editor, intersected_entity);
 			}
 			else
 			{
@@ -945,28 +935,12 @@ void editor_on_mousebutton_press(const struct Event* event)
 			int mouse_x = 0, mouse_y = 0;
 			platform_mouse_position_get(&mouse_x, &mouse_y);
 			struct Ray ray = camera_screen_coord_to_ray(editor_camera, mouse_x, mouse_y);
-
-			struct Raycast_Result ray_result;
-			scene_ray_intersect(scene, &ray, &ray_result);
+			struct Entity* intersected_entity = scene_ray_intersect_closest(scene, &ray);
 
 			bool start_rotation = true;
-			if(ray_result.num_entities_intersected > 0)
+			if(intersected_entity)
 			{
-				//For now, just select the first entity that is intersected 
-				struct Entity* intersected_entity = ray_result.entities_intersected[0];
-				if(intersected_entity == editor->cursor_entity || intersected_entity == editor->selected_entity)
-				{
-					if(ray_result.num_entities_intersected > 1)
-					{
-						intersected_entity = ray_result.entities_intersected[1];
-						if(intersected_entity)
-						{
-							editor_entity_select(editor, intersected_entity);
-							start_rotation = false;
-						}
-					}
-				}
-				else
+				if(intersected_entity != editor->selected_entity)
 				{
 					editor_entity_select(editor, intersected_entity);
 					start_rotation = false;
@@ -1166,13 +1140,24 @@ void editor_on_mousemotion(const struct Event* event)
 	struct Scene* scene = game_state->scene;
 	struct Camera* editor_camera = &scene->cameras[CAM_EDITOR];
 	struct Ray ray = camera_screen_coord_to_ray(editor_camera, event->mousemotion.x, event->mousemotion.y);
-	struct Raycast_Result ray_result;
-	scene_ray_intersect(scene, &ray, &ray_result);
+	//struct Raycast_Result ray_result;
+	//scene_ray_intersect(scene, &ray, &ray_result);
 
-	if(ray_result.num_entities_intersected > 0)
+	//if(ray_result.num_entities_intersected > 0)
+	//{
+	//	struct Entity* intersected_entity = ray_result.entities_intersected[0];
+	//	if(intersected_entity && intersected_entity != editor->hovered_entity)
+	//		editor->hovered_entity = intersected_entity;
+	//}
+	//else
+	//{
+	//	if(editor->hovered_entity)
+	//		editor->hovered_entity = NULL;
+	//}
+	struct Entity* intersected_entity = scene_ray_intersect_closest(scene, &ray);
+	if(intersected_entity)
 	{
-		struct Entity* intersected_entity = ray_result.entities_intersected[0];
-		if(intersected_entity && intersected_entity != editor->hovered_entity)
+		if(intersected_entity != editor->hovered_entity)
 			editor->hovered_entity = intersected_entity;
 	}
 	else

@@ -240,7 +240,7 @@ void im_render(struct Camera* active_viewer)
 	if(IM_State.curr_geom == -1)
 		return;
 
-	/* Sort by draw order, geometries with lower draw order get drawn first */
+	/* If there are more than one geometries, sort by draw order. Geometries with lower draw order get drawn first */
 	if(IM_State.curr_geom + 1 > 1)
 		qsort(IM_State.geometries, IM_State.curr_geom + 1, sizeof(struct IM_Geom), &im_sort_func);
 	

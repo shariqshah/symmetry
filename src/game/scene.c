@@ -24,6 +24,7 @@
 
 static void scene_write_entity_entry(struct Scene* scene, struct Entity* entity, struct Parser* parser);
 static void scene_write_entity_list(struct Scene* scene, int entity_type, struct Parser* parser);
+static int scene_sort_by_distance_from_active_viewer_func(const void* e1, const void* e2);
 
 void scene_init(struct Scene* scene)
 {
@@ -820,12 +821,43 @@ void scene_ray_intersect(struct Scene* scene, struct Ray* ray, struct Raycast_Re
 		transform_get_absolute_scale(mesh, &abs_scale);
 
 		struct Geometry* geometry = geom_get(mesh->model.geometry_index);
-		if(bv_intersect_sphere_ray(&geometry->bounding_sphere, &abs_pos, &abs_scale, ray) == IT_INTERSECT)
+		//if(bv_intersect_sphere_ray(&geometry->bounding_sphere, &abs_pos, &abs_scale, ray) == IT_INTERSECT)
+		if(bv_intersect_bounding_box_ray(&mesh->base.transform.bounding_box, ray) == IT_INTERSECT)
 		{
 			out_results->entities_intersected[out_results->num_entities_intersected] = &mesh->base;
 			out_results->num_entities_intersected++;
 		}
 	}
+
+	if(out_results->num_entities_intersected > 1)
+		qsort(out_results->entities_intersected, out_results->num_entities_intersected, sizeof(struct Entity*), &scene_sort_by_distance_from_active_viewer_func);
+}
+
+int scene_sort_by_distance_from_active_viewer_func(const void* e1, const void* e2)
+{
+	const struct Entity* entity1 = *(struct Entity**)e1;
+	const struct Entity* entity2 = *(struct Entity**)e2;
+	struct Scene* scene = game_state_get()->scene;
+	struct Camera* camera = &scene->cameras[scene->active_camera_index];
+	float d1 = scene_entity_distance(scene, entity1, camera);
+	float d2 = scene_entity_distance(scene, entity2, camera);
+	if(d1 < d2)
+		return -1;
+	else if(d1 == d2)
+		return 0;
+	else
+		return 1;
+}
+
+float scene_entity_distance(struct Scene* scene, struct Entity* entity1, struct Entity* entity2)
+{
+	vec3 abs_pos1 = { 0.f, 0.f, 0.f };
+	vec3 abs_pos2 = { 0.f, 0.f, 0.f };
+	transform_get_absolute_position(entity1, &abs_pos1);
+	transform_get_absolute_position(entity2, &abs_pos2);
+	vec3 distance_vector = { 0.f, 0.f, 0.f };
+	vec3_sub(&distance_vector, &abs_pos1, &abs_pos2);
+	return vec3_len(&distance_vector);
 }
 
 int scene_entity_archetype_add(struct Scene* scene, const char* filename)

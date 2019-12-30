@@ -1,5 +1,7 @@
 Todo:
-	- Implement ray-bounding box picking and determine whether that is enough for our needs or do we need to implement OBB
+	- Determine whether we should enable or disble picking when a tool is active within an editor
+	- Implement checking if point is inside a bounding box and use that to determine whether a ray is originating inside a bounding box when checking for ray-boundingbox intersection
+	- Fix issue where if an entity is hoverd in editor and deleted, the game crashes because the hovered variable in editor doesn't know that the entity was deleted
 	- Command to create a placeholder entity of a particular type in a file
 	- Re-write/Overhaul bounding volumes and ray intersection
 	- Reduce the opacity of wireframe around selected entity in editor
@@ -71,7 +73,6 @@ Todo:
 	- Refactor input sub-system to be the same as other sub-systems embedded
 	  in game state.
 	- Figure out a way to reduce of remove snprintf calls from render code
-	- Re-Implement saving/loading scene to/from files
 	- Implement storing console's scroll location and restore it when console is toggled
 	- Implement collision/physics data serialization, read and write.
 	- Physics forces/torque etc
@@ -83,32 +84,23 @@ Todo:
 	- Implement Game States
 	- Store Materials in new format supported by parser
 	- Add model description file which has the same syntax supported by parser and modify old blender exporter to conform to new standards
-	- Fix bugs with sound sources not updating
 	- Add creating distributable build and uploading to itch.io account support to GENie under windows and linux.
 	- Remove hardcoded numerical values from sscanf and other format strings.
 	? Recalculated bounding boxes for rotated meshes
 	? Wrap malloc and free calls in custom functions to track usage
 	? File extension checking for asset loading
 	? Only allocate hashmap bucket when required
-	- Mapping actions to keybindings, for example map action "Jump" to Space key etc
 	? Add marking or queuing up custom meshes for debug render with particular transform and color for rendering bounding spheres for example
 	? Interleaved vbos for meshes and changes to blender exporter accordingly
 	- Enumerate and save all the uniform and attribute positions in shader when it is added and cache them in shader object?
 	? Better handling incase assets folder is not found
-	- Write entity to/from file
-	- Ogg format loading and playback
 	- Implement HiDPI support
-	- Sound streaming
-	- Implment missing sound source properties (inner/outer cone, getting sound source data)
 	- Shadow maps
 	- Print processor stats and machine capabilites RAM etc on every run to log.
 	- Do input maps really need to be queried by thier string names?
-	- Write default config/keybindings etc to file if none are found in preferences dir
-	- Multisampled textures and framebuffers
 	- Validate necessary assets at game launch
 	- Gamma correctness
 	- Log and debug/stats output in gui
-	- Textual/Binary format for data serialization and persistance
 	- Array based string type comptible with cstring(char*)
 	- Reduce fps on window focus loss or minimization
 	- ???
@@ -401,3 +393,4 @@ Done:
 	* Save transformation information when saving entity archetypes
 	* Implement bounding box visualization
 	* Fixed rotation gizmo for scaled meshes
+	* Implement ray-bounding box picking and determine whether that is enough for our needs or do we need to implement OBB

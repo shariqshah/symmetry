@@ -246,3 +246,56 @@ void bv_bounding_box_vertices_get_line_visualization(struct Bounding_Box* boundi
 	vec3_fill(&out_vertices[22], bounding_box->max.x, bounding_box->max.y, bounding_box->min.z);
 	vec3_fill(&out_vertices[23], bounding_box->max.x, bounding_box->max.y, bounding_box->max.z);
 }
+
+int bv_intersect_bounding_box_ray(struct Bounding_Box* box, struct Ray* ray)
+{
+	float tmin = (box->min.x - ray->origin.x) / ray->direction.x;
+	float tmax = (box->max.x - ray->origin.x) / ray->direction.x;
+
+	if(tmin > tmax)
+	{
+		float temp = tmin;
+		tmin = tmax;
+		tmax = temp;
+	}
+
+	float tymin = (box->min.y - ray->origin.y) / ray->direction.y;
+	float tymax = (box->max.y - ray->origin.y) / ray->direction.y;
+
+	if(tymin > tymax)
+	{
+		float temp = tymin;
+		tymin = tymax;
+		tymax = temp;
+	}
+
+	if((tmin > tymax) || (tymin > tmax))
+		return IT_OUTSIDE;
+
+	if(tymin > tmin)
+		tmin = tymin;
+
+	if(tymax < tmax)
+		tmax = tymax;
+
+	float tzmin = (box->min.z - ray->origin.z) / ray->direction.z;
+	float tzmax = (box->max.z - ray->origin.z) / ray->direction.z;
+
+	if(tzmin > tzmax)
+	{
+		float temp = tzmin;
+		tzmin = tzmax;
+		tzmax = temp;
+	}
+
+	if((tmin > tzmax) || (tzmin > tmax))
+		return IT_OUTSIDE;
+
+	if(tzmin > tmin)
+		tmin = tzmin;
+
+	if(tzmax < tmax)
+		tmax = tzmax;
+
+	return IT_INTERSECT;
+}

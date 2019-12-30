@@ -203,3 +203,46 @@ void bv_bounding_box_vertices_get(struct Bounding_Box* bounding_box, vec3 out_ve
 	vec3_fill(&out_vertices[6], bounding_box->max.x, bounding_box->min.y, bounding_box->max.z);
 	vec3_fill(&out_vertices[7], bounding_box->max.x, bounding_box->max.y, bounding_box->min.z);
 }
+
+void bv_bounding_box_vertices_get_line_visualization(struct Bounding_Box* bounding_box, vec3 out_vertices[24])
+{
+	// Back
+	vec3_fill(&out_vertices[0], bounding_box->min.x, bounding_box->min.y, bounding_box->min.z);
+	vec3_fill(&out_vertices[1], bounding_box->min.x, bounding_box->max.y, bounding_box->min.z);
+
+	vec3_fill(&out_vertices[2], bounding_box->min.x, bounding_box->min.y, bounding_box->min.z);
+	vec3_fill(&out_vertices[3], bounding_box->max.x, bounding_box->min.y, bounding_box->min.z);
+
+	vec3_fill(&out_vertices[4], bounding_box->min.x, bounding_box->max.y, bounding_box->min.z);
+	vec3_fill(&out_vertices[5], bounding_box->max.x, bounding_box->max.y, bounding_box->min.z);
+
+	vec3_fill(&out_vertices[6], bounding_box->max.x, bounding_box->max.y, bounding_box->min.z);
+	vec3_fill(&out_vertices[7], bounding_box->max.x, bounding_box->min.y, bounding_box->min.z);
+
+	// Front
+	vec3_fill(&out_vertices[8], bounding_box->min.x, bounding_box->min.y, bounding_box->max.z);
+	vec3_fill(&out_vertices[9], bounding_box->min.x, bounding_box->max.y, bounding_box->max.z);
+
+	vec3_fill(&out_vertices[10], bounding_box->min.x, bounding_box->min.y, bounding_box->max.z);
+	vec3_fill(&out_vertices[11], bounding_box->max.x, bounding_box->min.y, bounding_box->max.z);
+	
+	vec3_fill(&out_vertices[12], bounding_box->min.x, bounding_box->max.y, bounding_box->max.z);
+	vec3_fill(&out_vertices[13], bounding_box->max.x, bounding_box->max.y, bounding_box->max.z);
+
+	vec3_fill(&out_vertices[14], bounding_box->max.x, bounding_box->max.y, bounding_box->max.z);
+	vec3_fill(&out_vertices[15], bounding_box->max.x, bounding_box->min.y, bounding_box->max.z);
+
+	// Left
+	vec3_fill(&out_vertices[16], bounding_box->min.x, bounding_box->max.y, bounding_box->min.z);
+	vec3_fill(&out_vertices[17], bounding_box->min.x, bounding_box->max.y, bounding_box->max.z);
+	
+	vec3_fill(&out_vertices[18], bounding_box->min.x, bounding_box->min.y, bounding_box->min.z);
+	vec3_fill(&out_vertices[19], bounding_box->min.x, bounding_box->min.y, bounding_box->max.z);
+
+	// Right
+	vec3_fill(&out_vertices[20], bounding_box->max.x, bounding_box->min.y, bounding_box->min.z);
+	vec3_fill(&out_vertices[21], bounding_box->max.x, bounding_box->min.y, bounding_box->max.z);
+	
+	vec3_fill(&out_vertices[22], bounding_box->max.x, bounding_box->max.y, bounding_box->min.z);
+	vec3_fill(&out_vertices[23], bounding_box->max.x, bounding_box->max.y, bounding_box->max.z);
+}

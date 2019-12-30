@@ -144,8 +144,8 @@ void editor_init(struct Editor* editor)
 	editor->entity_operation_save              = false;
 	editor->scene_operation_save               = false;
 
-	vec4_fill(&editor->cursor_entity_color, 0.f, 1.f, 1.f, 0.7f);
-	vec4_fill(&editor->hovered_entity_color, 0.53, 0.87, 0.28, 0.5f);
+	vec4_fill(&editor->cursor_entity_color, 0.f, 1.f, 1.f, 0.5f);
+	vec4_fill(&editor->hovered_entity_color, 0.53, 0.87, 0.28, 0.2f);
 	vec4_fill(&editor->selected_entity_color, 0.96, 0.61, 0.17, 0.5f);
 	vec4_fill(&editor->grid_color, 0.3f, 0.3f, 0.3f, 0.7f);
 	vec4_fill(&editor->axis_color_x, 0.87, 0.32, 0.40, 0.8f);
@@ -252,7 +252,7 @@ void editor_render(struct Editor* editor, struct Camera * active_camera)
 		static vec3 vertices[24];
 		bv_bounding_box_vertices_get_line_visualization(&editor->selected_entity->transform.bounding_box, vertices);
 		for(int i = 0; i <= 22; i += 2)
-			im_line(vertices[i], vertices[i + 1], (vec3) { 0.f, 0.f, 0.f }, (quat) { 0.f, 0.f, 0.f, 1.f }, editor->cursor_entity_color, GDM_LINES);
+			im_line(vertices[i], vertices[i + 1], (vec3) { 0.f, 0.f, 0.f }, (quat) { 0.f, 0.f, 0.f, 1.f }, editor->cursor_entity_color, 3);
 
 		/* Draw selected entity with projected transformation applied  */
 		if(editor->draw_cursor_entity)
@@ -625,7 +625,7 @@ void editor_update(struct Editor* editor, float dt)
 	if(editor->window_settings_renderer) editor_window_renderer_settings(context, editor, game_state);
 	if(editor->window_settings_editor) editor_window_settings_editor(context, editor, game_state);
 	
-	if(editor->tool_mesh_draw_enabled)
+	if(editor->tool_mesh_draw_enabled && editor->selected_entity)
 	{
 		switch(editor->current_tool)
 		{
@@ -672,31 +672,31 @@ void editor_update(struct Editor* editor, float dt)
 			{
 			case EDITOR_AXIS_X:
 				quat_axis_angle(&rotation, &UNIT_Y, -90.f);
-				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, position, rotation, editor->axis_color_x, 3);
+				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, position, rotation, editor->axis_color_x, 5);
 				break;
 			case EDITOR_AXIS_Y:
 				quat_axis_angle(&rotation, &UNIT_X, -90.f);
-				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, position, rotation, editor->axis_color_y, 3);
+				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, position, rotation, editor->axis_color_y, 5);
 				break;
 			case EDITOR_AXIS_Z:
-				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, position, rotation, editor->axis_color_z, 3);
+				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, position, rotation, editor->axis_color_z, 5);
 				break;
 			case EDITOR_AXIS_XZ:
-				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, position, rotation, editor->axis_color_z, 3);
+				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, position, rotation, editor->axis_color_z, 5);
 				quat_axis_angle(&rotation, &UNIT_Y, -90.f);
-				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, position, rotation, editor->axis_color_x, 3);
+				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, position, rotation, editor->axis_color_x, 5);
 				break;
 			case EDITOR_AXIS_XY:
 				quat_axis_angle(&rotation, &UNIT_Y, -90.f);
-				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, position, rotation, editor->axis_color_x, 3);
+				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, position, rotation, editor->axis_color_x, 5);
 				quat_identity(&rotation);
 				quat_axis_angle(&rotation, &UNIT_X, -90.f);
-				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, position, rotation, editor->axis_color_y, 3);
+				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, position, rotation, editor->axis_color_y, 5);
 				break;
 			case EDITOR_AXIS_YZ:
-				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, position, rotation, editor->axis_color_z, 3);
+				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, position, rotation, editor->axis_color_z, 5);
 				quat_axis_angle(&rotation, &UNIT_X, -90.f);
-				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, position, rotation, editor->axis_color_y, 3);
+				im_circle(editor->tool_rotate_arc_radius, editor->tool_rotate_arc_segments, false, position, rotation, editor->axis_color_y, 5);
 				break;
 			}
 
@@ -949,21 +949,31 @@ void editor_on_mousebutton_press(const struct Event* event)
 			struct Raycast_Result ray_result;
 			scene_ray_intersect(scene, &ray, &ray_result);
 
+			bool start_rotation = true;
 			if(ray_result.num_entities_intersected > 0)
 			{
 				//For now, just select the first entity that is intersected 
 				struct Entity* intersected_entity = ray_result.entities_intersected[0];
-				if(intersected_entity == editor->cursor_entity)
+				if(intersected_entity == editor->cursor_entity || intersected_entity == editor->selected_entity)
 				{
 					if(ray_result.num_entities_intersected > 1)
 					{
 						intersected_entity = ray_result.entities_intersected[1];
-						if(intersected_entity) 
+						if(intersected_entity)
+						{
 							editor_entity_select(editor, intersected_entity);
+							start_rotation = false;
+						}
 					}
 				}
+				else
+				{
+					editor_entity_select(editor, intersected_entity);
+					start_rotation = false;
+				}
 			}
-			else
+
+			if(start_rotation)
 			{
 				editor->picking_enabled = false;
 				editor->tool_rotate_rotation_started = true;
@@ -1053,7 +1063,7 @@ void editor_on_mousemotion(const struct Event* event)
 			vec3 position = { 0.f, 0.f, 0.f };
 			vec3 scale = {1.f, 1.f, 1.f};
 			transform_get_absolute_position(editor->selected_entity, &position);
-			transform_get_absolute_scale(editor->selected_entity, &scale);
+			//transform_get_absolute_scale(editor->selected_entity, &scale);
 			struct Ray cam_ray;
 			cam_ray = camera_screen_coord_to_ray(editor_camera, event->mousemotion.x, event->mousemotion.y);
 

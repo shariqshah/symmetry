@@ -31,7 +31,7 @@ void config_vars_init(struct Hashmap* cvars)
     hashmap_vec4_setf(cvars, "debug_draw_color",             0.8f, 0.4f, 0.1f, 1.f);
     hashmap_float_set(cvars, "player_move_speed",            10.f);
     hashmap_float_set(cvars, "player_move_speed_multiplier", 2.f);
-    hashmap_float_set(cvars, "player_turn_speed",            5.f);
+    hashmap_float_set(cvars, "player_turn_speed",            45.f);
 }
 
 void config_vars_cleanup(struct Hashmap* cvars)

@@ -198,9 +198,10 @@ static void update_frustum(struct Camera* camera)
 
 	for(int i = 0; i < FP_NUM_PLANES; i++)
 	{
-		vec3 plane_xyz = { camera->frustum[i].x, camera->frustum[i].y, camera->frustum[i].z };
-		float length = fabsf(vec3_len(&plane_xyz));
-		vec4_scale(&camera->frustum[i], &camera->frustum[i], (1.f / length));
+		//vec3 plane_xyz = { camera->frustum[i].x, camera->frustum[i].y, camera->frustum[i].z };
+		//float length = fabsf(vec3_len(&plane_xyz));
+		//vec4_scale(&camera->frustum[i], &camera->frustum[i], (1.f / length));
+		vec4_norm(&camera->frustum[i], &camera->frustum[i]);
 	}
 }
 

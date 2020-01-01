@@ -254,6 +254,25 @@ void editor_render(struct Editor* editor, struct Camera * active_camera)
 		for(int i = 0; i <= 22; i += 2)
 			im_line(vertices[i], vertices[i + 1], (vec3) { 0.f, 0.f, 0.f }, (quat) { 0.f, 0.f, 0.f, 1.f }, editor->cursor_entity_color, 3);
 
+		if(editor->selected_entity->type == ET_STATIC_MESH)
+		{
+			struct Static_Mesh* mesh = (struct Static_Mesh*)editor->selected_entity;
+			struct Geometry* geom = geom_get(mesh->model.geometry_index);
+			if(geom)
+			{
+				struct Bounding_Sphere* sphere = &geom->bounding_sphere;
+				vec3 abs_position = { 0.f, 0.f, 0.f };
+				vec3 abs_scale = { 1.f, 1.f, 1.f };
+				transform_get_absolute_position(editor->selected_entity, &abs_position);
+				transform_get_absolute_scale(editor->selected_entity, &abs_scale);
+				float max_scale = abs_scale.x;
+				if(abs_scale.y > max_scale) max_scale = abs_scale.y;
+				if(abs_scale.z > max_scale) max_scale = abs_scale.z;
+				//im_circle(sphere->radius * max_scale, 32, false, abs_position, (quat) { 0.f, 0.f, 0.f, 1.f }, editor->axis_color_x, 5);
+				im_circle(sphere->radius * max_scale, 32, false, abs_position, (quat) { 0.f, 0.f, 0.f, 1.f }, editor->axis_color_y, 5);
+			}
+		}
+
 		/* Draw selected entity with projected transformation applied  */
 		if(editor->draw_cursor_entity)
 		{

@@ -71,12 +71,18 @@ void geom_bounding_volume_generate(int index)
 		if(vertex->y < box->min.y) box->min.y = vertex->y;
 		if(vertex->z < box->min.z) box->min.z = vertex->z;
 	}
-	vec3_sub(&sphere->center, &box->max, &box->min);
+	vec3_add(&sphere->center, &box->max, &box->min);
 	vec3_scale(&sphere->center, &sphere->center, 0.5f);
 	vec3 len_vec;
-	//vec3_sub(&len_vec, &box->max, &sphere->center);
-	//sphere->radius = fabsf(vec3_len(&len_vec));
-	sphere->radius = fabsf(vec3_len(&sphere->center));
+	vec3 box_vertices[8];
+	bv_bounding_box_vertices_get(box, &box_vertices);
+	sphere->radius = 0.f;
+	for(int i = 0; i < 8; i++)
+	{
+		float len = fabsf(vec3_distance(box_vertices[i], sphere->center));
+		if(len > sphere->radius)
+			sphere->radius = len;
+	}
 }
 
 void geom_bounding_volume_generate_all(void)
@@ -376,7 +382,7 @@ int geom_render_in_frustum(int                      index,
 	{
 		//geom_render(index, draw_mode);
 		//indices_rendered = array_len(geometry->indices);
-		intersection = bv_intersect_frustum_box(frustum, &geometry->bounding_box, &abs_pos, &abs_scale);
+		intersection = bv_intersect_frustum_box_with_abs_transform(frustum, &geometry->bounding_box, &abs_pos, &abs_scale);
 		if(intersection == IT_INTERSECT || intersection == IT_INSIDE)
 		{ 
 			geom_render(index, draw_mode);

@@ -256,29 +256,17 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
 				struct Geometry*    geometry = geom_get(mesh->model.geometry_index);
 
 				/* Check if model is in frustum */
-				vec3 abs_pos, abs_scale;
-				transform_get_absolute_position(&mesh->base, &abs_pos);
-				transform_get_absolute_scale(&mesh->base, &abs_scale);
-				int intersection = bv_intersect_frustum_sphere(&camera->frustum[0], &geometry->bounding_sphere, &abs_pos, &abs_scale);
-				if(intersection == IT_OUTSIDE)
+
+				int intersection = bv_intersect_frustum_box(&camera->frustum, &mesh->base.transform.bounding_box);
+				if(intersection == IT_INSIDE || intersection == IT_INTERSECT)
 				{
-					renderer->num_culled++;
-					continue;
+					renderer->num_indices += array_len(geometry->indices);
+					renderer->num_rendered++;
 				}
 				else
 				{
-					//intersection = bv_intersect_frustum_box(&camera->frustum, &geometry->bounding_box, &abs_pos, &abs_scale);
-					intersection = bv_intersect_frustum_box_(&camera->frustum, &mesh->base.transform.bounding_box);
-					if(intersection == IT_INSIDE || intersection == IT_INTERSECT)
-					{
-						renderer->num_indices += array_len(geometry->indices);
-						renderer->num_rendered++;
-					}
-					else
-					{
-						renderer->num_culled++;
-						continue;
-					}
+					renderer->num_culled++;
+					continue;
 				}
 
 				/* set material params for the model */

@@ -49,8 +49,8 @@ struct Raycast_Result
 	int            num_entities_intersected;
 };
 
-int   bv_intersect_frustum_box(vec4* frustum, struct Bounding_Box* box, vec3* box_abs_position, vec3* box_abs_scale);
-int   bv_intersect_frustum_box_(vec4* frustum, struct Bounding_Box* box);
+int   bv_intersect_frustum_box_with_abs_transform(vec4* frustum, struct Bounding_Box* box, vec3* box_abs_position, vec3* box_abs_scale);
+int   bv_intersect_frustum_box(vec4* frustum, struct Bounding_Box* box);
 int   bv_intersect_frustum_sphere(vec4* frustum, struct Bounding_Sphere* sphere, vec3* sphere_abs_pos, vec3* sphere_abs_scale);
 bool  bv_point_inside_frustum(vec4* frustum, const vec3* point);
 bool  bv_point_inside_bounding_box(struct Bounding_Box* box, vec3 point);

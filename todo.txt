@@ -1,13 +1,16 @@
 Todo:
-	- Implement frustum culling with bounding boxes only or improve frustum-sphere intersection
+	- Fix camera frustum creation/update 
 	- Imlpement picking entities of all types in editor
 	- Determine whether we should enable or disble picking when a tool is active within an editor
 	? Only show bounding box for hovered entity
 	- Fix crash where if an entity is hoverd in editor and deleted, the game crashes because the hovered variable in editor doesn't know that the entity was deleted
+	? Write entity flags to scene file or when saving entity to file?
+	? Add scene init/de-init function hashmap that maps a function that should be called when scene is loaded and unloaded. Save this to file for every scene or map functions based on the name of the scene?
 	- Command to create a placeholder entity of a particular type in a file
 	- Reduce the opacity of wireframe around selected entity in editor
 	- Release mouse when window loses focus and limit fps
 	- Allow picking and selecting other entity types in editor i.e. the ones that don't have meshes
+	? Maybe reuse that same framebuffer/textures for active viewers
 	? When saving a scene entity entry, save the changed properties as well, that way when the scene is loaded, we load the base properties from archetype and the ones we changed per entry are saved when we saved the entity
 	  this will prevent us from having needless amount of entities with only minor changes from one another 
 	? Split up material declarations into their own separate files. Materials have a base material like Blinn or Unshaded and in the file we save an instance with modified properties.

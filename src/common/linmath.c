@@ -119,6 +119,13 @@ float vec3_len(vec3* val)
 	return sqrtf((val->x * val->x) + (val->y * val->y) + (val->z * val->z));
 }
 
+float vec3_distance(vec3 p1, vec3 p2)
+{
+	vec3 v = { 0.f, 0.f, 0.f };
+	vec3_sub(&v, &p1, &p2);
+	return vec3_len(&v);
+}
+
 void vec3_norm(vec3* res, vec3* val)
 {
 	if(!val->x && !val->y && !val->z)

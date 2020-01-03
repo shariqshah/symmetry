@@ -548,9 +548,9 @@ struct Static_Mesh* scene_static_mesh_create(struct Scene* scene, const char* na
 		entity_init(&new_static_mesh->base, name, parent ? parent : &scene->root_entity);
 		new_static_mesh->base.type = ET_STATIC_MESH;
 		model_init(&new_static_mesh->model, new_static_mesh, geometry_name, material_type);
-		// TODO: handle creating collision mesh for the model at creation
-		vec3_assign(&new_static_mesh->base.transform.bounding_box.min, &geom_get(new_static_mesh->model.geometry_index)->bounding_box.min);
-		vec3_assign(&new_static_mesh->base.transform.bounding_box.max, &geom_get(new_static_mesh->model.geometry_index)->bounding_box.max);
+		vec3_assign(&new_static_mesh->base.bounding_box.min, &geom_get(new_static_mesh->model.geometry_index)->bounding_box.min);
+		vec3_assign(&new_static_mesh->base.bounding_box.max, &geom_get(new_static_mesh->model.geometry_index)->bounding_box.max);
+		entity_update_derived_bounding_box(new_static_mesh);
 	}
 	else
 	{
@@ -804,65 +804,161 @@ void scene_entity_parent_set(struct Scene* scene, struct Entity* entity, struct 
 	transform_parent_set(entity, parent, true);
 }
 
-void scene_ray_intersect(struct Scene* scene, struct Ray* ray, struct Raycast_Result* out_results)
+void scene_ray_intersect(struct Scene* scene, struct Ray* ray, struct Raycast_Result* out_results, int ray_mask)
 {
 	assert(out_results);
 
 	memset(&out_results[0], '\0', sizeof(struct Entity*) * MAX_RAYCAST_ENTITIES_INTERSECT);
 	out_results->num_entities_intersected = 0;
 
-	for(int i = 0; i < MAX_STATIC_MESHES; i++)
+	for(int i = 0; i < ET_MAX; i++)
 	{
-		struct Static_Mesh* mesh = &scene->static_meshes[i];
-		if(!(mesh->base.flags & EF_ACTIVE) || (mesh->base.flags & EF_IGNORE_RAYCAST)) continue;
-		vec3 abs_pos = { 0.f, 0.f, 0.f };
-		vec3 abs_scale = { 1.f, 1.f, 1.f };
-		transform_get_absolute_position(mesh, &abs_pos);
-		transform_get_absolute_scale(mesh, &abs_scale);
+		int max_length = 0;
+		size_t stride = 0;
+		struct Entity* entity = NULL;
 
-		struct Geometry* geometry = geom_get(mesh->model.geometry_index);
-		if(bv_intersect_bounding_box_ray(&mesh->base.transform.bounding_box, ray) == IT_INTERSECT)
+		switch(i)
 		{
-			out_results->entities_intersected[out_results->num_entities_intersected] = &mesh->base;
-			out_results->num_entities_intersected++;
+		case ET_DEFAULT:
+			if(!(ray_mask & ERM_DEFAULT)) continue;
+			max_length = MAX_ENTITIES;
+			entity = &scene->entities[0];
+			stride = sizeof(struct Entity);
+			break;
+		case ET_LIGHT:
+			if(!(ray_mask & ERM_LIGHT)) continue;
+			max_length = MAX_LIGHTS;
+			entity = &scene->lights[0].base;
+			stride = sizeof(struct Light);
+			break;
+		case ET_STATIC_MESH:
+			if(!(ray_mask & ERM_STATIC_MESH)) continue;
+			max_length = MAX_STATIC_MESHES;
+			entity = &scene->static_meshes[0].base;
+			stride = sizeof(struct Static_Mesh);
+			break;
+		case ET_CAMERA:
+			if(!(ray_mask & ERM_CAMERA)) continue;
+			max_length = MAX_CAMERAS;
+			entity = &scene->cameras[0].base;
+			stride = sizeof(struct Camera);
+			break;
+		case ET_SOUND_SOURCE:
+			if(!(ray_mask & ERM_SOUND_SOURCE)) continue;
+			max_length = MAX_SOUND_SOURCES;
+			entity = &scene->sound_sources[0].base;
+			stride = sizeof(struct Sound_Source);
+			break;
+		case ET_PLAYER:
+			if(!(ray_mask & ERM_PLAYER)) continue;
+			max_length = 1;
+			entity = &scene->player;
+			stride = sizeof(struct Player);
+			break;
+		default: continue;
+		}
+
+		size_t count = 0;
+		while(count < max_length)
+		{
+			if(entity->flags & EF_ACTIVE && !(entity->flags & EF_IGNORE_RAYCAST))
+			{
+				int result = bv_intersect_bounding_box_ray(&entity->derived_bounding_box, ray);
+				if(result == IT_INTERSECT || result == IT_INSIDE)
+				{
+					out_results->entities_intersected[out_results->num_entities_intersected] = &entity;
+					out_results->num_entities_intersected++;
+				}
+			}
+
+			count++;
+			((char*)entity) += stride;
 		}
 	}
 }
 
-struct Entity* scene_ray_intersect_closest(struct Scene* scene, struct Ray* ray)
+struct Entity* scene_ray_intersect_closest(struct Scene* scene, struct Ray* ray, int ray_mask)
 {
 	struct Entity* closest = NULL;
 	float current_closest = 0.f;
-	for(int i = 0; i < MAX_STATIC_MESHES; i++)
+	for(int i = 0; i < ET_MAX; i++)
 	{
-		struct Static_Mesh* mesh = &scene->static_meshes[i];
-		if(!(mesh->base.flags & EF_ACTIVE) || (mesh->base.flags & EF_IGNORE_RAYCAST)) continue;
-		vec3 abs_pos = { 0.f, 0.f, 0.f };
-		vec3 abs_scale = { 1.f, 1.f, 1.f };
-		transform_get_absolute_position(mesh, &abs_pos);
-		transform_get_absolute_scale(mesh, &abs_scale);
+		int max_length = 0;
+		size_t stride = 0;
+		struct Entity* entity = NULL;
 
-		struct Geometry* geometry = geom_get(mesh->model.geometry_index);
-		float distance = bv_distance_ray_bounding_box(ray, &mesh->base.transform.bounding_box);
-		if(distance != INFINITY && distance >= 0.f)
+		switch(i)
 		{
-			bool assign = false;
-			if(closest == NULL)
-				assign = true;
-			else if(distance > current_closest && 
-					bv_intersect_bounding_box_ray(&mesh->base.transform.bounding_box, ray) == IT_INSIDE && 
-					bv_intersect_bounding_boxes(&mesh->base.transform.bounding_box, &closest->transform.bounding_box) != IT_INSIDE)
-				assign = true;
-			else if(distance < current_closest)
-				assign = true;
+		case ET_DEFAULT:
+			if(!(ray_mask & ERM_DEFAULT)) continue;
+			max_length = MAX_ENTITIES;
+			entity = &scene->entities[0];
+			stride = sizeof(struct Entity);
+			break;
+		case ET_LIGHT:
+			if(!(ray_mask & ERM_LIGHT)) continue;
+			max_length = MAX_LIGHTS;
+			entity = &scene->lights[0].base;
+			stride = sizeof(struct Light);
+			break;
+		case ET_STATIC_MESH:
+			if(!(ray_mask & ERM_STATIC_MESH)) continue;
+			max_length = MAX_STATIC_MESHES;
+			entity = &scene->static_meshes[0].base;
+			stride = sizeof(struct Static_Mesh);
+			break;
+		case ET_CAMERA:
+			if(!(ray_mask & ERM_CAMERA)) continue;
+			max_length = MAX_CAMERAS;
+			entity = &scene->cameras[0].base;
+			stride = sizeof(struct Camera);
+			break;
+		case ET_SOUND_SOURCE:
+			if(!(ray_mask & ERM_SOUND_SOURCE)) continue;
+			max_length = MAX_SOUND_SOURCES;
+			entity = &scene->sound_sources[0].base;
+			stride = sizeof(struct Sound_Source);
+			break;
+		case ET_PLAYER:
+			if(!(ray_mask & ERM_PLAYER)) continue;
+			max_length = 1;
+			entity = &scene->player;
+			stride = sizeof(struct Player);
+			break;
+		default: continue;
+		}
 
-			if(assign)
+		size_t count = 0;
+		while(count < max_length)
+		{
+			if(entity->flags & EF_ACTIVE && !(entity->flags & EF_IGNORE_RAYCAST))
 			{
-				current_closest = distance;
-				closest = &mesh->base;
+				float distance = bv_distance_ray_bounding_box(ray, &entity->derived_bounding_box);
+				if(distance != INFINITY && distance >= 0.f)
+				{
+					bool assign = false;
+					if(closest == NULL)
+						assign = true;
+					else if(distance > current_closest&&
+							bv_intersect_bounding_box_ray(&entity->derived_bounding_box, ray) == IT_INSIDE &&
+							bv_intersect_bounding_boxes(&entity->derived_bounding_box, &closest->derived_bounding_box) != IT_INSIDE)
+						assign = true;
+					else if(distance < current_closest)
+						assign = true;
+
+					if(assign)
+					{
+						current_closest = distance;
+						closest = entity;
+					}
+				}
 			}
+
+			count++;
+			((char*)entity) += stride;
 		}
 	}
+
 	return closest;
 }
 

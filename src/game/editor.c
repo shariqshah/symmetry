@@ -172,7 +172,7 @@ void editor_init_camera(struct Editor* editor, struct Hashmap* cvars)
 {
     struct Camera* editor_camera = &game_state_get()->scene->cameras[CAM_EDITOR];
     entity_rename(editor_camera, "Editor_Camera");
-    editor_camera->base.flags |= EF_ACTIVE | EF_TRANSIENT;
+    editor_camera->base.flags |= EF_ACTIVE | EF_TRANSIENT | EF_IGNORE_RAYCAST;
     editor_camera->clear_color.x = 0.3f;
     editor_camera->clear_color.y = 0.6f;
     editor_camera->clear_color.z = 0.9f;
@@ -250,7 +250,7 @@ void editor_render(struct Editor* editor, struct Camera * active_camera)
 		
 		/* Draw bounding box for selected entity */
 		static vec3 vertices[24];
-		bv_bounding_box_vertices_get_line_visualization(&editor->selected_entity->transform.bounding_box, vertices);
+		bv_bounding_box_vertices_get_line_visualization(&editor->selected_entity->derived_bounding_box, vertices);
 		for(int i = 0; i <= 22; i += 2)
 			im_line(vertices[i], vertices[i + 1], (vec3) { 0.f, 0.f, 0.f }, (quat) { 0.f, 0.f, 0.f, 1.f }, editor->cursor_entity_color, 3);
 
@@ -876,7 +876,7 @@ void editor_on_mousebutton_release(const struct Event* event)
 			struct Ray ray = camera_screen_coord_to_ray(editor_camera, mouse_x, mouse_y);
 
 			struct Scene* scene = game_state_get()->scene;
-			struct Entity* intersected_entity = scene_ray_intersect_closest(scene, &ray);
+			struct Entity* intersected_entity = scene_ray_intersect_closest(scene, &ray, ERM_ALL);
 			if(intersected_entity)
 			{
 				if(intersected_entity != editor->selected_entity)
@@ -954,7 +954,7 @@ void editor_on_mousebutton_press(const struct Event* event)
 			int mouse_x = 0, mouse_y = 0;
 			platform_mouse_position_get(&mouse_x, &mouse_y);
 			struct Ray ray = camera_screen_coord_to_ray(editor_camera, mouse_x, mouse_y);
-			struct Entity* intersected_entity = scene_ray_intersect_closest(scene, &ray);
+			struct Entity* intersected_entity = scene_ray_intersect_closest(scene, &ray, ERM_ALL);
 
 			bool start_rotation = true;
 			if(intersected_entity)
@@ -1159,21 +1159,7 @@ void editor_on_mousemotion(const struct Event* event)
 	struct Scene* scene = game_state->scene;
 	struct Camera* editor_camera = &scene->cameras[CAM_EDITOR];
 	struct Ray ray = camera_screen_coord_to_ray(editor_camera, event->mousemotion.x, event->mousemotion.y);
-	//struct Raycast_Result ray_result;
-	//scene_ray_intersect(scene, &ray, &ray_result);
-
-	//if(ray_result.num_entities_intersected > 0)
-	//{
-	//	struct Entity* intersected_entity = ray_result.entities_intersected[0];
-	//	if(intersected_entity && intersected_entity != editor->hovered_entity)
-	//		editor->hovered_entity = intersected_entity;
-	//}
-	//else
-	//{
-	//	if(editor->hovered_entity)
-	//		editor->hovered_entity = NULL;
-	//}
-	struct Entity* intersected_entity = scene_ray_intersect_closest(scene, &ray);
+	struct Entity* intersected_entity = scene_ray_intersect_closest(scene, &ray, ERM_ALL);
 	if(intersected_entity)
 	{
 		if(intersected_entity != editor->hovered_entity)
@@ -1876,6 +1862,35 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 				{
 					entity->transform.scale = abs_scale;
 					transform_update_transmat(entity);
+				}
+
+				if(nk_tree_push(context, NK_TREE_TAB, "Bounding Box", NK_MINIMIZED))
+				{
+					nk_layout_row_dynamic(context, row_height, 1);
+					nk_label(context, "Base", NK_TEXT_ALIGN_MIDDLE | NK_TEXT_ALIGN_CENTERED);
+
+					nk_label(context, "Min", NK_TEXT_ALIGN_MIDDLE | NK_TEXT_ALIGN_CENTERED);
+					if(editor_widget_v3(context, &entity->bounding_box.min, "#X", "#Y", "#Z", -FLT_MAX, FLT_MAX, 0.5f, 0.5f, row_height)) entity_update_derived_bounding_box(entity);
+
+					nk_layout_row_dynamic(context, row_height, 1);
+					nk_label(context, "Max", NK_TEXT_ALIGN_MIDDLE | NK_TEXT_ALIGN_CENTERED);
+					if(editor_widget_v3(context, &entity->bounding_box.max, "#X", "#Y", "#Z", -FLT_MAX, FLT_MAX, 0.5f, 0.5f, row_height)) entity_update_derived_bounding_box(entity);
+
+					struct Bounding_Box* derived_box = &entity->derived_bounding_box;
+					nk_layout_row_dynamic(context, row_height, 1);
+					nk_label(context, "Derived", NK_TEXT_ALIGN_MIDDLE | NK_TEXT_ALIGN_CENTERED);
+
+					nk_layout_row_dynamic(context, row_height, 2);
+					nk_label(context, "Min", NK_TEXT_ALIGN_MIDDLE | NK_TEXT_ALIGN_LEFT);
+					nk_labelf(context, NK_TEXT_ALIGN_MIDDLE | NK_TEXT_ALIGN_RIGHT, "%.1f %.1f %.1f", derived_box->min.x, derived_box->min.y, derived_box->min.z);
+					nk_label(context, "Max", NK_TEXT_ALIGN_MIDDLE | NK_TEXT_ALIGN_LEFT);
+					nk_labelf(context, NK_TEXT_ALIGN_MIDDLE | NK_TEXT_ALIGN_RIGHT, "%.1f %.1f %.1f", derived_box->max.x, derived_box->max.y, derived_box->max.z);
+
+					nk_layout_row_dynamic(context, row_height, 1);
+					if(nk_button_label(context, "Reset to Default"))
+						entity_bounding_box_reset(entity, true);
+
+					nk_tree_pop(context);
 				}
 			}
 

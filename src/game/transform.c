@@ -18,45 +18,12 @@ void transform_init(struct Entity* entity, struct Entity* parent)
 	vec3_fill(&transform->scale, 1.f, 1.f, 1.f);
 	quat_identity(&transform->rotation);
 	mat4_identity(&transform->trans_mat);
-	transform->bounding_box.min = (vec3){ 0.f, 0.f, 0.f };
-	transform->bounding_box.max = (vec3){ 1.f, 1.f, 1.f };
 	transform->children = array_new(struct Entity*);
 	transform->parent   = NULL;
 	if(parent)
 		transform_parent_set(entity, parent, false);
 	transform_update_transmat(entity);
-}
-
-void transform_update_bounding_box(struct Entity* entity)
-{
-	struct Bounding_Box* box = &entity->transform.bounding_box;
-	vec3_fill(&box->min, FLT_MAX, FLT_MAX, FLT_MAX);
-	vec3_fill(&box->max, -FLT_MAX, -FLT_MAX, -FLT_MAX);
-	vec3 box_vertices[8];
-	if(entity->type == ET_STATIC_MESH)
-	{
-		struct Static_Mesh* mesh = (struct Static_Mesh*)entity;
-		struct Geometry* geometry = geom_get(mesh->model.geometry_index);
-		bv_bounding_box_vertices_get(&geometry->bounding_box, box_vertices);
-	}
-	else
-	{
-		bv_bounding_box_vertices_get(box, box_vertices);
-	}
-
-	for(int i = 0; i < 8; i++)
-	{
-		vec3 transformed_vertex = { 0.f, 0.f, 0.f };
-		vec3_mul_mat4(&transformed_vertex, &box_vertices[i], &entity->transform.trans_mat);
-		if(transformed_vertex.x < box->min.x) box->min.x = transformed_vertex.x;
-		if(transformed_vertex.y < box->min.y) box->min.y = transformed_vertex.y;
-		if(transformed_vertex.z < box->min.z) box->min.z = transformed_vertex.z;
-
-		if(transformed_vertex.x > box->max.x) box->max.x = transformed_vertex.x;
-		if(transformed_vertex.y > box->max.y) box->max.y = transformed_vertex.y;
-		if(transformed_vertex.z > box->max.z) box->max.z = transformed_vertex.z;
-	}
-}
+} 
 
 void transform_child_add(struct Entity* parent, struct Entity* child, bool update_transmat)
 {
@@ -262,7 +229,7 @@ void transform_update_transmat(struct Entity* entity)
 		mat4_mul(&transform->trans_mat, &parent_tran->trans_mat, &transform->trans_mat);
 	}
 
-	transform_update_bounding_box(entity);
+	entity_update_derived_bounding_box(entity);
 
 	/* Update all children */
 	int children = array_len(transform->children);

@@ -24,6 +24,7 @@
 #include <assert.h>
 #include <stdarg.h>
 #include <ctype.h>
+#include <float.h>
 
 #define MAX_ENTITY_PROP_NAME_LEN 128
 #define MAX_ENTITY_PROP_LEN      256
@@ -35,20 +36,66 @@ void entity_init(struct Entity* entity, const char* name, struct Entity* parent)
 
 	strncpy(entity->name, name ? name : "DEFAULT_ENTITY_NAME", MAX_ENTITY_NAME_LEN);
 	entity->name[MAX_ENTITY_NAME_LEN - 1] = '\0';
-	entity->type                = ET_DEFAULT;
-	entity->archetype_index     = -1;
-	entity->flags               = EF_ACTIVE;
+	entity->type                     = ET_DEFAULT;
+	entity->archetype_index          = -1;
+	entity->flags                    = EF_ACTIVE;
+	entity_bounding_box_reset(entity, false);
+	entity->derived_bounding_box.min = (vec3){ -0.5f, -0.5f, -0.5f };
+	entity->derived_bounding_box.max = (vec3){  0.5f,  0.5f,  0.5f };
 	transform_init(entity, parent);
 }
 
-void entity_reset(struct Entity * entity, int id)
+void entity_reset(struct Entity* entity, int id)
 {
 	assert(entity);
-	entity->id                  = id;
-	entity->type                = ET_DEFAULT;
-	entity->archetype_index     = -1;
-	entity->flags               = EF_NONE;
+	entity->id                       = id;
+	entity->type                     = ET_DEFAULT;
+	entity->archetype_index          = -1;
+	entity->flags                    = EF_NONE;
+	entity_bounding_box_reset(entity, false);
+	entity->derived_bounding_box.min = (vec3){ -0.5f, -0.5f, -0.5f };
+	entity->derived_bounding_box.max = (vec3){  0.5f,  0.5f,  0.5f };
 	memset(entity->name, '\0', MAX_ENTITY_NAME_LEN);
+}
+
+void entity_update_derived_bounding_box(struct Entity* entity)
+{
+	struct Bounding_Box* derived_box = &entity->derived_bounding_box;
+	vec3_fill(&derived_box->min, FLT_MAX, FLT_MAX, FLT_MAX);
+	vec3_fill(&derived_box->max, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+	vec3 box_vertices[8];
+	bv_bounding_box_vertices_get(&entity->bounding_box, box_vertices);
+
+	for(int i = 0; i < 8; i++)
+	{
+		vec3 transformed_vertex = { 0.f, 0.f, 0.f };
+		vec3_mul_mat4(&transformed_vertex, &box_vertices[i], &entity->transform.trans_mat);
+		if(transformed_vertex.x < derived_box->min.x) derived_box->min.x = transformed_vertex.x;
+		if(transformed_vertex.y < derived_box->min.y) derived_box->min.y = transformed_vertex.y;
+		if(transformed_vertex.z < derived_box->min.z) derived_box->min.z = transformed_vertex.z;
+
+		if(transformed_vertex.x > derived_box->max.x) derived_box->max.x = transformed_vertex.x;
+		if(transformed_vertex.y > derived_box->max.y) derived_box->max.y = transformed_vertex.y;
+		if(transformed_vertex.z > derived_box->max.z) derived_box->max.z = transformed_vertex.z;
+	}
+}
+
+void entity_bounding_box_reset(struct Entity* entity, bool update_derived)
+{
+	if(entity->type == ET_STATIC_MESH)
+	{
+		struct Static_Mesh* mesh = (struct Static_Mesh*)entity;
+		struct Geometry* geom = geom_get(mesh->model.geometry_index);
+		vec3_assign(&entity->bounding_box.min, &geom->bounding_box.min);
+		vec3_assign(&entity->bounding_box.max, &geom->bounding_box.max);
+	}
+	else
+	{
+		vec3_fill(&entity->bounding_box.min, -0.5f, -0.5f, -0.5f);
+		vec3_fill(&entity->bounding_box.max,  0.5f,  0.5f,  0.5f);
+	}
+	if(update_derived) entity_update_derived_bounding_box(entity);
+     
 }
 
 bool entity_write(struct Entity* entity, struct Parser_Object* object, bool write_transform)

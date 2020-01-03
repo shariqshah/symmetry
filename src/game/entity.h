@@ -58,6 +58,18 @@ enum Entity_Flags
 	EF_IGNORE_RAYCAST                 = 1 << 6
 };
 
+enum Entity_Ray_Mask
+{
+	ERM_NONE         = 0,
+	ERM_DEFAULT      = 1 << 0,
+	ERM_PLAYER       = 1 << 1,
+	ERM_CAMERA       = 1 << 2,
+	ERM_LIGHT        = 1 << 3,
+	ERM_STATIC_MESH  = 1 << 4,
+	ERM_SOUND_SOURCE = 1 << 5,
+	ERM_ALL          = ERM_DEFAULT | ERM_PLAYER | ERM_CAMERA | ERM_LIGHT | ERM_STATIC_MESH | ERM_SOUND_SOURCE
+};
+
 struct Transform
 {
     vec3                position;
@@ -66,19 +78,20 @@ struct Transform
     mat4                trans_mat;
     bool                is_modified;
     bool                sync_physics;
-	struct Bounding_Box bounding_box;
     struct Entity*      parent;
     struct Entity**     children;
 };
 
 struct Entity
 {
-    int              id;
-    int              type;
-	int              archetype_index;
-	uchar            flags;
-    char             name[MAX_ENTITY_NAME_LEN];
-    struct Transform transform;
+    int                 id;
+    int                 type;
+	int                 archetype_index;
+	uchar               flags;
+    char                name[MAX_ENTITY_NAME_LEN];
+	struct Bounding_Box bounding_box;
+	struct Bounding_Box derived_bounding_box;
+    struct Transform    transform;
 };
 
 struct Model
@@ -176,5 +189,7 @@ void           entity_rigidbody_on_collision(Rigidbody body_A, Rigidbody body_B)
 void           entity_rigidbody_set(struct Entity* entity, struct Collision* collision, Rigidbody body);
 void           entity_collision_shape_set(struct Entity* entity, struct Collision* collision, Collision_Shape shape); // Only used for collision shapes like plane which can't have a rigidbody attached to collision shape
 void           entity_rename(struct Entity* entity, const char* new_name);
+void           entity_update_derived_bounding_box(struct Entity* entity);
+void           entity_bounding_box_reset(struct Entity* entity, bool update_derived);
 
 #endif

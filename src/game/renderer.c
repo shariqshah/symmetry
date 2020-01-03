@@ -257,7 +257,7 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
 
 				/* Check if model is in frustum */
 
-				int intersection = bv_intersect_frustum_box(&camera->frustum, &mesh->base.transform.bounding_box);
+				int intersection = bv_intersect_frustum_box(&camera->frustum, &mesh->base.derived_bounding_box);
 				if(intersection == IT_INSIDE || intersection == IT_INTERSECT)
 				{
 					renderer->num_indices += array_len(geometry->indices);

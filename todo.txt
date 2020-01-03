@@ -1,8 +1,7 @@
 Todo:
-	- Fix camera frustum creation/update 
-	- Imlpement picking entities of all types in editor
+	- Save/Load base bounding boxes for entity types other than static mesh
 	- Determine whether we should enable or disble picking when a tool is active within an editor
-	? Only show bounding box for hovered entity
+	? Only show bounding box for hovered entity instead of wireframe mesh
 	- Fix crash where if an entity is hoverd in editor and deleted, the game crashes because the hovered variable in editor doesn't know that the entity was deleted
 	? Write entity flags to scene file or when saving entity to file?
 	? Add scene init/de-init function hashmap that maps a function that should be called when scene is loaded and unloaded. Save this to file for every scene or map functions based on the name of the scene?
@@ -139,6 +138,7 @@ Bugs:
 	- Fix crash if player's mesh is deleted in editor
 	- Fix camera not rotating if the cursor overlaps any ui element
 	- Fix hierarchichal transformations in the editor when the entity being transformed is a child entity of another entity
+	- Fix camera frustum creation/update 
 	
 Done:
 	* Input
@@ -397,4 +397,6 @@ Done:
 	* Save transformation information when saving entity archetypes
 	* Implement bounding box visualization
 	* Fixed rotation gizmo for scaled meshes
-	* Implement ray-bounding box picking and determine whether that is enough for our needs or do we need to implement OBB
+	* Implemented ray-bounding box picking and determine whether that is enough for our needs or do we need to implement OBB
+	* Implemented base and derived bounding boxes for all entity types
+	* Imlpemented picking entities of all types in editor

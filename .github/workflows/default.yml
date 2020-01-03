@@ -8,6 +8,7 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
+    - uses: warrentbuckley/Setup-MSBuild@v1
     - name: Windows-amd64
       working-directory: build
       run: |

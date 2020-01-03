@@ -8,12 +8,12 @@ solution "Symmetry"
 	    postbuildcommands {"ln -fs " .. os.getcwd()  .. "/../assets " .. os.getcwd() .. "release"}
 		buildoptions {"-Wall", "-std=c99"}
 
-	configuration {"windows", "vs2017"}	
+	configuration {"windows", "vs2019"}	
 		defines {"_CRT_SECURE_NO_WARNINGS"}
 		flags {"NoIncrementalLink", "NoEditAndContinue"}
 		local windowsPlatform = string.gsub(os.getenv("WindowsSDKVersion") or "10.0.16299.0", "\\", "")
 		local action = premake.action.current()
-		if(action ~= nil and _ACTION == "vs2017") then
+		if(action ~= nil and _ACTION == "vs2019") then
 			action.vstudio.windowsTargetPlatformVersion    = windowsPlatform
 			action.vstudio.windowsTargetPlatformMinVersion = windowsPlatform
 		end
@@ -41,14 +41,14 @@ solution "Symmetry"
 		  -- local copy_dest_dir = ""
 		  -- local symlink_dest_dir = ""
 		  
-		  -- if(_ARGS[1] == "vs2017") then
-			 -- copy_dest_dir = "vs2017"
+		  -- if(_ARGS[1] == "vs2019") then
+			 -- copy_dest_dir = "vs2019"
 			 -- symlink_dest_dir = "..\\..\\..\\assets"
 			 -- printf("Copying DLLs to visual studio build directory...\n")
 		  -- end
 
 		  -- -- Create sym links
-		  -- local output = os.outputof("mklink /D vs2017\\debug\\assets ..\\..\\..\\assets" .. path.translate(copy_dest_dir, "\\")  .. "\\debug\\assets " .. symlink_dest_dir)
+		  -- local output = os.outputof("mklink /D vs2019\\debug\\assets ..\\..\\..\\assets" .. path.translate(copy_dest_dir, "\\")  .. "\\debug\\assets " .. symlink_dest_dir)
 		  -- printf("MKlink debug output : %s", output)
 		  -- output = os.outputof("mklink /D " .. path.translate(copy_dest_dir, "\\")  .. "\\release\\assets " ..symlink_dest_dir)
 		  -- printf("MKlink release output : %s", output)
@@ -101,7 +101,7 @@ solution "Symmetry"
 				'install_name_tool -change "/usr/local/lib/libsoloud.dylib" "@rpath/libsoloud.dylib" release/Symmetry',
 			}
 
-		configuration {"windows", "vs2017"}
+		configuration {"windows", "vs2019"}
 		    includedirs	{"../include/windows/sdl2/", "../include/common/soloud/", "../include/windows/"}
 		    libdirs {"../lib/windows/sdl2/", "../lib/windows/soloud/", "../lib/windows/ode/"}
 			
@@ -114,7 +114,7 @@ solution "Symmetry"
 		configuration {"not macosx", "Release"}
 			links {"soloud_x64"}
 			
-		configuration {"windows", "Release", "vs2017"}
+		configuration {"windows", "Release", "vs2019"}
 			postbuildcommands 
 			{
 				"copy ..\\..\\lib\\windows\\sdl2\\SDL2.dll release\\ /Y",
@@ -130,7 +130,7 @@ solution "Symmetry"
 			}
 			links {"ode_double", "SDL2"}
 			
-		configuration {"windows", "Debug", "vs2017"}
+		configuration {"windows", "Debug", "vs2019"}
 			postbuildcommands 
 			{
 				"copy ..\\..\\lib\\windows\\sdl2\\SDL2.dll debug\\ /Y",

@@ -1,3 +1,3 @@
 @echo off
 
-devenv W:\build\vs2017\Symmetry.sln
+devenv W:\build\vs2019\Symmetry.sln

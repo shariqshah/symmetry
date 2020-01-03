@@ -1,0 +1,17 @@
+name: Release Build
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: Windows-amd64
+      working-directory: build
+      run: |
+        ..\tools\genie.exe vs2019
+        msbuild vs2019\Symmetry.sln -p:Configuration=Release
+      
+    

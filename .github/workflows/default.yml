@@ -14,8 +14,8 @@ jobs:
     - env:
         BUTLER_API_KEY: ${{secrets.ITCH_CREDENTIALS}}
     - name: Windows-amd64
-      working-directory: build
-      run: |
+    - working-directory: build
+    - run: |
         ..\tools\genie.exe vs2019
         msbuild vs2019\Symmetry.sln -p:Configuration=Release
         cd ..\

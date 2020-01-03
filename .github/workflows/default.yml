@@ -18,11 +18,11 @@ jobs:
         msbuild vs2019\Symmetry.sln -p:Configuration=Release
     - env:
         BUTLER_API_KEY: ${{secrets.ITCH_CREDENTIALS}}
-        name: Upload to Itch
-        run: |
-          curl -L -o butler.zip https://broth.itch.ovh/butler/windows-amd64/LATEST/archive/default
-          7z e butler.zip
-          butler.exe push bin bluerriq/symmetry:windows-prealpha
+      name: Upload to Itch
+      run: |
+        curl -L -o butler.zip https://broth.itch.ovh/butler/windows-amd64/LATEST/archive/default
+        7z e butler.zip
+        butler.exe push bin bluerriq/symmetry:windows-prealpha
 
       
     

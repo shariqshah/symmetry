@@ -1,4 +1,4 @@
-name: Release Build
+name: Compile and Push to Itch
 
 on:
   push:
@@ -11,18 +11,18 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - uses: warrenbuckley/Setup-MSBuild@v1
-    - env:
-        BUTLER_API_KEY: ${{secrets.ITCH_CREDENTIALS}}
-      name: Windows-amd64
+    - name: Compile Release
       working-directory: build
       run: |
         ..\tools\genie.exe vs2019
         msbuild vs2019\Symmetry.sln -p:Configuration=Release
-        cd ..\
-        curl -L -o butler.zip https://broth.itch.ovh/butler/windows-amd64/LATEST/archive/default
-        7z e butler.zip
-        butler.exe push bin bluerriq/symmetry:windows-prealpha
-        
+    - env:
+        BUTLER_API_KEY: ${{secrets.ITCH_CREDENTIALS}}
+        name: Upload to Itch
+        run: |
+          curl -L -o butler.zip https://broth.itch.ovh/butler/windows-amd64/LATEST/archive/default
+          7z e butler.zip
+          butler.exe push bin bluerriq/symmetry:windows-prealpha
 
       
     

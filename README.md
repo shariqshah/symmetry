@@ -60,11 +60,11 @@ All the code in this repository is under GPLv3, see LICENSE for more information
 - ### Entity
   The following example shows an entity definition. When saved into a separate file, this forms the blueprint for 
   an entity which can be used to create multiple entities that follow the same definition.
+  Sample entity definition, parameters left out are set to defaults when possible:
 
-  ```JSON
+  ```C
   Entity
   {
-    # Comment, Sample entity definition in file, paremeters left out are set to defaults
   	type : 6
   	material : 0
   	diffuse_color : 1.000 1.000 1.000 1.000
@@ -82,7 +82,7 @@ All the code in this repository is under GPLv3, see LICENSE for more information
   to signify that these are to be loaded from a separate file. Example of a scene entity entry for the entity defined above might 
   look like this 
 
-  ```JSON
+  ```C
   Scene_Entity_Entry
   {
   	scale : 3.000 3.000 3.000
@@ -95,10 +95,11 @@ All the code in this repository is under GPLv3, see LICENSE for more information
 
 - ### Configuration Variables 
 
-  ```JSON
+  These are the first parameters loaded when the game launches. If the game cannot find "config.symtres" file either in the game's installation directory or in the default operating system specific application directory, the game will generate a configuration file with default values and save it. An example config file, values left out are set to default:
+
+  ```C
   Config
   {
-    # Comment
     render_width: 1024
     render_height: 1024
     debug_draw_enabled: true
@@ -116,7 +117,7 @@ All the code in this repository is under GPLv3, see LICENSE for more information
 
   The following example shows an input mapping called "Move_Down":
 
-  ```JSON
+  ```C
   Key
   {
   	mods_secondary_alt : false
@@ -158,7 +159,7 @@ All the code in this repository is under GPLv3, see LICENSE for more information
 
   The following example shows a scene with the player and a light entity called "Test_Light":
 
-  ```JSON
+  ```C
   Scene_Config
   {
   	debug_draw_color : 0.800 0.400 0.100 1.000

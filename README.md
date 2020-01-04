@@ -22,16 +22,16 @@ For more information visit the development blog at my website: [Link](http://sha
 Binary builds are available on the project's Itch.io page: [Link](https://bluerriq.itch.io/symmetry)
 ## Building
 
-The game uses the [GENie](https://github.com/bkaradzic/GENie) build system. The game can be build by llowing steps:
+The game uses the [GENie](https://github.com/bkaradzic/GENie) build system. The game can be build by the following steps:
 
--**Windows**: Execute the following command in the project's root directory by opening a visual studio veloper command prompt:
+-**Windows**: Execute the following command in the project's root directory by opening a visual studio developer command prompt:
 
   ```shell
   cd build
-  ..\tools\genie.exe vs2017
+  ..\tools\genie.exe vs2019
   ```
 
-This will generate a visual studio 2017 solution in the *build/vs2017* folder which can be opened in sual studio and built and run as ususal.
+This will generate a visual studio 2019 solution in the *build/vs2019* folder which can be opened in sual studio and built and run as ususal.
 
 -**Linux(Ubuntu)**: Execute the following in the project's root directory
 

@@ -172,6 +172,12 @@ bool entity_write(struct Entity* entity, struct Parser_Object* object, bool writ
 	hashmap_vec3_set(entity_data, "scale", &entity->transform.scale);
 	hashmap_quat_set(entity_data, "rotation", &entity->transform.rotation);
 
+	if(entity->type != ET_STATIC_MESH)
+	{
+		hashmap_vec3_set(entity_data, "bouding_box_min", &entity->bounding_box.min);
+		hashmap_vec3_set(entity_data, "bouding_box_max", &entity->bounding_box.max);
+	}
+
 	switch(entity->type)
 	{
 	case ET_CAMERA:
@@ -499,7 +505,6 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 		break;
 	}
 	
-	//If there's a parent entity then it means this is a child entity and we shoud load it's relative transform values
 	vec3 position = { 0.f, 0.f, 0.f };
 	quat rotation = { 0.f, 0.f, 0.f, 1.f };
 	vec3 scale = { 1.f, 1.f, 1.f };
@@ -511,6 +516,13 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 	transform_set_position(new_entity, &position);
 	transform_scale(new_entity, &scale);
 	quat_mul(&new_entity->transform.rotation, &new_entity->transform.rotation, &rotation);
+
+	if(new_entity->type != ET_STATIC_MESH)
+	{
+		if(hashmap_value_exists(object->data, "bounding_box_min")) new_entity->bounding_box.min = hashmap_vec3_get(object->data, "bounding_box_min");
+		if(hashmap_value_exists(object->data, "bounding_box_max")) new_entity->bounding_box.max = hashmap_vec3_get(object->data, "bounding_box_max");
+	}
+
 	transform_update_transmat(new_entity);
 
 	return new_entity;

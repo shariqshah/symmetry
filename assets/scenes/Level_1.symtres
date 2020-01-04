@@ -19,7 +19,9 @@ Player
 	rotation : 0.000 -0.760 0.000 0.651
 	active : true
 	position : -68.875 1.832 -69.569
+	bouding_box_min : -0.500 -0.500 -0.500
 	name : Player
+	bouding_box_max : 0.500 0.500 0.500
 	camera_clear_color : 0.298 0.600 0.898 1.000
 }
 

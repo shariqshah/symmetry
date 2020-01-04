@@ -4,6 +4,7 @@
 #include <time.h>
 
 #include "log.h"
+#include "version.h"
 
 #ifdef __linux__
 #define COLOURED_STDOUT
@@ -54,6 +55,7 @@ void log_init(const char* log_file_name, const char* user_directory)
 		time_t current_time;
 		time(&current_time);
 		fprintf(log_file, "Log Initialized at %s\n", ctime(&current_time));
+		fprintf(log_file, "Version: %d.%d.%d-%s\n\n", SYMMETRY_VERSION_MAJOR, SYMMETRY_VERSION_MINOR, SYMMETRY_VERSION_REVISION, SYMMETRY_VERSION_BRANCH);
 		fflush(log_file);
 	}
     // Disable stdout buffering

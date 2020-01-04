@@ -358,7 +358,7 @@ void game_debug(float dt)
     if(input_is_key_pressed(KEY_PAGEUP))
     {
 		struct Entity* model = scene_find(game_state->scene, "Suzanne_Test_Parent");
-		//vec3 y_axis = {0, 0, 1};
+		vec3 y_axis = {0, 0, 1};
 		//transform_rotate(mod_tran, &y_axis, 25.f * dt, TS_LOCAL);
 		vec3 amount = {0, 0, -5 * dt};
 		transform_translate(model, &amount, TS_LOCAL);

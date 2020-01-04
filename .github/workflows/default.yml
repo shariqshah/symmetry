@@ -23,7 +23,7 @@ jobs:
         curl -L -o butler.zip https://broth.itch.ovh/butler/windows-amd64/LATEST/archive/default
         7z e butler.zip
         dir
-        .\butler.exe push bin bluerriq/symmetry:windows-prealpha
+        .\butler.exe push bin bluerriq/symmetry:windows-prealpha --userversion-file bin/version.txt
 
       
     

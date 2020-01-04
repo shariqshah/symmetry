@@ -2,6 +2,8 @@
 
 ![alt-text](screenshots/project_symmetry.jpg "Project Symmetry")
 
+<iframe src="https://itch.io/embed/141852?linkback=true&amp;dark=true" align="center" width="552" height="167" frameborder="0"><a href="https://bluerriq.itch.io/symmetry">Symmetry by bluerriq</a></iframe>
+
 ## About
 
 A simple first person shooter that may or may not have anything to do with the concept of symmetry.
@@ -16,6 +18,8 @@ libraries:
 | [ODE](http://ode.org/)                       | Physics                                 |
 | [Nuklear](https://github.com/vurtun/nuklear) | In-game and editor UI                   |
 | [GLAD](https://github.com/dav1dde/glad-web)  | OpenGL Extension Loading                |
+
+For more information visit the development blog at my website: [Link]("http://shariqshah.com/tags/project-symmetry/")
 
 ## Building
 

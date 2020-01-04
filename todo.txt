@@ -1,4 +1,6 @@
 Todo:
+	- Figure out the revision number and branching situation
+	- Add links to Itch.io builds of the game in readme and on the blog. Add link to blog in the readme as well 
 	- Save/Load base bounding boxes for entity types other than static mesh
 	- Determine whether we should enable or disble picking when a tool is active within an editor
 	? Only show bounding box for hovered entity instead of wireframe mesh

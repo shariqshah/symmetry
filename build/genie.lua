@@ -55,6 +55,36 @@ solution "Symmetry"
 	   end
 	}
 
+	newaction {
+		trigger = "generate_version_file",
+		description = "Generate version.h from git revision number",
+		execute  = function()
+			local major_version = 0
+			local minor_version = 1
+			local revision_number = os.outputof("git rev-list --count HEAD")
+			local branch = os.outputof("git rev-parse --abbrev-ref HEAD")
+
+			revision_number = revision_number:gsub("%s+", "")
+			branch = branch:gsub("%s+", "")
+
+			print("Writing Version Number.....")
+			io.output("../../src/common/version.h")
+			io.write("#ifndef SYMMETRY_VERSION_FILE\n")
+			io.write("#define SYMMETRY_VERSION_FILE\n\n")
+			io.write("/* Auto generated version file. DO NOT MODIFY */\n")
+			io.write("#define SYMMETRY_VERSION_MAJOR " .. major_version .. "\n")
+			io.write("#define SYMMETRY_VERSION_MINOR " .. minor_version .. "\n")
+			io.write("#define SYMMETRY_VERSION_REVISION " .. revision_number .. "\n")
+			io.write("#define SYMMETRY_VERSION_BRANCH \"" .. branch .. "\"\n")
+			io.write("\n#endif")
+			io.close()
+
+			io.output("version.txt")
+			io.write(major_version .. "." .. minor_version .. "." .. revision_number .. "-" .. branch)
+			io.close()
+		end
+	}
+
 	-------------------------
 	-- Game
 	-------------------------
@@ -65,7 +95,12 @@ solution "Symmetry"
 		files { "../src/common/**.c", "../src/common/**.h", "../src/system/**.c", "../src/system/**.h", "../src/game/**.h", "../src/game/**.c"}
 		includedirs {"../include/common"}
 		defines {"USE_GLAD"}
-		
+
+		prebuildcommands
+		{
+			_PREMAKE_COMMAND .. ' generate_version_file'
+		}
+
 		configuration "linux"
 		    includedirs {"../include/linux/sdl2/", "../include/common/soloud/", "../include/linux/"}
 		    libdirs {"../lib/linux/sdl2/", "../lib/linux/soloud/", "../lib/linux/ode/"}
@@ -99,6 +134,7 @@ solution "Symmetry"
 				'install_name_tool -change "/usr/local/opt/sdl2/lib/libSDL2-2.0.0.dylib" "@rpath/libSDL2-2.0.0.dylib" release/Symmetry',
 				'install_name_tool -change "/Users/shariqshah/Dev/ode/build_cmake/libode.0.16.0.dylib" "@rpath/libode.0.16.0.dylib" release/Symmetry',
 				'install_name_tool -change "/usr/local/lib/libsoloud.dylib" "@rpath/libsoloud.dylib" release/Symmetry',
+				'cp version.txt release/'
 			}
 
 		configuration {"windows", "vs2019"}
@@ -125,6 +161,7 @@ solution "Symmetry"
 				"copy release\\SDL2.dll ..\\..\\bin\\ /Y",
 				"copy release\\soloud_x64.dll ..\\..\\bin\\ /Y",
 				"copy release\\ode_double.dll ..\\..\\bin\\ /Y",
+				"copy version.txt ..\\..\\bin\\ /Y",
 				"rmdir release\\assets",
 				"mklink /D release\\assets ..\\..\\..\\assets"
 			}

@@ -49,6 +49,7 @@ struct Editor
 	float               tool_rotate_starting_rotation;
 	vec3                tool_scale_amount;
 	bool                tool_scale_started;
+	bool                tool_translate_allowed;
 	float               axis_line_length;
 	vec4                axis_color_x;
 	vec4                axis_color_y;

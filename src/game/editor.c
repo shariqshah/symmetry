@@ -142,6 +142,7 @@ void editor_init(struct Editor* editor)
 	editor->picking_enabled                    = true;
 	editor->draw_cursor_entity                 = false;
 	editor->tool_scale_started                 = false;
+	editor->tool_translate_allowed             = false;
 	editor->entity_operation_save              = false;
 	editor->scene_operation_save               = false;
 
@@ -873,7 +874,6 @@ void editor_on_mousebutton_release(const struct Event* event)
 					editor_entity_select(editor, NULL);
 			}
 		}
-
 	}
 
 	if(editor->selected_entity && event->mousebutton.button == MSB_LEFT && nk_item_is_any_active(&gui->context) == 0)
@@ -881,13 +881,18 @@ void editor_on_mousebutton_release(const struct Event* event)
 		switch(editor->current_tool)
 		{
 		case EDITOR_TOOL_TRANSLATE:
-			if(editor->current_axis != EDITOR_AXIS_NONE)
+			if(editor->tool_translate_allowed)
+			{
+				//editor->picking_enabled = true;
+				//editor->tool_translate_allowed = false;
 				transform_copy(editor->selected_entity, editor->cursor_entity, false);
+				//editor->draw_cursor_entity = false;
+			}
 			break;
 		case EDITOR_TOOL_ROTATE:
 			if(editor->tool_rotate_rotation_started)
 			{
-				editor->picking_enabled = true;
+				//editor->picking_enabled = true;
 				editor->tool_rotate_rotation_started = false;
 				transform_copy(editor->selected_entity, editor->cursor_entity, false);
 				editor->tool_rotate_total_rotation = 0.f;
@@ -898,7 +903,7 @@ void editor_on_mousebutton_release(const struct Event* event)
 		case EDITOR_TOOL_SCALE:
 			if(editor->tool_scale_started)
 			{
-				editor->picking_enabled = true;
+				//editor->picking_enabled = true;
 				editor->tool_scale_started = false;
 				transform_copy(editor->selected_entity, editor->cursor_entity, false);
 				vec3_fill(&editor->tool_scale_amount, 1.f, 1.f, 1.f);
@@ -931,37 +936,15 @@ void editor_on_mousebutton_press(const struct Event* event)
 	{
 		if(editor->current_tool == EDITOR_TOOL_ROTATE && editor->tool_rotate_allowed)
 		{
-			/* Check if there's an entity under cursor, if there is then select it,
-			   otherwise disable picking and start rotating */
-			struct Scene* scene = game_state_get()->scene;
-			struct Camera* editor_camera = &scene->cameras[CAM_EDITOR];
-			int mouse_x = 0, mouse_y = 0;
-			platform_mouse_position_get(&mouse_x, &mouse_y);
-			struct Ray ray = camera_screen_coord_to_ray(editor_camera, mouse_x, mouse_y);
-			struct Entity* intersected_entity = scene_ray_intersect_closest(scene, &ray, ERM_ALL);
-
-			bool start_rotation = true;
-			if(intersected_entity)
+			editor->picking_enabled = false;
+			editor->tool_rotate_rotation_started = true;
+			editor->tool_rotate_total_rotation = 0.f;
+			editor->draw_cursor_entity = true;
+			switch(editor->current_axis)
 			{
-				if(intersected_entity != editor->selected_entity)
-				{
-					editor_entity_select(editor, intersected_entity);
-					start_rotation = false;
-				}
-			}
-
-			if(start_rotation)
-			{
-				editor->picking_enabled = false;
-				editor->tool_rotate_rotation_started = true;
-				editor->tool_rotate_total_rotation = 0.f;
-				editor->draw_cursor_entity = true;
-				switch(editor->current_axis)
-				{
-				case EDITOR_AXIS_X: editor->tool_rotate_starting_rotation = roundf(quat_get_pitch(&editor->cursor_entity->base.transform.rotation)); break;
-				case EDITOR_AXIS_Y: editor->tool_rotate_starting_rotation = roundf(quat_get_yaw(&editor->cursor_entity->base.transform.rotation));   break;
-				case EDITOR_AXIS_Z: editor->tool_rotate_starting_rotation = roundf(quat_get_roll(&editor->cursor_entity->base.transform.rotation));  break;
-				}
+			case EDITOR_AXIS_X: editor->tool_rotate_starting_rotation = roundf(quat_get_pitch(&editor->cursor_entity->base.transform.rotation)); break;
+			case EDITOR_AXIS_Y: editor->tool_rotate_starting_rotation = roundf(quat_get_yaw(&editor->cursor_entity->base.transform.rotation));   break;
+			case EDITOR_AXIS_Z: editor->tool_rotate_starting_rotation = roundf(quat_get_roll(&editor->cursor_entity->base.transform.rotation));  break;
 			}
 		}
 	}
@@ -988,7 +971,7 @@ void editor_on_mousemotion(const struct Event* event)
 	break;
 	case EDITOR_TOOL_TRANSLATE:
 	{
-		if(editor->selected_entity)
+		if(editor->selected_entity && editor->tool_translate_allowed)
 		{
 			struct Camera* editor_camera = &game_state->scene->cameras[CAM_EDITOR];
 			vec3 current_position = { 0.f, 0.f, 0.f };
@@ -1140,19 +1123,26 @@ void editor_on_mousemotion(const struct Event* event)
 	}
 
 	/* Check if we're hovering over an entity */
-	struct Scene* scene = game_state->scene;
-	struct Camera* editor_camera = &scene->cameras[CAM_EDITOR];
-	struct Ray ray = camera_screen_coord_to_ray(editor_camera, event->mousemotion.x, event->mousemotion.y);
-	struct Entity* intersected_entity = scene_ray_intersect_closest(scene, &ray, ERM_ALL);
-	if(intersected_entity)
+	if(editor->picking_enabled)
 	{
-		if(intersected_entity != editor->hovered_entity)
-			editor->hovered_entity = intersected_entity;
+		struct Scene* scene = game_state->scene;
+		struct Camera* editor_camera = &scene->cameras[CAM_EDITOR];
+		struct Ray ray = camera_screen_coord_to_ray(editor_camera, event->mousemotion.x, event->mousemotion.y);
+		struct Entity* intersected_entity = scene_ray_intersect_closest(scene, &ray, ERM_ALL);
+		if(intersected_entity)
+		{
+			if(intersected_entity != editor->hovered_entity)
+				editor->hovered_entity = intersected_entity;
+		}
+		else
+		{
+			if(editor->hovered_entity)
+				editor->hovered_entity = NULL;
+		}
 	}
-	else
+	else if(editor->hovered_entity)
 	{
-		if(editor->hovered_entity)
-			editor->hovered_entity = NULL;
+		editor->hovered_entity = NULL;
 	}
 }
 
@@ -1312,9 +1302,9 @@ void editor_tool_reset(struct Editor* editor)
 		editor->draw_cursor_entity = false;
 		break;
 	case EDITOR_TOOL_TRANSLATE:
-		if(editor->current_axis != EDITOR_AXIS_XZ)
-			editor_axis_set(editor, EDITOR_AXIS_XZ);
-		editor->draw_cursor_entity = true;
+		editor->draw_cursor_entity = false;
+		editor->tool_translate_allowed = false;
+		editor_axis_set(editor, EDITOR_AXIS_NONE);
 		break;
 	case EDITOR_TOOL_ROTATE:
 		editor->tool_rotate_amount = 0.f;
@@ -1370,6 +1360,13 @@ void editor_axis_set(struct Editor* editor, int axis)
 				editor->tool_rotate_allowed = false;
 				editor->tool_rotate_amount = 0.f;
 			}
+			else
+			{
+				if(axis != EDITOR_AXIS_NONE)
+					editor->picking_enabled = false;
+				else if(axis == EDITOR_AXIS_NONE && !editor->picking_enabled)
+					editor->picking_enabled = true;
+			}
 		}
 
 		if(editor->current_tool == EDITOR_TOOL_SCALE && axis != EDITOR_AXIS_NONE)
@@ -1378,6 +1375,13 @@ void editor_axis_set(struct Editor* editor, int axis)
 			editor->picking_enabled = false;
 			editor->draw_cursor_entity = true;
 			vec3_assign(&editor->tool_scale_amount, &editor->cursor_entity->base.transform.scale);
+		}
+
+		if(editor->current_tool == EDITOR_TOOL_TRANSLATE && axis != EDITOR_AXIS_NONE)
+		{
+			editor->tool_translate_allowed = true;
+			editor->picking_enabled = false;
+			editor->draw_cursor_entity = true;
 		}
 	}
 	else
@@ -1396,6 +1400,23 @@ void editor_axis_set(struct Editor* editor, int axis)
 			editor->picking_enabled = true;
 			editor->tool_scale_started = false;
 			vec3_fill(&editor->tool_scale_amount, 1.f, 1.f, 1.f);
+			editor->draw_cursor_entity = false;
+		}
+
+		if(editor->current_tool == EDITOR_TOOL_ROTATE)
+		{
+			editor->tool_rotate_amount = 0.f;
+			editor->tool_rotate_total_rotation = 0.f;
+			editor->tool_rotate_allowed = false;
+			editor->tool_rotate_rotation_started = false;
+			editor->draw_cursor_entity = false;
+			editor->picking_enabled = true;
+		}
+
+		if(editor->current_tool == EDITOR_TOOL_TRANSLATE)
+		{
+			editor->picking_enabled = true;
+			editor->tool_translate_allowed = false;
 			editor->draw_cursor_entity = false;
 		}
 	}

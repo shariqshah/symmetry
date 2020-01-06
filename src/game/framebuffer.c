@@ -42,8 +42,8 @@ int framebuffer_create(int width, int height, bool has_depth, bool has_color, bo
 {
 	int    index              = -1;
 	GLuint fbo                =  0;
-	GLuint depth_renderbuffer =  0;
-	GLuint color_renderbuffer =  0;
+	GLuint depth_renderbuffer = -1;
+	GLuint color_renderbuffer = -1;
 
 	glGenFramebuffers(1, &fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -133,11 +133,11 @@ void framebuffer_remove(int index)
 			fbo->texture_attachments[i] = -1;
 		}
 	}
-	if(fbo->depth_renderbuffer != 0) glDeleteRenderbuffers(1, &fbo->depth_renderbuffer);
-	if(fbo->color_renderbuffer != 0) glDeleteRenderbuffers(1, &fbo->color_renderbuffer);
+	if(fbo->depth_renderbuffer > -1) glDeleteRenderbuffers(1, &fbo->depth_renderbuffer);
+	if(fbo->color_renderbuffer > -1) glDeleteRenderbuffers(1, &fbo->color_renderbuffer);
 	glDeleteFramebuffers(1, &fbo->handle);
-	fbo->color_renderbuffer =  0;
-	fbo->depth_renderbuffer =  0;
+	fbo->color_renderbuffer = -1;
+	fbo->depth_renderbuffer = -1;
 	fbo->handle             =  0;
 	fbo->width              = -1;
 	fbo->height             = -1;
@@ -184,14 +184,35 @@ void framebuffer_texture_set(int index, int texture, enum Framebuffer_Attachment
 	
 	GLint current_fbo = 0;
 	GL_CHECK(glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo));
+
 	framebuffer_bind(index);
-	GL_CHECK(glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER,
-						   gl_attachment,
-						   GL_TEXTURE_2D,
-						   texture_get_texture_handle(texture),
-						   0));
-	fbo->texture_attachments[attachment] = texture;
-	if(attachment == FA_COLOR_ATTACHMENT0) glDrawBuffer(GL_COLOR_ATTACHMENT0);
+	{
+		GL_CHECK(glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER,
+										gl_attachment,
+										GL_TEXTURE_2D,
+										texture_get_texture_handle(texture),
+										0));
+		fbo->texture_attachments[attachment] = texture;
+		if(attachment == FA_COLOR_ATTACHMENT0)
+		{
+			glDrawBuffer(GL_COLOR_ATTACHMENT0);
+			if(fbo->color_renderbuffer > -1)
+			{
+				glDeleteRenderbuffers(1, &fbo->color_renderbuffer);
+				fbo->color_renderbuffer = -1;
+			}
+		}
+		else if(attachment == FA_DEPTH_ATTACHMENT && fbo->depth_renderbuffer != -1)
+		{
+			glDeleteRenderbuffers(1, &fbo->depth_renderbuffer);
+			fbo->depth_renderbuffer = -1;
+		}
+
+		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		if(status != GL_FRAMEBUFFER_COMPLETE)
+			log_error("framebuffer:texture_set", "Framebuffer not complete!");
+	}
+
 	glBindFramebuffer(GL_FRAMEBUFFER, current_fbo);
 }
 
@@ -220,7 +241,7 @@ void framebuffer_resize(int index, int width, int height)
 	struct FBO* fbo = &fbo_list[index];
 	if(!fbo->resizeable) return;
 	framebuffer_bind(index);
-	if(fbo->depth_renderbuffer != 0)
+	if(fbo->depth_renderbuffer > -1)
 	{
 		glBindRenderbuffer(GL_RENDERBUFFER, fbo->depth_renderbuffer);
 		GL_CHECK(glRenderbufferStorage(GL_RENDERBUFFER,
@@ -234,7 +255,7 @@ void framebuffer_resize(int index, int width, int height)
 		glBindRenderbuffer(GL_RENDERBUFFER, 0);
 	}
 
-	if(fbo->color_renderbuffer != 0)
+	if(fbo->color_renderbuffer > -1)
 	{
 		glBindRenderbuffer(GL_RENDERBUFFER, fbo->color_renderbuffer);
 		GL_CHECK(glRenderbufferStorage(GL_RENDERBUFFER,

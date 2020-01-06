@@ -118,7 +118,7 @@ void camera_attach_fbo(struct Camera* camera,
 		log_error("camera:attach_fbo", "Camera already has fbo attached!");
 		return;
 	}
-	camera->fbo = framebuffer_create(width, height, has_depth, 0, resizeable);
+	camera->fbo = framebuffer_create(width, height, 0, 1, resizeable);
 	if(camera->fbo > -1)
 	{
 		if(has_color)
@@ -144,7 +144,7 @@ void camera_attach_fbo(struct Camera* camera,
 				width, height,
 				GL_DEPTH_COMPONENT,
 				GL_DEPTH_COMPONENT,
-				GL_UNSIGNED_BYTE,
+				GL_FLOAT,
 				NULL);
 			texture_set_param(camera->depth_tex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			texture_set_param(camera->depth_tex, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);

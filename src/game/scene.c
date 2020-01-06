@@ -72,7 +72,7 @@ void scene_init(struct Scene* scene)
 		memset(&scene->entity_archetypes[i][0], '\0', MAX_FILENAME_LEN);
 
 	player_init(&scene->player, scene);
-	editor_init_camera(game_state->editor, game_state->cvars);
+	editor_camera_init(game_state->editor, game_state->cvars);
 	editor_init_entities(game_state->editor);
 
 	scene->active_camera_index = game_state_get()->game_mode == GAME_MODE_GAME ? CAM_GAME : CAM_EDITOR;

@@ -60,7 +60,7 @@ struct Editor
 };
 
 void editor_init(struct Editor* editor_state);
-void editor_init_camera(struct Editor* editor_state, struct Hashmap* cvars);
+void editor_camera_init(struct Editor* editor_state, struct Hashmap* cvars);
 void editor_init_entities(struct Editor* editor);
 void editor_render(struct Editor* editor_state, struct Camera* active_camera);
 void editor_update(struct Editor* editor_state, float dt);

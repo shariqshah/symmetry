@@ -170,7 +170,7 @@ void editor_init_entities(struct Editor* editor)
 	editor->cursor_entity->base.flags |= EF_TRANSIENT | EF_SKIP_RENDER | EF_HIDE_IN_EDITOR_SCENE_HIERARCHY | EF_IGNORE_RAYCAST;
 }
 
-void editor_init_camera(struct Editor* editor, struct Hashmap* cvars)
+void editor_camera_init(struct Editor* editor, struct Hashmap* cvars)
 {
     struct Camera* editor_camera = &game_state_get()->scene->cameras[CAM_EDITOR];
     entity_rename(editor_camera, "Editor_Camera");
@@ -180,13 +180,13 @@ void editor_init_camera(struct Editor* editor, struct Hashmap* cvars)
     editor_camera->clear_color.z = 0.9f;
     editor_camera->clear_color.w = 1.f;
 
-	if(editor_camera->fbo == -1)
-	{
-		int render_width = hashmap_int_get(cvars, "render_width");
-		int render_height = hashmap_int_get(cvars, "render_height");
-		window_get_drawable_size(game_state_get()->window, &render_width, &render_height);
-		camera_attach_fbo(editor_camera, render_width, render_height, true, true, true);
-	}
+	//if(editor_camera->fbo == -1)
+	//{
+	//	int render_width = hashmap_int_get(cvars, "render_width");
+	//	int render_height = hashmap_int_get(cvars, "render_height");
+	//	window_get_drawable_size(game_state_get()->window, &render_width, &render_height);
+	//	camera_attach_fbo(editor_camera, render_width, render_height, true, true, true);
+	//}
 
     vec3 cam_pos = {5.f, 20.f, 50.f};
     transform_translate(editor_camera, &cam_pos, TS_WORLD);

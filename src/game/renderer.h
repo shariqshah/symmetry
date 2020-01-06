@@ -38,11 +38,6 @@ struct Render_Settings
 
 struct Renderer
 {
-    int def_fbo;
-    int def_albedo_tex;
-    int def_depth_tex;
-    int quad_geo;
-    int composition_shader;
     int debug_shader;
     int num_culled , num_rendered , num_indices;
     int num_culled_slot, num_rendered_slot, num_indices_slot;

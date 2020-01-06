@@ -42,13 +42,13 @@ void player_init(struct Player* player, struct Scene* scene)
 	player->camera_node->base.flags |= EF_TRANSIENT;
 	player->mesh->base.flags |= EF_TRANSIENT;
 
-	if(player_camera->fbo == -1)
-	{
-		int render_width = hashmap_int_get(config, "render_width");
-		int render_height = hashmap_int_get(config, "render_height");
-		window_get_drawable_size(game_state->window, &render_width, &render_height);
-		camera_attach_fbo(player_camera, render_width, render_height, true, true, true);
-	}
+	//if(player_camera->fbo == -1)
+	//{
+	//	int render_width = hashmap_int_get(config, "render_width");
+	//	int render_height = hashmap_int_get(config, "render_height");
+	//	window_get_drawable_size(game_state->window, &render_width, &render_height);
+	//	camera_attach_fbo(player_camera, render_width, render_height, true, true, true);
+	//}
 
     transform_parent_set(player_camera, player, true);
 

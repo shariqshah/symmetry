@@ -17,9 +17,9 @@ GLenum* draw_modes = NULL;
 static struct Geometry* geometry_list;
 static int*             empty_indices;
 
-static int              load_from_file(struct Geometry* geometry, const char* filename);
-static void             create_vao(struct Geometry* geometry);
+static void             create_vao(struct Geometry* geometry, vec3* vertices, vec2* uvs, vec3* normals, vec3* vertex_colors, uint* indices);
 static struct Geometry* generate_new_index(int* out_new_index);
+static void             geom_bounding_volume_generate(struct Geometry* geometry, vec3* vertices);
 
 void geom_init(void)
 {
@@ -49,20 +49,19 @@ int geom_find(const char* filename)
 	return index;
 }
 
-void geom_bounding_volume_generate(int index)
+void geom_bounding_volume_generate(struct Geometry* geometry, vec3* vertices)
 {
-	struct Geometry*        geometry = &geometry_list[index];
-	struct Bounding_Box*    box      = &geometry->bounding_box;
-	struct Bounding_Sphere* sphere   = &geometry->bounding_sphere;
+	struct Bounding_Box*    box    = &geometry->bounding_box;
+	struct Bounding_Sphere* sphere = &geometry->bounding_sphere;
 	
 	vec3_fill(&box->max, -FLT_MIN, -FLT_MIN, -FLT_MIN);
 	vec3_fill(&box->min,  FLT_MAX,  FLT_MAX,  FLT_MAX);
 	vec3_fill(&sphere->center, 0.f, 0.f, 0.f);
 	sphere->radius = 0.f;
 	
-	for(int i = 0; i < array_len(geometry->vertices); i++)
+	for(int i = 0; i < array_len(vertices); i++)
 	{
-		vec3* vertex = &geometry->vertices[i];
+		vec3* vertex = &vertices[i];
 		if(vertex->x > box->max.x) box->max.x = vertex->x;
 		if(vertex->y > box->max.y) box->max.y = vertex->y;
 		if(vertex->z > box->max.z) box->max.z = vertex->z;
@@ -85,13 +84,7 @@ void geom_bounding_volume_generate(int index)
 	}
 }
 
-void geom_bounding_volume_generate_all(void)
-{
-	for(int i = 0; i < array_len(geometry_list); i++)
-		geom_bounding_volume_generate(i);
-}
-
-static struct Geometry* generate_new_index(int* out_new_index)
+struct Geometry* generate_new_index(int* out_new_index)
 {
 	assert(out_new_index);
 	int empty_len = array_len(empty_indices);
@@ -122,10 +115,58 @@ int geom_create_from_file(const char* name)
 		new_geo = generate_new_index(&index);
 		assert(new_geo);
 		
-		if(load_from_file(new_geo, name))
+		char* full_path = str_new("models/%s", name);
+		FILE* file = io_file_open(DIRT_INSTALL, full_path, "rb");
+		free(full_path);
+		if(file)
 		{
-			create_vao(new_geo);
-			geom_bounding_volume_generate(index);
+			const uint32 INDEX_SIZE = sizeof(uint32);
+			const uint32 VEC3_SIZE = sizeof(vec3);
+			const uint32 VEC2_SIZE = sizeof(vec2);
+			uint32 header[4];
+			size_t bytes_read = 0;
+			if((bytes_read = fread(header, INDEX_SIZE, 4, file)) <= 0)
+			{
+				log_error("geometry:load_from_file", "Read failed");
+				/* TODO: Some error here, find it and fix it */
+				array_pop(geometry_list);
+				index = -1;
+			}
+			else
+			{
+				uint32 indices_count  = header[0];
+				uint32 vertices_count = header[1];
+				uint32 normals_count  = header[2];
+				uint32 uvs_count      = header[3];
+				// Indices
+				uint* indices = array_new_cap(uint, indices_count);
+				fread(indices, INDEX_SIZE, indices_count, file);
+				array_match_len_cap(indices);
+				// Vertices
+				vec3* vertices = array_new_cap(vec3, vertices_count);
+				fread(vertices, VEC3_SIZE, vertices_count, file);
+				array_match_len_cap(vertices);
+				// Normals
+				vec3* normals = array_new_cap(vec3, normals_count);
+				fread(normals, VEC3_SIZE, normals_count, file);
+				array_match_len_cap(normals);
+				// Uvs
+				vec2* uvs = array_new_cap(vec2, uvs_count);
+				fread(uvs, VEC2_SIZE, uvs_count, file);
+				array_match_len_cap(uvs);
+
+				new_geo->filename = str_new(name);
+				new_geo->draw_indexed = 1;
+				new_geo->ref_count++;
+
+				create_vao(new_geo, vertices, uvs, normals, NULL, indices);
+				geom_bounding_volume_generate(new_geo, vertices);
+				if(vertices)      array_free(vertices);
+				if(indices)       array_free(indices);
+				if(uvs)           array_free(uvs);
+				if(normals)       array_free(normals);
+			}
+			fclose(file);
 		}
 		else
 		{
@@ -151,29 +192,12 @@ int geom_create(const char* name,
 	assert(name && vertices && uvs && normals && indices);
 	int index = -1;
 	/* add new geometry object or overwrite existing one */
-	struct Geometry* new_geo = NULL;
-	new_geo = generate_new_index(&index);
-	assert(new_geo);
-	new_geo->filename = str_new(name);
-	new_geo->vertices = array_new_cap(vec3, array_len(vertices));
-	array_copy(vertices, new_geo->vertices);
-	new_geo->normals = array_new_cap(vec3, array_len(normals));
-	array_copy(normals, new_geo->normals);
-	new_geo->uvs = array_new_cap(vec2, array_len(uvs));
-	array_copy(uvs, new_geo->uvs);
-	new_geo->indices = array_new_cap(uint, array_len(indices));
-	array_copy(indices, new_geo->indices);
-	if(vertex_colors)
-	{
-		new_geo->vertex_colors = array_new_cap(vec3, array_len(vertex_colors));
-		array_copy(vertex_colors, new_geo->vertex_colors);
-	}
-	else
-	{
-		new_geo->vertex_colors = array_new(vec3);
-	}
-	create_vao(new_geo);
-	//generateBoundingBox(index);
+	struct Geometry* new_geometry = NULL;
+	new_geometry = generate_new_index(&index);
+	assert(new_geometry);
+	new_geometry->filename = str_new(name);
+	create_vao(new_geometry, vertices, uvs, normals, vertex_colors, indices);
+	geom_bounding_volume_generate(new_geometry, vertices);
 	return index;
 }
 
@@ -188,18 +212,8 @@ void geom_remove(int index)
 			geometry->ref_count--;
 			if(geometry->ref_count < 0)
 			{
-				if(geometry->indices)       array_free(geometry->indices);
-				if(geometry->vertices)      array_free(geometry->vertices);
-				if(geometry->uvs)           array_free(geometry->uvs);
-				if(geometry->normals)       array_free(geometry->normals);
-				if(geometry->vertex_colors) array_free(geometry->vertex_colors);
-				if(geometry->filename)      free(geometry->filename);
-				geometry->indices       = NULL;
-				geometry->vertices      = NULL;
-				geometry->uvs           = NULL;
-				geometry->normals       = NULL;
-				geometry->vertex_colors = NULL;
-				geometry->filename      = NULL;
+				if(geometry->filename) free(geometry->filename);
+				geometry->filename = NULL;
 
 				glDeleteBuffers(1, &geometry->vertex_vbo);
 				glDeleteBuffers(1, &geometry->color_vbo);
@@ -231,64 +245,12 @@ void geom_cleanup(void)
 	array_free(draw_modes);
 }
 
-static int load_from_file(struct Geometry* geometry, const char* filename)
-{
-	assert(filename);
-	int success = 1;
-	char* full_path = str_new("models/%s", filename);
-			
-    FILE* file = io_file_open(DIRT_INSTALL, full_path, "rb");
-	free(full_path);
-	if(file)
-	{				
-		const uint32 INDEX_SIZE = sizeof(uint32);
-		const uint32 VEC3_SIZE  = sizeof(vec3);
-		const uint32 VEC2_SIZE  = sizeof(vec2);
-		uint32 header[4];
-		size_t bytes_read = 0;
-		if((bytes_read = fread(header, INDEX_SIZE, 4, file)) <= 0)
-		{
-			log_error("geometry:load_from_file", "Read failed");
-			success = 0;
-		}
-		else
-		{
-			uint32 indices_count  = header[0];
-			uint32 vertices_count = header[1];
-			uint32 normals_count  = header[2];
-			uint32 uvs_count      = header[3];
-			// Indices
-			geometry->indices = array_new_cap(uint, indices_count);
-			fread(geometry->indices, INDEX_SIZE, indices_count, file);
-			array_match_len_cap(geometry->indices);
-			// Vertices
-			geometry->vertices = array_new_cap(vec3, vertices_count);
-			fread(geometry->vertices, VEC3_SIZE, vertices_count, file);
-			array_match_len_cap(geometry->vertices);
-			// Normals
-			geometry->normals = array_new_cap(vec3, normals_count);
-			fread(geometry->normals, VEC3_SIZE, normals_count, file);
-			array_match_len_cap(geometry->normals);
-			// Uvs
-			geometry->uvs = array_new_cap(vec2, uvs_count);
-			fread(geometry->uvs, VEC2_SIZE, uvs_count, file);
-			array_match_len_cap(geometry->uvs);
-
-			geometry->vertex_colors = array_new(vec3);
-		}
-		fclose(file);
-		geometry->filename = str_new(filename);
-		geometry->draw_indexed = 1;
-		geometry->ref_count++;
-	}
-	else
-	{
-		success = 0;
-	}
-	return success;
-}
-
-static void create_vao(struct Geometry* geometry)
+void create_vao(struct Geometry* geometry,
+				vec3*            vertices,
+				vec2*            uvs,
+				vec3*            normals,
+				vec3*            vertex_colors,
+				uint*            indices)
 {
 	// TODO: Add support for different model formats and interleaving VBO
 	assert(geometry);
@@ -298,59 +260,62 @@ static void create_vao(struct Geometry* geometry)
 	glGenBuffers(1, &geometry->vertex_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, geometry->vertex_vbo);
 	GL_CHECK(glBufferData(GL_ARRAY_BUFFER,
-				 array_len(geometry->vertices) * sizeof(vec3),
-				 geometry->vertices,
+				 array_len(vertices) * sizeof(vec3),
+				 vertices,
 				 GL_STATIC_DRAW));
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	geometry->vertices_len = array_len(vertices);
 
-	if(array_len(geometry->normals) > 0)
+	if(array_len(normals) > 0)
 	{
 		glGenBuffers(1, &geometry->normal_vbo);
 		glBindBuffer(GL_ARRAY_BUFFER, geometry->normal_vbo);
 		GL_CHECK(glBufferData(GL_ARRAY_BUFFER,
-					 array_len(geometry->normals) * sizeof(vec3),
-					 geometry->normals,
+					 array_len(normals) * sizeof(vec3),
+					 normals,
 					 GL_STATIC_DRAW));
 		glEnableVertexAttribArray(1);
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, 0, 0);
 	}
 
-	if(array_len(geometry->uvs) > 0)
+	if(array_len(uvs) > 0)
 	{
 		glGenBuffers(1, &geometry->uv_vbo);
 		glBindBuffer(GL_ARRAY_BUFFER, geometry->uv_vbo);
 		GL_CHECK(glBufferData(GL_ARRAY_BUFFER,
-					 array_len(geometry->uvs) * sizeof(vec2),
-					 geometry->uvs,
+					 array_len(uvs) * sizeof(vec2),
+					 uvs,
 					 GL_STATIC_DRAW));
 		glEnableVertexAttribArray(2);
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
 	}
 
-	if(array_len(geometry->vertex_colors) > 0)
+	if(vertex_colors && array_len(vertex_colors) > 0)
 	{
 		glGenBuffers(1, &geometry->color_vbo);
 		glBindBuffer(GL_ARRAY_BUFFER, geometry->color_vbo);
 		GL_CHECK(glBufferData(GL_ARRAY_BUFFER,
-					 array_len(geometry->vertex_colors) * sizeof(vec3),
-					 geometry->vertex_colors,
+					 array_len(vertex_colors) * sizeof(vec3),
+					 vertex_colors,
 					 GL_STATIC_DRAW));
 		glEnableVertexAttribArray(3);
 		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	}
 
-	if(array_len(geometry->indices) > 0)
+	if(array_len(indices) > 0)
 	{
 		glGenBuffers(1, &geometry->index_vbo);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, geometry->index_vbo);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-					 array_len(geometry->indices) * sizeof(GLuint),
-					 geometry->indices,
+					 array_len(indices) * sizeof(GLuint),
+					 indices,
 					 GL_STATIC_DRAW);
 		geometry->draw_indexed = 1;
+		geometry->indices_len = array_len(indices);
 	}
 	glBindVertexArray(0);
+
 }
 
 void geom_render(int index, enum Geometry_Draw_Mode draw_mode)
@@ -359,9 +324,9 @@ void geom_render(int index, enum Geometry_Draw_Mode draw_mode)
 	struct Geometry* geo = &geometry_list[index];
 	glBindVertexArray(geo->vao);
 	if(geo->draw_indexed)
-		glDrawElements(draw_modes[draw_mode], array_len(geo->indices), GL_UNSIGNED_INT, (void*)0);
+		glDrawElements(draw_modes[draw_mode], geo->indices_len, GL_UNSIGNED_INT, (void*)0);
 	else
-		glDrawArrays(draw_modes[draw_mode], 0, array_len(geo->vertices));
+		glDrawArrays(draw_modes[draw_mode], 0, geo->vertices_len);
 	glBindVertexArray(0);
 			
 }
@@ -386,7 +351,7 @@ int geom_render_in_frustum(int                      index,
 		if(intersection == IT_INTERSECT || intersection == IT_INSIDE)
 		{ 
 			geom_render(index, draw_mode);
-			indices_rendered = array_len(geometry->indices);
+			indices_rendered = array_len(geometry->indices_len);
 		}
 	}
 	return indices_rendered;

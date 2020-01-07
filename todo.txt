@@ -395,3 +395,4 @@ Done:
 	* Save/Load base bounding boxes for entity types other than static mesh
 	* Disabled picking when a tool is active in editor
 	* Simplified rendering further and removed unnecessary intermediate fbos
+	* We no longer keep geoemtry data loaded from files as it is not needed after data is passed on to opengl

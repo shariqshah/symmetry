@@ -189,7 +189,7 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
 			int intersection = bv_intersect_frustum_box(&active_camera->frustum, &mesh->base.derived_bounding_box);
 			if(intersection == IT_INSIDE || intersection == IT_INTERSECT)
 			{
-				renderer->num_indices += array_len(geometry->indices);
+				renderer->num_indices += geometry->indices_len;
 				renderer->num_rendered++;
 			}
 			else

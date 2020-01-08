@@ -581,6 +581,7 @@ void game_post_update(float dt)
     scene_post_update(game_state->scene);
     sound_update_3d(game_state->sound);
 	debug_vars_post_update(game_state->debug_vars);
+	editor_post_update(game_state->editor);
 }
 
 void game_debug_gui(float dt)

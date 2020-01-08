@@ -1,6 +1,4 @@
 Todo:
-	? Only show bounding box for hovered entity instead of wireframe mesh
-	- Fix crash where if an entity is hoverd in editor and deleted, the game crashes because the hovered variable in editor doesn't know that the entity was deleted
 	? Write entity flags to scene file or when saving entity to file?
 	? Add scene init/de-init function hashmap that maps a function that should be called when scene is loaded and unloaded. Save this to file for every scene or map functions based on the name of the scene?
 	- Command to create a placeholder entity of a particular type in a file
@@ -108,6 +106,7 @@ Improvements:
 	- Improve grid/immediate mode drawing by switching to glDrawElements instead of glDrawArrays. 
 	- Investigate why transparency is not working for materials
 	- Picking for other entity types like lights etc by specifically ray casting for them or in editor switching to pick-mode that specifies if we're picking lights or meshes etc
+	? Only show bounding box for hovered entity instead of wireframe mesh
 
 Bugs:
 	- Better handling of wav format checking at load time
@@ -396,3 +395,4 @@ Done:
 	* Simplified rendering further and removed unnecessary intermediate fbos
 	* We no longer keep geoemtry data loaded from files as it is not needed after data is passed on to opengl
 	* Shift-A to add entity to scene
+	* Fixed crash where if an entity is hoverd in editor and deleted, the game crashes because the hovered variable in editor doesn't know that the entity was deleted

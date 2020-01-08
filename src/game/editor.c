@@ -1223,6 +1223,8 @@ void editor_on_key_release(const struct Event* event)
 	{
 		editor->selected_entity->flags |= EF_MARKED_FOR_DELETION;
 		editor_entity_select(editor, NULL);
+		if(editor->hovered_entity == editor->selected_entity)
+			editor->hovered_entity = NULL;
 	}
 
 	if(event->key.key == KEY_D && input_is_key_pressed(KEY_LCTRL) && editor->selected_entity && !editor->camera_looking_around)
@@ -1664,6 +1666,8 @@ void editor_show_entity_in_list(struct Editor* editor, struct nk_context* contex
 		{
 			entity->flags |= EF_MARKED_FOR_DELETION;
 			editor_entity_select(editor, NULL);
+			if(editor->hovered_entity == entity)
+				editor->hovered_entity = NULL;
 		}
 
 		if(nk_contextual_item_label(context, "Save", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE))
@@ -2449,3 +2453,10 @@ void editor_entity_dialog(struct Editor* editor, struct nk_context* context)
 	}
 	context->style.window.fixed_background.data.color.a = previous_opacity;
 }
+
+void editor_post_update(struct Editor* editor)
+{
+	if(editor->hovered_entity && !(editor->hovered_entity->flags & EF_ACTIVE))
+		editor->hovered_entity = NULL;
+}
+

@@ -866,7 +866,7 @@ void scene_ray_intersect(struct Scene* scene, struct Ray* ray, struct Raycast_Re
 				int result = bv_intersect_bounding_box_ray(&entity->derived_bounding_box, ray);
 				if(result == IT_INTERSECT || result == IT_INSIDE)
 				{
-					out_results->entities_intersected[out_results->num_entities_intersected] = &entity;
+					out_results->entities_intersected[out_results->num_entities_intersected] = entity;
 					out_results->num_entities_intersected++;
 				}
 			}

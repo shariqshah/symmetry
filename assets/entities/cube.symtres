@@ -1,0 +1,14 @@
+
+Entity
+{
+	type : 6
+	material : 0
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : cube.symbres
+	specular : 1.0000
+	active : true
+	diffuse_texture : default.tga
+	diffuse : 1.0000
+	specular_strength : 1.0000
+	name : Cube
+}

@@ -16,9 +16,9 @@ Player
 {
 	type : 2
 	scale : 1.000 1.000 1.000
-	rotation : 0.000 -0.760 0.000 0.651
+	rotation : 0.000 -0.654 0.000 0.758
 	active : true
-	position : -68.875 1.832 -69.569
+	position : -38.848 2.992 -29.629
 	bouding_box_min : -0.500 -0.500 -0.500
 	name : Player
 	bouding_box_max : 0.500 0.500 0.500
@@ -39,6 +39,69 @@ Scene_Entity_Entry
 	scale : 68.000 3.000 1.000
 	rotation : 0.000 0.000 0.000 1.000
 	position : -17.000 4.000 -87.000
+	filename : cube_uv
+	name : Cube
+}
+
+Scene_Entity_Entry
+{
+	scale : 68.000 3.000 1.000
+	rotation : 0.000 0.000 0.000 1.000
+	position : -17.000 4.000 47.000
+	filename : cube_uv
+	name : Cube
+}
+
+Scene_Entity_Entry
+{
+	scale : 68.000 3.000 1.000
+	rotation : 0.000 0.707 0.000 0.707
+	position : 50.000 4.000 -20.000
+	filename : cube_uv
+	name : Cube
+}
+
+Scene_Entity_Entry
+{
+	scale : 68.000 3.000 1.000
+	rotation : 0.000 -0.707 0.000 0.707
+	position : -84.000 4.000 -20.000
+	filename : cube_uv
+	name : Cube
+}
+
+Scene_Entity_Entry
+{
+	scale : 18.900 3.000 1.000
+	rotation : 0.000 0.000 0.000 1.000
+	position : -64.000 4.000 2.000
+	filename : cube_uv
+	name : Cube
+}
+
+Scene_Entity_Entry
+{
+	scale : 68.000 3.000 1.000
+	rotation : 0.000 0.000 0.000 1.000
+	position : -17.000 4.000 -87.000
+	filename : cube_uv
+	name : Cube
+}
+
+Scene_Entity_Entry
+{
+	scale : 68.000 3.000 1.000
+	rotation : 0.000 0.000 0.000 1.000
+	position : -17.000 4.000 -87.000
+	filename : cube_uv
+	name : Cube
+}
+
+Scene_Entity_Entry
+{
+	scale : 35.500 3.000 1.000
+	rotation : 0.000 0.000 0.000 1.000
+	position : 15.000 4.000 -30.000
 	filename : cube_uv
 	name : Cube
 }

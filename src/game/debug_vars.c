@@ -106,6 +106,10 @@ void debug_vars_post_update(struct Debug_Vars* debug_vars)
 				nk_label(context, &variable->name[0], name_flags);
 				nk_labelf(context, value_flags, "%d", variable->value.val_int);
 				break;
+			case VT_BOOL:
+				nk_label(context, &variable->name[0], name_flags);
+				nk_labelf(context, value_flags, "%s", variable->value.val_bool ? "True" : "False");
+				break;
 			case VT_FLOAT:
 				nk_label(context, &variable->name[0], name_flags);
 				nk_labelf(context, value_flags, "%.3f", variable->value.val_float);
@@ -208,6 +212,13 @@ void debug_vars_show_int(const char* name, int value)
 {
 	struct Variant temp_var;
 	variant_assign_int(&temp_var, value);
+	debug_vars_show(name, &temp_var, true);
+}
+
+void debug_vars_show_bool(const char* name, bool value)
+{
+	struct Variant temp_var;
+	variant_assign_bool(&temp_var, value);
 	debug_vars_show(name, &temp_var, true);
 }
 

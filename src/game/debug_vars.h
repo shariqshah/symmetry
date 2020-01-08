@@ -44,6 +44,7 @@ void debug_vars_cycle_location(struct Debug_Vars* debug_vars);
 
 void debug_vars_show(const char* name, const struct Variant* value, bool is_numeric);
 void debug_vars_show_int(const char* name, int value);
+void debug_vars_show_bool(const char* name, bool value);
 void debug_vars_show_float(const char* name, float value);
 void debug_vars_show_texture(const char* name, int texture_index);
 void debug_vars_show_vec3(const char* name, const vec3* value);

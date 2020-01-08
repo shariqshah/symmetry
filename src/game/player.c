@@ -26,6 +26,7 @@ void player_init(struct Player* player, struct Scene* scene)
     player->move_speed            = hashmap_int_get(config, "player_move_speed");
     player->move_speed_multiplier = hashmap_int_get(config, "player_move_speed_multiplier");
     player->turn_speed            = hashmap_int_get(config, "player_turn_speed");
+	player->grounded              = true;
 
     player->mesh = scene_static_mesh_create(scene, "Player_Mesh", player, "sphere.symbres", MAT_BLINN);
 
@@ -114,45 +115,136 @@ void player_update(struct Player* player, struct Scene* scene, float dt)
 		transform_rotate(player->camera_node, &rot_axis_pitch, pitch, TS_LOCAL);
 
     /* Movement */
-    float move_speed = player->move_speed;
+	float gravity        = 0.1f;
+	float dampening_x    = 0.08f;
+	float dampening_z    = 0.08f;
+	float jump_velocity  = 20.f;
+    float move_speed     = player->move_speed;
+	static vec3 velocity = { 0.f, 0.f, 0.f };
+	vec3 max_velocity    = { player->move_speed * player->move_speed_multiplier, jump_velocity, player->move_speed * player->move_speed_multiplier };
+	static bool jumping  = false;
+
+	// If we started jumping last frame, set jumpig to false
+	if(jumping) jumping = false;
+
+    if(input_map_state_get("Sprint",        KS_PRESSED))  move_speed *= player->move_speed_multiplier;
+    if(input_map_state_get("Move_Forward",  KS_PRESSED))  velocity.z   -= move_speed;
+    if(input_map_state_get("Move_Backward", KS_PRESSED))  velocity.z   += move_speed;
+    if(input_map_state_get("Move_Left",     KS_PRESSED))  velocity.x   -= move_speed;
+    if(input_map_state_get("Move_Right",    KS_PRESSED))  velocity.x   += move_speed;
+	if(input_map_state_get("Jump", KS_PRESSED))
+	{
+		if(player->grounded)
+		{
+			velocity.y += jump_velocity;
+			jumping = true;
+			player->grounded = false;
+		}
+	}
+
+	// Dampen Velocity
+	if(velocity.x > 0.f)
+		velocity.x -= dampening_x;
+	else if(velocity.x < 0.f)
+		velocity.x += dampening_x;
+
+	//if(velocity.y >= 0.f)
+	velocity.y -= gravity;
+
+	if(velocity.z > 0.f)
+		velocity.z -= dampening_z;
+	else if(velocity.z < 0.f)
+		velocity.z += dampening_z;
+
+	// Clamp velocity to min/max
+	if(velocity.x > max_velocity.x)
+		velocity.x = max_velocity.x;
+	else if(velocity.x < -max_velocity.x)
+		velocity.x = -max_velocity.x;
+
+	if(velocity.y > max_velocity.y)
+		velocity.y = max_velocity.y;
+	if(velocity.y < -max_velocity.y)
+		velocity.y = -max_velocity.y;
+
+	if(velocity.z > max_velocity.z)
+		velocity.z = max_velocity.z;
+	if(velocity.z < -max_velocity.z)
+		velocity.z = -max_velocity.z;
+
+
+	/* Check for collisions ahead */
+	int mouse_x = 0, mouse_y = 0;
+	platform_mouse_position_get(&mouse_x, &mouse_y);
+	struct Ray forward_ray = camera_screen_coord_to_ray(player->camera_node, mouse_x, mouse_y);
+	float min_collision_distance = 2.0f;
+	// Get all the entities that intersect then check the distance if it is less than
+	// or equal to min_collision_distance then we are colliding
+	struct Raycast_Result ray_result;
+	scene_ray_intersect(scene, &forward_ray, &ray_result, ERM_STATIC_MESH);
+	debug_vars_show_int("Colliding Entities", ray_result.num_entities_intersected);
+	if(ray_result.num_entities_intersected > 0)
+	{
+		for(int i = 0; i < ray_result.num_entities_intersected; i++)
+		{
+			struct Entity* colliding_entity = ray_result.entities_intersected[i];
+			float distance = bv_distance_ray_bounding_box(&forward_ray, &colliding_entity->derived_bounding_box);
+			debug_vars_show_float("Collision ahead", distance);
+			if(distance > 0.f && distance <= min_collision_distance && colliding_entity != player->mesh)
+			{
+				velocity.x = 0.f;
+				velocity.z = 0.f;
+			}
+		}
+	}
+
+	/* Check for collisions below */
+	struct Ray downward_ray;
+	transform_get_absolute_position(player->mesh, &downward_ray.origin);
+	vec3_fill(&downward_ray.direction, 0.f, -1.f, 0.f);
+	struct Raycast_Result down_ray_result;
+	scene_ray_intersect(scene, &downward_ray, &down_ray_result, ERM_STATIC_MESH);
+	if(down_ray_result.num_entities_intersected > 0)
+	{
+		float min_downward_distance = 2.f;
+		for(int i = 0; i < down_ray_result.num_entities_intersected; i++)
+		{
+			struct Entity* colliding_entity = down_ray_result.entities_intersected[i];
+			float distance = bv_distance_ray_bounding_box(&downward_ray, &colliding_entity->derived_bounding_box);
+			debug_vars_show_float("Collision below", distance);
+			if(distance > 0.f && distance <= min_downward_distance && colliding_entity != player->mesh && !jumping)
+			{
+				velocity.y = 0.f;
+				player->grounded = true;
+			}
+		}
+	}
+
     vec3 offset = {0.f, 0.f, 0.f};
-
-    if(input_map_state_get("Sprint",        KS_PRESSED)) move_speed *= player->move_speed_multiplier;
-    if(input_map_state_get("Move_Forward",  KS_PRESSED)) offset.z   -= move_speed;
-    if(input_map_state_get("Move_Backward", KS_PRESSED)) offset.z   += move_speed;
-    if(input_map_state_get("Move_Left",     KS_PRESSED)) offset.x   -= move_speed;
-    if(input_map_state_get("Move_Right",    KS_PRESSED)) offset.x   += move_speed;
-    if(input_map_state_get("Move_Up",       KS_PRESSED)) offset.y   += move_speed;
-    if(input_map_state_get("Move_Down",     KS_PRESSED)) offset.y   -= move_speed;
-
+	debug_vars_show_vec3("velocity", &velocity);
+	debug_vars_show_bool("Grounded", player->grounded);
+	vec3_assign(&offset, &velocity);
     vec3_scale(&offset, &offset, dt);
-	if(offset.x != 0 || offset.y != 0 || offset.z != 0)
+	if(offset.x != 0 || offset.z != 0)
 	{
 		quat_mul_vec3(&offset, &player->camera_node->base.transform.rotation, &offset);
-		transform_translate(player, &offset, TS_LOCAL);
+		offset.y = 0.f;
 	}
+
+	if(velocity.y != 0.f)
+		offset.y = velocity.y * dt;
+
+	transform_translate(player, &offset, TS_LOCAL);
 
 	/* Aiming and Projectiles*/
 	if(input_mousebutton_state_get(MSB_RIGHT, KS_PRESSED))
 	{
 		int mouse_x = 0, mouse_y = 0;
 		platform_mouse_position_get(&mouse_x, &mouse_y);
-		struct Ray ray = camera_screen_coord_to_ray(player->camera_node, mouse_x, mouse_y);
-		log_message("Ray: %.3f, %.3f, %.3f", ray.direction.x, ray.direction.y, ray.direction.z);
+		struct Ray bullet_ray = camera_screen_coord_to_ray(player->camera_node, mouse_x, mouse_y);
+		log_message("Ray: %.3f, %.3f, %.3f", bullet_ray.direction.x, bullet_ray.direction.y, bullet_ray.direction.z);
 
 		struct Raycast_Result ray_result;
-		scene_ray_intersect(scene, &ray, &ray_result, ERM_ALL);
+		scene_ray_intersect(scene, &bullet_ray, &ray_result, ERM_ALL);
 	}
-
-	vec3 mesh_abs = { 0.f, 0.f, 0.f };
-	transform_get_absolute_position(player->mesh, &mesh_abs);
-	debug_vars_show_vec3("Player Position", &player->base.transform.position);
-	debug_vars_show_vec3("Mesh Position", &mesh_abs);
-	debug_vars_show_vec3("Min", &player->mesh->base.derived_bounding_box.min);
-	debug_vars_show_vec3("Max", &player->mesh->base.derived_bounding_box.max);
-	struct Geometry* geom = geom_get(player->mesh->model.geometry_index);
-	debug_vars_show_vec3("Geom Min", &geom->bounding_box.min);
-	debug_vars_show_vec3("Geom Max", &geom->bounding_box.max);
-	debug_vars_show_texture("Player Camera Render", player->camera_node->render_tex);
-	debug_vars_show_texture("Player Camera Depth", player->camera_node->depth_tex);
 }

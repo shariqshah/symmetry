@@ -38,6 +38,7 @@ void input_init(void)
 	struct Key_Binding turn_left_keys         = {KEY_H,      KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
 	struct Key_Binding turn_up_keys           = {KEY_K,      KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
 	struct Key_Binding turn_down_keys         = {KEY_J,      KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
+	struct Key_Binding jump_keys              = {KEY_SPACE,  KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
 	struct Key_Binding sprint_keys            = {KEY_LSHIFT, KMOD_NONE, KEY_RSHIFT, KMOD_NONE, KS_INACTIVE};
 	struct Key_Binding editor_toggle_keys     = {KEY_F1,     KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
 	struct Key_Binding console_toggle_keys    = {KEY_TILDE,  KMOD_NONE, KEY_NONE,   KMOD_NONE, KS_INACTIVE};
@@ -56,6 +57,7 @@ void input_init(void)
 	input_map_create("Turn_Up",           turn_up_keys);
 	input_map_create("Turn_Down",         turn_down_keys);
 	input_map_create("Sprint",            sprint_keys);
+	input_map_create("Jump",              jump_keys);
 	input_map_create("Editor_Toggle",     editor_toggle_keys);
 	input_map_create("Console_Toggle",    console_toggle_keys);
 	input_map_create("Debug_Vars_Toggle", debug_vars_toggle_keys);

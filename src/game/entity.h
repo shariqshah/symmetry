@@ -175,6 +175,7 @@ struct Player
     float               move_speed;
     float               move_speed_multiplier;
     float               turn_speed;
+	bool                grounded;
 };
 
 void           entity_init(struct Entity* entity, const char* name, struct Entity* parent);

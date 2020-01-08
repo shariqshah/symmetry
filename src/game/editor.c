@@ -781,7 +781,8 @@ void editor_scene_dialog(struct Editor* editor, struct nk_context* context)
 			{
 				copy_scene_filename = false;
 			}
-			else if(scene_filename_state & NK_EDIT_COMMITED)
+
+			if(scene_filename_state & NK_EDIT_COMMITED)
 			{
 				if(save)
 					scene_save(scene, scene_filename, DIRT_INSTALL);
@@ -1239,10 +1240,16 @@ void editor_on_key_release(const struct Event* event)
 		scene_save(scene, scene->filename, DIRT_INSTALL);
 	}
 
-	if(event->key.key == KEY_O && input_is_key_pressed(KEY_LCTRL) && !editor->camera_looking_around)
+	if(event->key.key == KEY_O && input_is_key_pressed(KEY_LCTRL) && !editor->camera_looking_around && editor->window_entity_dialog != 1)
 	{
 		editor->scene_operation_save = false;
 		editor->window_scene_dialog = 1;
+	}
+
+	if(event->key.key == KEY_A && input_is_key_pressed(KEY_LSHIFT) && !editor->camera_looking_around && editor->window_scene_dialog != 1)
+	{
+		editor->entity_operation_save = false;
+		editor->window_entity_dialog = 1;
 	}
 }
 
@@ -1508,10 +1515,7 @@ void editor_camera_update(struct Editor* editor, float dt)
 		}
 	}
 	
-	debug_vars_show_texture("Editor Cam Depth", editor_camera->depth_tex);
 	debug_vars_show_color_rgba("Editor Cam Clear Color", &editor_camera->clear_color);
-	debug_vars_show_int("Editor Cam Depth Index", editor_camera->depth_tex);
-	debug_vars_show_int("Editor Cam Render Index", editor_camera->render_tex);
 }
 
 void editor_widget_color_combov3(struct nk_context* context, vec3* color, int width, int height)
@@ -2377,14 +2381,16 @@ void editor_entity_dialog(struct Editor* editor, struct nk_context* context)
 						strncpy(entity_filename, scene->entity_archetypes[editor->selected_entity->archetype_index], MAX_FILENAME_LEN);
 				}
 
-				int entity_filename_flags = NK_EDIT_SIG_ENTER | NK_EDIT_GOTO_END_ON_ACTIVATE | NK_EDIT_FIELD;
+				int entity_filename_flags = NK_EDIT_SIG_ENTER | NK_EDIT_GOTO_END_ON_ACTIVATE | NK_EDIT_FIELD | NK_EDIT_ALWAYS_INSERT_MODE;
 				nk_edit_focus(context, entity_filename_flags);
 				int entity_filename_state = nk_edit_string_zero_terminated(context, entity_filename_flags, entity_filename, MAX_FILENAME_LEN, NULL);
+				debug_vars_show_int("Edit State", entity_filename_state);
 				if(entity_filename_state & NK_EDIT_ACTIVATED || entity_filename_state & NK_EDIT_ACTIVE)
 				{
 					copy_entity_filename = false;
 				}
-				else if(entity_filename_state & NK_EDIT_COMMITED)
+
+				if(entity_filename_state & NK_EDIT_COMMITED)
 				{
 					if(save)
 					{

@@ -1,5 +1,4 @@
 Todo:
-	- Shift-A to add entity to scene
 	? Only show bounding box for hovered entity instead of wireframe mesh
 	- Fix crash where if an entity is hoverd in editor and deleted, the game crashes because the hovered variable in editor doesn't know that the entity was deleted
 	? Write entity flags to scene file or when saving entity to file?
@@ -396,3 +395,4 @@ Done:
 	* Disabled picking when a tool is active in editor
 	* Simplified rendering further and removed unnecessary intermediate fbos
 	* We no longer keep geoemtry data loaded from files as it is not needed after data is passed on to opengl
+	* Shift-A to add entity to scene

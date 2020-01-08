@@ -222,12 +222,14 @@ void geom_remove(int index)
 				glDeleteBuffers(1, &geometry->index_vbo);
 				glDeleteVertexArrays(1, &geometry->vao);
 
-				geometry->vertex_vbo = 0;
-				geometry->color_vbo	 = 0;
-				geometry->uv_vbo	 = 0;
-				geometry->normal_vbo = 0;
-				geometry->index_vbo  = 0;
-				geometry->vao        = 0;
+				geometry->vertex_vbo      = 0;
+				geometry->color_vbo	      = 0;
+				geometry->uv_vbo	      = 0;
+				geometry->normal_vbo      = 0;
+				geometry->index_vbo       = 0;
+				geometry->vao             = 0;
+				geometry->indices_length  = 0;
+				geometry->vertices_length = 0;
 
 				array_push(empty_indices, index, int);
 			}
@@ -265,7 +267,7 @@ void create_vao(struct Geometry* geometry,
 				 GL_STATIC_DRAW));
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	geometry->vertices_len = array_len(vertices);
+	geometry->vertices_length = array_len(vertices);
 
 	if(array_len(normals) > 0)
 	{
@@ -312,7 +314,7 @@ void create_vao(struct Geometry* geometry,
 					 indices,
 					 GL_STATIC_DRAW);
 		geometry->draw_indexed = 1;
-		geometry->indices_len = array_len(indices);
+		geometry->indices_length = array_len(indices);
 	}
 	glBindVertexArray(0);
 
@@ -324,9 +326,9 @@ void geom_render(int index, enum Geometry_Draw_Mode draw_mode)
 	struct Geometry* geo = &geometry_list[index];
 	glBindVertexArray(geo->vao);
 	if(geo->draw_indexed)
-		glDrawElements(draw_modes[draw_mode], geo->indices_len, GL_UNSIGNED_INT, (void*)0);
+		glDrawElements(draw_modes[draw_mode], geo->indices_length, GL_UNSIGNED_INT, (void*)0);
 	else
-		glDrawArrays(draw_modes[draw_mode], 0, geo->vertices_len);
+		glDrawArrays(draw_modes[draw_mode], 0, geo->vertices_length);
 	glBindVertexArray(0);
 			
 }
@@ -351,7 +353,7 @@ int geom_render_in_frustum(int                      index,
 		if(intersection == IT_INTERSECT || intersection == IT_INSIDE)
 		{ 
 			geom_render(index, draw_mode);
-			indices_rendered = array_len(geometry->indices_len);
+			indices_rendered = array_len(geometry->indices_length);
 		}
 	}
 	return indices_rendered;

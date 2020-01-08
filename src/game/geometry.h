@@ -31,8 +31,8 @@ struct Geometry
 	uint  		  		   normal_vbo;
 	uint  		  		   color_vbo;
 	uint  		  		   index_vbo;
-	uint                   vertices_len;
-	uint                   indices_len;
+	uint                   vertices_length;
+	uint                   indices_length;
 	int   		  		   ref_count;
 	struct Bounding_Box    bounding_box;
 	struct Bounding_Sphere bounding_sphere;

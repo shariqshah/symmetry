@@ -868,6 +868,11 @@ void scene_ray_intersect(struct Scene* scene, struct Ray* ray, struct Raycast_Re
 				{
 					out_results->entities_intersected[out_results->num_entities_intersected] = entity;
 					out_results->num_entities_intersected++;
+					if(out_results->num_entities_intersected >= MAX_RAYCAST_ENTITIES_INTERSECT)
+					{
+						log_warning("Reached Max raycast limit");
+						return;
+					}
 				}
 			}
 

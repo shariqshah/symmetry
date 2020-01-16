@@ -391,3 +391,23 @@ bool bv_point_inside_bounding_box(struct Bounding_Box* box, vec3 point)
 	else
 		return true;
 }
+
+vec3 bv_bounding_box_normal_from_intersection_point(struct Bounding_Box* box, struct Ray* ray, vec3 intersection_point)
+{
+	vec3 center = { (box->max.x + box->min.x) * 0.5f,
+				    (box->max.y + box->min.y) * 0.5f,
+				    (box->max.z + box->min.z) * 0.5f };
+
+	vec3 local_point = { 0.f, 0.f, 0.f };
+	vec3_sub(&local_point, &intersection_point, &center);
+
+	vec3 d = { (box->min.x - box->max.x) * 0.5f,
+			  (box->min.y - box->max.y) * 0.5f,
+			  (box->min.z - box->max.z) * 0.5f };
+	float bias = 1.000001f;
+	vec3 normal = { (int)(local_point.x / fabsf(d.x) * bias),
+					(int)(local_point.y / fabsf(d.y) * bias),
+					(int)(local_point.z / fabsf(d.z) * bias) };
+	vec3_norm(&normal, &normal);
+	return normal;
+}

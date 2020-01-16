@@ -1,4 +1,7 @@
 Todo:
+	- Improve player collision by impelenting sliding along collision plane in case of collision
+	- Check if running in a lower frame rate affects movement
+	- Move player movement related variables from function to player struct and load them from config file
 	? Write entity flags to scene file or when saving entity to file?
 	? Add scene init/de-init function hashmap that maps a function that should be called when scene is loaded and unloaded. Save this to file for every scene or map functions based on the name of the scene?
 	- Command to create a placeholder entity of a particular type in a file

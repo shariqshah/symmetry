@@ -13,6 +13,9 @@
 #include "game.h"
 #include "debug_vars.h"
 #include "geometry.h"
+#include "im_render.h"
+
+#include <float.h>
 
 void player_init(struct Player* player, struct Scene* scene)
 {
@@ -176,10 +179,14 @@ void player_update(struct Player* player, struct Scene* scene, float dt)
 	/* Check for collisions ahead */
 	int mouse_x = 0, mouse_y = 0;
 	platform_mouse_position_get(&mouse_x, &mouse_y);
-	struct Ray forward_ray = camera_screen_coord_to_ray(player->camera_node, mouse_x, mouse_y);
-	float min_collision_distance = 2.0f;
+	//struct Ray forward_ray = camera_screen_coord_to_ray(player->camera_node, 0, 0);
+	struct Ray forward_ray = { 0 };
+	transform_get_absolute_position(player, &forward_ray.origin);
+	transform_get_absolute_forward(player->camera_node, &forward_ray.direction);
+
 	// Get all the entities that intersect then check the distance if it is less than
 	// or equal to min_collision_distance then we are colliding
+	float min_collision_distance = 5.0f;
 	struct Raycast_Result ray_result;
 	scene_ray_intersect(scene, &forward_ray, &ray_result, ERM_STATIC_MESH);
 	debug_vars_show_int("Colliding Entities", ray_result.num_entities_intersected);
@@ -192,8 +199,24 @@ void player_update(struct Player* player, struct Scene* scene, float dt)
 			debug_vars_show_float("Collision ahead", distance);
 			if(distance > 0.f && distance <= min_collision_distance && colliding_entity != player->mesh)
 			{
-				velocity.x = 0.f;
-				velocity.z = 0.f;
+				vec3 intersection_point = forward_ray.direction;
+				vec3_scale(&intersection_point, &intersection_point, distance);
+				vec3_add(&intersection_point, &intersection_point, &forward_ray.origin);
+
+				struct Bounding_Box* box = &colliding_entity->derived_bounding_box;
+				vec3 normal = bv_bounding_box_normal_from_intersection_point(box, &forward_ray, intersection_point);
+
+				struct Ray normal_ray;
+				normal_ray.origin = intersection_point;
+				normal_ray.direction = normal;
+				im_ray(&normal_ray, 5.f, (vec4) { 1.f, 0.f, 0.f, 1.f }, 3);
+
+				float dot = (vec3_dot(&velocity, &normal));
+				vec3 norm_scaled = { 0.f };
+				vec3_scale(&norm_scaled, &normal, dot);
+				vec3_sub(&velocity, &velocity, &norm_scaled);
+				debug_vars_show_vec3("Normal", &normal);
+				debug_vars_show_float("Dot", dot);
 			}
 		}
 	}
@@ -210,9 +233,11 @@ void player_update(struct Player* player, struct Scene* scene, float dt)
 		for(int i = 0; i < down_ray_result.num_entities_intersected; i++)
 		{
 			struct Entity* colliding_entity = down_ray_result.entities_intersected[i];
+			if(colliding_entity == player->mesh)
+				continue;
 			float distance = bv_distance_ray_bounding_box(&downward_ray, &colliding_entity->derived_bounding_box);
 			debug_vars_show_float("Collision below", distance);
-			if(distance > 0.f && distance <= min_downward_distance && colliding_entity != player->mesh && !jumping)
+			if(distance > 0.f && distance <= min_downward_distance && !jumping)
 			{
 				velocity.y = 0.f;
 				player->grounded = true;
@@ -220,9 +245,19 @@ void player_update(struct Player* player, struct Scene* scene, float dt)
 		}
 	}
 
-    vec3 offset = {0.f, 0.f, 0.f};
+	float min_velocity = 0.0001f;
+	float fract_part = 0.f;
+	double int_part = 0.f;
+	double int_part2 = 0.f;
+	fract_part = modf(velocity.x, &int_part);
+	if(fabsf(fract_part) < min_velocity) velocity.x = 0.f;
+	fract_part = modf(velocity.z, &int_part2);
+	if(fabsf(fract_part) < min_velocity) velocity.z = 0.f;
+
 	debug_vars_show_vec3("velocity", &velocity);
 	debug_vars_show_bool("Grounded", player->grounded);
+
+    vec3 offset = {0.f, 0.f, 0.f};
 	vec3_assign(&offset, &velocity);
     vec3_scale(&offset, &offset, dt);
 	if(offset.x != 0 || offset.z != 0)
@@ -239,12 +274,32 @@ void player_update(struct Player* player, struct Scene* scene, float dt)
 	/* Aiming and Projectiles*/
 	if(input_mousebutton_state_get(MSB_RIGHT, KS_PRESSED))
 	{
+		log_message("Right Click");
 		int mouse_x = 0, mouse_y = 0;
 		platform_mouse_position_get(&mouse_x, &mouse_y);
 		struct Ray bullet_ray = camera_screen_coord_to_ray(player->camera_node, mouse_x, mouse_y);
-		log_message("Ray: %.3f, %.3f, %.3f", bullet_ray.direction.x, bullet_ray.direction.y, bullet_ray.direction.z);
 
-		struct Raycast_Result ray_result;
-		scene_ray_intersect(scene, &bullet_ray, &ray_result, ERM_ALL);
+		struct Raycast_Result bullet_ray_result;
+		scene_ray_intersect(scene, &bullet_ray, &bullet_ray_result, ERM_STATIC_MESH);
+		if(bullet_ray_result.num_entities_intersected > 0)
+		{
+			for(int i = 0; i < bullet_ray_result.num_entities_intersected; i++)
+			{
+				struct Entity* colliding_entity = bullet_ray_result.entities_intersected[i];
+				if(colliding_entity == player->mesh)
+					continue;
+				float distance = bv_distance_ray_bounding_box(&bullet_ray, &colliding_entity->derived_bounding_box);
+				if(distance > 0.f)
+				{
+					vec3 collision_point = bullet_ray.direction;
+					vec3_scale(&collision_point, &collision_point, distance);
+					vec3_add(&collision_point, &collision_point, &bullet_ray.origin);
+					struct Static_Mesh* bullet = scene_static_mesh_create(game_state_get()->scene, "bullet", NULL, "cube.symbres", MAT_UNSHADED);
+					transform_set_position(bullet, &collision_point);
+				}
+			}
+		}
 	}
+
+	debug_vars_show_float("Frame Time", dt * 100000.f);
 }

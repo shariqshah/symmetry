@@ -61,5 +61,6 @@ float bv_distance_ray_plane(struct Ray* ray, Plane* plane);
 void  bv_bounding_box_vertices_get(struct Bounding_Box* box, vec3 out_vertices[8]);
 void  bv_bounding_box_vertices_get_line_visualization(struct Bounding_Box* bounding_box, vec3 out_vertices[24]);
 float bv_distance_ray_bounding_box(struct Ray* ray, struct Bounding_Box* box);
+vec3  bv_bounding_box_normal_from_intersection_point(struct Bounding_Box* box, struct Ray* ray, vec3 intersection_point);
 
 #endif

@@ -204,7 +204,7 @@ void player_update(struct Player* player, struct Scene* scene, float dt)
 				vec3_add(&intersection_point, &intersection_point, &forward_ray.origin);
 
 				struct Bounding_Box* box = &colliding_entity->derived_bounding_box;
-				vec3 normal = bv_bounding_box_normal_from_intersection_point(box, &forward_ray, intersection_point);
+				vec3 normal = bv_bounding_box_normal_from_intersection_point(box, intersection_point);
 
 				struct Ray normal_ray;
 				normal_ray.origin = intersection_point;

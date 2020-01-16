@@ -392,7 +392,7 @@ bool bv_point_inside_bounding_box(struct Bounding_Box* box, vec3 point)
 		return true;
 }
 
-vec3 bv_bounding_box_normal_from_intersection_point(struct Bounding_Box* box, struct Ray* ray, vec3 intersection_point)
+vec3 bv_bounding_box_normal_from_intersection_point(struct Bounding_Box* box, vec3 intersection_point)
 {
 	vec3 center = { (box->max.x + box->min.x) * 0.5f,
 				    (box->max.y + box->min.y) * 0.5f,

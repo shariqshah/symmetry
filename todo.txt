@@ -1,5 +1,6 @@
 Todo:
-	- Improve player collision by impelenting sliding along collision plane in case of collision
+	- Bring back sprinting
+	- Fix aggressive frustum culling when camera looks up and the object right infront of the viewer gets culled
 	- Check if running in a lower frame rate affects movement
 	- Move player movement related variables from function to player struct and load them from config file
 	? Write entity flags to scene file or when saving entity to file?
@@ -399,3 +400,4 @@ Done:
 	* We no longer keep geoemtry data loaded from files as it is not needed after data is passed on to opengl
 	* Shift-A to add entity to scene
 	* Fixed crash where if an entity is hoverd in editor and deleted, the game crashes because the hovered variable in editor doesn't know that the entity was deleted
+	* Improve player collision by impelenting sliding along collision plane in case of collision

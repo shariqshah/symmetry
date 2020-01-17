@@ -220,6 +220,14 @@ void im_ray(struct Ray* ray, float length, vec4 color, int draw_order)
 	im_line(ray->origin, ending_pos, (vec3) { 0.f, 0.f, 0.f }, (quat) { 0.f, 0.f, 0.f, 1.f }, color, draw_order);
 }
 
+void im_ray_origin_dir(vec3 origin, vec3 direction, float length, vec4 color, int draw_order)
+{
+	vec3 ending_pos = { 0.f, 0.f, 0.f };
+	vec3_scale(&ending_pos, &direction, length);
+	vec3_add(&ending_pos, &ending_pos, &origin);
+	im_line(origin, ending_pos, (vec3) { 0.f, 0.f, 0.f }, (quat) { 0.f, 0.f, 0.f, 1.f }, color, draw_order);
+}
+
 void im_end(void)
 {
 	active_geom->num_vertices = current_vertex_index + 1;

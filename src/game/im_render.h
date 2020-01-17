@@ -50,6 +50,7 @@ void im_line(vec3 p1, vec3 p2, vec3 position, quat rotation, vec4 color, int dra
 void im_circle(float radius, int num_divisions, bool filled, vec3 position, quat rotation, vec4 color, int draw_order);
 void im_arc(float radius, float angle_start, float angle_end, int num_divisions, bool filled, vec3 position, quat rotation, vec4 color, int draw_order);
 void im_ray(struct Ray* ray, float length, vec4 color, int draw_order);
+void im_ray_origin_dir(vec3 origin, vec3 direction, float length, vec4 color, int draw_order);
 void im_end(void);
 void im_render(struct Camera* active_viewer);
 

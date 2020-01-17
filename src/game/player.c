@@ -148,19 +148,14 @@ void player_update(struct Player* player, struct Scene* scene, float dt)
 
 	vec3_norm(&move_direction, &move_direction);
 	if(move_direction.x != 0 || move_direction.z != 0)
-	{
-		//quat_mul_vec3(&move_direction, &player->camera_node->base.transform.rotation, &move_direction);
 		quat_mul_vec3(&move_direction, &player->base.transform.rotation, &move_direction);
-		//offset.y = 0.f;
-	}
 
 	/* Check for collisions ahead */
 	int mouse_x = 0, mouse_y = 0;
 	platform_mouse_position_get(&mouse_x, &mouse_y);
-	//struct Ray forward_ray = camera_screen_coord_to_ray(player->camera_node, 0, 0);
 	struct Ray forward_ray = { 0 };
 	transform_get_absolute_position(player, &forward_ray.origin);
-	transform_get_absolute_forward(player->camera_node, &forward_ray.direction);
+	vec3_assign(&forward_ray.direction, &move_direction);
 
 	// Get all the entities that intersect then check the distance if it is less than
 	// or equal to min_collision_distance then we are colliding
@@ -184,10 +179,8 @@ void player_update(struct Player* player, struct Scene* scene, float dt)
 				struct Bounding_Box* box = &colliding_entity->derived_bounding_box;
 				vec3 normal = bv_bounding_box_normal_from_intersection_point(box, intersection_point);
 
-				struct Ray normal_ray;
-				normal_ray.origin = intersection_point;
-				normal_ray.direction = normal;
-				im_ray(&normal_ray, 5.f, (vec4) { 1.f, 0.f, 0.f, 1.f }, 3);
+				im_ray_origin_dir(intersection_point, normal, 5.f, (vec4) { 1.f, 0.f, 0.f, 1.f }, 3);
+				im_ray(&forward_ray, min_collision_distance, (vec4) { 0.f, 1.f, 0.f, 1.f }, 3);
 
 				float dot = (vec3_dot(&move_direction, &normal));
 				vec3 norm_scaled = { 0.f };

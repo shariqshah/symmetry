@@ -29,7 +29,7 @@ void config_vars_init(struct Hashmap* cvars)
     hashmap_int_set(cvars,   "video_driver_linux",           VD_WAYLAND);
     hashmap_int_set(cvars,   "debug_draw_mode",              0);
     hashmap_vec4_setf(cvars, "debug_draw_color",             0.8f, 0.4f, 0.1f, 1.f);
-    hashmap_float_set(cvars, "player_move_speed",            10.f);
+    hashmap_float_set(cvars, "player_move_speed",            20.f);
     hashmap_float_set(cvars, "player_move_speed_multiplier", 2.f);
     hashmap_float_set(cvars, "player_turn_speed",            45.f);
 }

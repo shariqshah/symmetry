@@ -118,63 +118,41 @@ void player_update(struct Player* player, struct Scene* scene, float dt)
 		transform_rotate(player->camera_node, &rot_axis_pitch, pitch, TS_LOCAL);
 
     /* Movement */
-	float gravity        = 0.1f;
-	float dampening_x    = 0.08f;
-	float dampening_z    = 0.08f;
-	float jump_velocity  = 20.f;
+	float gravity        = -0.25f;
+	float jump_velocity  = 50.f;
     float move_speed     = player->move_speed;
-	static vec3 velocity = { 0.f, 0.f, 0.f };
+	vec3 move_direction  = { 0.f };
 	vec3 max_velocity    = { player->move_speed * player->move_speed_multiplier, jump_velocity, player->move_speed * player->move_speed_multiplier };
-	static bool jumping  = false;
+
+	static bool jumping = false;
+	static float move_speed_vertical = 0.f;
 
 	// If we started jumping last frame, set jumpig to false
 	if(jumping) jumping = false;
 
     if(input_map_state_get("Sprint",        KS_PRESSED))  move_speed *= player->move_speed_multiplier;
-    if(input_map_state_get("Move_Forward",  KS_PRESSED))  velocity.z   -= move_speed;
-    if(input_map_state_get("Move_Backward", KS_PRESSED))  velocity.z   += move_speed;
-    if(input_map_state_get("Move_Left",     KS_PRESSED))  velocity.x   -= move_speed;
-    if(input_map_state_get("Move_Right",    KS_PRESSED))  velocity.x   += move_speed;
+    if(input_map_state_get("Move_Forward",  KS_PRESSED))  move_direction.z -= 1.f;
+    if(input_map_state_get("Move_Backward", KS_PRESSED))  move_direction.z += 1.f;
+    if(input_map_state_get("Move_Left",     KS_PRESSED))  move_direction.x -= 1.f;
+    if(input_map_state_get("Move_Right",    KS_PRESSED))  move_direction.x += 1.f;
 	if(input_map_state_get("Jump", KS_PRESSED))
 	{
 		if(player->grounded)
 		{
-			velocity.y += jump_velocity;
+			//velocity.y += jump_velocity;
+			move_speed_vertical += jump_velocity;
 			jumping = true;
 			player->grounded = false;
 		}
 	}
 
-	// Dampen Velocity
-	if(velocity.x > 0.f)
-		velocity.x -= dampening_x;
-	else if(velocity.x < 0.f)
-		velocity.x += dampening_x;
-
-	//if(velocity.y >= 0.f)
-	velocity.y -= gravity;
-
-	if(velocity.z > 0.f)
-		velocity.z -= dampening_z;
-	else if(velocity.z < 0.f)
-		velocity.z += dampening_z;
-
-	// Clamp velocity to min/max
-	if(velocity.x > max_velocity.x)
-		velocity.x = max_velocity.x;
-	else if(velocity.x < -max_velocity.x)
-		velocity.x = -max_velocity.x;
-
-	if(velocity.y > max_velocity.y)
-		velocity.y = max_velocity.y;
-	if(velocity.y < -max_velocity.y)
-		velocity.y = -max_velocity.y;
-
-	if(velocity.z > max_velocity.z)
-		velocity.z = max_velocity.z;
-	if(velocity.z < -max_velocity.z)
-		velocity.z = -max_velocity.z;
-
+	vec3_norm(&move_direction, &move_direction);
+	if(move_direction.x != 0 || move_direction.z != 0)
+	{
+		//quat_mul_vec3(&move_direction, &player->camera_node->base.transform.rotation, &move_direction);
+		quat_mul_vec3(&move_direction, &player->base.transform.rotation, &move_direction);
+		//offset.y = 0.f;
+	}
 
 	/* Check for collisions ahead */
 	int mouse_x = 0, mouse_y = 0;
@@ -211,17 +189,19 @@ void player_update(struct Player* player, struct Scene* scene, float dt)
 				normal_ray.direction = normal;
 				im_ray(&normal_ray, 5.f, (vec4) { 1.f, 0.f, 0.f, 1.f }, 3);
 
-				float dot = (vec3_dot(&velocity, &normal));
+				float dot = (vec3_dot(&move_direction, &normal));
 				vec3 norm_scaled = { 0.f };
-				vec3_scale(&norm_scaled, &normal, dot);
-				vec3_sub(&velocity, &velocity, &norm_scaled);
+				vec3_scale(&normal, &normal, dot);
+				vec3_sub(&move_direction, &move_direction, &normal);
 				debug_vars_show_vec3("Normal", &normal);
+				debug_vars_show_vec3("Dir", &move_direction);
 				debug_vars_show_float("Dot", dot);
 			}
 		}
 	}
 
 	/* Check for collisions below */
+	move_speed_vertical += gravity;
 	struct Ray downward_ray;
 	transform_get_absolute_position(player->mesh, &downward_ray.origin);
 	vec3_fill(&downward_ray.direction, 0.f, -1.f, 0.f);
@@ -239,37 +219,30 @@ void player_update(struct Player* player, struct Scene* scene, float dt)
 			debug_vars_show_float("Collision below", distance);
 			if(distance > 0.f && distance <= min_downward_distance && !jumping)
 			{
-				velocity.y = 0.f;
+				//velocity.y = 0.f;
+				move_speed_vertical = 0.f;
 				player->grounded = true;
 			}
 		}
 	}
 
-	float min_velocity = 0.0001f;
-	float fract_part = 0.f;
-	double int_part = 0.f;
-	double int_part2 = 0.f;
-	fract_part = modf(velocity.x, &int_part);
-	if(fabsf(fract_part) < min_velocity) velocity.x = 0.f;
-	fract_part = modf(velocity.z, &int_part2);
-	if(fabsf(fract_part) < min_velocity) velocity.z = 0.f;
-
-	debug_vars_show_vec3("velocity", &velocity);
 	debug_vars_show_bool("Grounded", player->grounded);
 
     vec3 offset = {0.f, 0.f, 0.f};
-	vec3_assign(&offset, &velocity);
-    vec3_scale(&offset, &offset, dt);
-	if(offset.x != 0 || offset.z != 0)
-	{
-		quat_mul_vec3(&offset, &player->camera_node->base.transform.rotation, &offset);
-		offset.y = 0.f;
-	}
+	vec3_assign(&offset, &move_direction);
+	//if(offset.x != 0 || offset.z != 0)
+	//{
+	//	quat_mul_vec3(&offset, &player->camera_node->base.transform.rotation, &offset);
+	//	offset.y = 0.f;
+	//}
 
-	if(velocity.y != 0.f)
-		offset.y = velocity.y * dt;
+	// Apply speed to direction then translate
+	offset.x *= move_speed * dt;
+	offset.z *= move_speed * dt;
+	offset.y = move_speed_vertical * dt;
+	debug_vars_show_vec3("Translation", &offset);
 
-	transform_translate(player, &offset, TS_LOCAL);
+	transform_translate(player, &offset, TS_WORLD);
 
 	/* Aiming and Projectiles*/
 	if(input_mousebutton_state_get(MSB_RIGHT, KS_PRESSED))
@@ -295,11 +268,9 @@ void player_update(struct Player* player, struct Scene* scene, float dt)
 					vec3_scale(&collision_point, &collision_point, distance);
 					vec3_add(&collision_point, &collision_point, &bullet_ray.origin);
 					struct Static_Mesh* bullet = scene_static_mesh_create(game_state_get()->scene, "bullet", NULL, "cube.symbres", MAT_UNSHADED);
-					transform_set_position(bullet, &collision_point);
+					if(bullet) transform_set_position(bullet, &collision_point);
 				}
 			}
 		}
 	}
-
-	debug_vars_show_float("Frame Time", dt * 100000.f);
 }

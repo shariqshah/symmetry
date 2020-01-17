@@ -542,7 +542,7 @@ void game_update(float dt, bool* window_should_close)
     if(input_map_state_get("Window_Maximize",   KS_RELEASED)) window_fullscreen_set(game_state->window, false);
     if(input_map_state_get("Console_Toggle",    KS_RELEASED)) console_toggle(game_state->console);
     if(input_map_state_get("Debug_Vars_Toggle", KS_RELEASED)) game_state->debug_vars->visible = !game_state->debug_vars->visible;
-	if(input_map_state_get("Debug_Vars_Cycle",  KS_RELEASED))  debug_vars_cycle_location(game_state->debug_vars);
+	if(input_map_state_get("Debug_Vars_Cycle",  KS_RELEASED)) debug_vars_cycle_location(game_state->debug_vars);
     if(input_map_state_get("Editor_Toggle",     KS_RELEASED)) 
     {
 		if(game_state->game_mode == GAME_MODE_EDITOR)

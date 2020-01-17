@@ -1,8 +1,7 @@
 Todo:
-	- Bring back sprinting
+	- Fix quaternion resetting/flipping
 	- Fix aggressive frustum culling when camera looks up and the object right infront of the viewer gets culled
 	- Check if running in a lower frame rate affects movement
-	- Move player movement related variables from function to player struct and load them from config file
 	? Write entity flags to scene file or when saving entity to file?
 	? Add scene init/de-init function hashmap that maps a function that should be called when scene is loaded and unloaded. Save this to file for every scene or map functions based on the name of the scene?
 	- Command to create a placeholder entity of a particular type in a file
@@ -401,3 +400,5 @@ Done:
 	* Shift-A to add entity to scene
 	* Fixed crash where if an entity is hoverd in editor and deleted, the game crashes because the hovered variable in editor doesn't know that the entity was deleted
 	* Improve player collision by impelenting sliding along collision plane in case of collision
+	* Brought back sprinting by fixing a bug where player movement related variables were written to file as floats but read back as ints
+	* Move player movement related variables from function to player struct and load them from config file

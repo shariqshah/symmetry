@@ -175,6 +175,10 @@ struct Player
     float               move_speed;
     float               move_speed_multiplier;
     float               turn_speed;
+	float               jump_speed;
+	float               gravity;
+	float               min_downward_distance;
+	float               min_forward_distance;
 	bool                grounded;
 };
 

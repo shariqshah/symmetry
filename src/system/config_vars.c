@@ -13,25 +13,29 @@
 void config_vars_init(struct Hashmap* cvars)
 {
     /* Initialize with default values incase there is no config file */
-    hashmap_int_set(cvars,   "render_width",                 1280);
-    hashmap_int_set(cvars,   "render_height",                720);
-    hashmap_bool_set(cvars,  "vsync_enabled",                true);
-    hashmap_int_set(cvars,   "fog_mode",                     1);
-    hashmap_vec3_setf(cvars, "fog_color",                    0.17f, 0.49f, 0.63f);
-    hashmap_float_set(cvars, "fog_density",                  0.1f);
-    hashmap_float_set(cvars, "fog_start_dist",               10.f);
-    hashmap_float_set(cvars, "fog_max_dist",                 450.f);
-    hashmap_vec3_setf(cvars, "ambient_light",                0.1f, 0.1f, 0.1f);
-    hashmap_bool_set(cvars,  "msaa_enabled",                 true);
-    hashmap_int_set(cvars,   "msaa_levels",                  4);
-    hashmap_bool_set(cvars,  "debug_draw_enabled",           false);
-    hashmap_bool_set(cvars,  "debug_draw_physics",           false);
-    hashmap_int_set(cvars,   "video_driver_linux",           VD_WAYLAND);
-    hashmap_int_set(cvars,   "debug_draw_mode",              0);
-    hashmap_vec4_setf(cvars, "debug_draw_color",             0.8f, 0.4f, 0.1f, 1.f);
-    hashmap_float_set(cvars, "player_move_speed",            20.f);
-    hashmap_float_set(cvars, "player_move_speed_multiplier", 2.f);
-    hashmap_float_set(cvars, "player_turn_speed",            45.f);
+    hashmap_int_set(cvars,   "render_width",                  1280);
+    hashmap_int_set(cvars,   "render_height",                 720);
+    hashmap_bool_set(cvars,  "vsync_enabled",                 true);
+    hashmap_int_set(cvars,   "fog_mode",                      1);
+    hashmap_vec3_setf(cvars, "fog_color",                     0.17f, 0.49f, 0.63f);
+    hashmap_float_set(cvars, "fog_density",                   0.1f);
+    hashmap_float_set(cvars, "fog_start_dist",                10.f);
+    hashmap_float_set(cvars, "fog_max_dist",                  450.f);
+    hashmap_vec3_setf(cvars, "ambient_light",                 0.1f, 0.1f, 0.1f);
+    hashmap_bool_set(cvars,  "msaa_enabled",                  true);
+    hashmap_int_set(cvars,   "msaa_levels",                   4);
+    hashmap_bool_set(cvars,  "debug_draw_enabled",            false);
+    hashmap_bool_set(cvars,  "debug_draw_physics",            false);
+    hashmap_int_set(cvars,   "video_driver_linux",            VD_WAYLAND);
+    hashmap_int_set(cvars,   "debug_draw_mode",               0);
+    hashmap_vec4_setf(cvars, "debug_draw_color",              0.8f, 0.4f, 0.1f, 1.f);
+    hashmap_float_set(cvars, "player_move_speed",             20.f);
+    hashmap_float_set(cvars, "player_move_speed_multiplier",  1.75f);
+    hashmap_float_set(cvars, "player_turn_speed",             45.f);
+    hashmap_float_set(cvars, "player_jump_speed",             50.f);
+    hashmap_float_set(cvars, "player_gravity",               -0.25f);
+    hashmap_float_set(cvars, "player_min_forward_distance",   5.f);
+    hashmap_float_set(cvars, "player_min_downward_distance",  2.f);
 }
 
 void config_vars_cleanup(struct Hashmap* cvars)

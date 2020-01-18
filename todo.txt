@@ -1,7 +1,12 @@
 Todo:
-	- Sound source entity functions that automatically track if handles are valid and create/update as necessary
+	- Imlement reading/writing enemy mesh and weapon sound to file and resetting it in code
+	- Apply sound source properties to source instance whenever a new instance is created
+	- Enemy ray casting and shooting
+	- Player shooting
 	- Player jump cooldown, don't allow jump until a certian time interval has passed, even if we're grounded
 	- Sky Cube maps
+	- Scrolling textures
+	- Apply the selected entity's transformation when duplicating an entity that has an entity archetype
 	- Gameplay level features:
 		- Each scene should always have a directional light that serves as the main source of light when there are no other lights
 		- Each scene should always have a texture cube that serves as the sky 
@@ -396,3 +401,4 @@ Done:
 	* Brought back sprinting by fixing a bug where player movement related variables were written to file as floats but read back as ints
 	* Move player movement related variables from function to player struct and load them from config file
 	* Screen mouse coordinates to world-coordinates for aiming
+	* Sound source entity functions that automatically track if handles are valid and create/update as necessary

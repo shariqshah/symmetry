@@ -27,6 +27,7 @@ enum Entity_Type
     ET_LIGHT,
     ET_STATIC_MESH,
     ET_SOUND_SOURCE,
+	ET_ENEMY,
     ET_MAX
 };
 
@@ -44,6 +45,12 @@ enum Camera_Type
     CAM_EDITOR = 0,
     CAM_GAME,
     CAM_MAX
+};
+
+enum Enemy_Type
+{
+	ENEMY_TURRET = 0,
+	ENEMY_MAX
 };
 
 enum Entity_Flags
@@ -67,7 +74,8 @@ enum Entity_Ray_Mask
 	ERM_LIGHT        = 1 << 3,
 	ERM_STATIC_MESH  = 1 << 4,
 	ERM_SOUND_SOURCE = 1 << 5,
-	ERM_ALL          = ERM_DEFAULT | ERM_PLAYER | ERM_CAMERA | ERM_LIGHT | ERM_STATIC_MESH | ERM_SOUND_SOURCE
+	ERM_ENEMY        = 1 << 6,
+	ERM_ALL          = ERM_DEFAULT | ERM_PLAYER | ERM_CAMERA | ERM_LIGHT | ERM_STATIC_MESH | ERM_SOUND_SOURCE | ERM_ENEMY
 };
 
 struct Transform
@@ -153,6 +161,7 @@ struct Light
     float         depth_bias;
 };
 
+
 struct Collision
 {
     Rigidbody       rigidbody;
@@ -181,6 +190,23 @@ struct Player
 	float				 min_downward_distance;
 	float				 min_forward_distance;
 	bool				 grounded;
+};
+
+struct Enemy
+{
+	struct Entity        base;
+	int                  type;
+	int                  health;
+	int                  damage;
+	struct Static_Mesh*  mesh;
+	struct Sound_Source* weapon_sound;
+	union
+	{
+		struct
+		{
+			float turn_speed;
+		}Turret;
+	};
 };
 
 void           entity_init(struct Entity* entity, const char* name, struct Entity* parent);

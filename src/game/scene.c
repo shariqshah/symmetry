@@ -18,6 +18,7 @@
 #include "../common/hashmap.h"
 #include "renderer.h"
 #include "sound_source.h"
+#include "enemy.h"
 
 #include <assert.h>
 #include <string.h>
@@ -33,6 +34,7 @@ void scene_init(struct Scene* scene)
 	struct Game_State* game_state = game_state_get();
 
 	strncpy(scene->filename, "UNNAMED_SCENE", MAX_FILENAME_LEN);
+
 	//Initialize the root entity
 	entity_init(&scene->root_entity, "ROOT_ENTITY", NULL);
 	scene->root_entity.flags |= EF_ACTIVE;
@@ -71,6 +73,12 @@ void scene_init(struct Scene* scene)
 
 	for(int i = 0; i < MAX_ENTITY_ARCHETYPES; i++)
 		memset(&scene->entity_archetypes[i][0], '\0', MAX_FILENAME_LEN);
+
+	for(int i = 0; i < MAX_ENEMIES; i++)
+	{
+		entity_reset(&scene->enemies[i], i);
+		scene->enemies->base.type = ET_ENEMY;
+	}
 
 	player_init(&scene->player, scene);
 	editor_camera_init(game_state->editor, game_state->cvars);
@@ -283,6 +291,11 @@ void scene_write_entity_list(struct Scene* scene, int entity_type, struct Parser
 		entity = &scene->sound_sources[0].base;
 		stride = sizeof(struct Sound_Source);
 		break;
+	case ET_ENEMY:
+		max_length = MAX_ENEMIES;
+		entity = &scene->enemies[0].base;
+		stride = sizeof(struct Enemy);
+		break;
 	default: return;
 	}
 
@@ -330,6 +343,7 @@ void scene_destroy(struct Scene* scene)
 	for(int i = 0; i < MAX_LIGHTS; i++)            scene_light_remove(scene, &scene->lights[i]);
 	for(int i = 0; i < MAX_STATIC_MESHES; i++)     scene_static_mesh_remove(scene, &scene->static_meshes[i]);
 	for(int i = 0; i < MAX_SOUND_SOURCES; i++)     scene_sound_source_remove(scene, &scene->sound_sources[i]);
+	for(int i = 0; i < MAX_ENEMIES; i++)           scene_enemy_remove(scene, &scene->enemies[i]);
 	for(int i = 0; i < MAX_ENTITY_ARCHETYPES; i++) memset(&scene->entity_archetypes[i][0], '\0', MAX_FILENAME_LEN);
 	player_destroy(&scene->player);
 	entity_reset(&scene->root_entity, 0);
@@ -338,7 +352,15 @@ void scene_destroy(struct Scene* scene)
 
 void scene_update(struct Scene* scene, float dt)
 {
-	if(game_state_get()->game_mode == GAME_MODE_GAME) player_update(&scene->player, scene, dt);
+	if(game_state_get()->game_mode == GAME_MODE_GAME) 
+	{
+		player_update(&scene->player, scene, dt);
+		for(int i = 0; i < MAX_ENEMIES; i++)
+		{
+			if(scene->enemies[i].base.flags & EF_ACTIVE)
+				enemy_update(&scene->enemies[i], scene, dt);
+		}
+	}
 }
 
 void scene_post_update(struct Scene* scene)
@@ -435,6 +457,19 @@ void scene_post_update(struct Scene* scene)
 		}
 
 		if(light->base.transform.is_modified) light->base.transform.is_modified = false;
+	}
+
+	for(int i = 0; i < MAX_ENEMIES; i++)
+	{
+		struct Enemy* enemy = &scene->enemies[i];
+		if(!(enemy->base.flags & EF_ACTIVE)) continue;
+
+		if(enemy->base.flags & EF_MARKED_FOR_DELETION)
+		{
+			scene_enemy_remove(scene, enemy);
+			continue;
+		}
+
 	}
 
 	if(scene->player.base.transform.is_modified)
@@ -580,7 +615,7 @@ struct Sound_Source* scene_sound_source_create(struct Scene* scene, const char* 
 		new_sound_source->base.type = ET_SOUND_SOURCE;
 		struct Entity* entity = &new_sound_source->base;
 
-		new_sound_source->source_buffer = sound_source_create(sound, filename, type);
+		new_sound_source->source_buffer = sound_source_buffer_create(sound, filename, type);
 		if(!new_sound_source->source_buffer)
 		{
 			log_error("scene:sound_source_create", "Failed to load file '%s' to provide sound source for entity %s", filename, entity->name);
@@ -618,6 +653,33 @@ struct Sound_Source* scene_sound_source_create(struct Scene* scene, const char* 
 	return new_sound_source;
 }
 
+struct Enemy* scene_enemy_create(struct Scene* scene, const char* name, struct Entity* parent, int type)
+{
+	assert(scene);
+	struct Enemy* new_enemy = NULL;
+	for(int i = 0; i < MAX_ENEMIES; i++)
+	{
+		struct Enemy* enemy = &scene->enemies[i];
+		if(!(enemy->base.flags & EF_ACTIVE))
+		{
+			new_enemy = enemy;
+			break;
+		}
+	}
+
+	if(new_enemy)
+	{
+		entity_init(&new_enemy->base, name, parent ? parent : &scene->root_entity);
+		enemy_init(new_enemy, type);
+	}
+	else
+	{
+		log_error("scene:enemy_create", "Max enemy limit reached!");
+	}
+
+	return new_enemy;
+}
+
 void scene_entity_base_remove(struct Scene* scene, struct Entity* entity)
 {
 	assert(scene && entity && entity->id >= 0);
@@ -634,6 +696,13 @@ void scene_light_remove(struct Scene* scene, struct Light* light)
 	assert(scene && light);
 	scene_entity_base_remove(scene, &light->base);
 	light->valid = false;
+}
+
+void scene_enemy_remove(struct Scene* scene, struct Enemy* enemy)
+{
+	assert(scene && enemy);
+	enemy_reset(enemy);
+	scene_entity_base_remove(scene, enemy);
 }
 
 void scene_camera_remove(struct Scene* scene, struct Camera* camera)
@@ -747,6 +816,23 @@ struct Sound_Source* scene_sound_source_find(struct Scene* scene, const char* na
 	}
 
 	return sound_source;
+}
+
+struct Enemy* scene_enemy_get(struct Scene* scene, const char* name)
+{
+	assert(scene && name);
+	struct Enemy* enemy = NULL;
+
+	for(int i = 0; i < MAX_ENEMIES; i++)
+	{
+		if(strncmp(name, scene->enemies[i].base.name, MAX_ENTITY_NAME_LEN) == 0)
+		{
+			enemy = &scene->enemies[i];
+			break;
+		}
+	}
+
+	return enemy;
 }
 
 struct Entity* scene_base_entity_get(struct Scene* scene, int id, int type)

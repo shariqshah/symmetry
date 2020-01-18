@@ -1690,14 +1690,6 @@ void editor_window_scene_hierarchy(struct nk_context* context, struct Editor* ed
 		nk_layout_row_dynamic(context, 380, 1);
 		if(nk_group_begin(context, "Entity Name", NK_WINDOW_SCROLL_AUTO_HIDE))
 		{
-
-			if(nk_tree_push(context, NK_TREE_TAB, "Entities", NK_MAXIMIZED))
-			{
-				for(int i = 0; i < MAX_ENTITIES; i++)      
-					editor_show_entity_in_list(editor, context, scene, &scene->entities[i]);
-				nk_tree_pop(context);
-			}
-
 			if(nk_tree_push(context, NK_TREE_TAB, "Cameras", NK_MAXIMIZED))
 			{
 				for(int i = 0; i < MAX_CAMERAS; i++)       
@@ -1723,6 +1715,20 @@ void editor_window_scene_hierarchy(struct nk_context* context, struct Editor* ed
 			{
 				for(int i = 0; i < MAX_SOUND_SOURCES; i++)
 					editor_show_entity_in_list(editor, context, scene, &scene->sound_sources[i]);
+				nk_tree_pop(context);
+			}
+
+			if(nk_tree_push(context, NK_TREE_TAB, "Enemies", NK_MAXIMIZED))
+			{
+				for(int i = 0; i < MAX_ENEMIES; i++)      
+					editor_show_entity_in_list(editor, context, scene, &scene->enemies[i]);
+				nk_tree_pop(context);
+			}
+
+			if(nk_tree_push(context, NK_TREE_TAB, "Entities", NK_MAXIMIZED))
+			{
+				for(int i = 0; i < MAX_ENTITIES; i++)      
+					editor_show_entity_in_list(editor, context, scene, &scene->entities[i]);
 				nk_tree_pop(context);
 			}
 
@@ -2073,10 +2079,10 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 						{
 							if(strncmp(sound_source_filename_buffer, sound_source->source_buffer->filename, MAX_FILENAME_LEN) != 0)
 							{
-								struct Sound_Source_Buffer* new_source_buffer = sound_source_create(sound, sound_source_filename_buffer, ST_WAV_STREAM);
+								struct Sound_Source_Buffer* new_source_buffer = sound_source_buffer_create(sound, sound_source_filename_buffer, ST_WAV_STREAM);
 								if(new_source_buffer)
 								{
-									sound_source_stop_all(sound, sound_source->source_buffer);
+									sound_source_buffer_stop_all(sound, sound_source->source_buffer);
 									sound_source_instance_destroy(sound, sound_source->source_instance);
 									sound_source->source_instance = sound_source_instance_create(sound, new_source_buffer, true);
 									sound_source->source_buffer = new_source_buffer;
@@ -2207,6 +2213,29 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 					nk_label(context, "UV Scale", NK_TEXT_ALIGN_MIDDLE | NK_TEXT_ALIGN_CENTERED);
 					editor_widget_v2(context, &mesh->model.material_params[MMP_UV_SCALE].val_vec2, "U", "V", 0.f, FLT_MAX, 0.1f, 0.1f, row_height);
 					
+					nk_tree_pop(context);
+				}
+			}
+
+			
+			/* Enemy */
+			if(entity->type == ET_ENEMY)
+			{
+				struct Enemy* enemy = (struct Enemy*)entity;
+				if(nk_tree_push(context, NK_TREE_TAB, "Enemy", NK_MAXIMIZED))
+				{
+					nk_layout_row_dynamic(context, row_height, 1);
+					nk_property_int(context, "Damage", -INT_MAX, &enemy->damage, INT_MAX, 1, 1);
+					nk_property_int(context, "Health", 0, &enemy->health, INT_MAX, 1, 1);
+
+					switch(enemy->type)
+					{
+					case ENEMY_TURRET:
+					{
+						nk_property_float(context, "Turn Speed", 0.f, &enemy->Turret.turn_speed, FLT_MAX, 0.5f, 0.1f);
+					}
+					break;
+					}
 					nk_tree_pop(context);
 				}
 			}

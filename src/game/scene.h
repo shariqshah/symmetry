@@ -4,12 +4,13 @@
 #include "entity.h"
 #include "renderer.h"
 
-#define MAX_ENTITIES             1024
+#define MAX_ENTITIES             32
 #define MAX_LIGHTS               30
 #define MAX_CAMERAS              2
 #define MAX_STATIC_MESHES        1024
 #define MAX_SOUND_SOURCES        128
 #define MAX_ENTITY_ARCHETYPES    32
+#define MAX_ENEMIES              64
 
 struct Ray;
 struct Raycast_Result;
@@ -24,6 +25,7 @@ struct Scene
     struct Camera          cameras[MAX_CAMERAS];
     struct Light           lights[MAX_LIGHTS];
     struct Sound_Source    sound_sources[MAX_SOUND_SOURCES];
+	struct Enemy           enemies[MAX_ENEMIES];
 	char                   entity_archetypes[MAX_ENTITY_ARCHETYPES][MAX_FILENAME_LEN];
     int                    active_camera_index;
 };
@@ -41,12 +43,14 @@ struct Light*        scene_light_create(struct Scene* scene, const char* name, s
 struct Camera*       scene_camera_create(struct Scene* scene, const char* name, struct Entity* parent, int width, int height);
 struct Static_Mesh*  scene_static_mesh_create(struct Scene* scene, const char* name, struct Entity* parent, const char* geometry_name, int material_type);
 struct Sound_Source* scene_sound_source_create(struct Scene* scene, const char* name, struct Entity* parent, const char* filename, int type, bool loop, bool play);
+struct Enemy*        scene_enemy_create(struct Scene* scene, const char* name, struct Entity* parent, int type);
 
 void scene_entity_base_remove(struct Scene* scene, struct Entity* entity);
 void scene_light_remove(struct Scene* scene, struct Light* light);
 void scene_camera_remove(struct Scene* scene, struct Camera* camera);
 void scene_static_mesh_remove(struct Scene* scene, struct Static_Mesh* mesh);
 void scene_sound_source_remove(struct Scene* scene, struct Sound_Source* source);
+void scene_enemy_remove(struct Scene* scene, struct Enemy* enemy);
 
 void*                scene_find(struct Scene* scene, const char* name); // Looks in all entity type arrays and returns the first one found. Result should be cast back to expected type
 struct Entity*       scene_entity_find(struct Scene* scene, const char* name);
@@ -55,6 +59,7 @@ struct Camera*       scene_camera_find(struct Scene* scene, const char* name);
 struct Static_Mesh*  scene_static_mesh_find(struct Scene* scene, const char* name);
 struct Sound_Source* scene_sound_source_find(struct Scene* scene, const char* name);
 struct Entity*       scene_base_entity_get(struct Scene* scene, int id, int type);
+struct Enemy*        scene_enemy_get(struct Scene* scene, const char* name);
 
 void scene_entity_parent_set(struct Scene* scene, struct Entity* entity, struct Entity* parent);
 void scene_entity_parent_reset(struct Scene* scene, struct Entity* entity); // Sets root entity as parent

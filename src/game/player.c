@@ -61,7 +61,6 @@ void player_init(struct Player* player, struct Scene* scene)
 	player->mesh->base.flags |= EF_TRANSIENT;
 	player->weapon_sound->base.flags |= EF_TRANSIENT;
 
-
     transform_parent_set(player_camera, player, true);
 
     vec3 cam_translation = {0.f, 1.5f, 0.f};

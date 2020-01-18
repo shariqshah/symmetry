@@ -18,6 +18,7 @@
 #include "scene.h"
 #include "game.h"
 #include "texture.h"
+#include "enemy.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -202,8 +203,8 @@ bool entity_write(struct Entity* entity, struct Parser_Object* object, bool writ
 		{
 			hashmap_bool_set(entity_data, "has_fbo", true);
 		}
-		break;
 	}
+	break;
 	case ET_STATIC_MESH:
 	{
 		struct Static_Mesh* mesh = (struct Static_Mesh*)entity;
@@ -230,8 +231,8 @@ bool entity_write(struct Entity* entity, struct Parser_Object* object, bool writ
 		};
 
 		hashmap_str_set(entity_data, "geometry", geom->filename);
-		break;
 	}
+	break;
 	case ET_LIGHT:
 	{
 		struct Light* light = (struct Light*)entity;
@@ -246,8 +247,8 @@ bool entity_write(struct Entity* entity, struct Parser_Object* object, bool writ
 		hashmap_bool_set(entity_data, "cast_shadow", light->cast_shadow);
 		hashmap_bool_set(entity_data, "pcf_enabled", light->pcf_enabled);
 		hashmap_vec3_set(entity_data, "color", &light->color);
-		break;
 	}
+	break;
 	case ET_SOUND_SOURCE:
 	{
 		struct Sound_Source* sound_source = (struct Sound_Source*)entity;
@@ -260,8 +261,14 @@ bool entity_write(struct Entity* entity, struct Parser_Object* object, bool writ
 		hashmap_float_set(entity_data, "sound_max_distance", sound_source->max_distance);
 		hashmap_float_set(entity_data, "rolloff_factor", sound_source->rolloff_factor);
 		hashmap_int_set(entity_data, "sound_attenuation_type", sound_source->attenuation_type);
-		break;
 	}
+	break;
+	case ET_ENEMY:
+	{
+		struct Enemy* enemy = (struct Enemy*)entity;
+		enemy_write(enemy, entity_data);
+	}
+	break;
 	};
 
 	return true;
@@ -424,7 +431,7 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 		{
 			struct Sound* sound = game_state_get()->sound;
 			
-			sound_source->source_buffer = sound_source_create(sound, hashmap_str_get(object->data, "source_filename"), sound_source->type);
+			sound_source->source_buffer = sound_source_buffer_create(sound, hashmap_str_get(object->data, "source_filename"), sound_source->type);
 			if(sound_source->source_buffer)
 			{
 				sound_source->source_instance = sound_source_instance_create(sound, sound_source->source_buffer, true);
@@ -494,6 +501,13 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 			if(hashmap_value_exists(object->data, "uv_scale")) model->material_params[MMP_UV_SCALE].val_vec2 = hashmap_vec2_get(object->data, "uv_scale");
 			break;
 		};
+	}
+	break;
+	case ET_ENEMY:
+	{
+		new_entity = &enemy_read(object, name, parent_entity)->base;
+		if(!new_entity)
+			return new_entity;
 	}
 	break;
 	default:

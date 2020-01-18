@@ -14,8 +14,12 @@
 #include "debug_vars.h"
 #include "geometry.h"
 #include "im_render.h"
+#include "event.h"
+#include "sound_source.h"
 
 #include <float.h>
+
+static void player_on_mousebutton_released(const struct Event* event);
 
 void player_init(struct Player* player, struct Scene* scene)
 {
@@ -44,11 +48,19 @@ void player_init(struct Player* player, struct Scene* scene)
     player_camera->clear_color.y = 0.6f;
     player_camera->clear_color.z = 0.9f;
     player_camera->clear_color.w = 1.f;
-    player->camera_node = player_camera;
+    player->camera = player_camera;
+
+	struct Sound_Source* weapon_sound = scene_sound_source_create(scene, "Player_Weapon_Sound_Source", player, "sounds/bullet_1.wav", ST_WAV, false, false);
+	if(weapon_sound)
+		player->weapon_sound = weapon_sound;
+	else
+		log_error("player:init", "Could not add weapon entity to player");
 
 	// Mark player camera and mesh as transient for now. We don't need to save them to file since we recreate them here anyway
-	player->camera_node->base.flags |= EF_TRANSIENT;
+	player->camera->base.flags |= EF_TRANSIENT;
 	player->mesh->base.flags |= EF_TRANSIENT;
+	player->weapon_sound->base.flags |= EF_TRANSIENT;
+
 
     transform_parent_set(player_camera, player, true);
 
@@ -57,10 +69,13 @@ void player_init(struct Player* player, struct Scene* scene)
 
 	sound_listener_set(game_state->sound, player_camera);
 	sound_listener_update(game_state->sound);
+
+	event_manager_subscribe(game_state->event_manager, EVT_MOUSEBUTTON_RELEASED, &player_on_mousebutton_released);
 }
 
 void player_destroy(struct Player* player)
 {
+	event_manager_unsubscribe(game_state_get()->event_manager, EVT_MOUSEBUTTON_RELEASED, &player_on_mousebutton_released);
     entity_reset(player, player->base.id);
 	scene_entity_base_remove(game_state_get()->scene, &player->base);
     player->base.flags = EF_NONE;
@@ -108,7 +123,7 @@ void player_update(struct Player* player, struct Scene* scene, float dt)
 		transform_rotate(player, &rot_axis_yaw, -yaw, TS_WORLD);
 
     if(pitch != 0.f)
-		transform_rotate(player->camera_node, &rot_axis_pitch, pitch, TS_LOCAL);
+		transform_rotate(player->camera, &rot_axis_pitch, pitch, TS_LOCAL);
 
     /* Movement */
     float move_speed     = player->move_speed;
@@ -218,33 +233,45 @@ void player_update(struct Player* player, struct Scene* scene, float dt)
 	debug_vars_show_vec3("Translation", &translation);
 	debug_vars_show_bool("Grounded", player->grounded);
 
+}
+
+void player_on_mousebutton_released(const struct Event* event)
+{
+	int button = event->mousebutton.button;
+	int state = event->mousebutton.state;
+	struct Game_State* game_state = game_state_get();
+	struct Scene* scene = game_state->scene;
+	struct Player* player = &scene->player;
+
+	if(game_state->game_mode != GAME_MODE_GAME)
+		return;
+
 	/* Aiming and Projectiles*/
-	if(input_mousebutton_state_get(MSB_RIGHT, KS_PRESSED))
+	if(button == MSB_LEFT)
 	{
 		log_message("Right Click");
-		int mouse_x = 0, mouse_y = 0;
-		platform_mouse_position_get(&mouse_x, &mouse_y);
-		struct Ray bullet_ray = camera_screen_coord_to_ray(player->camera_node, mouse_x, mouse_y);
+		int half_width = 0, half_height = 0;
+		window_get_drawable_size(game_state->window, &half_width, &half_height);
+		half_width /= 2;
+		half_height /= 2;
+		struct Ray bullet_ray = camera_screen_coord_to_ray(player->camera, half_width, half_height);
 
-		struct Raycast_Result bullet_ray_result;
-		scene_ray_intersect(scene, &bullet_ray, &bullet_ray_result, ERM_STATIC_MESH);
-		if(bullet_ray_result.num_entities_intersected > 0)
+		struct Entity* colliding_entity = scene_ray_intersect_closest(scene, &bullet_ray, ERM_STATIC_MESH);
+
+		if(!colliding_entity || colliding_entity == player->mesh)
+			return;
+
+		float distance = bv_distance_ray_bounding_box(&bullet_ray, &colliding_entity->derived_bounding_box);
+		if(distance > 0.f)
 		{
-			for(int i = 0; i < bullet_ray_result.num_entities_intersected; i++)
-			{
-				struct Entity* colliding_entity = bullet_ray_result.entities_intersected[i];
-				if(colliding_entity == player->mesh)
-					continue;
-				float distance = bv_distance_ray_bounding_box(&bullet_ray, &colliding_entity->derived_bounding_box);
-				if(distance > 0.f)
-				{
-					vec3 collision_point = bullet_ray.direction;
-					vec3_scale(&collision_point, &collision_point, distance);
-					vec3_add(&collision_point, &collision_point, &bullet_ray.origin);
-					struct Static_Mesh* bullet = scene_static_mesh_create(game_state_get()->scene, "bullet", NULL, "cube.symbres", MAT_UNSHADED);
-					if(bullet) transform_set_position(bullet, &collision_point);
-				}
-			}
+			vec3 collision_point = bullet_ray.direction;
+			vec3_scale(&collision_point, &collision_point, distance);
+			vec3_add(&collision_point, &collision_point, &bullet_ray.origin);
+			//struct Static_Mesh* bullet = scene_static_mesh_create(game_state_get()->scene, "bullet", NULL, "cube.symbres", MAT_UNSHADED);
+			struct Light* bullet = entity_load("Spot", DIRT_INSTALL);
+			if(bullet) transform_set_position(bullet, &collision_point);
+			sound_source_play(game_state->sound, player->weapon_sound);
 		}
+
 	}
 }

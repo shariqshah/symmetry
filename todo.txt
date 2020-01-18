@@ -1,11 +1,17 @@
 Todo:
-	- Fix quaternion resetting/flipping
-	- Fix aggressive frustum culling when camera looks up and the object right infront of the viewer gets culled
+	- Sound source entity functions that automatically track if handles are valid and create/update as necessary
+	- Player jump cooldown, don't allow jump until a certian time interval has passed, even if we're grounded
+	- Sky Cube maps
+	- Gameplay level features:
+		- Each scene should always have a directional light that serves as the main source of light when there are no other lights
+		- Each scene should always have a texture cube that serves as the sky 
+		- Triggers
+		- Basic Enemy
+		- Main Menu Scene
+		? Split this todo into gameplay/engine todos
 	- Check if running in a lower frame rate affects movement
 	? Write entity flags to scene file or when saving entity to file?
 	? Add scene init/de-init function hashmap that maps a function that should be called when scene is loaded and unloaded. Save this to file for every scene or map functions based on the name of the scene?
-	- Command to create a placeholder entity of a particular type in a file
-	- Reduce the opacity of wireframe around selected entity in editor
 	- Release mouse when window loses focus and limit fps
 	? When saving a scene entity entry, save the changed properties as well, that way when the scene is loaded, we load the base properties from archetype and the ones we changed per entry are saved when we saved the entity
 	  this will prevent us from having needless amount of entities with only minor changes from one another 
@@ -18,32 +24,17 @@ Todo:
 	- Decide how to handle scale when checking sphere-ray intersection
 	- Add material export for blender exporter?
 	- Show current filename of the scene we are working on and whether we have made any changes to it since the last time we saved
-	- Fix crash when exiting from fullscreen mode
 	- Check if we still need to rotate by 90 degrees when exporting from blender
 	- Fire an event when the game mode is changed so that editor camera state and other game related systems know when to update
 	- Add config file reloading and fire event that notifies potential listeners to update values from the new config file
 	- Command to reload entities only
 	- Serialize player, camera properties to file
-	- Gameplay level features:
-		- Each scene should always have a directional light that serves as the main source of light when there are no other lights
-		- Each scene should always have a texture cube that serves as the sky 
-		- Player/World collision and movement using ray casts only
-		- Triggers
-		- Basic Enemy
-		- Main Menu Scene
-		? Split this todo into gameplay/engine todos
 	- Change mouse behaviour to lock cursor when looking around so as not to interfere with gui elements when in editor mode
 	- Folder management api to create/delete folders when none exist. Dirent would suffice for our simple needs?
 	? Entity creator window to create new types of entities and write them
 	  to disk
-	- Entity browser window which lists all existing entity types from
-	  where new entities can be creating by dragging and dropping on to
-	  the current scene
-	- Editor related messages/notifications in the bottom status bar
 	? Maybe remove physics engine and ode all together if we're not using it or investigate the memory leaks that it causes if we're going to keep it?
 	- Disable editor event recievers on game mode change
-	- Color picker
-	- Color palette, picker and dropper
 	- Key binding and function to snap editor camera to selected entity
 	  location
 	- Key binding and function to orient entity to camera orientation
@@ -55,7 +46,6 @@ Todo:
 	? Improve bounding sphere calculation
 	- Change the way lights are set as uniforms to remove snprintf calls per frame for every light attribute
 	- Command interface that allows applying commands to selected entity like r x 30 would rotate the selected entity or entities on x axis by 30 degrees
-	- Screen mouse coordinates to world-coordinates for aiming
 	- Player projectiles and sounds
 	- Space partitioning and scene handling
 	- Move Gui_State and Editor_State into game_state and modify usage as needed
@@ -129,6 +119,9 @@ Bugs:
 	- Fix camera not rotating if the cursor overlaps any ui element
 	- Fix hierarchichal transformations in the editor when the entity being transformed is a child entity of another entity
 	- Fix camera frustum creation/update 
+	- Fix quaternion resetting/flipping
+	- Fix aggressive frustum culling when camera looks up and the object right infront of the viewer gets culled
+	- Fix crash when exiting from fullscreen mode
 	
 Done:
 	* Input
@@ -402,3 +395,4 @@ Done:
 	* Improve player collision by impelenting sliding along collision plane in case of collision
 	* Brought back sprinting by fixing a bug where player movement related variables were written to file as floats but read back as ints
 	* Move player movement related variables from function to player struct and load them from config file
+	* Screen mouse coordinates to world-coordinates for aiming

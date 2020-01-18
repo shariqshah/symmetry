@@ -87,7 +87,7 @@ void sound_cleanup(struct Sound* sound)
 	{
 		struct Sound_Source_Buffer* source = &sound->sound_buffers[i];
 		if(source->type != ST_NONE)
-			sound_source_destroy(sound, source);
+			sound_source_buffer_destroy(sound, source);
 
 	}
 
@@ -106,6 +106,11 @@ void sound_source_instance_destroy(struct Sound* sound, uint source_instance)
 void sound_source_instance_update_position(struct Sound* sound, uint source_instance, vec3 abs_pos)
 {
 	Soloud_set3dSourceParameters(sound->soloud_context, source_instance, abs_pos.x, abs_pos.y, abs_pos.z);
+}
+
+bool sound_source_instance_is_valid(struct Sound* sound, uint source_instance)
+{
+	return Soloud_isValidVoiceHandle(sound->soloud_context, source_instance);
 }
 
 uint sound_source_instance_create(struct Sound* sound, struct Sound_Source_Buffer* source, bool is3d)
@@ -185,12 +190,12 @@ bool sound_source_instance_is_paused(struct Sound* sound, uint source_instance)
 	return Soloud_getPause(sound->soloud_context, source_instance);
 }
 
-struct Sound_Source_Buffer* sound_source_create(struct Sound* sound, const char* filename, int type)
+struct Sound_Source_Buffer* sound_source_buffer_create(struct Sound* sound, const char* filename, int type)
 {
 	if(!filename) 
 		return NULL;
 
-	struct Sound_Source_Buffer* source = sound_source_get(sound, filename);
+	struct Sound_Source_Buffer* source = sound_source_buffer(sound, filename);
 
 	// See if we've already loaded this file otherwise, get the next empty slot.
 	// If we can't find an empty slot, print error and return NULL
@@ -264,7 +269,7 @@ struct Sound_Source_Buffer* sound_source_create(struct Sound* sound, const char*
 	return source;
 }
 
-struct Sound_Source_Buffer* sound_source_get(struct Sound* sound, const char* name)
+struct Sound_Source_Buffer* sound_source_buffer(struct Sound* sound, const char* name)
 {
 	struct Sound_Source_Buffer* source = NULL;
 	for(int i = 0; i < MAX_SOUND_BUFFERS; i++)
@@ -281,11 +286,11 @@ struct Sound_Source_Buffer* sound_source_get(struct Sound* sound, const char* na
 	return source;
 }
 
-void sound_source_destroy(struct Sound* sound, struct Sound_Source_Buffer* source)
+void sound_source_buffer_destroy(struct Sound* sound, struct Sound_Source_Buffer* source)
 {
 	if(source)
 	{
-		sound_source_stop_all(sound, source);
+		sound_source_buffer_stop_all(sound, source);
 		switch(source->type)
 		{
 		case ST_WAV: Wav_destroy(source->wav); source->wav = NULL;  break;
@@ -296,7 +301,7 @@ void sound_source_destroy(struct Sound* sound, struct Sound_Source_Buffer* sourc
 	}
 }
 
-void sound_source_volume_set(struct Sound* sound, struct Sound_Source_Buffer* source, float volume)
+void sound_source_buffer_volume_set(struct Sound* sound, struct Sound_Source_Buffer* source, float volume)
 {
 	assert(source);
 	switch(source->type)
@@ -306,7 +311,7 @@ void sound_source_volume_set(struct Sound* sound, struct Sound_Source_Buffer* so
 	}
 }
 
-void sound_source_loop_set(struct Sound* sound, struct Sound_Source_Buffer* source, bool loop)
+void sound_source_buffer_loop_set(struct Sound* sound, struct Sound_Source_Buffer* source, bool loop)
 {
 	assert(source);
 	switch(source->type)
@@ -316,7 +321,7 @@ void sound_source_loop_set(struct Sound* sound, struct Sound_Source_Buffer* sour
 	}
 }
 
-void sound_source_stop_all(struct Sound* sound, struct Sound_Source_Buffer* source)
+void sound_source_buffer_stop_all(struct Sound* sound, struct Sound_Source_Buffer* source)
 {
 	assert(source);
 	switch(source->type)
@@ -326,7 +331,7 @@ void sound_source_stop_all(struct Sound* sound, struct Sound_Source_Buffer* sour
 	}
 }
 
-void sound_source_min_max_distance_set(struct Sound* sound, struct Sound_Source_Buffer* source, float min_distance, float max_distance)
+void sound_source_buffer_min_max_distance_set(struct Sound* sound, struct Sound_Source_Buffer* source, float min_distance, float max_distance)
 {
 	assert(source);
 	switch(source->type)
@@ -334,4 +339,32 @@ void sound_source_min_max_distance_set(struct Sound* sound, struct Sound_Source_
 	case ST_WAV:        Wav_set3dMinMaxDistance(source->wav, min_distance, max_distance); break;
 	case ST_WAV_STREAM: WavStream_set3dMinMaxDistance(source->wavstream, min_distance, max_distance); break;
 	}
+}
+
+uint sound_source_buffer_play_3d(struct Sound* sound, struct Sound_Source_Buffer* source, vec3 position)
+{
+	assert(source);
+	uint handle = -1;
+
+	switch(source->type)
+	{
+	case ST_WAV: handle = Soloud_play3d(sound->soloud_context, source->wav, position.x, position.y, position.z); break;
+	case ST_WAV_STREAM: handle = Soloud_play3d(sound->soloud_context, source->wavstream, position.x, position.y, position.z); break;
+	}
+
+	return handle;
+}
+
+uint sound_source_buffer_play_clocked_3d(struct Sound* sound, struct Sound_Source_Buffer* source, float delay, vec3 position)
+{
+	assert(source);
+	uint handle = -1;
+
+	switch(source->type)
+	{
+	case ST_WAV: handle = Soloud_play3dClocked(sound->soloud_context, (double)delay, source->wav, position.x, position.y, position.z); break;
+	case ST_WAV_STREAM: handle = Soloud_play3dClocked(sound->soloud_context, (double)delay, source->wavstream, position.x, position.y, position.z); break;
+	}
+
+	return handle;
 }

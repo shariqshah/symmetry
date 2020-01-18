@@ -3,7 +3,7 @@ Scene_Config
 	debug_draw_color : 0.800 0.400 0.100 1.000
 	fog_type : 1
 	fog_density : 0.1000
-	fog_color : 0.170 0.490 0.630
+	fog_color : 0.310 0.412 0.529
 	debug_draw_physics : false
 	fog_start_distance : 10.0000
 	fog_max_distance : 450.0000
@@ -16,13 +16,22 @@ Player
 {
 	type : 2
 	scale : 1.000 1.000 1.000
-	rotation : 0.000 -0.654 0.000 0.758
+	rotation : 0.000 -0.351 0.000 -0.938
 	active : true
-	position : -38.848 2.992 -29.629
+	position : 1.750 2.869 22.751
 	bouding_box_min : -0.500 -0.500 -0.500
 	name : Player
 	bouding_box_max : 0.500 0.500 0.500
-	camera_clear_color : 0.298 0.600 0.898 1.000
+	camera_clear_color : 0.310 0.412 0.529 1.000
+}
+
+Scene_Entity_Entry
+{
+	scale : 1.000 1.000 1.000
+	rotation : 0.000 0.000 0.000 1.000
+	position : 8.000 5.000 -20.000
+	filename : Spot
+	name : Test_Light
 }
 
 Scene_Entity_Entry

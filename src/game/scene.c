@@ -17,6 +17,7 @@
 #include "../system/platform.h"
 #include "../common/hashmap.h"
 #include "renderer.h"
+#include "sound_source.h"
 
 #include <assert.h>
 #include <string.h>
@@ -186,7 +187,7 @@ bool scene_load(struct Scene* scene, const char* filename, int directory_type)
 			quat_assign(&player->base.transform.rotation, &rotation);
 			transform_update_transmat(player);
 
-			if(hashmap_value_exists(player_data, "camera_clear_color")) player->camera_node->clear_color = hashmap_vec4_get(player_data, "camera_clear_color");
+			if(hashmap_value_exists(player_data, "camera_clear_color")) player->camera->clear_color = hashmap_vec4_get(player_data, "camera_clear_color");
 			num_objects_loaded++;
 		}
 		break;
@@ -233,7 +234,7 @@ bool scene_save(struct Scene* scene, const char* filename, int directory_type)
 	// Player
 	struct Parser_Object* player_object = parser_object_new(parser, PO_PLAYER);
 	entity_write(&scene->player, player_object, true);
-	hashmap_vec4_set(player_object->data, "camera_clear_color", &scene->player.camera_node->clear_color);
+	hashmap_vec4_set(player_object->data, "camera_clear_color", &scene->player.camera->clear_color);
 
 	scene_write_entity_list(scene, ET_DEFAULT, parser);
 	scene_write_entity_list(scene, ET_LIGHT, parser);
@@ -390,9 +391,7 @@ void scene_post_update(struct Scene* scene)
 
 		if(sound_source->base.transform.is_modified)
 		{
-			vec3 abs_pos = { 0.f, 0.f,  0.f };
-			transform_get_absolute_position(&sound_source->base, &abs_pos);
-			sound_source_instance_update_position(sound, sound_source->source_instance, abs_pos);
+			sound_source_update(sound, sound_source);
 			sound_source->base.transform.is_modified = false;
 		}
 	}
@@ -1019,7 +1018,7 @@ struct Entity* scene_entity_duplicate(struct Scene* scene, struct Entity* entity
 	if(entity->archetype_index != -1)
 	{
 		new_entity = entity_load(scene->entity_archetypes[entity->archetype_index], DIRT_INSTALL);
-		scene_entity_parent_set(scene, new_entity, entity->transform.parent);
+		if(new_entity) scene_entity_parent_set(scene, new_entity, entity->transform.parent);
 		return new_entity;
 	}
 
@@ -1034,6 +1033,8 @@ struct Entity* scene_entity_duplicate(struct Scene* scene, struct Entity* entity
 	{
 		struct Light* light = (struct Light*)entity;
 		struct Light* new_light = scene_light_create(scene, entity->name, entity->transform.parent, light->type);
+		if(!new_light)
+			return new_entity;
 		new_light->inner_angle = light->inner_angle;
 		new_light->outer_angle = light->outer_angle;
 		new_light->falloff     = light->falloff;
@@ -1053,6 +1054,8 @@ struct Entity* scene_entity_duplicate(struct Scene* scene, struct Entity* entity
 	{
 		struct Static_Mesh* mesh = (struct Static_Mesh*)entity;
 		struct Static_Mesh* new_mesh = scene_static_mesh_create(scene, entity->name, entity->transform.parent, geom_get(mesh->model.geometry_index)->filename, mesh->model.material->type);
+		if(!new_mesh)
+			return new_entity;
 		memcpy(new_mesh->model.material_params, mesh->model.material_params, sizeof(struct Variant) * MMP_MAX);
 		new_entity = &new_mesh->base;
 		//Handle collision related information here!
@@ -1062,6 +1065,8 @@ struct Entity* scene_entity_duplicate(struct Scene* scene, struct Entity* entity
 	{
 		struct Sound_Source* sound_source = (struct Sound_Source*)entity;
 		struct Sound_Source* new_sound_source = scene_sound_source_create(scene, entity->name, entity->transform.parent, sound_source->source_buffer->filename, sound_source->type, sound_source->loop, sound_source->playing);
+		if(!new_sound_source)
+			return new_entity;
 		new_sound_source->min_distance     = sound_source->min_distance;
 		new_sound_source->max_distance     = sound_source->max_distance;
 		new_sound_source->rolloff_factor   = sound_source->rolloff_factor;

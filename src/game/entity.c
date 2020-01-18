@@ -389,6 +389,8 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 	case ET_LIGHT:
 	{
 		struct Light* light = scene_light_create(scene, name, parent_entity, LT_POINT);
+		if(!light)
+			return new_entity;
 		if(hashmap_value_exists(object->data, "light_type"))  light->type        = hashmap_int_get(object->data, "light_type");
 		if(hashmap_value_exists(object->data, "outer_angle")) light->outer_angle = hashmap_float_get(object->data, "outer_angle");
 		if(hashmap_value_exists(object->data, "inner_angle")) light->inner_angle = hashmap_float_get(object->data, "inner_angle");
@@ -405,6 +407,8 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 	case ET_SOUND_SOURCE:
 	{
 		struct Sound_Source* sound_source = scene_sound_source_create(scene, name, parent_entity, "sounds/teh_beatz.wav", ST_WAV, true, true);
+		if(!sound_source)
+			return new_entity;
 		struct Sound_Source_Buffer* default_source_buffer = sound_source->source_buffer;
 		uint default_source_instance = sound_source->source_instance;
 
@@ -453,11 +457,6 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 		new_entity = &sound_source->base;
 	}
 	break;
-	case ET_PLAYER:
-	{
-
-	}
-	break;
 	case ET_STATIC_MESH:
 	{
 		const char* geometry_name = NULL;
@@ -465,6 +464,8 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 		if(hashmap_value_exists(object->data, "geometry")) geometry_name = hashmap_str_get(object->data, "geometry");
 		if(hashmap_value_exists(object->data, "material")) material_type = hashmap_int_get(object->data, "material");
 		struct Static_Mesh* mesh = scene_static_mesh_create(scene, name, parent_entity, geometry_name, material_type);
+		if(!mesh)
+			return new_entity;
 		new_entity = &mesh->base;
 
 		//Set material model params for this particular mesh
@@ -493,11 +494,6 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 			if(hashmap_value_exists(object->data, "uv_scale")) model->material_params[MMP_UV_SCALE].val_vec2 = hashmap_vec2_get(object->data, "uv_scale");
 			break;
 		};
-	}
-	break;
-	case ET_ROOT:
-	{
-		//scene_root_set(entity);
 	}
 	break;
 	default:

@@ -169,17 +169,18 @@ struct Static_Mesh
 
 struct Player
 {
-    struct Entity       base;
-    struct Static_Mesh* mesh;
-    struct Camera*      camera_node;
-    float               move_speed;
-    float               move_speed_multiplier;
-    float               turn_speed;
-	float               jump_speed;
-	float               gravity;
-	float               min_downward_distance;
-	float               min_forward_distance;
-	bool                grounded;
+    struct Entity        base;
+    struct Static_Mesh*  mesh;
+    struct Camera*       camera;
+	struct Sound_Source* weapon_sound;
+    float				 move_speed;
+    float				 move_speed_multiplier;
+    float				 turn_speed;
+	float				 jump_speed;
+	float				 gravity;
+	float				 min_downward_distance;
+	float				 min_forward_distance;
+	bool				 grounded;
 };
 
 void           entity_init(struct Entity* entity, const char* name, struct Entity* parent);

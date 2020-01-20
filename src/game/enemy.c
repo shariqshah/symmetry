@@ -53,8 +53,28 @@ void enemy_init(struct Enemy* enemy, int type)
 	if(!mesh)
 		log_error("enemy:init", "Failed to add mesh from file for %s", enemy->base.name);
 
-	enemy->mesh->base.flags |= EF_TRANSIENT;
-	enemy->weapon_sound->base.flags |= EF_TRANSIENT;
+	if(enemy->mesh) enemy->mesh->base.flags |= EF_TRANSIENT;
+	if(enemy->weapon_sound) enemy->weapon_sound->base.flags |= EF_TRANSIENT;
+}
+
+void enemy_weapon_sound_set(struct Enemy* enemy, const char* sound_filename, int type)
+{
+	sound_source_buffer_set(game_state_get()->sound, sound_filename, type);
+}
+
+void enemy_static_mesh_set(struct Enemy* enemy, const char* geometry_filename, int material_type)
+{
+	struct Scene* scene = game_state_get()->scene;
+	char mesh_name[MAX_ENTITY_NAME_LEN];
+	memset(mesh_name, '\0', sizeof(char) * MAX_ENTITY_NAME_LEN);
+	snprintf(mesh_name, MAX_ENTITY_NAME_LEN, "%s_Mesh", enemy->base.name);
+
+	struct Static_Mesh* new_mesh = scene_static_mesh_create(scene, mesh_name, enemy, geometry_filename, material_type);
+	if(new_mesh)
+	{
+		if(enemy->mesh) scene_static_mesh_remove(scene, enemy->mesh);
+		enemy->mesh = new_mesh;
+	}
 }
 
 void enemy_update(struct Enemy* enemy, struct Scene* scene, float dt)
@@ -75,8 +95,9 @@ void enemy_update(struct Enemy* enemy, struct Scene* scene, float dt)
 
 void enemy_reset(struct Enemy* enemy)
 {
-	entity_reset(enemy, enemy->base.id);
-	enemy->base.flags = EF_NONE;
+	enemy->type = -1;
+	enemy->damage = 0;
+	enemy->health = 0;
 }
 
 struct Enemy* enemy_read(struct Parser_Object* object, const char* name, struct Entity* parent_entity)
@@ -89,7 +110,7 @@ struct Enemy* enemy_read(struct Parser_Object* object, const char* name, struct 
 
 	if(enemy_type != -1)
 	{
-		new_enemy = scene_enemy_create(scene, name, parent_entity, enemy_type);
+		new_enemy = scene_enemy_create(scene, name, parent_entity, enemy_type); // Create enemy with default values then read and update from file if necessary
 		if(!new_enemy)
 			return new_enemy;
 		if(hashmap_value_exists(object->data, "health")) new_enemy->health = hashmap_int_get(object->data, "health");

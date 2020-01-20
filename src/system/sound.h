@@ -70,7 +70,7 @@ bool  sound_source_instance_loop_get(struct Sound* sound, uint source_instance);
 bool  sound_source_instance_is_paused(struct Sound* sound, uint source_instance);
 
 struct Sound_Source_Buffer* sound_source_buffer_create(struct Sound* sound, const char* filename, int type);
-struct Sound_Source_Buffer* sound_source_buffer(struct Sound* sound, const char* name);
+struct Sound_Source_Buffer* sound_source_buffer_get(struct Sound* sound, const char* name);
 int                         sound_source_buffer_play_3d(struct Sound* sound, struct Sound_Source_Buffer* source, vec3 position);
 int                         sound_source_buffer_play_clocked_3d(struct Sound* sound, struct Sound_Source_Buffer* source, float delay, vec3 position);
 void                        sound_source_buffer_destroy(struct Sound* sound, struct Sound_Source_Buffer* source);

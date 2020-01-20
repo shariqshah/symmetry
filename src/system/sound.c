@@ -195,7 +195,7 @@ struct Sound_Source_Buffer* sound_source_buffer_create(struct Sound* sound, cons
 	if(!filename) 
 		return NULL;
 
-	struct Sound_Source_Buffer* source = sound_source_buffer(sound, filename);
+	struct Sound_Source_Buffer* source = sound_source_buffer_get(sound, filename);
 
 	// See if we've already loaded this file otherwise, get the next empty slot.
 	// If we can't find an empty slot, print error and return NULL
@@ -269,7 +269,7 @@ struct Sound_Source_Buffer* sound_source_buffer_create(struct Sound* sound, cons
 	return source;
 }
 
-struct Sound_Source_Buffer* sound_source_buffer(struct Sound* sound, const char* name)
+struct Sound_Source_Buffer* sound_source_buffer_get(struct Sound* sound, const char* name)
 {
 	struct Sound_Source_Buffer* source = NULL;
 	for(int i = 0; i < MAX_SOUND_BUFFERS; i++)

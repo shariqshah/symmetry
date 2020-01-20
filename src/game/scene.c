@@ -413,7 +413,7 @@ void scene_post_update(struct Scene* scene)
 
 		if(sound_source->base.transform.is_modified)
 		{
-			sound_source_update(sound, sound_source);
+			sound_source_update_position(sound, sound_source);
 			sound_source->base.transform.is_modified = false;
 		}
 	}

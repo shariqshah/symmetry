@@ -1,6 +1,5 @@
 Todo:
 	- Imlement reading/writing enemy mesh and weapon sound to file and resetting it in code
-	- Apply sound source properties to source instance whenever a new instance is created
 	- Enemy ray casting and shooting
 	- Player shooting
 	- Player jump cooldown, don't allow jump until a certian time interval has passed, even if we're grounded
@@ -402,3 +401,4 @@ Done:
 	* Move player movement related variables from function to player struct and load them from config file
 	* Screen mouse coordinates to world-coordinates for aiming
 	* Sound source entity functions that automatically track if handles are valid and create/update as necessary
+	* Apply sound source properties to source instance whenever a new instance is created

@@ -1,5 +1,6 @@
 Todo:
 	- Enemy ray casting and shooting
+	- Scene reload command
 	- Player shooting
 	- Player jump cooldown, don't allow jump until a certian time interval has passed, even if we're grounded
 	- Sky Cube maps

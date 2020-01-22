@@ -83,12 +83,12 @@ void player_destroy(struct Player* player)
 void player_update(struct Player* player, struct Scene* scene, float dt)
 {
     /* Look around */
-    static float total_pitch = 0.f;
-    float pitch              = 0.f;
-    float yaw                = 0.f;
-    float max_pitch          = 80.f;
-	vec3  rot_axis_pitch     = { 1, 0, 0 };
-	vec3  rot_axis_yaw       = { 0, 1, 0 };
+	float total_pitch    = quat_get_pitch(&player->camera->base.transform.rotation);
+    float pitch          = 0.f;
+    float yaw            = 0.f;
+    float max_pitch      = 80.f;
+	vec3  rot_axis_pitch = { 1, 0, 0 };
+	vec3  rot_axis_yaw   = { 0, 1, 0 };
 
     if(input_map_state_get("Turn_Up",    KS_PRESSED)) pitch += player->turn_speed;
     if(input_map_state_get("Turn_Down",  KS_PRESSED)) pitch -= player->turn_speed;

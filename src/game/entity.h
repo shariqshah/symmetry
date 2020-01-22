@@ -204,6 +204,8 @@ struct Enemy
 		struct
 		{
 			float turn_speed;
+			float max_turn_angle;
+			bool  turn_direction_positive;
 		}Turret;
 	};
 };

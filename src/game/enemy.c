@@ -2,6 +2,7 @@
 #include "entity.h"
 #include "scene.h"
 #include "game.h"
+#include "transform.h"
 #include "sound_source.h"
 #include "../common/log.h"
 #include "../common/hashmap.h"
@@ -11,6 +12,7 @@
 #include <string.h>
 
 static void enemy_on_scene_loaded(struct Event* event, void* enemy_ptr);
+static void enemy_update_turret(struct Enemy* enemy, struct Game_State* game_state, float dt);
 
 void enemy_init(struct Enemy* enemy, int type)
 {
@@ -20,41 +22,22 @@ void enemy_init(struct Enemy* enemy, int type)
 	enemy->base.type = ET_ENEMY;
 	enemy->type = type;
 
-	char weapon_name_buffer[MAX_ENTITY_NAME_LEN];
-	char mesh_name_buffer[MAX_ENTITY_NAME_LEN];
-	memset(weapon_name_buffer, '\0', MAX_ENTITY_NAME_LEN);
-	memset(mesh_name_buffer, '\0', MAX_ENTITY_NAME_LEN);
-
-	snprintf(weapon_name_buffer, MAX_ENTITY_NAME_LEN, "%s_Weapon_Sound", enemy->base.name);
-	snprintf(mesh_name_buffer, MAX_ENTITY_NAME_LEN, "%s_Mesh", enemy->base.name);
-
-	struct Sound_Source* weapon_sound = NULL;
-	struct Static_Mesh* mesh = NULL;
-
 	/* Initialization specific to each enemy type */
 	switch(enemy->type)
 	{
 	case ENEMY_TURRET:
 	{
-		enemy->Turret.turn_speed = 10.f;
 		enemy->health = 100;
 		enemy->damage = 10;
-		//weapon_sound = scene_sound_source_create(scene, weapon_name_buffer, enemy, "sounds/bullet_1.wav", ST_WAV, false, false);
-		//mesh = scene_static_mesh_create(scene, mesh_name_buffer, enemy, "suzanne.symbres", MAT_BLINN);
+		enemy->Turret.turn_direction_positive = true;
+		enemy->Turret.turn_speed = 10.f;
+		enemy->Turret.max_turn_angle = 60.f;
 		break;
 	}
 	default:
 		log_error("enemy:init", "Unsupported Enemy Type");
 		break;
 	}
-
-	//enemy->weapon_sound = weapon_sound ? weapon_sound : NULL;
-	//if(!weapon_sound)
-	//	log_error("enemy:init", "Failed to add weapon sound for %s", enemy->base.name);
-
-	//enemy->mesh = mesh ? mesh : NULL;
-	//if(!mesh)
-	//	log_error("enemy:init", "Failed to add mesh from file for %s", enemy->base.name);
 
 	struct Event_Manager* event_manager = game_state->event_manager;
 	event_manager_subscribe_with_object(event_manager, EVT_SCENE_LOADED, &enemy_on_scene_loaded, (void*)enemy);
@@ -82,7 +65,7 @@ void enemy_static_mesh_set(struct Enemy* enemy, const char* geometry_filename, i
 
 void enemy_update(struct Enemy* enemy, struct Scene* scene, float dt)
 {
-	static float enemy_update_interval = 1.f / 2.f;
+	static float enemy_update_interval = 1.f / 60.f;
 	static float time_elapsed_since_last_update = 0.f;
 
 	time_elapsed_since_last_update += dt;
@@ -92,8 +75,11 @@ void enemy_update(struct Enemy* enemy, struct Scene* scene, float dt)
 	time_elapsed_since_last_update = 0.f;
 	struct Game_State* game_state = game_state_get();
 
-	log_message("Enemy_update");
-	sound_source_play(game_state->sound, enemy->weapon_sound);
+	switch(enemy->type)
+	{
+	case ENEMY_TURRET: enemy_update_turret(enemy, game_state, dt); break;
+	}
+
 }
 
 void enemy_reset(struct Enemy* enemy)
@@ -127,6 +113,8 @@ struct Enemy* enemy_read(struct Parser_Object* object, const char* name, struct 
 		case ENEMY_TURRET:
 		{
 			if(hashmap_value_exists(object->data, "turn_speed")) new_enemy->Turret.turn_speed = hashmap_float_get(object->data, "turn_speed");
+			if(hashmap_value_exists(object->data, "max_turn_angle")) new_enemy->Turret.max_turn_angle = hashmap_float_get(object->data, "max_turn_angle");
+			if(hashmap_value_exists(object->data, "turn_direction_positive")) new_enemy->Turret.turn_direction_positive = hashmap_bool_get(object->data, "turn_direction_positive");
 		}
 		break;
 		}
@@ -145,6 +133,8 @@ void enemy_write(struct Enemy* enemy, struct Hashmap* entity_data)
 	case ENEMY_TURRET:
 	{
 		hashmap_float_set(entity_data, "turn_speed", enemy->Turret.turn_speed);
+		hashmap_float_set(entity_data, "max_turn_angle", enemy->Turret.max_turn_angle);
+		hashmap_bool_set(entity_data, "turn_direction_positive", enemy->Turret.turn_direction_positive);
 	}
 	break;
 	}
@@ -154,7 +144,7 @@ void enemy_on_scene_loaded(struct Event* event, void* enemy_ptr)
 {
 	struct Enemy* enemy = (struct Enemy*)enemy_ptr;
 
-	// Assign pointers to mesh and sound child entities
+	// Assign pointers to static_mesh and sound_source child entities
 	for(int i = 0; i < array_len(enemy->base.transform.children); i++)
 	{
 		struct Entity* child = enemy->base.transform.children[i];
@@ -168,4 +158,29 @@ void enemy_on_scene_loaded(struct Event* event, void* enemy_ptr)
 	if(enemy->weapon_sound) enemy->weapon_sound->base.flags |= EF_TRANSIENT;
 
 	// Do other post-scene-load initialization stuff per enemy type here
+}
+
+void enemy_update_turret(struct Enemy* enemy, struct Game_State* game_state, float dt)
+{
+	static vec3 turn_axis = { 0.f, 1.f, 0.f };
+	float current_yaw = quat_get_yaw(&enemy->base.transform.rotation);
+
+	float yaw = enemy->Turret.turn_speed * 1.f * dt;
+	if(!enemy->Turret.turn_direction_positive)
+		yaw *= -1.f;
+
+	current_yaw += yaw;
+	if(current_yaw >= enemy->Turret.max_turn_angle)
+	{
+		yaw = 0.f;
+		enemy->Turret.turn_direction_positive = false;
+	}
+	else if(current_yaw <= -enemy->Turret.max_turn_angle)
+	{
+		yaw = 0.f;
+		enemy->Turret.turn_direction_positive = true;
+	}
+
+	if(yaw != 0.f)
+		transform_rotate(enemy, &turn_axis, yaw, TS_LOCAL);
 }

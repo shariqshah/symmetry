@@ -260,6 +260,7 @@ bool scene_save(struct Scene* scene, const char* filename, int directory_type)
 	scene_write_entity_list(scene, ET_STATIC_MESH, parser);
 	scene_write_entity_list(scene, ET_CAMERA, parser);
 	scene_write_entity_list(scene, ET_SOUND_SOURCE, parser);
+	scene_write_entity_list(scene, ET_ENEMY, parser);
 
     if(parser_write_objects(parser, scene_file, prefixed_filename))
         log_message("Scene saved to %s", prefixed_filename);

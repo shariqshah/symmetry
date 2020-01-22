@@ -204,50 +204,42 @@ void editor_render(struct Editor* editor, struct Camera * active_camera)
 
 	if(game_state->editor->selected_entity)
 	{
-		/* Draw selected entity */
-		if(editor->selected_entity->type == ET_STATIC_MESH)
+		/* Visualize entity specific state */
+		vec3 abs_pos;
+		quat abs_rot;
+		transform_get_absolute_position(editor->selected_entity, &abs_pos);
+		transform_get_absolute_rot(editor->selected_entity, &abs_rot);
+		switch(editor->selected_entity->type)
 		{
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			shader_bind(renderer->debug_shader);
+		case ET_LIGHT:
+		{
+			struct Light* light = (struct Light*)editor->selected_entity;
+			if(light->type != LT_POINT)
 			{
-				static mat4 mvp;
-				shader_set_uniform_vec4(renderer->debug_shader, "debug_color", &editor->selected_entity_color);
-				struct Static_Mesh* mesh = (struct Static_Mesh*)editor->selected_entity;
-				struct Model*       model = &mesh->model;
-				struct Transform*   transform = &mesh->base.transform;
-				int                 geometry = model->geometry_index;
-				mat4_identity(&mvp);
-				mat4_mul(&mvp, &active_camera->view_proj_mat, &transform->trans_mat);
-				shader_set_uniform_mat4(renderer->debug_shader, "mvp", &mvp);
-				geom_render(geometry, GDM_TRIANGLES);
+				struct Ray light_ray;
+				vec3_assign(&light_ray.origin, &abs_pos);
+				transform_get_absolute_forward(light, &light_ray.direction);
+				im_ray(&light_ray, 5.f, editor->cursor_entity_color, 3);
 			}
-			shader_unbind();
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-		}
-		else
-		{
-			//For now draw a placeholder sphere just to visually denote that the entity is selected
-			vec3 abs_pos;
-			quat abs_rot;
-			transform_get_absolute_position(editor->selected_entity, &abs_pos);
-			transform_get_absolute_rot(editor->selected_entity, &abs_rot);
-			im_sphere(1.f, abs_pos, abs_rot, editor->selected_entity_color, GDM_TRIANGLES, 1);
-			switch(editor->selected_entity->type)
+			if(light->type != LT_DIR)
 			{
-			case ET_LIGHT:
-			{
-				struct Light* light = (struct Light*)editor->selected_entity;
-				if(light->type != LT_POINT)
+				quat rotation = editor->selected_entity->transform.rotation;
+				vec3 axis = { 1.f, 0.f, 0.f };
+				quat_axis_angle(&rotation, &axis, -90.f);
+				im_circle(light->radius, 30, false, abs_pos, rotation, editor->cursor_entity_color, 3);
+
+				if(light->type == LT_SPOT)
 				{
-					struct Ray light_ray;
-					vec3_assign(&light_ray.origin, &abs_pos);
-					transform_get_absolute_forward(light, &light_ray.direction);
-					im_ray(&light_ray, 5.f, editor->cursor_entity_color, 3);
+					float yaw = quat_get_yaw(&abs_rot);
+					float half_outer_angle = light->outer_angle / 2.f;
+					float half_inner_angle = light->inner_angle / 2.f;
+					im_arc(light->radius, yaw - half_outer_angle, yaw + half_outer_angle, 15, false, abs_pos, rotation, editor->selected_entity_color, 3);
+					im_arc(light->radius, yaw - half_inner_angle, yaw + half_inner_angle, 15, false, abs_pos, rotation, editor->cursor_entity_color, 4);
 				}
 			}
-			break;
-			}
+		}
+		break;
 		}
 		
 		/* Draw bounding box for selected entity */

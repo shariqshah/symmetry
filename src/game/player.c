@@ -171,7 +171,6 @@ void player_update(struct Player* player, struct Scene* scene, float dt)
 		{
 			struct Entity* colliding_entity = ray_result.entities_intersected[i];
 			float distance = bv_distance_ray_bounding_box(&forward_ray, &colliding_entity->derived_bounding_box);
-			debug_vars_show_float("Collision ahead", distance);
 			if(distance > 0.f && distance <= player->min_forward_distance && colliding_entity != player->mesh)
 			{
 				vec3 intersection_point = forward_ray.direction;
@@ -210,7 +209,6 @@ void player_update(struct Player* player, struct Scene* scene, float dt)
 			if(colliding_entity == player->mesh)
 				continue;
 			float distance = bv_distance_ray_bounding_box(&downward_ray, &colliding_entity->derived_bounding_box);
-			debug_vars_show_float("Collision below", distance);
 			if(distance > 0.f && distance <= player->min_downward_distance && !jumping)
 			{
 				move_speed_vertical = 0.f;
@@ -228,8 +226,6 @@ void player_update(struct Player* player, struct Scene* scene, float dt)
 	translation.y = move_speed_vertical * dt;
 	transform_translate(player, &translation, TS_WORLD);
 
-	debug_vars_show_float("MoveSpeed", move_speed);
-	debug_vars_show_vec3("Translation", &translation);
 	debug_vars_show_bool("Grounded", player->grounded);
 
 }

@@ -35,14 +35,12 @@
 #include "debug_vars.h"
 #include "im_render.h"
 #include "event.h"
+#include "../common/limits.h"
 
 #define UNUSED(a) (void)a
 #define MIN_NUM(a,b) ((a) < (b) ? (a) : (b))
 #define MAX_NUM(a,b) ((a) < (b) ? (b) : (a))
 #define LEN(a) (sizeof(a)/sizeof(a)[0])
-
-
-#define MAX_FRAME_TIME 0.5f
 
 static void game_update(float dt, bool* window_should_close);
 static void game_post_update(float dt);
@@ -537,7 +535,19 @@ bool game_run(void)
 
 void game_update(float dt, bool* window_should_close)
 {	
-    //if(input_is_key_pressed(KEY_ESCAPE))                      *window_should_close = true;
+	static int   frames = 0;
+	static int   fps = 0;
+	static float seconds = 0.f;
+	seconds += dt;
+	frames++;
+	if(seconds >= 1.f)
+	{
+		fps = frames;
+		seconds = 0.f;
+		frames = 0;
+	}
+	debug_vars_show_float("FPS", fps);
+
     if(input_map_state_get("Window_Fullscreen", KS_RELEASED)) window_fullscreen_set(game_state->window, true);
     if(input_map_state_get("Window_Maximize",   KS_RELEASED)) window_fullscreen_set(game_state->window, false);
     if(input_map_state_get("Console_Toggle",    KS_RELEASED)) console_toggle(game_state->console);

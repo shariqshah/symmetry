@@ -22,6 +22,7 @@ static void console_on_key_release(struct Event* event);
 static void console_command_scene_empty(struct Console* console, const char* command);
 static void console_command_scene_save(struct Console* console, const char* command);
 static void console_command_scene_load(struct Console* console, const char* command);
+static void console_command_scene_reload(struct Console* console, const char* command);
 static void console_command_entity_save(struct Console* console, const char* command);
 static void console_command_entity_load(struct Console* console, const char* command);
 static void console_command_debug_vars_toggle(struct Console* console, const char* command);
@@ -60,6 +61,7 @@ void console_init(struct Console* console)
 	hashmap_ptr_set(console->commands, "scene_empty", &console_command_scene_empty);
 	hashmap_ptr_set(console->commands, "scene_save", &console_command_scene_save);
 	hashmap_ptr_set(console->commands, "scene_load", &console_command_scene_load);
+	hashmap_ptr_set(console->commands, "scene_reload", &console_command_scene_reload);
 	hashmap_ptr_set(console->commands, "entity_save", &console_command_entity_save);
 	hashmap_ptr_set(console->commands, "entity_load", &console_command_entity_load);
 	hashmap_ptr_set(console->commands, "debug_vars_toggle", &console_command_debug_vars_toggle);
@@ -348,4 +350,13 @@ void console_command_debug_vars_location_set(struct Console* console, const char
 	}
 
 	debug_vars_location_set(debug_vars, location);
+}
+
+void console_command_scene_reload(struct Console* console, const char* command)
+{
+	struct Scene* scene = game_state_get()->scene;
+	char filename[MAX_FILENAME_LEN];
+	strncpy(filename, scene->filename, MAX_FILENAME_LEN);
+	if(!scene_load(scene, filename, DIRT_INSTALL))
+		log_error("scene_load", "Command failed");
 }

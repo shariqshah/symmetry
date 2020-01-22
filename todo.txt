@@ -1,6 +1,5 @@
 Todo:
 	- Enemy ray casting and shooting
-	- Scene reload command
 	- Player shooting
 	- Player jump cooldown, don't allow jump until a certian time interval has passed, even if we're grounded
 	- Sky Cube maps
@@ -127,6 +126,7 @@ Bugs:
 	- Fix quaternion resetting/flipping
 	- Fix aggressive frustum culling when camera looks up and the object right infront of the viewer gets culled
 	- Fix crash when exiting from fullscreen mode
+	- Fix arc/circle direction in im_draw based functions not aligning with entity's actual current forward direction
 	
 Done:
 	* Input
@@ -405,3 +405,4 @@ Done:
 	* Apply sound source properties to source instance whenever a new instance is created
 	* Imlemented reading/writing enemy mesh and weapon sound to file and resetting it in code
 	* Implemented on_load and on_update callbacks for enemies. Different enemy types have different callbacks that are assigned when they are created.
+	* Added Scene reload command

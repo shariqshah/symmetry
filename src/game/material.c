@@ -27,7 +27,7 @@ bool material_init(struct Material* material, int material_type)
 	{
 		material->lit  = true;
         char custom_defines[64];
-        snprintf(custom_defines, 64, "#define MAX_LIGHTS %d", MAX_LIGHTS);
+        snprintf(custom_defines, 64, "#define MAX_LIGHTS %d", MAX_SCENE_LIGHTS);
 		material->shader = shader_create("blinn_phong.vert", "blinn_phong.frag", custom_defines);
         
         if(material->shader == -1)

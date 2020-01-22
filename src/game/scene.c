@@ -19,6 +19,7 @@
 #include "renderer.h"
 #include "sound_source.h"
 #include "enemy.h"
+#include "event.h"
 
 #include <assert.h>
 #include <string.h>
@@ -41,14 +42,14 @@ void scene_init(struct Scene* scene)
 	scene->root_entity.id = 0;
 	scene->root_entity.type = ET_ROOT;
 
-	for(int i = 0; i < MAX_ENTITIES; i++) entity_reset(&scene->entities[i], i);
-	for(int i = 0; i < MAX_LIGHTS; i++)
+	for(int i = 0; i < MAX_SCENE_ENTITIES; i++) entity_reset(&scene->entities[i], i);
+	for(int i = 0; i < MAX_SCENE_LIGHTS; i++)
 	{
 		entity_reset(&scene->lights[i], i);
 		scene->lights[i].type = ET_LIGHT;
 	}
 	
-	for(int i = 0; i < MAX_STATIC_MESHES; i++)
+	for(int i = 0; i < MAX_SCENE_STATIC_MESHES; i++)
 	{
 		entity_reset(&scene->static_meshes[i], i);
 		struct Static_Mesh* mesh = &scene->static_meshes[i];
@@ -59,11 +60,11 @@ void scene_init(struct Scene* scene)
 		mesh->model.material = NULL;
 	}
 
-	for(int i = 0; i < MAX_SOUND_SOURCES; i++) entity_reset(&scene->sound_sources[i], i);
+	for(int i = 0; i < MAX_SCENE_SOUND_SOURCES; i++) entity_reset(&scene->sound_sources[i], i);
 	int width = 1280, height = 720;
 	window_get_drawable_size(game_state->window, &width, &height);
 
-	for(int i = 0; i < MAX_CAMERAS; i++)
+	for(int i = 0; i < MAX_SCENE_CAMERAS; i++)
 	{
 		entity_init(&scene->cameras[i], NULL, &scene->root_entity);
 		camera_init(&scene->cameras[i], width, height);
@@ -71,10 +72,10 @@ void scene_init(struct Scene* scene)
 		scene->cameras[i].base.id = i;
 	}
 
-	for(int i = 0; i < MAX_ENTITY_ARCHETYPES; i++)
+	for(int i = 0; i < MAX_SCENE_ENTITY_ARCHETYPES; i++)
 		memset(&scene->entity_archetypes[i][0], '\0', MAX_FILENAME_LEN);
 
-	for(int i = 0; i < MAX_ENEMIES; i++)
+	for(int i = 0; i < MAX_SCENE_ENEMIES; i++)
 	{
 		entity_reset(&scene->enemies[i], i);
 		scene->enemies->base.type = ET_ENEMY;
@@ -156,7 +157,7 @@ bool scene_load(struct Scene* scene, const char* filename, int directory_type)
 			struct Hashmap* entity_entry_data = object->data;
 			if(hashmap_value_exists(object->data, "filename"))
 			{
-				struct Entity* loaded_entity = entity_load(hashmap_str_get(entity_entry_data, "filename"), DIRT_INSTALL);
+				struct Entity* loaded_entity = entity_load(hashmap_str_get(entity_entry_data, "filename"), DIRT_INSTALL, false);
 				if(loaded_entity)
 				{
 					vec3 position = { 0.f, 0.f, 0.f };
@@ -208,6 +209,16 @@ bool scene_load(struct Scene* scene, const char* filename, int directory_type)
 	parser_free(parsed_file);
 	fclose(scene_file);
 	strncpy(scene->filename, filename, MAX_FILENAME_LEN);
+	if(num_objects_loaded > 0)
+	{
+		struct Event_Manager* event_manager = game_state_get()->event_manager;
+		struct Event* scene_loaded_event = event_manager_create_new_event(event_manager);
+		scene_loaded_event->type = EVT_SCENE_LOADED;
+		memset(scene_loaded_event->scene_load.filename, '\0', MAX_FILENAME_LEN);
+		strncpy(scene_loaded_event->scene_load.filename, filename, MAX_FILENAME_LEN);
+		event_manager_send_event(event_manager, scene_loaded_event);
+	}
+
 	return num_objects_loaded > 0 ? true : false;
 }
 
@@ -267,32 +278,32 @@ void scene_write_entity_list(struct Scene* scene, int entity_type, struct Parser
 	switch(entity_type)
 	{
 	case ET_DEFAULT:
-		max_length = MAX_ENTITIES;
+		max_length = MAX_SCENE_ENTITIES;
 		entity = &scene->entities[0];
 		stride = sizeof(struct Entity);
 		break;
 	case ET_LIGHT:
-		max_length = MAX_LIGHTS;
+		max_length = MAX_SCENE_LIGHTS;
 		entity = &scene->lights[0].base;
 		stride = sizeof(struct Light);
 		break;
 	case ET_STATIC_MESH:
-		max_length = MAX_STATIC_MESHES;
+		max_length = MAX_SCENE_STATIC_MESHES;
 		entity = &scene->static_meshes[0].base;
 		stride = sizeof(struct Static_Mesh);
 		break;
 	case ET_CAMERA:
-		max_length = MAX_CAMERAS;
+		max_length = MAX_SCENE_CAMERAS;
 		entity = &scene->cameras[0].base;
 		stride = sizeof(struct Camera);
 		break;
 	case ET_SOUND_SOURCE:
-		max_length = MAX_SOUND_SOURCES;
+		max_length = MAX_SCENE_SOUND_SOURCES;
 		entity = &scene->sound_sources[0].base;
 		stride = sizeof(struct Sound_Source);
 		break;
 	case ET_ENEMY:
-		max_length = MAX_ENEMIES;
+		max_length = MAX_SCENE_ENEMIES;
 		entity = &scene->enemies[0].base;
 		stride = sizeof(struct Enemy);
 		break;
@@ -338,13 +349,13 @@ void scene_destroy(struct Scene* scene)
 {
 	assert(scene);
 
-	for(int i = 0; i < MAX_ENTITIES; i++)          scene_entity_base_remove(scene, &scene->entities[i]);
-	for(int i = 0; i < MAX_CAMERAS; i++)           scene_camera_remove(scene, &scene->cameras[i]);
-	for(int i = 0; i < MAX_LIGHTS; i++)            scene_light_remove(scene, &scene->lights[i]);
-	for(int i = 0; i < MAX_STATIC_MESHES; i++)     scene_static_mesh_remove(scene, &scene->static_meshes[i]);
-	for(int i = 0; i < MAX_SOUND_SOURCES; i++)     scene_sound_source_remove(scene, &scene->sound_sources[i]);
-	for(int i = 0; i < MAX_ENEMIES; i++)           scene_enemy_remove(scene, &scene->enemies[i]);
-	for(int i = 0; i < MAX_ENTITY_ARCHETYPES; i++) memset(&scene->entity_archetypes[i][0], '\0', MAX_FILENAME_LEN);
+	for(int i = 0; i < MAX_SCENE_ENTITIES; i++)          scene_entity_base_remove(scene, &scene->entities[i]);
+	for(int i = 0; i < MAX_SCENE_CAMERAS; i++)           scene_camera_remove(scene, &scene->cameras[i]);
+	for(int i = 0; i < MAX_SCENE_LIGHTS; i++)            scene_light_remove(scene, &scene->lights[i]);
+	for(int i = 0; i < MAX_SCENE_STATIC_MESHES; i++)     scene_static_mesh_remove(scene, &scene->static_meshes[i]);
+	for(int i = 0; i < MAX_SCENE_SOUND_SOURCES; i++)     scene_sound_source_remove(scene, &scene->sound_sources[i]);
+	for(int i = 0; i < MAX_SCENE_ENEMIES; i++)           scene_enemy_remove(scene, &scene->enemies[i]);
+	for(int i = 0; i < MAX_SCENE_ENTITY_ARCHETYPES; i++) memset(&scene->entity_archetypes[i][0], '\0', MAX_FILENAME_LEN);
 	player_destroy(&scene->player);
 	entity_reset(&scene->root_entity, 0);
 	scene->root_entity.flags &= ~EF_ACTIVE;
@@ -355,7 +366,7 @@ void scene_update(struct Scene* scene, float dt)
 	if(game_state_get()->game_mode == GAME_MODE_GAME) 
 	{
 		player_update(&scene->player, scene, dt);
-		for(int i = 0; i < MAX_ENEMIES; i++)
+		for(int i = 0; i < MAX_SCENE_ENEMIES; i++)
 		{
 			if(scene->enemies[i].base.flags & EF_ACTIVE)
 				enemy_update(&scene->enemies[i], scene, dt);
@@ -368,7 +379,7 @@ void scene_post_update(struct Scene* scene)
 	assert(scene);
 	struct Sound* sound = game_state_get()->sound;
 
-	for(int i = 0; i < MAX_ENTITIES; i++)
+	for(int i = 0; i < MAX_SCENE_ENTITIES; i++)
 	{
 		struct Entity* entity = &scene->entities[i];
 		if(!(entity->flags & EF_ACTIVE)) continue;
@@ -382,7 +393,7 @@ void scene_post_update(struct Scene* scene)
 		if(entity->transform.is_modified) entity->transform.is_modified = false;
 	}
 
-	for(int i = 0; i < MAX_CAMERAS; i++)
+	for(int i = 0; i < MAX_SCENE_CAMERAS; i++)
 	{
 		struct Camera* camera = &scene->cameras[i];
 		if(!(camera->base.flags & EF_ACTIVE)) continue;
@@ -400,7 +411,7 @@ void scene_post_update(struct Scene* scene)
 		}
 	}
 
-	for(int i = 0; i < MAX_SOUND_SOURCES; i++)
+	for(int i = 0; i < MAX_SCENE_SOUND_SOURCES; i++)
 	{
 		struct Sound_Source* sound_source = &scene->sound_sources[i];
 		if(!(sound_source->base.flags & EF_ACTIVE)) continue;
@@ -418,7 +429,7 @@ void scene_post_update(struct Scene* scene)
 		}
 	}
 
-	for(int i = 0; i < MAX_STATIC_MESHES; i++)
+	for(int i = 0; i < MAX_SCENE_STATIC_MESHES; i++)
 	{
 		struct Static_Mesh* static_mesh = &scene->static_meshes[i];
 		if(!(static_mesh->base.flags & EF_ACTIVE)) continue;
@@ -445,7 +456,7 @@ void scene_post_update(struct Scene* scene)
 		}
 	}
 
-	for(int i = 0; i < MAX_LIGHTS; i++)
+	for(int i = 0; i < MAX_SCENE_LIGHTS; i++)
 	{
 		struct Light* light = &scene->lights[i];
 		if(!(light->base.flags & EF_ACTIVE)) continue;
@@ -459,7 +470,7 @@ void scene_post_update(struct Scene* scene)
 		if(light->base.transform.is_modified) light->base.transform.is_modified = false;
 	}
 
-	for(int i = 0; i < MAX_ENEMIES; i++)
+	for(int i = 0; i < MAX_SCENE_ENEMIES; i++)
 	{
 		struct Enemy* enemy = &scene->enemies[i];
 		if(!(enemy->base.flags & EF_ACTIVE)) continue;
@@ -483,7 +494,7 @@ struct Entity* scene_entity_create(struct Scene* scene, const char* name, struct
 	assert(scene);
 
 	struct Entity* new_entity = NULL;
-	for(int i = 0; i < MAX_ENTITIES; i++)
+	for(int i = 0; i < MAX_SCENE_ENTITIES; i++)
 	{
 		struct Entity* entity = &scene->entities[i];
 		if(!(entity->flags & EF_ACTIVE))
@@ -511,7 +522,7 @@ struct Light* scene_light_create(struct Scene* scene, const char* name, struct E
 {
 	assert(scene);
 	struct Light* new_light = NULL;
-	for(int i = 0; i < MAX_LIGHTS; i++)
+	for(int i = 0; i < MAX_SCENE_LIGHTS; i++)
 	{
 		struct Light* light = &scene->lights[i];
 		if(!(light->base.flags & EF_ACTIVE))
@@ -539,7 +550,7 @@ struct Camera* scene_camera_create(struct Scene* scene, const char* name, struct
 {
 	assert(scene);
 	struct Camera* new_camera = NULL;
-	for(int i = 0; i < MAX_CAMERAS; i++)
+	for(int i = 0; i < MAX_SCENE_CAMERAS; i++)
 	{
 		struct Camera* camera = &scene->cameras[i];
 		if(!(camera->base.flags & EF_ACTIVE))
@@ -567,7 +578,7 @@ struct Static_Mesh* scene_static_mesh_create(struct Scene* scene, const char* na
 {
 	assert(scene);
 	struct Static_Mesh* new_static_mesh = NULL;
-	for(int i = 0; i < MAX_STATIC_MESHES; i++)
+	for(int i = 0; i < MAX_SCENE_STATIC_MESHES; i++)
 	{
 		struct Static_Mesh* static_mesh = &scene->static_meshes[i];
 		if(!(static_mesh->base.flags & EF_ACTIVE))
@@ -599,7 +610,7 @@ struct Sound_Source* scene_sound_source_create(struct Scene* scene, const char* 
 	assert(scene && filename);
 	struct Sound* sound = game_state_get()->sound;
 	struct Sound_Source* new_sound_source = NULL;
-	for(int i = 0; i < MAX_SOUND_SOURCES; i++)
+	for(int i = 0; i < MAX_SCENE_SOUND_SOURCES; i++)
 	{
 		struct Sound_Source* sound_source = &scene->sound_sources[i];
 		if(!(sound_source->base.flags & EF_ACTIVE))
@@ -657,7 +668,7 @@ struct Enemy* scene_enemy_create(struct Scene* scene, const char* name, struct E
 {
 	assert(scene);
 	struct Enemy* new_enemy = NULL;
-	for(int i = 0; i < MAX_ENEMIES; i++)
+	for(int i = 0; i < MAX_SCENE_ENEMIES; i++)
 	{
 		struct Enemy* enemy = &scene->enemies[i];
 		if(!(enemy->base.flags & EF_ACTIVE))
@@ -738,7 +749,7 @@ struct Entity* scene_entity_find(struct Scene* scene, const char* name)
 	assert(scene && name);
 	struct Entity* entity = NULL;
 
-	for(int i = 0; i < MAX_ENTITIES; i++)
+	for(int i = 0; i < MAX_SCENE_ENTITIES; i++)
 	{
 		if(strncmp(name, scene->entities[i].name, MAX_ENTITY_NAME_LEN) == 0)
 		{
@@ -755,7 +766,7 @@ struct Light* scene_light_find(struct Scene* scene, const char* name)
 	assert(scene && name);
 	struct Light* light = NULL;
 
-	for(int i = 0; i < MAX_LIGHTS; i++)
+	for(int i = 0; i < MAX_SCENE_LIGHTS; i++)
 	{
 		if(strncmp(name, scene->lights[i].base.name, MAX_ENTITY_NAME_LEN) == 0)
 		{
@@ -772,7 +783,7 @@ struct Camera* scene_camera_find(struct Scene* scene, const char* name)
 	assert(scene && name);
 	struct Camera* camera = NULL;
 
-	for(int i = 0; i < MAX_CAMERAS; i++)
+	for(int i = 0; i < MAX_SCENE_CAMERAS; i++)
 	{
 		if(strncmp(name, scene->cameras[i].base.name, MAX_ENTITY_NAME_LEN) == 0)
 		{
@@ -789,7 +800,7 @@ struct Static_Mesh* scene_static_mesh_find(struct Scene* scene, const char* name
 	assert(scene && name);
 	struct Static_Mesh* static_mesh = NULL;
 
-	for(int i = 0; i < MAX_STATIC_MESHES; i++)
+	for(int i = 0; i < MAX_SCENE_STATIC_MESHES; i++)
 	{
 		if(strncmp(name, scene->static_meshes[i].base.name, MAX_ENTITY_NAME_LEN) == 0)
 		{
@@ -806,7 +817,7 @@ struct Sound_Source* scene_sound_source_find(struct Scene* scene, const char* na
 	assert(scene && name);
 	struct Sound_Source* sound_source = NULL;
 
-	for(int i = 0; i < MAX_SOUND_SOURCES; i++)
+	for(int i = 0; i < MAX_SCENE_SOUND_SOURCES; i++)
 	{
 		if(strncmp(name, scene->sound_sources[i].base.name, MAX_ENTITY_NAME_LEN) == 0)
 		{
@@ -823,7 +834,7 @@ struct Enemy* scene_enemy_get(struct Scene* scene, const char* name)
 	assert(scene && name);
 	struct Enemy* enemy = NULL;
 
-	for(int i = 0; i < MAX_ENEMIES; i++)
+	for(int i = 0; i < MAX_SCENE_ENEMIES; i++)
 	{
 		if(strncmp(name, scene->enemies[i].base.name, MAX_ENTITY_NAME_LEN) == 0)
 		{
@@ -906,31 +917,31 @@ void scene_ray_intersect(struct Scene* scene, struct Ray* ray, struct Raycast_Re
 		{
 		case ET_DEFAULT:
 			if(!(ray_mask & ERM_DEFAULT)) continue;
-			max_length = MAX_ENTITIES;
+			max_length = MAX_SCENE_ENTITIES;
 			entity = &scene->entities[0];
 			stride = sizeof(struct Entity);
 			break;
 		case ET_LIGHT:
 			if(!(ray_mask & ERM_LIGHT)) continue;
-			max_length = MAX_LIGHTS;
+			max_length = MAX_SCENE_LIGHTS;
 			entity = &scene->lights[0].base;
 			stride = sizeof(struct Light);
 			break;
 		case ET_STATIC_MESH:
 			if(!(ray_mask & ERM_STATIC_MESH)) continue;
-			max_length = MAX_STATIC_MESHES;
+			max_length = MAX_SCENE_STATIC_MESHES;
 			entity = &scene->static_meshes[0].base;
 			stride = sizeof(struct Static_Mesh);
 			break;
 		case ET_CAMERA:
 			if(!(ray_mask & ERM_CAMERA)) continue;
-			max_length = MAX_CAMERAS;
+			max_length = MAX_SCENE_CAMERAS;
 			entity = &scene->cameras[0].base;
 			stride = sizeof(struct Camera);
 			break;
 		case ET_SOUND_SOURCE:
 			if(!(ray_mask & ERM_SOUND_SOURCE)) continue;
-			max_length = MAX_SOUND_SOURCES;
+			max_length = MAX_SCENE_SOUND_SOURCES;
 			entity = &scene->sound_sources[0].base;
 			stride = sizeof(struct Sound_Source);
 			break;
@@ -981,31 +992,31 @@ struct Entity* scene_ray_intersect_closest(struct Scene* scene, struct Ray* ray,
 		{
 		case ET_DEFAULT:
 			if(!(ray_mask & ERM_DEFAULT)) continue;
-			max_length = MAX_ENTITIES;
+			max_length = MAX_SCENE_ENTITIES;
 			entity = &scene->entities[0];
 			stride = sizeof(struct Entity);
 			break;
 		case ET_LIGHT:
 			if(!(ray_mask & ERM_LIGHT)) continue;
-			max_length = MAX_LIGHTS;
+			max_length = MAX_SCENE_LIGHTS;
 			entity = &scene->lights[0].base;
 			stride = sizeof(struct Light);
 			break;
 		case ET_STATIC_MESH:
 			if(!(ray_mask & ERM_STATIC_MESH)) continue;
-			max_length = MAX_STATIC_MESHES;
+			max_length = MAX_SCENE_STATIC_MESHES;
 			entity = &scene->static_meshes[0].base;
 			stride = sizeof(struct Static_Mesh);
 			break;
 		case ET_CAMERA:
 			if(!(ray_mask & ERM_CAMERA)) continue;
-			max_length = MAX_CAMERAS;
+			max_length = MAX_SCENE_CAMERAS;
 			entity = &scene->cameras[0].base;
 			stride = sizeof(struct Camera);
 			break;
 		case ET_SOUND_SOURCE:
 			if(!(ray_mask & ERM_SOUND_SOURCE)) continue;
-			max_length = MAX_SOUND_SOURCES;
+			max_length = MAX_SCENE_SOUND_SOURCES;
 			entity = &scene->sound_sources[0].base;
 			stride = sizeof(struct Sound_Source);
 			break;
@@ -1068,7 +1079,7 @@ int scene_entity_archetype_add(struct Scene* scene, const char* filename)
 	// check if we have already added this archetype, if we have, return that index
 	// otherwise add it and return the index
 	int index = -1;
-	for(int i = 0; i < MAX_ENTITY_ARCHETYPES; i++)
+	for(int i = 0; i < MAX_SCENE_ENTITY_ARCHETYPES; i++)
 	{
 		if(strncmp(filename, &scene->entity_archetypes[i][0], MAX_FILENAME_LEN) == 0)
 		{
@@ -1079,7 +1090,7 @@ int scene_entity_archetype_add(struct Scene* scene, const char* filename)
 
 	if(index == -1)
 	{
-		for(int i = 0; i < MAX_ENTITY_ARCHETYPES; i++)
+		for(int i = 0; i < MAX_SCENE_ENTITY_ARCHETYPES; i++)
 		{
 			if(scene->entity_archetypes[i][0] == '\0')
 			{
@@ -1103,7 +1114,7 @@ struct Entity* scene_entity_duplicate(struct Scene* scene, struct Entity* entity
 	struct Entity* new_entity = NULL;
 	if(entity->archetype_index != -1)
 	{
-		new_entity = entity_load(scene->entity_archetypes[entity->archetype_index], DIRT_INSTALL);
+		new_entity = entity_load(scene->entity_archetypes[entity->archetype_index], DIRT_INSTALL, true);
 		if(new_entity) scene_entity_parent_set(scene, new_entity, entity->transform.parent);
 		return new_entity;
 	}

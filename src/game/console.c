@@ -260,7 +260,7 @@ void console_command_entity_load(struct Console* console, const char* command)
 		return;
 	}
 
-	struct Entity* new_entity = entity_load(filename, DIRT_INSTALL);
+	struct Entity* new_entity = entity_load(filename, DIRT_INSTALL, true);
 	if(!new_entity)
 	{
 		log_error("entity_load", "Could not create entity from '%s'", filename);

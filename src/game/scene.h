@@ -3,14 +3,7 @@
 
 #include "entity.h"
 #include "renderer.h"
-
-#define MAX_ENTITIES             32
-#define MAX_LIGHTS               30
-#define MAX_CAMERAS              2
-#define MAX_STATIC_MESHES        1024
-#define MAX_SOUND_SOURCES        128
-#define MAX_ENTITY_ARCHETYPES    32
-#define MAX_ENEMIES              64
+#include "../common/limits.h"
 
 struct Ray;
 struct Raycast_Result;
@@ -20,13 +13,13 @@ struct Scene
 	char                   filename[MAX_FILENAME_LEN];
     struct Entity          root_entity;
     struct Player          player;
-    struct Entity          entities[MAX_ENTITIES];
-    struct Static_Mesh     static_meshes[MAX_STATIC_MESHES];
-    struct Camera          cameras[MAX_CAMERAS];
-    struct Light           lights[MAX_LIGHTS];
-    struct Sound_Source    sound_sources[MAX_SOUND_SOURCES];
-	struct Enemy           enemies[MAX_ENEMIES];
-	char                   entity_archetypes[MAX_ENTITY_ARCHETYPES][MAX_FILENAME_LEN];
+    struct Entity          entities[MAX_SCENE_ENTITIES];
+    struct Static_Mesh     static_meshes[MAX_SCENE_STATIC_MESHES];
+    struct Camera          cameras[MAX_SCENE_CAMERAS];
+    struct Light           lights[MAX_SCENE_LIGHTS];
+    struct Sound_Source    sound_sources[MAX_SCENE_SOUND_SOURCES];
+	struct Enemy           enemies[MAX_SCENE_ENEMIES];
+	char                   entity_archetypes[MAX_SCENE_ENTITY_ARCHETYPES][MAX_FILENAME_LEN];
     int                    active_camera_index;
 };
 

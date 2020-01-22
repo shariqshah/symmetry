@@ -1,5 +1,4 @@
 Todo:
-	- Imlement reading/writing enemy mesh and weapon sound to file and resetting it in code
 	- Enemy ray casting and shooting
 	- Player shooting
 	- Player jump cooldown, don't allow jump until a certian time interval has passed, even if we're grounded
@@ -34,6 +33,7 @@ Todo:
 	- Command to reload entities only
 	- Serialize player, camera properties to file
 	- Change mouse behaviour to lock cursor when looking around so as not to interfere with gui elements when in editor mode
+	- Resource manager that loads/unloads/reloads all types of assets and caches them when required so that we don't end up constantly loading files from disk
 	- Folder management api to create/delete folders when none exist. Dirent would suffice for our simple needs?
 	? Entity creator window to create new types of entities and write them
 	  to disk
@@ -402,3 +402,5 @@ Done:
 	* Screen mouse coordinates to world-coordinates for aiming
 	* Sound source entity functions that automatically track if handles are valid and create/update as necessary
 	* Apply sound source properties to source instance whenever a new instance is created
+	* Imlemented reading/writing enemy mesh and weapon sound to file and resetting it in code
+	* Implemented on_load and on_update callbacks for enemies. Different enemy types have different callbacks that are assigned when they are created.

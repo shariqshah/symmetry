@@ -267,7 +267,7 @@ void player_on_mousebutton_released(const struct Event* event)
 			vec3_scale(&collision_point, &collision_point, distance);
 			vec3_add(&collision_point, &collision_point, &bullet_ray.origin);
 			//struct Static_Mesh* bullet = scene_static_mesh_create(game_state_get()->scene, "bullet", NULL, "cube.symbres", MAT_UNSHADED);
-			struct Light* bullet = entity_load("Spot", DIRT_INSTALL);
+			struct Light* bullet = entity_load("Spot", DIRT_INSTALL, true);
 			if(bullet) transform_set_position(bullet, &collision_point);
 			sound_source_play(game_state->sound, player->weapon_sound);
 		}

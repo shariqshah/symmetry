@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#define MAX_FILENAME_LEN 128
+#include "../common/limits.h"
 
 enum Directory_Type
 {

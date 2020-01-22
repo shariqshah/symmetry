@@ -3,11 +3,13 @@
 
 #include "../common/linmath.h"
 #include "../common/num_types.h"
+#include "../common/limits.h"
+
+struct Entity;
 
 typedef void (*Event_Handler) (const struct Event* event);
+typedef void (*Event_Handler_Object) (const struct Event* event, void* subscriber);
 
-#define MAX_EVENTS 128
-#define MAX_EVENT_SUBSCRIPTIONS 256
 
 enum Event_Types
 {
@@ -20,7 +22,15 @@ enum Event_Types
 	EVT_MOUSEWHEEL,
 	EVT_WINDOW_RESIZED,
 	EVT_TEXT_INPUT,
+	EVT_SCENE_LOADED,
 	EVT_MAX
+};
+
+enum Event_Subscription_Type
+{
+	EST_NONE = 0,
+	EST_WITHOUT_OBJECT,
+	EST_WITH_OBJECT
 };
 
 struct Key_Event
@@ -68,6 +78,11 @@ struct Window_Resized_Event
 	int height;
 };
 
+struct Scene_Loaded_Event
+{
+	char filename[MAX_FILENAME_LEN];
+};
+
 struct Event
 {
 	int type;
@@ -79,13 +94,27 @@ struct Event
 		struct Mousemotion_Event    mousemotion;
 		struct Text_Input_Event     text_input;
 		struct Window_Resized_Event window_resize;
+		struct Scene_Loaded_Event   scene_load;
 	};
 };
 
 struct Event_Subscription
 {
-	int           event_type;
-	Event_Handler handler;
+	int type;
+	int event_type;
+	union
+	{
+		struct
+		{
+			Event_Handler handler;
+		};
+
+		struct
+		{
+			Event_Handler_Object handler_with_object;
+			void*                subscriber;
+		};
+	};
 };
 
 struct Event_Manager
@@ -96,10 +125,13 @@ struct Event_Manager
 };
 
 void          event_manager_init(struct Event_Manager* event_manager);
-void          event_manager_subscribe(struct Event_Manager* event_manager, int event_type, Event_Handler subscriber);
+void          event_manager_subscribe(struct Event_Manager* event_manager, int event_type, Event_Handler event_handler_func);
+void          event_manager_subscribe_with_object(struct Event_Manager* event_manager, int event_type, Event_Handler_Object handler_func, void* subscriber);
 void          event_manager_unsubscribe(struct Event_Manager* event_manager, int event_type, Event_Handler subscriber);
+void          event_manager_unsubscribe_with_object(struct Event_Manager* event_manager, int event_type, Event_Handler_Object handler_func, void* subscriber);
 struct Event* event_manager_create_new_event(struct Event_Manager* event_manager);
 void          event_manager_send_event(struct Event_Manager* event_manager, struct Event* event);
+void          event_manager_send_event_entity(struct Event_Manager* event_manager, struct Event* event, struct Entity* entity);
 void          event_manager_poll_events(struct Event_Manager* event_manager, bool* out_quit);
 void          event_manager_cleanup(struct Event_Manager* event_manager);
 const char*   event_name_get(int event_type);

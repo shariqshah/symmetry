@@ -19,6 +19,7 @@
 #include "game.h"
 #include "texture.h"
 #include "enemy.h"
+#include "event.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -538,7 +539,7 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 	return new_entity;
 }
 
-struct Entity* entity_load(const char* filename, int directory_type)
+struct Entity* entity_load(const char* filename, int directory_type, bool send_on_load_event)
 {
 	char prefixed_filename[MAX_FILENAME_LEN + 16];
 	snprintf(prefixed_filename, MAX_FILENAME_LEN + 16, "entities/%s.symtres", filename);
@@ -594,6 +595,19 @@ struct Entity* entity_load(const char* filename, int directory_type)
 			log_error("entity:load", "Failed to load entity from %s", prefixed_filename);
 		}
 	}	
+
+	// Send simulated scene loaded event since this entity has been loaded while the scene has already been loaded
+	if(send_on_load_event)
+	{
+		struct Game_State* game_state = game_state_get();
+		struct Event_Manager* event_manager = game_state->event_manager;
+		struct Event on_scene_loaded_event =
+		{
+			.type = EVT_SCENE_LOADED,
+		};
+		strncpy(on_scene_loaded_event.scene_load.filename, game_state->scene->filename, MAX_FILENAME_LEN);
+		event_manager_send_event_entity(event_manager, &on_scene_loaded_event, parent_entity);
+	}
 
 	parser_free(parsed_file);
 	fclose(entity_file);

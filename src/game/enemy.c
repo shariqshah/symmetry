@@ -6,8 +6,11 @@
 #include "../common/log.h"
 #include "../common/hashmap.h"
 #include "../common/parser.h"
+#include "event.h"
 
 #include <string.h>
+
+static void enemy_on_scene_loaded(struct Event* event, void* enemy_ptr);
 
 void enemy_init(struct Enemy* enemy, int type)
 {
@@ -36,8 +39,8 @@ void enemy_init(struct Enemy* enemy, int type)
 		enemy->Turret.turn_speed = 10.f;
 		enemy->health = 100;
 		enemy->damage = 10;
-		weapon_sound = scene_sound_source_create(scene, weapon_name_buffer, enemy, "sounds/bullet_1.wav", ST_WAV, false, false);
-		mesh = scene_static_mesh_create(scene, mesh_name_buffer, enemy, "suzanne.symbres", MAT_BLINN);
+		//weapon_sound = scene_sound_source_create(scene, weapon_name_buffer, enemy, "sounds/bullet_1.wav", ST_WAV, false, false);
+		//mesh = scene_static_mesh_create(scene, mesh_name_buffer, enemy, "suzanne.symbres", MAT_BLINN);
 		break;
 	}
 	default:
@@ -45,16 +48,16 @@ void enemy_init(struct Enemy* enemy, int type)
 		break;
 	}
 
-	enemy->weapon_sound = weapon_sound ? weapon_sound : NULL;
-	if(!weapon_sound)
-		log_error("enemy:init", "Failed to add weapon sound for %s", enemy->base.name);
+	//enemy->weapon_sound = weapon_sound ? weapon_sound : NULL;
+	//if(!weapon_sound)
+	//	log_error("enemy:init", "Failed to add weapon sound for %s", enemy->base.name);
 
-	enemy->mesh = mesh ? mesh : NULL;
-	if(!mesh)
-		log_error("enemy:init", "Failed to add mesh from file for %s", enemy->base.name);
+	//enemy->mesh = mesh ? mesh : NULL;
+	//if(!mesh)
+	//	log_error("enemy:init", "Failed to add mesh from file for %s", enemy->base.name);
 
-	if(enemy->mesh) enemy->mesh->base.flags |= EF_TRANSIENT;
-	if(enemy->weapon_sound) enemy->weapon_sound->base.flags |= EF_TRANSIENT;
+	struct Event_Manager* event_manager = game_state->event_manager;
+	event_manager_subscribe_with_object(event_manager, EVT_SCENE_LOADED, &enemy_on_scene_loaded, (void*)enemy);
 }
 
 void enemy_weapon_sound_set(struct Enemy* enemy, const char* sound_filename, int type)
@@ -98,6 +101,9 @@ void enemy_reset(struct Enemy* enemy)
 	enemy->type = -1;
 	enemy->damage = 0;
 	enemy->health = 0;
+
+	struct Event_Manager* event_manager = game_state_get()->event_manager;
+	event_manager_unsubscribe_with_object(event_manager, EVT_SCENE_LOADED, &enemy_on_scene_loaded, (void*)enemy);
 }
 
 struct Enemy* enemy_read(struct Parser_Object* object, const char* name, struct Entity* parent_entity)
@@ -142,4 +148,24 @@ void enemy_write(struct Enemy* enemy, struct Hashmap* entity_data)
 	}
 	break;
 	}
+}
+
+void enemy_on_scene_loaded(struct Event* event, void* enemy_ptr)
+{
+	struct Enemy* enemy = (struct Enemy*)enemy_ptr;
+
+	// Assign pointers to mesh and sound child entities
+	for(int i = 0; i < array_len(enemy->base.transform.children); i++)
+	{
+		struct Entity* child = enemy->base.transform.children[i];
+		if(child->type == ET_STATIC_MESH)
+			enemy->mesh = (struct Static_Mesh*)child;
+		else if(child->type == ET_SOUND_SOURCE)
+			enemy->weapon_sound = (struct Sound_Source*)child;
+	}
+
+	if(enemy->mesh) enemy->mesh->base.flags |= EF_TRANSIENT;
+	if(enemy->weapon_sound) enemy->weapon_sound->base.flags |= EF_TRANSIENT;
+
+	// Do other post-scene-load initialization stuff per enemy type here
 }

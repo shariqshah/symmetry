@@ -1692,42 +1692,42 @@ void editor_window_scene_hierarchy(struct nk_context* context, struct Editor* ed
 		{
 			if(nk_tree_push(context, NK_TREE_TAB, "Cameras", NK_MAXIMIZED))
 			{
-				for(int i = 0; i < MAX_CAMERAS; i++)       
+				for(int i = 0; i < MAX_SCENE_CAMERAS; i++)       
 					editor_show_entity_in_list(editor, context, scene, &scene->cameras[i]);
 				nk_tree_pop(context);
 			}
 
 			if(nk_tree_push(context, NK_TREE_TAB, "Lights", NK_MAXIMIZED))
 			{
-				for(int i = 0; i < MAX_LIGHTS; i++)        
+				for(int i = 0; i < MAX_SCENE_LIGHTS; i++)        
 					editor_show_entity_in_list(editor, context, scene, &scene->lights[i]);
 				nk_tree_pop(context);
 			}
 
 			if(nk_tree_push(context, NK_TREE_TAB, "Static Meshes", NK_MAXIMIZED))
 			{
-				for(int i = 0; i < MAX_STATIC_MESHES; i++) 
+				for(int i = 0; i < MAX_SCENE_STATIC_MESHES; i++) 
 					editor_show_entity_in_list(editor, context, scene, &scene->static_meshes[i]);
 				nk_tree_pop(context);
 			}
 
 			if(nk_tree_push(context, NK_TREE_TAB, "Sound Sources", NK_MAXIMIZED))
 			{
-				for(int i = 0; i < MAX_SOUND_SOURCES; i++)
+				for(int i = 0; i < MAX_SCENE_SOUND_SOURCES; i++)
 					editor_show_entity_in_list(editor, context, scene, &scene->sound_sources[i]);
 				nk_tree_pop(context);
 			}
 
 			if(nk_tree_push(context, NK_TREE_TAB, "Enemies", NK_MAXIMIZED))
 			{
-				for(int i = 0; i < MAX_ENEMIES; i++)      
+				for(int i = 0; i < MAX_SCENE_ENEMIES; i++)      
 					editor_show_entity_in_list(editor, context, scene, &scene->enemies[i]);
 				nk_tree_pop(context);
 			}
 
 			if(nk_tree_push(context, NK_TREE_TAB, "Entities", NK_MAXIMIZED))
 			{
-				for(int i = 0; i < MAX_ENTITIES; i++)      
+				for(int i = 0; i < MAX_SCENE_ENTITIES; i++)      
 					editor_show_entity_in_list(editor, context, scene, &scene->entities[i]);
 				nk_tree_pop(context);
 			}
@@ -2431,7 +2431,7 @@ void editor_entity_dialog(struct Editor* editor, struct nk_context* context)
 					}
 					else
 					{
-						struct Entity* new_entity = entity_load(entity_filename, DIRT_INSTALL);
+						struct Entity* new_entity = entity_load(entity_filename, DIRT_INSTALL, true);
 						if(new_entity)
 						{
 							editor_entity_select(editor, new_entity);
@@ -2451,7 +2451,7 @@ void editor_entity_dialog(struct Editor* editor, struct nk_context* context)
 					}
 					else
 					{
-						struct Entity* new_entity = entity_load(entity_filename, DIRT_INSTALL);
+						struct Entity* new_entity = entity_load(entity_filename, DIRT_INSTALL, true);
 						if(new_entity)
 						{
 							editor_entity_select(editor, new_entity);

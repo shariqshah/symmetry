@@ -7,8 +7,7 @@
 #include "../system/sound.h"
 #include "bounding_volumes.h"
 #include "material.h"
-
-#define MAX_ENTITY_NAME_LEN 128
+#include "../common/limits.h"
 
 
 struct Entity;
@@ -212,7 +211,7 @@ struct Enemy
 void           entity_init(struct Entity* entity, const char* name, struct Entity* parent);
 void           entity_reset(struct Entity* entity, int id);
 bool           entity_save(struct Entity* entity, const char* filename, int directory_type);
-struct Entity* entity_load(const char* filename, int directory_type);
+struct Entity* entity_load(const char* filename, int directory_type, bool send_on_scene_load_event);
 bool           entity_write(struct Entity* entity, struct Parser_Object* object, bool write_transform);
 struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_entity);
 const char*    entity_type_name_get(struct Entity* entity);

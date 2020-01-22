@@ -4,11 +4,10 @@
 #include "../common/linmath.h"
 #include "../common/num_types.h"
 #include "../common/variant.h"
+#include "../common/limits.h"
 
 struct Static_Mesh;
 
-#define MAX_UNIFORM_NAME_LEN 64
-#define MAX_MATERIAL_REGISTERED_STATIC_MESHES 1024
 
 struct Uniform
 {

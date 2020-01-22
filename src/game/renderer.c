@@ -103,7 +103,7 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
 			char uniform_name[MAX_UNIFORM_NAME_LEN];
 			memset(uniform_name, '\0', MAX_UNIFORM_NAME_LEN);
 			int light_count = -1;
-			for(int j = 0; j < MAX_LIGHTS; j++)
+			for(int j = 0; j < MAX_SCENE_LIGHTS; j++)
 			{
 				struct Light* light = &scene->lights[j]; /* TODO: Cull lights according to camera frustum */
 				if(!(light->base.flags & EF_ACTIVE) || !light->valid) continue;
@@ -253,7 +253,7 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
 		{
 			static mat4 mvp;
 			shader_set_uniform_vec4(renderer->debug_shader, "debug_color", &renderer->settings.debug_draw_color);
-			for(int i = 0; i < MAX_STATIC_MESHES; i++)
+			for(int i = 0; i < MAX_SCENE_STATIC_MESHES; i++)
 			{
 				struct Static_Mesh* mesh = &scene->static_meshes[i];
 				if(!(mesh->base.flags & EF_ACTIVE)) continue;
@@ -274,7 +274,7 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
 	if(renderer->settings.debug_draw_physics)
     {
 		static vec4 physics_draw_color = { 0.f, 0.f, 1.f, 1.f };
-		for(int i = 0; i < MAX_STATIC_MESHES; i++)
+		for(int i = 0; i < MAX_SCENE_STATIC_MESHES; i++)
 		{
 			struct Static_Mesh* mesh = &scene->static_meshes[i];
 			if(!(mesh->base.flags & EF_ACTIVE) || (!mesh->collision.collision_shape && !mesh->collision.rigidbody)) continue;
@@ -361,7 +361,7 @@ void renderer_on_framebuffer_size_changed(const struct Event* event)
 
     struct Scene* scene = game_state_get()->scene;
     float aspect = (float)width / (float)height;
-    for(int i = 0; i < MAX_CAMERAS; i++)
+    for(int i = 0; i < MAX_SCENE_CAMERAS; i++)
     {
 		struct Camera* viewer = &scene->cameras[i];
 		if(viewer->resizeable)

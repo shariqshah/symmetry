@@ -1,7 +1,7 @@
 Todo:
-	- Make movement framerate independent
-	- Implement displaying bounding boxes as a command which should work in game mode
-	- Enemy ray casting and shooting
+	- Implement separate property window for player related variables that can be shown in the editor similar to renderer settings etc
+	- Implement turret state machine
+	- Fix rotate gizmo's origin not being set to the selected entity
 	- Player shooting
 	- Player jump cooldown, don't allow jump until a certian time interval has passed, even if we're grounded
 	- Sky Cube maps
@@ -106,7 +106,7 @@ Improvements:
 	- Improve grid/immediate mode drawing by switching to glDrawElements instead of glDrawArrays. 
 	- Investigate why transparency is not working for materials
 	- Picking for other entity types like lights etc by specifically ray casting for them or in editor switching to pick-mode that specifies if we're picking lights or meshes etc
-	? Only show bounding box for hovered entity instead of wireframe mesh
+	- Implement displaying bounding boxes as a command which should work in game mode
 
 Bugs:
 	- Better handling of wav format checking at load time
@@ -410,3 +410,4 @@ Done:
 	* Implemented on_load and on_update callbacks for enemies. Different enemy types have different callbacks that are assigned when they are created.
 	* Added Scene reload command
 	* Introduced fixed time step interval which can be configured and be used for movement and other physics related updates
+	* Made movement framerate independent

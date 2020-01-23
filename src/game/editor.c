@@ -226,7 +226,7 @@ void editor_render(struct Editor* editor, struct Camera * active_camera)
 			{
 				quat rotation = editor->selected_entity->transform.rotation;
 				vec3 axis = { 1.f, 0.f, 0.f };
-				quat_axis_angle(&rotation, &axis, -90.f);
+				quat_axis_angle(&rotation, &axis, 90.f);
 				im_circle(light->radius, 30, false, abs_pos, rotation, editor->cursor_entity_color, 3);
 
 				if(light->type == LT_SPOT)

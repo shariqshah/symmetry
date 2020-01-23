@@ -13,7 +13,7 @@ Entity
 	name : Turret
 	bouding_box_max : 0.500 0.500 0.500
 	damage : 10
-	turn_speed : 500.0000
+	turn_speed : 50.0000
 }
 
 Entity

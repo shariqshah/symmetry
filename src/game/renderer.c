@@ -78,6 +78,8 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
 {
 	struct Game_State* game_state = game_state_get();
 	struct Camera* active_camera = &scene->cameras[scene->active_camera_index];
+	int num_rendered = 0, num_culled = 0, num_indices = 0;
+
 	int width = 0, height = 0;
 	window_get_drawable_size(game_state->window, &width, &height);
 	glViewport(0, 0, width, height);
@@ -189,12 +191,12 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
 			int intersection = bv_intersect_frustum_box(&active_camera->frustum, &mesh->base.derived_bounding_box);
 			if(intersection == IT_INSIDE || intersection == IT_INTERSECT)
 			{
-				renderer->num_indices += geometry->indices_length;
-				renderer->num_rendered++;
+				num_indices += geometry->indices_length;
+				num_rendered++;
 			}
 			else
 			{
-				renderer->num_culled++;
+				num_culled++;
 				continue;
 			}
 
@@ -239,11 +241,9 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
 		shader_unbind();
 	}
 
-	debug_vars_show_int("Rendered", renderer->num_rendered);
-	debug_vars_show_int("Culled", renderer->num_culled);
-	debug_vars_show_int("Num Indices", renderer->num_indices);
-
-	renderer->num_culled = renderer->num_rendered = renderer->num_indices = 0;
+	debug_vars_show_int("Rendered", num_rendered);
+	debug_vars_show_int("Culled", num_culled);
+	debug_vars_show_int("Num Indices", num_indices);
 
     /* Debug Render */
 	if(renderer->settings.debug_draw_enabled)

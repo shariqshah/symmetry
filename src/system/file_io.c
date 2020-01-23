@@ -145,9 +145,9 @@ static char* relative_path_get(const int directory_type)
 	char* relative_path = NULL;
 	switch(directory_type)
 	{
-	case DIRT_USER:       relative_path = str_new(user_directory);           break;
-	case DIRT_INSTALL:    relative_path = str_new(install_directory);        break;
-	case DIRT_EXECUTABLE: relative_path = str_new(executable_directory);     break;
+	case DIRT_USER:       relative_path = str_new(user_directory);         break;
+	case DIRT_INSTALL:    relative_path = str_new(install_directory);      break;
+	case DIRT_EXECUTABLE: relative_path = str_new(executable_directory);   break;
 	default: log_error("io:relative_path_get", "Invalid directory type!"); break;
 	};
 	return relative_path;

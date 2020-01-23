@@ -38,12 +38,10 @@ struct Render_Settings
 
 struct Renderer
 {
-    int debug_shader;
-    int num_culled , num_rendered , num_indices;
-    int num_culled_slot, num_rendered_slot, num_indices_slot;
-    struct Sprite_Batch* sprite_batch;
+    int                    debug_shader;
+    struct Sprite_Batch*   sprite_batch;
     struct Render_Settings settings;
-    struct Material materials[MAT_MAX];
+    struct Material        materials[MAT_MAX];
 };
 
 void renderer_init(struct Renderer* renderer);

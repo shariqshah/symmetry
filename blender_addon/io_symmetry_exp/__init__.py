@@ -2,7 +2,7 @@ bl_info = {
     "name": "Export to Symmetry",
     "description": "Export to a format that can be read by Symmetry",
     "author": "Shariq Shah",
-    "version": (0, 1),
+    "version": (0, 2),
     "blender": (2, 80, 0),
     "location": "File > Export > Export to Symmetry",
     "category": "Import-Export"
@@ -31,8 +31,9 @@ class ExportSymmetry(bpy.types.Operator, ExportHelper):
 
         print("Exporting : " + activeObject.name)
 
-        # Rotate -90 deg on x axis to compensate for blender's different orientation
+        # Rotate -90 deg on x axis and 180 on y axis to compensate for blender's different orientation
         activeObject.rotation_euler[0] = radians(-90)
+        activeObject.rotation_euler[1] = radians(180)
         bpy.ops.object.transform_apply(location = True, scale = True, rotation = True)
         
         mesh = activeObject.to_mesh(preserve_all_data_layers=True)
@@ -66,6 +67,7 @@ class ExportSymmetry(bpy.types.Operator, ExportHelper):
 
         # Reset object's previous rotation
         activeObject.rotation_euler[0] = radians(90)
+        activeObject.rotation_euler[1] = radians(-180)
         bpy.ops.object.transform_apply(location = True, scale = True, rotation = True)
         
         file = open(self.filepath, 'bw')

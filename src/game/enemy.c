@@ -10,6 +10,7 @@
 #include "event.h"
 #include "../system/platform.h"
 #include "debug_vars.h"
+#include "im_render.h"
 
 #include <string.h>
 #include <math.h>
@@ -201,16 +202,27 @@ void enemy_update_physics_turret(struct Enemy* enemy, struct Game_State* game_st
 
 	/* Movement */
 	float ticks = (float)platform_ticks_get();
-	float pulsate_speed = 50.f;
+	float pulsate_speed_scale = 0.1f;
+	float pulsate_height = 1.5f;
 	vec3 translation = { 0.f };
 	transform_get_absolute_position(enemy, &translation);
-	translation.y += sinf(TO_RADIANS(ticks)) * dt * pulsate_speed;
-	debug_vars_show_float("T", sinf(TO_RADIANS(ticks * dt * pulsate_speed)));
+	translation.y += sinf(TO_RADIANS(ticks * pulsate_speed_scale)) * dt * pulsate_height;
 	transform_set_position(enemy, &translation);
-	//transform_translate(enemy, &translation, TS_LOCAL);
 }
 
 void enemy_update_ai_turret(struct Enemy* enemy, struct Game_State* game_state, float dt)
 {
-
+	struct Scene* scene = game_state->scene;
+	float turret_vision_range = 5.f;
+	struct Ray turret_ray;
+	transform_get_absolute_position(enemy, &turret_ray.origin);
+	transform_get_forward(enemy, &turret_ray.direction);
+	im_ray(&turret_ray, turret_vision_range, (vec4) { 0.f, 1.f, 1.f, 1.f }, 4);
+	struct Entity* player = scene_ray_intersect_closest(scene, &turret_ray, ERM_PLAYER);
+	if(player)
+	{
+		float distance = scene_entity_distance(scene, player, enemy);
+		if(distance <= turret_vision_range)
+			log_message("Player Intersected, distance: %.3f", distance);
+	}
 }

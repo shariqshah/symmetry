@@ -80,7 +80,7 @@ void player_destroy(struct Player* player)
     player->base.flags = EF_NONE;
 }
 
-void player_update(struct Player* player, struct Scene* scene, float dt)
+void player_update_physics(struct Player* player, struct Scene* scene, float fixed_dt)
 {
     /* Look around */
 	float total_pitch    = quat_get_pitch(&player->camera->base.transform.rotation);
@@ -103,8 +103,8 @@ void player_update(struct Player* player, struct Scene* scene, float dt)
 		cursor_yaw = cursor_pitch = 0;
 	}
 
-	pitch = -cursor_pitch * player->turn_speed * dt;
-	yaw = cursor_yaw * player->turn_speed * dt;
+	pitch = -cursor_pitch * player->turn_speed * fixed_dt;
+	yaw = cursor_yaw * player->turn_speed * fixed_dt;
 
     total_pitch += pitch;
     if(total_pitch >= max_pitch)
@@ -221,9 +221,9 @@ void player_update(struct Player* player, struct Scene* scene, float dt)
     vec3 translation = {0.f, 0.f, 0.f};
 	vec3_assign(&translation, &move_direction);
 
-	translation.x *= move_speed * dt;
-	translation.z *= move_speed * dt;
-	translation.y = move_speed_vertical * dt;
+	translation.x *= move_speed * fixed_dt;
+	translation.z *= move_speed * fixed_dt;
+	translation.y = move_speed_vertical * fixed_dt;
 	transform_translate(player, &translation, TS_WORLD);
 
 	debug_vars_show_bool("Grounded", player->grounded);

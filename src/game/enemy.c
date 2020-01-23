@@ -8,11 +8,15 @@
 #include "../common/hashmap.h"
 #include "../common/parser.h"
 #include "event.h"
+#include "../system/platform.h"
+#include "debug_vars.h"
 
 #include <string.h>
+#include <math.h>
 
 static void enemy_on_scene_loaded(struct Event* event, void* enemy_ptr);
-static void enemy_update_turret(struct Enemy* enemy, struct Game_State* game_state, float dt);
+static void enemy_update_physics_turret(struct Enemy* enemy, struct Game_State* game_state, float fixed_dt);
+static void enemy_update_ai_turret(struct Enemy* enemy, struct Game_State* game_state, float dt);
 
 void enemy_init(struct Enemy* enemy, int type)
 {
@@ -77,7 +81,17 @@ void enemy_update(struct Enemy* enemy, struct Scene* scene, float dt)
 
 	switch(enemy->type)
 	{
-	case ENEMY_TURRET: enemy_update_turret(enemy, game_state, dt); break;
+	case ENEMY_TURRET: enemy_update_ai_turret(enemy, game_state, dt); break;
+	}
+
+}
+
+void enemy_update_physics(struct Enemy* enemy, struct Scene* scene, float fixed_dt)
+{
+	struct Game_State* game_state = game_state_get();
+	switch(enemy->type)
+	{
+	case ENEMY_TURRET: enemy_update_physics_turret(enemy, game_state, fixed_dt); break;
 	}
 
 }
@@ -160,8 +174,9 @@ void enemy_on_scene_loaded(struct Event* event, void* enemy_ptr)
 	// Do other post-scene-load initialization stuff per enemy type here
 }
 
-void enemy_update_turret(struct Enemy* enemy, struct Game_State* game_state, float dt)
+void enemy_update_physics_turret(struct Enemy* enemy, struct Game_State* game_state, float dt)
 {
+	/* Turning/Rotation */
 	static vec3 turn_axis = { 0.f, 1.f, 0.f };
 	float current_yaw = quat_get_yaw(&enemy->base.transform.rotation);
 
@@ -183,4 +198,19 @@ void enemy_update_turret(struct Enemy* enemy, struct Game_State* game_state, flo
 
 	if(yaw != 0.f)
 		transform_rotate(enemy, &turn_axis, yaw, TS_LOCAL);
+
+	/* Movement */
+	float ticks = (float)platform_ticks_get();
+	float pulsate_speed = 50.f;
+	vec3 translation = { 0.f };
+	transform_get_absolute_position(enemy, &translation);
+	translation.y += sinf(TO_RADIANS(ticks)) * dt * pulsate_speed;
+	debug_vars_show_float("T", sinf(TO_RADIANS(ticks * dt * pulsate_speed)));
+	transform_set_position(enemy, &translation);
+	//transform_translate(enemy, &translation, TS_LOCAL);
+}
+
+void enemy_update_ai_turret(struct Enemy* enemy, struct Game_State* game_state, float dt)
+{
+
 }

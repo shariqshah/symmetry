@@ -25,6 +25,7 @@ struct Game_State
 {
 	bool                  is_initialized;
 	int                   game_mode;
+	float                 fixed_delta_time;
 	struct Window*        window;
 	struct Renderer*      renderer;
 	struct Scene*         scene;

@@ -366,11 +366,23 @@ void scene_update(struct Scene* scene, float dt)
 {
 	if(game_state_get()->game_mode == GAME_MODE_GAME) 
 	{
-		player_update(&scene->player, scene, dt);
 		for(int i = 0; i < MAX_SCENE_ENEMIES; i++)
 		{
 			if(scene->enemies[i].base.flags & EF_ACTIVE)
 				enemy_update(&scene->enemies[i], scene, dt);
+		}
+	}
+}
+
+void scene_update_physics(struct Scene* scene, float fixed_dt)
+{
+	if(game_state_get()->game_mode == GAME_MODE_GAME) 
+	{
+		player_update_physics(&scene->player, scene, fixed_dt);
+		for(int i = 0; i < MAX_SCENE_ENEMIES; i++)
+		{
+			if(scene->enemies[i].base.flags & EF_ACTIVE)
+				enemy_update_physics(&scene->enemies[i], scene, fixed_dt);
 		}
 	}
 }

@@ -43,6 +43,7 @@
 #define LEN(a) (sizeof(a)/sizeof(a)[0])
 
 static void game_update(float dt, bool* window_should_close);
+static void game_update_physics(float fixed_dt);
 static void game_post_update(float dt);
 static void game_render(void);
 static void game_debug(float dt);
@@ -66,18 +67,19 @@ bool game_init(struct Window* window, struct Hashmap* cvars)
     }
     else
     {
-		game_state->window         = window;
-		game_state->cvars          = cvars;
-		game_state->is_initialized = false;
-		game_state->game_mode      = GAME_MODE_GAME;
-		game_state->renderer       = calloc(1, sizeof(*game_state->renderer));
-		game_state->scene          = calloc(1, sizeof(*game_state->scene));
-		game_state->console        = calloc(1, sizeof(*game_state->console));
-		game_state->editor         = calloc(1, sizeof(*game_state->editor));
-		game_state->gui            = calloc(1, sizeof(*game_state->gui));
-		game_state->event_manager  = calloc(1, sizeof(*game_state->event_manager));
-		game_state->sound          = calloc(1, sizeof(*game_state->sound));
-		game_state->debug_vars     = calloc(1, sizeof(*game_state->debug_vars));
+		game_state->window           = window;
+		game_state->cvars            = cvars;
+		game_state->is_initialized   = false;
+		game_state->fixed_delta_time = 1.f / 60.f;
+		game_state->game_mode        = GAME_MODE_GAME;
+		game_state->renderer         = calloc(1, sizeof(*game_state->renderer));
+		game_state->scene            = calloc(1, sizeof(*game_state->scene));
+		game_state->console          = calloc(1, sizeof(*game_state->console));
+		game_state->editor           = calloc(1, sizeof(*game_state->editor));
+		game_state->gui              = calloc(1, sizeof(*game_state->gui));
+		game_state->event_manager    = calloc(1, sizeof(*game_state->event_manager));
+		game_state->sound            = calloc(1, sizeof(*game_state->sound));
+		game_state->debug_vars       = calloc(1, sizeof(*game_state->debug_vars));
 
 		log_message_callback_set(game_on_log_message);
 		log_warning_callback_set(game_on_log_warning);
@@ -512,21 +514,31 @@ void game_debug(float dt)
 
 bool game_run(void)
 {
-    uint32 last_time = platform_ticks_get();
+    uint32 previous_time       = platform_ticks_get();
+	float  accumulator         = 0.f;
 	bool   should_window_close = false;
+
     while(!should_window_close)
     {
-        uint32 curr_time = platform_ticks_get();
-		float delta_time = (float)(curr_time - last_time) / 1000.f;
-		last_time = curr_time;
-		if(delta_time > MAX_FRAME_TIME) delta_time = (1.f / 60.f); /* To deal with resuming from breakpoint we artificially set delta time */
+        uint32 current_time = platform_ticks_get();
+		float frame_time = (float)(current_time - previous_time) / 1000.f;
+		previous_time = current_time;
+		if(frame_time > MAX_FRAME_TIME) frame_time = (1.f / 60.f); /* To deal with resuming from breakpoint we artificially set delta time */
+		accumulator += frame_time;
 
 		gui_input_begin(game_state->gui);
 		event_manager_poll_events(game_state->event_manager, &should_window_close);
 		gui_input_end(game_state->gui);
+
+		struct Game_State* game_state = game_state_get();
+		while(accumulator >= game_state->fixed_delta_time)
+		{
+			game_update_physics(game_state->fixed_delta_time);
+			accumulator -= game_state->fixed_delta_time;
+		}
 		
-		game_update(delta_time, &should_window_close);
-		game_post_update(delta_time);
+		game_update(frame_time, &should_window_close);
+		game_post_update(frame_time);
 		game_render();
 		window_swap_buffers(game_state->window);
     }
@@ -1982,4 +1994,10 @@ void game_on_log_warning(const char* warning_message, va_list args)
 void game_on_log_error(const char* context, const char* error_message, va_list args)
 {
     console_on_log_error(game_state->console, context, error_message, args);
+}
+
+void game_update_physics(float fixed_dt)
+{
+	struct Game_State* game_state = game_state_get();
+	scene_update_physics(game_state->scene, fixed_dt);
 }

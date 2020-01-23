@@ -31,9 +31,9 @@ void config_vars_init(struct Hashmap* cvars)
     hashmap_vec4_setf(cvars, "debug_draw_color",              0.8f, 0.4f, 0.1f, 1.f);
     hashmap_float_set(cvars, "player_move_speed",             20.f);
     hashmap_float_set(cvars, "player_move_speed_multiplier",  1.75f);
-    hashmap_float_set(cvars, "player_turn_speed",             45.f);
+    hashmap_float_set(cvars, "player_turn_speed",             25.f);
     hashmap_float_set(cvars, "player_jump_speed",             50.f);
-    hashmap_float_set(cvars, "player_gravity",               -0.25f);
+    hashmap_float_set(cvars, "player_gravity",               -2.5f);
     hashmap_float_set(cvars, "player_min_forward_distance",   5.f);
     hashmap_float_set(cvars, "player_min_downward_distance",  2.f);
 }

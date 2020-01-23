@@ -1,4 +1,6 @@
 Todo:
+	- Make movement framerate independent
+	- Implement displaying bounding boxes as a command which should work in game mode
 	- Enemy ray casting and shooting
 	- Player shooting
 	- Player jump cooldown, don't allow jump until a certian time interval has passed, even if we're grounded
@@ -13,6 +15,7 @@ Todo:
 		- Main Menu Scene
 		? Split this todo into gameplay/engine todos
 	- Check if running in a lower frame rate affects movement
+	- Remove ODE completely
 	? Write entity flags to scene file or when saving entity to file?
 	? Add scene init/de-init function hashmap that maps a function that should be called when scene is loaded and unloaded. Save this to file for every scene or map functions based on the name of the scene?
 	- Release mouse when window loses focus and limit fps
@@ -406,3 +409,4 @@ Done:
 	* Imlemented reading/writing enemy mesh and weapon sound to file and resetting it in code
 	* Implemented on_load and on_update callbacks for enemies. Different enemy types have different callbacks that are assigned when they are created.
 	* Added Scene reload command
+	* Introduced fixed time step interval which can be configured and be used for movement and other physics related updates

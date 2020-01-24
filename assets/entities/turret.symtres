@@ -31,7 +31,7 @@ Entity
 	bouding_box_min : -0.500 -0.500 -0.500
 	source_filename : sounds/bullet_1.wav
 	sound_type : 1
-	sound_max_distance : 10.0000
+	sound_max_distance : 30.0000
 	name : Turret_Weapon_Sound
 	bouding_box_max : 0.500 0.500 0.500
 	sound_attenuation_type : 2

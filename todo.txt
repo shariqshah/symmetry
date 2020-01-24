@@ -1,6 +1,11 @@
 Todo:
 	- Implement separate property window for player related variables that can be shown in the editor similar to renderer settings etc
 	- Implement turret state machine
+	- Add all sound source properties to propery inspector
+	- Add turret properties to property inspector
+	- Add another ambient sound_source entity as child to enemy entity
+	- Fix Turret losing target at diagonals
+	- Track current height of the turret and return it to default once pulsation resumes
 	- Fix rotate gizmo's origin not being set to the selected entity
 	- Player shooting
 	- Player jump cooldown, don't allow jump until a certian time interval has passed, even if we're grounded

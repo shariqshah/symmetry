@@ -25,9 +25,11 @@ void player_init(struct Player* player, struct Scene* scene)
 {
 	struct Game_State* game_state = game_state_get();
     entity_init(player, "Player", &scene->root_entity);
-    player->base.flags   |= EF_ACTIVE;
-    player->base.id      =  1;
-    player->base.type    =  ET_PLAYER;
+    player->base.flags            |= EF_ACTIVE;
+    player->base.id               =  1;
+    player->base.type             =  ET_PLAYER;
+	player->base.bounding_box.min = (vec3){ -1.5f, -1.5f, -1.0f };
+	player->base.bounding_box.max = (vec3){  1.5f,  1.5f,  1.0f };
 
     struct Hashmap* config = game_state->cvars;
     player->move_speed            = hashmap_float_get(config, "player_move_speed");

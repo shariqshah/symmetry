@@ -269,7 +269,7 @@ void event_manager_subscribe_with_object(struct Event_Manager* event_manager, in
 	for(int i = 0; i < MAX_EVENT_SUBSCRIPTIONS; i++)
 	{
 		struct Event_Subscription* subscription = &event_manager->event_subsciptions[i];
-		if(subscription->type == EST_WITH_OBJECT && subscription->event_type == event_type && subscription->handler_with_object == handler_func && subscription->subscriber != subscriber)
+		if(subscription->type == EST_WITH_OBJECT && subscription->event_type == event_type && subscription->handler_with_object == handler_func && subscription->subscriber == subscriber)
 		{
 			log_message("Already subscibed to %s event", event_name_get(event_type));
 			subscribed = true;

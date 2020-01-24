@@ -7,6 +7,14 @@ struct Parser_Object;
 struct Entity;
 struct Hashmap;
 
+enum Turret_State
+{
+	TURRET_DEFAULT = 0,
+	TURRET_ALERT,
+	TURRET_ATTACK,
+	TURRET_STATE_MAX
+};
+
 void          enemy_init(struct Enemy* enemy, int type);
 void          enemy_update_physics(struct Enemy* enemy, struct Scene* scene, float dt);
 void          enemy_update(struct Enemy* enemy, struct Scene* scene, float dt);

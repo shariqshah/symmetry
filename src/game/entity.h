@@ -79,14 +79,14 @@ enum Entity_Ray_Mask
 
 struct Transform
 {
-    vec3                position;
-    vec3                scale;
-    quat                rotation;
-    mat4                trans_mat;
-    bool                is_modified;
-    bool                sync_physics;
-    struct Entity*      parent;
-    struct Entity**     children;
+    vec3            position;
+    vec3            scale;
+    quat            rotation;
+    mat4            trans_mat;
+    bool            is_modified;
+    bool            sync_physics;
+    struct Entity*  parent;
+    struct Entity** children;
 };
 
 struct Entity
@@ -197,6 +197,7 @@ struct Enemy
 	int                  type;
 	int                  health;
 	int                  damage;
+	int                  current_state;
 	struct Static_Mesh*  mesh;
 	struct Sound_Source* weapon_sound;
 	union
@@ -206,6 +207,18 @@ struct Enemy
 			float turn_speed;
 			float max_turn_angle;
 			bool  turn_direction_positive;
+			bool  pulsate;
+			bool  scan;
+			float pulsate_speed_scale;
+			float pulsate_height;
+			float attack_cooldown;
+			float time_elapsed_since_attack;
+			float time_elapsed_since_alert;
+			float alert_cooldown;
+			float vision_range;
+			vec4  color_default;
+			vec4  color_alert;
+			vec4  color_attack;
 		}Turret;
 	};
 };

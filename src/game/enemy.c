@@ -14,10 +14,12 @@
 
 #include <string.h>
 #include <math.h>
+#include <assert.h>
 
 static void enemy_on_scene_loaded(struct Event* event, void* enemy_ptr);
 static void enemy_update_physics_turret(struct Enemy* enemy, struct Game_State* game_state, float fixed_dt);
 static void enemy_update_ai_turret(struct Enemy* enemy, struct Game_State* game_state, float dt);
+static void enemy_state_set_turret(struct Enemy* enemy, int state);
 
 void enemy_init(struct Enemy* enemy, int type)
 {
@@ -32,13 +34,24 @@ void enemy_init(struct Enemy* enemy, int type)
 	{
 	case ENEMY_TURRET:
 	{
-		enemy->health = 100;
-		enemy->damage = 10;
-		enemy->Turret.turn_direction_positive = true;
-		enemy->Turret.turn_speed = 10.f;
-		enemy->Turret.max_turn_angle = 60.f;
-		break;
+		enemy->health                           = 100;
+		enemy->damage                           = 10;
+		enemy->Turret.turn_direction_positive   = true;
+		enemy->Turret.scan                      = false;
+		enemy->Turret.turn_speed                = 10.f;
+		enemy->Turret.max_turn_angle            = 60.f;
+		enemy->Turret.pulsate_height            = 1.5f;
+		enemy->Turret.pulsate_speed_scale       = 0.1f;
+		enemy->Turret.attack_cooldown           = 0.05f;
+		enemy->Turret.alert_cooldown            = 1.f;
+		enemy->Turret.color_default             = (vec4){ 0.f, 1.f, 1.f, 1.f };
+		enemy->Turret.color_alert               = (vec4){ 1.f, 1.f, 0.f, 1.f };
+		enemy->Turret.color_attack              = (vec4){ 1.f, 0.f, 0.f, 1.f };
+		enemy->Turret.time_elapsed_since_alert  = 0.f;
+		enemy->Turret.time_elapsed_since_attack = 0.f;
+		enemy->Turret.vision_range              = 15.f;
 	}
+	break;
 	default:
 		log_error("enemy:init", "Unsupported Enemy Type");
 		break;
@@ -70,7 +83,7 @@ void enemy_static_mesh_set(struct Enemy* enemy, const char* geometry_filename, i
 
 void enemy_update(struct Enemy* enemy, struct Scene* scene, float dt)
 {
-	static float enemy_update_interval = 1.f / 60.f;
+	static float enemy_update_interval = 1.f / 120.f;
 	static float time_elapsed_since_last_update = 0.f;
 
 	time_elapsed_since_last_update += dt;
@@ -169,60 +182,193 @@ void enemy_on_scene_loaded(struct Event* event, void* enemy_ptr)
 			enemy->weapon_sound = (struct Sound_Source*)child;
 	}
 
-	if(enemy->mesh) enemy->mesh->base.flags |= EF_TRANSIENT;
-	if(enemy->weapon_sound) enemy->weapon_sound->base.flags |= EF_TRANSIENT;
+	if(enemy->mesh)
+		enemy->mesh->base.flags |= EF_TRANSIENT;
+	else
+		log_error("enemy:on_scene_loaded", "Could not find mesh child entity for enemy %s", enemy->base.name);
+	if(enemy->weapon_sound) 
+		enemy->weapon_sound->base.flags |= EF_TRANSIENT;
+	else
+		log_error("enemy:on_scene_loaded", "Could not find weapon_sound child entity for enemy %s", enemy->base.name);
 
 	// Do other post-scene-load initialization stuff per enemy type here
+	switch(enemy->type)
+	{
+	case ENEMY_TURRET:
+		enemy_state_set_turret(enemy, TURRET_DEFAULT);
+		break;
+	}
 }
 
-void enemy_update_physics_turret(struct Enemy* enemy, struct Game_State* game_state, float dt)
+void enemy_update_physics_turret(struct Enemy* enemy, struct Game_State* game_state, float fixed_dt)
 {
 	/* Turning/Rotation */
-	static vec3 turn_axis = { 0.f, 1.f, 0.f };
-	float current_yaw = quat_get_yaw(&enemy->base.transform.rotation);
-
-	float yaw = enemy->Turret.turn_speed * 1.f * dt;
-	if(!enemy->Turret.turn_direction_positive)
-		yaw *= -1.f;
-
-	current_yaw += yaw;
-	if(current_yaw >= enemy->Turret.max_turn_angle)
+	static vec3 yaw_axis = { 0.f, 1.f, 0.f };
+	if(enemy->Turret.scan)
 	{
-		yaw = 0.f;
-		enemy->Turret.turn_direction_positive = false;
-	}
-	else if(current_yaw <= -enemy->Turret.max_turn_angle)
-	{
-		yaw = 0.f;
-		enemy->Turret.turn_direction_positive = true;
-	}
+		float current_yaw = quat_get_yaw(&enemy->base.transform.rotation);
 
-	if(yaw != 0.f)
-		transform_rotate(enemy, &turn_axis, yaw, TS_LOCAL);
+		float yaw = enemy->Turret.turn_speed * 1.f * fixed_dt;
+		if(!enemy->Turret.turn_direction_positive)
+			yaw *= -1.f;
+
+		current_yaw += yaw;
+		if(current_yaw >= enemy->Turret.max_turn_angle)
+		{
+			yaw = 0.f;
+			enemy->Turret.turn_direction_positive = false;
+		}
+		else if(current_yaw <= -enemy->Turret.max_turn_angle)
+		{
+			yaw = 0.f;
+			enemy->Turret.turn_direction_positive = true;
+		}
+
+		if(yaw != 0.f)
+			transform_rotate(enemy, &yaw_axis, yaw, TS_LOCAL);
+	}
+	else if(!enemy->Turret.scan)
+	{
+		float current_yaw = quat_get_yaw(&enemy->base.transform.rotation);
+		if(fabsf(current_yaw) + EPSILON != 0.f)
+		{
+			float yaw = enemy->Turret.turn_speed * 1.f * fixed_dt;
+			if(current_yaw > 0.f)
+				yaw *= -1.f;
+
+			transform_rotate(enemy, &yaw_axis, yaw, TS_LOCAL);
+		}
+	}
 
 	/* Movement */
-	float ticks = (float)platform_ticks_get();
-	float pulsate_speed_scale = 0.1f;
-	float pulsate_height = 1.5f;
-	vec3 translation = { 0.f };
-	transform_get_absolute_position(enemy, &translation);
-	translation.y += sinf(TO_RADIANS(ticks * pulsate_speed_scale)) * dt * pulsate_height;
-	transform_set_position(enemy, &translation);
+	if(enemy->Turret.pulsate)
+	{
+		float ticks = (float)platform_ticks_get();
+		vec3 translation = { 0.f };
+		//transform_get_absolute_position(enemy->mesh, &translation);
+		vec3_assign(&translation, &enemy->mesh->base.transform.position);
+		translation.y += sinf(TO_RADIANS(ticks * enemy->Turret.pulsate_speed_scale)) * fixed_dt * enemy->Turret.pulsate_height;
+		transform_set_position(enemy->mesh, &translation);
+	}
 }
 
 void enemy_update_ai_turret(struct Enemy* enemy, struct Game_State* game_state, float dt)
 {
 	struct Scene* scene = game_state->scene;
-	float turret_vision_range = 5.f;
+
 	struct Ray turret_ray;
-	transform_get_absolute_position(enemy, &turret_ray.origin);
+	transform_get_absolute_position(enemy->mesh, &turret_ray.origin);
 	transform_get_forward(enemy, &turret_ray.direction);
-	im_ray(&turret_ray, turret_vision_range, (vec4) { 0.f, 1.f, 1.f, 1.f }, 4);
-	struct Entity* player = scene_ray_intersect_closest(scene, &turret_ray, ERM_PLAYER);
-	if(player)
+	switch(enemy->current_state)
 	{
-		float distance = scene_entity_distance(scene, player, enemy);
-		if(distance <= turret_vision_range)
-			log_message("Player Intersected, distance: %.3f", distance);
+	case TURRET_DEFAULT:
+	{
+		im_ray(&turret_ray, enemy->Turret.vision_range, enemy->Turret.color_default, 4);
+		struct Entity* player = scene_ray_intersect_closest(scene, &turret_ray, ERM_PLAYER);
+		if(player)
+		{
+			float distance = scene_entity_distance(scene, player, enemy);
+			if(distance <= enemy->Turret.vision_range)
+			{
+				enemy_state_set_turret(enemy, TURRET_ALERT);
+				log_message("Player spotted");
+			}
+		}
+	}
+	break;
+	case TURRET_ALERT:
+	{
+		enemy->Turret.time_elapsed_since_alert += dt;
+		if(enemy->Turret.time_elapsed_since_alert >= enemy->Turret.alert_cooldown)
+		{
+			enemy_state_set_turret(enemy, TURRET_DEFAULT);
+			break;
+		}
+		im_ray(&turret_ray, enemy->Turret.vision_range, enemy->Turret.color_alert, 4);
+		struct Entity* player = scene_ray_intersect_closest(scene, &turret_ray, ERM_PLAYER);
+		if(player)
+		{
+			float distance = scene_entity_distance(scene, player, enemy);
+			if(distance <= enemy->Turret.vision_range)
+			{
+				enemy_state_set_turret(enemy, TURRET_ATTACK);
+				log_message("Player spotted");
+			}
+		}
+	}
+	break;
+	case TURRET_ATTACK:
+	{
+		enemy->Turret.time_elapsed_since_attack += dt;
+		if(enemy->Turret.time_elapsed_since_attack >= enemy->Turret.attack_cooldown)
+		{
+			im_ray(&turret_ray, enemy->Turret.vision_range, enemy->Turret.color_attack, 4);
+			struct Entity* player = scene_ray_intersect_closest(scene, &turret_ray, ERM_PLAYER);
+			bool target_lost = false;
+			if(player)
+			{
+				float distance = scene_entity_distance(scene, player, enemy);
+				if(distance <= enemy->Turret.vision_range)
+				{
+					enemy->Turret.time_elapsed_since_attack = 0.f;
+					sound_source_play(game_state->sound, enemy->weapon_sound);
+					log_message("Player spotted and attacked");
+				}
+				else
+				{
+					target_lost = true;
+				}
+			}
+			else
+			{
+				target_lost = true;
+			}
+
+			if(target_lost)
+			{
+				enemy_state_set_turret(enemy, TURRET_ALERT);
+				log_message("Target lost");
+			}
+		}
+	}
+	break;
+	}
+}
+
+void enemy_state_set_turret(struct Enemy* enemy, int state)
+{
+	assert(state >= 0 && state < TURRET_STATE_MAX);
+	struct Model* model = &enemy->mesh->model;
+	enemy->current_state = state;
+
+	switch(enemy->current_state)
+	{
+	case TURRET_DEFAULT:
+	{
+		vec4_assign(&model->material_params[MMP_DIFFUSE_COL].val_vec4, &enemy->Turret.color_default);
+		enemy->Turret.time_elapsed_since_alert = 0.f;
+		enemy->Turret.time_elapsed_since_attack = 0.f;
+		enemy->Turret.pulsate = true;
+		enemy->Turret.scan = false;
+		vec3 default_position = { 0.f };
+		transform_set_position(enemy->mesh, &default_position);
+	}
+	break;
+	case TURRET_ALERT:
+	{
+		enemy->Turret.pulsate = false;
+		enemy->Turret.scan = true;
+		vec4_assign(&model->material_params[MMP_DIFFUSE_COL].val_vec4, &enemy->Turret.color_alert);
+		enemy->Turret.time_elapsed_since_alert = 0.f;
+	}
+	break;
+	case TURRET_ATTACK:
+	{
+		enemy->Turret.pulsate = false;
+		enemy->Turret.scan = false;
+		vec4_assign(&model->material_params[MMP_DIFFUSE_COL].val_vec4, &enemy->Turret.color_attack);
+		enemy->Turret.time_elapsed_since_attack = 0.f;
+	}
+	break;
 	}
 }

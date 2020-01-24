@@ -1682,6 +1682,8 @@ void editor_window_scene_hierarchy(struct nk_context* context, struct Editor* ed
 		nk_layout_row_dynamic(context, 380, 1);
 		if(nk_group_begin(context, "Entity Name", NK_WINDOW_SCROLL_AUTO_HIDE))
 		{
+			editor_show_entity_in_list(editor, context, scene, &scene->player);
+
 			if(nk_tree_push(context, NK_TREE_TAB, "Cameras", NK_MAXIMIZED))
 			{
 				for(int i = 0; i < MAX_SCENE_CAMERAS; i++)       

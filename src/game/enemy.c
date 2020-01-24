@@ -34,22 +34,25 @@ void enemy_init(struct Enemy* enemy, int type)
 	{
 	case ENEMY_TURRET:
 	{
-		enemy->health                           = 100;
-		enemy->damage                           = 10;
-		enemy->Turret.turn_direction_positive   = true;
-		enemy->Turret.scan                      = false;
-		enemy->Turret.turn_speed                = 10.f;
-		enemy->Turret.max_turn_angle            = 60.f;
-		enemy->Turret.pulsate_height            = 1.5f;
-		enemy->Turret.pulsate_speed_scale       = 0.1f;
-		enemy->Turret.attack_cooldown           = 0.05f;
-		enemy->Turret.alert_cooldown            = 1.f;
-		enemy->Turret.color_default             = (vec4){ 0.f, 1.f, 1.f, 1.f };
-		enemy->Turret.color_alert               = (vec4){ 1.f, 1.f, 0.f, 1.f };
-		enemy->Turret.color_attack              = (vec4){ 1.f, 0.f, 0.f, 1.f };
-		enemy->Turret.time_elapsed_since_alert  = 0.f;
-		enemy->Turret.time_elapsed_since_attack = 0.f;
-		enemy->Turret.vision_range              = 15.f;
+		enemy->health                            = 100;
+		enemy->damage                            = 10;
+		enemy->Turret.yaw_direction_positive     = true;
+		enemy->Turret.scan                       = false;
+		enemy->Turret.turn_speed_default         = 50.f;
+		enemy->Turret.turn_speed_when_targetting = 100.f;
+		enemy->Turret.turn_speed_current         = enemy->Turret.turn_speed_default;
+		enemy->Turret.max_yaw                    = 60.f;
+		enemy->Turret.target_yaw                 = 0.f;
+		enemy->Turret.pulsate_height             = 1.5f;
+		enemy->Turret.pulsate_speed_scale        = 0.1f;
+		enemy->Turret.attack_cooldown            = 0.05f;
+		enemy->Turret.alert_cooldown             = 1.f;
+		enemy->Turret.color_default              = (vec4){ 0.f, 1.f, 1.f, 1.f };
+		enemy->Turret.color_alert                = (vec4){ 1.f, 1.f, 0.f, 1.f };
+		enemy->Turret.color_attack               = (vec4){ 1.f, 0.f, 0.f, 1.f };
+		enemy->Turret.time_elapsed_since_alert   = 0.f;
+		enemy->Turret.time_elapsed_since_attack  = 0.f;
+		enemy->Turret.vision_range               = 15.f;
 	}
 	break;
 	default:
@@ -83,7 +86,7 @@ void enemy_static_mesh_set(struct Enemy* enemy, const char* geometry_filename, i
 
 void enemy_update(struct Enemy* enemy, struct Scene* scene, float dt)
 {
-	static float enemy_update_interval = 1.f / 120.f;
+	static float enemy_update_interval = 1.f / 60.f;
 	static float time_elapsed_since_last_update = 0.f;
 
 	time_elapsed_since_last_update += dt;
@@ -140,9 +143,9 @@ struct Enemy* enemy_read(struct Parser_Object* object, const char* name, struct 
 		{
 		case ENEMY_TURRET:
 		{
-			if(hashmap_value_exists(object->data, "turn_speed")) new_enemy->Turret.turn_speed = hashmap_float_get(object->data, "turn_speed");
-			if(hashmap_value_exists(object->data, "max_turn_angle")) new_enemy->Turret.max_turn_angle = hashmap_float_get(object->data, "max_turn_angle");
-			if(hashmap_value_exists(object->data, "turn_direction_positive")) new_enemy->Turret.turn_direction_positive = hashmap_bool_get(object->data, "turn_direction_positive");
+			if(hashmap_value_exists(object->data, "turn_speed")) new_enemy->Turret.turn_speed_default = hashmap_float_get(object->data, "turn_speed");
+			if(hashmap_value_exists(object->data, "max_turn_angle")) new_enemy->Turret.max_yaw = hashmap_float_get(object->data, "max_turn_angle");
+			if(hashmap_value_exists(object->data, "turn_direction_positive")) new_enemy->Turret.yaw_direction_positive = hashmap_bool_get(object->data, "turn_direction_positive");
 		}
 		break;
 		}
@@ -160,9 +163,9 @@ void enemy_write(struct Enemy* enemy, struct Hashmap* entity_data)
 	{
 	case ENEMY_TURRET:
 	{
-		hashmap_float_set(entity_data, "turn_speed", enemy->Turret.turn_speed);
-		hashmap_float_set(entity_data, "max_turn_angle", enemy->Turret.max_turn_angle);
-		hashmap_bool_set(entity_data, "turn_direction_positive", enemy->Turret.turn_direction_positive);
+		hashmap_float_set(entity_data, "turn_speed", enemy->Turret.turn_speed_default);
+		hashmap_float_set(entity_data, "max_turn_angle", enemy->Turret.max_yaw);
+		hashmap_bool_set(entity_data, "turn_direction_positive", enemy->Turret.yaw_direction_positive);
 	}
 	break;
 	}
@@ -208,20 +211,20 @@ void enemy_update_physics_turret(struct Enemy* enemy, struct Game_State* game_st
 	{
 		float current_yaw = quat_get_yaw(&enemy->base.transform.rotation);
 
-		float yaw = enemy->Turret.turn_speed * 1.f * fixed_dt;
-		if(!enemy->Turret.turn_direction_positive)
+		float yaw = enemy->Turret.turn_speed_current * 1.f * fixed_dt;
+		if(!enemy->Turret.yaw_direction_positive)
 			yaw *= -1.f;
 
 		current_yaw += yaw;
-		if(current_yaw >= enemy->Turret.max_turn_angle)
+		if(current_yaw >= enemy->Turret.max_yaw)
 		{
 			yaw = 0.f;
-			enemy->Turret.turn_direction_positive = false;
+			enemy->Turret.yaw_direction_positive = false;
 		}
-		else if(current_yaw <= -enemy->Turret.max_turn_angle)
+		else if(current_yaw <= -enemy->Turret.max_yaw)
 		{
 			yaw = 0.f;
-			enemy->Turret.turn_direction_positive = true;
+			enemy->Turret.yaw_direction_positive = true;
 		}
 
 		if(yaw != 0.f)
@@ -229,11 +232,15 @@ void enemy_update_physics_turret(struct Enemy* enemy, struct Game_State* game_st
 	}
 	else if(!enemy->Turret.scan)
 	{
+		float epsilon = 0.5f;
 		float current_yaw = quat_get_yaw(&enemy->base.transform.rotation);
-		if(fabsf(current_yaw) + EPSILON != 0.f)
+		float difference = enemy->Turret.target_yaw - current_yaw;
+		//if(fabsf(current_yaw) > enemy->Turret.target_yaw - EPSILON && fabsf(current_yaw) < enemy->Turret.target_yaw + EPSILON)
+		if(fabsf(difference) > epsilon)
 		{
-			float yaw = enemy->Turret.turn_speed * 1.f * fixed_dt;
-			if(current_yaw > 0.f)
+			//log_message("Difference %.5f", difference);
+			float yaw = enemy->Turret.turn_speed_current * 1.f * fixed_dt;
+			if(current_yaw > enemy->Turret.target_yaw)
 				yaw *= -1.f;
 
 			transform_rotate(enemy, &yaw_axis, yaw, TS_LOCAL);
@@ -297,6 +304,59 @@ void enemy_update_ai_turret(struct Enemy* enemy, struct Game_State* game_state, 
 		}
 	}
 	break;
+	case TURRET_ACQUIRE_TARGET:
+	{
+		struct Entity* player = scene_ray_intersect_closest(scene, &turret_ray, ERM_PLAYER);
+		if(player)
+		{
+			float distance = scene_entity_distance(scene, &scene->player, enemy);
+			if(distance <= enemy->Turret.vision_range)
+			{
+				enemy_state_set_turret(enemy, TURRET_ATTACK);
+				break;
+			}
+		}
+
+		float distance = scene_entity_distance(scene, &scene->player, enemy);
+		if(distance <= enemy->Turret.vision_range)
+		{
+			vec3 player_pos = { 0.f };
+			transform_get_absolute_position(&scene->player, &player_pos);
+			vec3 dir_to_player = { 0.f };
+			turret_ray.origin.y = 0.f;
+			player_pos.y = 0.f;
+			vec3_sub(&dir_to_player, &player_pos, &turret_ray.origin);
+			vec3_norm(&dir_to_player, &dir_to_player);
+			im_ray_origin_dir(turret_ray.origin, dir_to_player, 10.f, (vec4) { 0.f, 1.f, 0.f, 1.f }, 5);
+			//dir_to_player.y = 0.f;
+			//turret_ray.direction.y = 0.f;
+			float yaw_required_to_face_player = vec3_angle(&dir_to_player, &turret_ray.direction);
+			float current_yaw = quat_get_yaw(&enemy->base.transform.rotation);
+			debug_vars_show_float("Yaw Required", yaw_required_to_face_player);
+			float new_target_yaw = yaw_required_to_face_player + current_yaw;
+			if(fabsf(new_target_yaw) > enemy->Turret.max_yaw)
+			{
+				log_message("Can't face player");
+				log_message("New Yaw : %.3f", new_target_yaw);
+				log_message("Max yaw : %.3f", enemy->Turret.max_yaw);
+				log_message("Cur yaw : %.3f", current_yaw);
+				log_message("Ang bet : %.3f", yaw_required_to_face_player);
+				enemy_state_set_turret(enemy, TURRET_ALERT);
+			}
+			else
+			{
+				float difference = fabsf(enemy->Turret.target_yaw - new_target_yaw);
+				if(difference > 1.f)
+					enemy->Turret.target_yaw = new_target_yaw;
+			}
+		}
+		else
+		{
+			log_message("No target in range");
+			enemy_state_set_turret(enemy, TURRET_ALERT);
+		}
+	}
+	break;
 	case TURRET_ATTACK:
 	{
 		enemy->Turret.time_elapsed_since_attack += dt;
@@ -304,7 +364,6 @@ void enemy_update_ai_turret(struct Enemy* enemy, struct Game_State* game_state, 
 		{
 			im_ray(&turret_ray, enemy->Turret.vision_range, enemy->Turret.color_attack, 4);
 			struct Entity* player = scene_ray_intersect_closest(scene, &turret_ray, ERM_PLAYER);
-			bool target_lost = false;
 			if(player)
 			{
 				float distance = scene_entity_distance(scene, player, enemy);
@@ -316,18 +375,13 @@ void enemy_update_ai_turret(struct Enemy* enemy, struct Game_State* game_state, 
 				}
 				else
 				{
-					target_lost = true;
+					enemy_state_set_turret(enemy, TURRET_ACQUIRE_TARGET);
+					log_message("Target too far");
 				}
 			}
 			else
 			{
-				target_lost = true;
-			}
-
-			if(target_lost)
-			{
-				enemy_state_set_turret(enemy, TURRET_ALERT);
-				log_message("Target lost");
+				enemy_state_set_turret(enemy, TURRET_ACQUIRE_TARGET);
 			}
 		}
 	}
@@ -350,6 +404,8 @@ void enemy_state_set_turret(struct Enemy* enemy, int state)
 		enemy->Turret.time_elapsed_since_attack = 0.f;
 		enemy->Turret.pulsate = true;
 		enemy->Turret.scan = false;
+		enemy->Turret.target_yaw = 0.f;
+		enemy->Turret.turn_speed_current = enemy->Turret.turn_speed_default;
 		vec3 default_position = { 0.f };
 		transform_set_position(enemy->mesh, &default_position);
 	}
@@ -357,9 +413,18 @@ void enemy_state_set_turret(struct Enemy* enemy, int state)
 	case TURRET_ALERT:
 	{
 		enemy->Turret.pulsate = false;
+		enemy->Turret.turn_speed_current = enemy->Turret.turn_speed_default;
 		enemy->Turret.scan = true;
+		enemy->Turret.target_yaw = enemy->Turret.yaw_direction_positive ? enemy->Turret.max_yaw : -enemy->Turret.max_yaw;
 		vec4_assign(&model->material_params[MMP_DIFFUSE_COL].val_vec4, &enemy->Turret.color_alert);
 		enemy->Turret.time_elapsed_since_alert = 0.f;
+	}
+	break;
+	case TURRET_ACQUIRE_TARGET:
+	{
+		vec4_assign(&model->material_params[MMP_DIFFUSE_COL].val_vec4, &enemy->Turret.color_attack);
+		enemy->Turret.scan = false;
+		enemy->Turret.turn_speed_current = enemy->Turret.turn_speed_when_targetting;
 	}
 	break;
 	case TURRET_ATTACK:
@@ -367,7 +432,7 @@ void enemy_state_set_turret(struct Enemy* enemy, int state)
 		enemy->Turret.pulsate = false;
 		enemy->Turret.scan = false;
 		vec4_assign(&model->material_params[MMP_DIFFUSE_COL].val_vec4, &enemy->Turret.color_attack);
-		enemy->Turret.time_elapsed_since_attack = 0.f;
+		enemy->Turret.time_elapsed_since_attack = enemy->Turret.attack_cooldown;
 	}
 	break;
 	}

@@ -204,9 +204,12 @@ struct Enemy
 	{
 		struct
 		{
-			float turn_speed;
-			float max_turn_angle;
-			bool  turn_direction_positive;
+			float turn_speed_default;
+			float turn_speed_when_targetting;
+			float turn_speed_current;
+			float max_yaw;
+			float target_yaw;
+			bool  yaw_direction_positive;
 			bool  pulsate;
 			bool  scan;
 			float pulsate_speed_scale;

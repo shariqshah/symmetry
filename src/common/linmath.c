@@ -204,6 +204,12 @@ float vec3_dot(vec3* v1, vec3* v2)
 		v1->z * v2->z);
 }
 
+float vec3_angle(vec3* dir1, vec3* dir2)
+{
+	float dot = vec3_dot(dir1, dir2);
+	return TO_DEGREES(acosf(dot));
+}
+
 
 void vec4_fill(vec4* res, float x, float y, float z, float w)
 {

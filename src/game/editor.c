@@ -2226,7 +2226,7 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 					{
 					case ENEMY_TURRET:
 					{
-						nk_property_float(context, "Turn Speed", 0.f, &enemy->Turret.turn_speed, FLT_MAX, 0.5f, 0.1f);
+						nk_property_float(context, "Turn Speed", 0.f, &enemy->Turret.turn_speed_default, FLT_MAX, 0.5f, 0.1f);
 					}
 					break;
 					}

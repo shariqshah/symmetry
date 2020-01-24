@@ -16,12 +16,12 @@ Player
 {
 	type : 2
 	scale : 1.000 1.000 1.000
-	rotation : 0.000 0.102 0.000 -0.997
+	rotation : 0.000 0.971 0.000 -0.249
 	active : true
-	position : -8.511 2.857 27.549
-	bouding_box_min : -0.500 -0.500 -0.500
+	position : -30.395 2.857 -17.708
+	bouding_box_min : -1.500 -1.500 -1.000
 	name : Player
-	bouding_box_max : 0.500 0.500 0.500
+	bouding_box_max : 1.500 1.500 1.000
 	camera_clear_color : 0.310 0.412 0.529 1.000
 }
 
@@ -127,7 +127,7 @@ Scene_Entity_Entry
 Scene_Entity_Entry
 {
 	scale : 1.000 1.000 1.000
-	rotation : 0.000 -0.158 0.000 0.988
+	rotation : 0.000 0.001 0.000 1.001
 	position : 0.000 3.000 0.000
 	filename : turret
 	name : Turret
@@ -136,7 +136,7 @@ Scene_Entity_Entry
 Scene_Entity_Entry
 {
 	scale : 1.000 1.000 1.000
-	rotation : 0.000 0.001 0.000 1.000
+	rotation : 0.000 -0.348 0.000 0.938
 	position : -13.000 3.000 4.000
 	filename : turret
 	name : Turret
@@ -145,8 +145,8 @@ Scene_Entity_Entry
 Scene_Entity_Entry
 {
 	scale : 1.000 1.000 1.000
-	rotation : 0.000 0.005 0.000 1.000
-	position : 12.000 3.000 6.000
+	rotation : 0.000 -0.002 0.000 1.000
+	position : -33.000 3.000 8.000
 	filename : turret
 	name : Turret
 }
@@ -154,7 +154,7 @@ Scene_Entity_Entry
 Scene_Entity_Entry
 {
 	scale : 1.000 1.000 1.000
-	rotation : 0.000 -0.450 0.000 0.893
+	rotation : 0.000 -0.288 0.000 0.958
 	position : -7.000 3.000 2.000
 	filename : turret
 	name : Turret
@@ -163,7 +163,7 @@ Scene_Entity_Entry
 Scene_Entity_Entry
 {
 	scale : 1.000 1.000 1.000
-	rotation : 0.000 0.423 0.000 0.906
+	rotation : 0.000 0.000 0.000 1.000
 	position : 5.000 3.000 6.000
 	filename : turret
 	name : Turret

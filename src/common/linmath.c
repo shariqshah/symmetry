@@ -204,10 +204,24 @@ float vec3_dot(vec3* v1, vec3* v2)
 		v1->z * v2->z);
 }
 
-float vec3_angle(vec3* dir1, vec3* dir2)
+float vec3_angle(vec3* from, vec3* to)
 {
-	float dot = vec3_dot(dir1, dir2);
-	return TO_DEGREES(acosf(dot));
+	float dot = vec3_dot(from, to);
+	float len_from = vec3_len(from);
+	float len_to = vec3_len(to);
+	return TO_DEGREES(acosf(dot / (len_from * len_to)));
+}
+
+float vec3_signed_angle(vec3* from, vec3* to, vec3* axis)
+{
+	float unsigned_angle = vec3_angle(from, to);
+
+	float cross_x = from->y * to->z - from->z * to->z;
+	float cross_y = from->z * to->x - from->x * to->z;
+	float cross_z = from->x * to->y - from->y * to->x;
+	float sign = (axis->x * cross_x + axis->y * cross_y + axis->z * cross_z) < 0.f ? -1.f : 1.f;
+
+	return unsigned_angle * sign;
 }
 
 

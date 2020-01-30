@@ -91,7 +91,8 @@ int   vec3_equals(vec3* v1, vec3* v2);
 float vec3_len(vec3* val);
 float vec3_distance(vec3 p1, vec3 p2);
 float vec3_dot(vec3* v1, vec3* v2);
-float vec3_angle(vec3* dir1, vec3* dir2);
+float vec3_angle(vec3* from, vec3* to);
+float vec3_signed_angle(vec3* from, vec3* to, vec3* axis);
 
 /* vec4 */
 int   vec4_equals(vec4* v1, vec4* v2);

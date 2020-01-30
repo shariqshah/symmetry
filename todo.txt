@@ -3,7 +3,6 @@ Todo:
 	- Add all sound source properties to propery inspector
 	- Add turret properties to property inspector
 	- Add another ambient sound_source entity as child to enemy entity
-	- Fix Turret losing target at diagonals
 	- Fix rotate gizmo's origin not being set to the selected entity
 	- Player shooting
 	- Player jump cooldown, don't allow jump until a certian time interval has passed, even if we're grounded
@@ -415,3 +414,4 @@ Done:
 	* Introduced fixed time step interval which can be configured and be used for movement and other physics related updates
 	* Made movement framerate independent
 	* Implement turret state machine
+	* Fix Turret losing target at diagonals

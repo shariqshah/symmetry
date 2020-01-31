@@ -1,4 +1,9 @@
 Todo:
+	- Figure out how to write Scene/Level specific logic, save/load it and be able to differenciate it according to specific scene
+		- How to specify and track level objectives and track them
+		- How to move from one scene to another
+		- Level-wide events and responses
+		- Main menu as a level or just have a pause menu where game's options etc can be changed?
 	- Implement separate property window for player related variables that can be shown in the editor similar to renderer settings etc
 	- Add all sound source properties to propery inspector
 	- Fix rotate gizmo's origin not being set to the selected entity
@@ -14,7 +19,6 @@ Todo:
 		- Basic Enemy
 		- Main Menu Scene
 		? Split this todo into gameplay/engine todos
-	- Check if running in a lower frame rate affects movement
 	- Remove ODE completely
 	? Write entity flags to scene file or when saving entity to file?
 	? Add scene init/de-init function hashmap that maps a function that should be called when scene is loaded and unloaded. Save this to file for every scene or map functions based on the name of the scene?
@@ -27,47 +31,31 @@ Todo:
 	  a whole enitity hierarchy when saving the entity. When loading the entity, we load the entity and see which entites are attached to it and get references to those entity in the scene, if they are not loaded we could 
 	  either load them there and then or complain to the scene that we couldn't find the attachements and just carry on as usual
 	- Add editor undo for transformation operations
-	- Decide how to handle scale when checking sphere-ray intersection
-	- Add material export for blender exporter?
 	- Show current filename of the scene we are working on and whether we have made any changes to it since the last time we saved
-	- Check if we still need to rotate by 90 degrees when exporting from blender
 	- Fire an event when the game mode is changed so that editor camera state and other game related systems know when to update
 	- Add config file reloading and fire event that notifies potential listeners to update values from the new config file
 	- Command to reload entities only
-	- Serialize player, camera properties to file
 	- Change mouse behaviour to lock cursor when looking around so as not to interfere with gui elements when in editor mode
 	- Resource manager that loads/unloads/reloads all types of assets and caches them when required so that we don't end up constantly loading files from disk
 	- Folder management api to create/delete folders when none exist. Dirent would suffice for our simple needs?
 	? Entity creator window to create new types of entities and write them
 	  to disk
-	? Maybe remove physics engine and ode all together if we're not using it or investigate the memory leaks that it causes if we're going to keep it?
 	- Disable editor event recievers on game mode change
 	- Key binding and function to snap editor camera to selected entity
 	  location
 	- Key binding and function to orient entity to camera orientation
 	- Mouse warp to opposite side of the window when it reaches bounds
 	- Add other axis combinations like YZ and XY to transform tool
-	- Transformation space selection for translation, rotation and scale.
+	? Transformation space selection for translation, rotation and scale.
 	- Add warning to genie build script when running on windows and WindowsSdkVersion cannot be found. This happens when the script is not run from vcvarsall command prompt
-	- Refactor all global application state into 'Application_Context' struct. A single global instance of which is available everywhere
-	? Improve bounding sphere calculation
 	- Change the way lights are set as uniforms to remove snprintf calls per frame for every light attribute
 	- Command interface that allows applying commands to selected entity like r x 30 would rotate the selected entity or entities on x axis by 30 degrees
-	- Player projectiles and sounds
 	- Space partitioning and scene handling
-	- Move Gui_State and Editor_State into game_state and modify usage as needed
 	- Get editor camera speed and other settings from config file
 	- Recompile Soloud on windows to use static sdl2 backend
 	- Refactor input sub-system to be the same as other sub-systems embedded
 	  in game state.
-	- Figure out a way to reduce of remove snprintf calls from render code
 	- Implement storing console's scroll location and restore it when console is toggled
-	- Implement collision/physics data serialization, read and write.
-	- Physics forces/torque etc
-	- Implement physics debug visualizations for other primitives and tri mesh shapes
-	- Serializing/Deserializing physics data
-	- Proper implementation of Scene struct with per-scene settings and configurations that can be loaded/saved to file instead of just dumping entities into a file
-	- Necessary basic editor additions like placing objects, scaling, rotating etc
 	- Add fallback shader
 	- Implement Game States
 	- Store Materials in new format supported by parser

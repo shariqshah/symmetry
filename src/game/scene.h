@@ -53,7 +53,7 @@ struct Camera*       scene_camera_find(struct Scene* scene, const char* name);
 struct Static_Mesh*  scene_static_mesh_find(struct Scene* scene, const char* name);
 struct Sound_Source* scene_sound_source_find(struct Scene* scene, const char* name);
 struct Entity*       scene_base_entity_get(struct Scene* scene, int id, int type);
-struct Enemy*        scene_enemy_get(struct Scene* scene, const char* name);
+struct Enemy*        scene_enemy_find(struct Scene* scene, const char* name);
 
 void scene_entity_parent_set(struct Scene* scene, struct Entity* entity, struct Entity* parent);
 void scene_entity_parent_reset(struct Scene* scene, struct Entity* entity); // Sets root entity as parent

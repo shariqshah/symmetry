@@ -737,3 +737,22 @@ void entity_rename(struct Entity* entity, const char* new_name)
 	memset(entity->name, '\0', MAX_ENTITY_NAME_LEN);
 	snprintf(entity->name, MAX_ENTITY_NAME_LEN, new_name);
 }
+
+int entity_get_num_children_of_type(struct Entity* entity, int type, struct Entity** in_children, int max_children)
+{
+	assert(type < ET_MAX && max_children >= 1);
+
+	int found_count = -1;
+	for(int i = 0; i < array_len(entity->transform.children); i++)
+	{
+		struct Entity* child = entity->transform.children[i];
+		if(!(child->flags & EF_MARKED_FOR_DELETION) && (child->flags & EF_ACTIVE) && child->type == type)
+		{
+			found_count++;
+			if(found_count == max_children)
+				break;
+			in_children[found_count] = child;
+		}
+	}
+	return found_count + 1;
+}

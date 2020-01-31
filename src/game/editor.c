@@ -41,6 +41,9 @@
 #include <limits.h>
 #include <math.h>
 
+#define LABEL_FLAGS_ALIGN_LEFT  NK_TEXT_ALIGN_MIDDLE | NK_TEXT_ALIGN_LEFT
+#define LABEL_FLAGS_ALIGN_RIGHT NK_TEXT_ALIGN_MIDDLE | NK_TEXT_ALIGN_RIGHT
+
 enum Editor_Tool
 {
 	EDITOR_TOOL_NORMAL = 0,
@@ -2226,7 +2229,25 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 					{
 					case ENEMY_TURRET:
 					{
-						nk_property_float(context, "Turn Speed", 0.f, &enemy->Turret.turn_speed_default, FLT_MAX, 0.5f, 0.1f);
+						nk_property_float(context, "Turn Speed Default", 0.f, &enemy->Turret.turn_speed_default, FLT_MAX, 0.5f, 0.1f);
+						nk_property_float(context, "Turn Speed Targetting", 0.f, &enemy->Turret.turn_speed_when_targetting, FLT_MAX, 0.5f, 0.1f);
+						nk_property_float(context, "Turn Speed Current", 0.f, &enemy->Turret.turn_speed_current, FLT_MAX, 0.5f, 0.1f);
+						nk_property_float(context, "Max Yaw", 0.f, &enemy->Turret.max_yaw, FLT_MAX, 0.5f, 0.1f);
+						nk_property_float(context, "Target Yaw", 0.f, &enemy->Turret.target_yaw, FLT_MAX, 0.5f, 0.1f);
+						nk_property_float(context, "Pulsate Speed Scale", 0.f, &enemy->Turret.pulsate_speed_scale, FLT_MAX, 0.5f, 0.1f);
+						nk_property_float(context, "Pulsate Height", 0.f, &enemy->Turret.pulsate_height, FLT_MAX, 0.5f, 0.1f);
+						nk_property_float(context, "Attack Cooldown", 0.f, &enemy->Turret.attack_cooldown, FLT_MAX, 0.5f, 0.1f);
+						nk_property_float(context, "Time since attack", 0.f, &enemy->Turret.time_elapsed_since_attack, FLT_MAX, 0.5f, 0.1f);
+						nk_property_float(context, "Time since alert", 0.f, &enemy->Turret.time_elapsed_since_alert, FLT_MAX, 0.5f, 0.1f);
+						nk_property_float(context, "Alert Cooldown", 0.f, &enemy->Turret.alert_cooldown, FLT_MAX, 0.5f, 0.1f);
+						nk_property_float(context, "Vision Range", 0.f, &enemy->Turret.vision_range, FLT_MAX, 0.5f, 0.1f);
+						nk_layout_row_dynamic(context, row_height, 2);
+						nk_label(context, "Yaw Positive",  LABEL_FLAGS_ALIGN_LEFT); nk_labelf(context, LABEL_FLAGS_ALIGN_LEFT, "%s", enemy->Turret.yaw_direction_positive ? "True" : "False");
+						nk_label(context, "Pulsate",       LABEL_FLAGS_ALIGN_LEFT); nk_labelf(context, LABEL_FLAGS_ALIGN_LEFT, "%s", enemy->Turret.pulsate ? "True" : "False");
+						nk_label(context, "Scan",          LABEL_FLAGS_ALIGN_LEFT); nk_labelf(context, LABEL_FLAGS_ALIGN_LEFT, "%s", enemy->Turret.scan ? "True" : "False");
+						nk_label(context, "Default Color", LABEL_FLAGS_ALIGN_LEFT); editor_widget_color_combov4(context, &enemy->Turret.color_default, 50, row_height * 2);
+						nk_label(context, "Alert Color",   LABEL_FLAGS_ALIGN_LEFT); editor_widget_color_combov4(context, &enemy->Turret.color_alert, 50, row_height * 2);
+						nk_label(context, "Attack Color", LABEL_FLAGS_ALIGN_LEFT); editor_widget_color_combov4(context, &enemy->Turret.color_attack, 50, row_height * 2);
 					}
 					break;
 					}

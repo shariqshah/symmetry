@@ -842,7 +842,7 @@ struct Sound_Source* scene_sound_source_find(struct Scene* scene, const char* na
 	return sound_source;
 }
 
-struct Enemy* scene_enemy_get(struct Scene* scene, const char* name)
+struct Enemy* scene_enemy_find(struct Scene* scene, const char* name)
 {
 	assert(scene && name);
 	struct Enemy* enemy = NULL;
@@ -872,6 +872,7 @@ struct Entity* scene_base_entity_get(struct Scene* scene, int id, int type)
 	case ET_LIGHT:        entity = &scene->lights[id];        break;
 	case ET_STATIC_MESH:  entity = &scene->static_meshes[id]; break;
 	case ET_SOUND_SOURCE: entity = &scene->sound_sources[id]; break;
+	case ET_ENEMY:        entity = &scene->enemies[id];       break;
 	case ET_PLAYER:       entity = &scene->player;            break;
 	case ET_ROOT:         entity = &scene->root_entity;       break;
 	}
@@ -896,6 +897,9 @@ void* scene_find(struct Scene* scene, const char* name)
 	if(entity) return entity;
 
 	entity = scene_sound_source_find(scene, name);
+	if(entity) return entity;
+
+	entity = scene_enemy_find(scene, name);
 	if(entity) return entity;
 
 	return entity;

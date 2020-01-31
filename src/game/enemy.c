@@ -143,8 +143,16 @@ struct Enemy* enemy_read(struct Parser_Object* object, const char* name, struct 
 		{
 		case ENEMY_TURRET:
 		{
-			if(hashmap_value_exists(object->data, "turn_speed")) new_enemy->Turret.turn_speed_default = hashmap_float_get(object->data, "turn_speed");
-			if(hashmap_value_exists(object->data, "max_turn_angle")) new_enemy->Turret.max_yaw = hashmap_float_get(object->data, "max_turn_angle");
+			if(hashmap_value_exists(object->data, "turn_speed_default")) new_enemy->Turret.turn_speed_default = hashmap_float_get(object->data, "turn_speed_default");
+			if(hashmap_value_exists(object->data, "max_yaw")) new_enemy->Turret.max_yaw = hashmap_float_get(object->data, "max_yaw");
+			if(hashmap_value_exists(object->data, "pulsate_speed_scale")) new_enemy->Turret.pulsate_speed_scale = hashmap_float_get(object->data, "pulsate_speed_scale");
+			if(hashmap_value_exists(object->data, "pulsate_height")) new_enemy->Turret.pulsate_height = hashmap_float_get(object->data, "pulsate_height");
+			if(hashmap_value_exists(object->data, "attack_cooldown")) new_enemy->Turret.attack_cooldown = hashmap_float_get(object->data, "attack_cooldown");
+			if(hashmap_value_exists(object->data, "alert_cooldown")) new_enemy->Turret.alert_cooldown = hashmap_float_get(object->data, "alert_cooldown");
+			if(hashmap_value_exists(object->data, "vision_range")) new_enemy->Turret.vision_range = hashmap_float_get(object->data, "vision_range");
+			if(hashmap_value_exists(object->data, "color_default")) new_enemy->Turret.color_default = hashmap_vec4_get(object->data, "color_default");
+			if(hashmap_value_exists(object->data, "color_alert")) new_enemy->Turret.color_alert = hashmap_vec4_get(object->data, "color_alert");
+			if(hashmap_value_exists(object->data, "color_attack")) new_enemy->Turret.color_attack = hashmap_vec4_get(object->data, "color_attack");
 			if(hashmap_value_exists(object->data, "turn_direction_positive")) new_enemy->Turret.yaw_direction_positive = hashmap_bool_get(object->data, "turn_direction_positive");
 		}
 		break;
@@ -163,8 +171,17 @@ void enemy_write(struct Enemy* enemy, struct Hashmap* entity_data)
 	{
 	case ENEMY_TURRET:
 	{
-		hashmap_float_set(entity_data, "turn_speed", enemy->Turret.turn_speed_default);
-		hashmap_float_set(entity_data, "max_turn_angle", enemy->Turret.max_yaw);
+		hashmap_float_set(entity_data, "turn_speed_default", enemy->Turret.turn_speed_default);
+		hashmap_float_set(entity_data, "turn_speed_when_targetting", enemy->Turret.turn_speed_default);
+		hashmap_float_set(entity_data, "max_yaw", enemy->Turret.max_yaw);
+		hashmap_float_set(entity_data, "pulsate_speed_scale", enemy->Turret.pulsate_speed_scale);
+		hashmap_float_set(entity_data, "pulsate_height", enemy->Turret.pulsate_height);
+		hashmap_float_set(entity_data, "attack_cooldown", enemy->Turret.attack_cooldown);
+		hashmap_float_set(entity_data, "alert_cooldown", enemy->Turret.alert_cooldown);
+		hashmap_float_set(entity_data, "vision_range", enemy->Turret.vision_range);
+		hashmap_vec4_set(entity_data, "color_default", &enemy->Turret.color_default);
+		hashmap_vec4_set(entity_data, "color_alert", &enemy->Turret.color_alert);
+		hashmap_vec4_set(entity_data, "color_attack", &enemy->Turret.color_attack);
 		hashmap_bool_set(entity_data, "turn_direction_positive", enemy->Turret.yaw_direction_positive);
 	}
 	break;
@@ -176,23 +193,26 @@ void enemy_on_scene_loaded(struct Event* event, void* enemy_ptr)
 	struct Enemy* enemy = (struct Enemy*)enemy_ptr;
 
 	// Assign pointers to static_mesh and sound_source child entities
-	for(int i = 0; i < array_len(enemy->base.transform.children); i++)
+	struct Entity* enemy_mesh[MAX_ENEMY_MESHES] = { NULL };
+	struct Entity* enemy_sound_sources[MAX_ENEMY_SOUND_SOURCES] = { NULL };
+	if(entity_get_num_children_of_type(enemy, ET_STATIC_MESH, &enemy_mesh, MAX_ENEMY_MESHES) == MAX_ENEMY_MESHES)
 	{
-		struct Entity* child = enemy->base.transform.children[i];
-		if(child->type == ET_STATIC_MESH)
-			enemy->mesh = (struct Static_Mesh*)child;
-		else if(child->type == ET_SOUND_SOURCE)
-			enemy->weapon_sound = (struct Sound_Source*)child;
+		enemy->mesh = enemy_mesh[0];
+	}
+	else
+	{
+		log_error("enemy:on_scene_load", "Could not find %d child mesh entities for enemy %s", MAX_ENEMY_MESHES, enemy->base.name);
 	}
 
-	if(enemy->mesh)
-		enemy->mesh->base.flags |= EF_TRANSIENT;
+	if(entity_get_num_children_of_type(enemy, ET_SOUND_SOURCE, &enemy_sound_sources, MAX_ENEMY_SOUND_SOURCES) == MAX_ENEMY_SOUND_SOURCES)
+	{
+		enemy->weapon_sound = enemy_sound_sources[0];
+		enemy->ambient_sound = enemy_sound_sources[1];
+	}
 	else
-		log_error("enemy:on_scene_loaded", "Could not find mesh child entity for enemy %s", enemy->base.name);
-	if(enemy->weapon_sound) 
-		enemy->weapon_sound->base.flags |= EF_TRANSIENT;
-	else
-		log_error("enemy:on_scene_loaded", "Could not find weapon_sound child entity for enemy %s", enemy->base.name);
+	{
+		log_error("enemy:on_scene_load", "Could not find %d child sound source entities for enemy %s", MAX_ENEMY_SOUND_SOURCES, enemy->base.name);
+	}
 
 	// Do other post-scene-load initialization stuff per enemy type here
 	switch(enemy->type)
@@ -235,10 +255,8 @@ void enemy_update_physics_turret(struct Enemy* enemy, struct Game_State* game_st
 		float epsilon = 0.5f;
 		float current_yaw = quat_get_yaw(&enemy->base.transform.rotation);
 		float difference = enemy->Turret.target_yaw - current_yaw;
-		//if(fabsf(current_yaw) > enemy->Turret.target_yaw - EPSILON && fabsf(current_yaw) < enemy->Turret.target_yaw + EPSILON)
 		if(fabsf(difference) > epsilon)
 		{
-			//log_message("Difference %.5f", difference);
 			float yaw = enemy->Turret.turn_speed_current * 1.f * fixed_dt;
 			if(current_yaw > enemy->Turret.target_yaw)
 				yaw *= -1.f;
@@ -283,7 +301,6 @@ void enemy_update_ai_turret(struct Enemy* enemy, struct Game_State* game_state, 
 			if(distance <= enemy->Turret.vision_range)
 			{
 				enemy_state_set_turret(enemy, TURRET_ALERT);
-				log_message("Player spotted");
 			}
 		}
 	}
@@ -304,7 +321,6 @@ void enemy_update_ai_turret(struct Enemy* enemy, struct Game_State* game_state, 
 			if(distance <= enemy->Turret.vision_range)
 			{
 				enemy_state_set_turret(enemy, TURRET_ATTACK);
-				log_message("Player spotted");
 			}
 		}
 	}
@@ -336,15 +352,10 @@ void enemy_update_ai_turret(struct Enemy* enemy, struct Game_State* game_state, 
 			float new_target_yaw = current_yaw - yaw_required_to_face_player;
 			if(fabsf(floorf(new_target_yaw)) > enemy->Turret.max_yaw)
 			{
-				log_message("Can't face player");
-				log_message("New Yaw : %.3f", new_target_yaw);
-				log_message("Cur yaw : %.3f", current_yaw);
-				log_message("Ang bet : %.3f", yaw_required_to_face_player);
 				enemy_state_set_turret(enemy, TURRET_ALERT);
 			}
 			else
 			{
-				log_message("Acquiring Target...");
 				float difference = fabsf(enemy->Turret.target_yaw - new_target_yaw);
 				if(difference > 1.f)
 					enemy->Turret.target_yaw = new_target_yaw;
@@ -352,7 +363,6 @@ void enemy_update_ai_turret(struct Enemy* enemy, struct Game_State* game_state, 
 		}
 		else
 		{
-			log_message("No target in range");
 			enemy_state_set_turret(enemy, TURRET_ALERT);
 		}
 	}
@@ -371,17 +381,14 @@ void enemy_update_ai_turret(struct Enemy* enemy, struct Game_State* game_state, 
 				{
 					enemy->Turret.time_elapsed_since_attack = 0.f;
 					sound_source_play(game_state->sound, enemy->weapon_sound);
-					log_message("Player spotted and attacked");
 				}
 				else
 				{
 					enemy_state_set_turret(enemy, TURRET_ACQUIRE_TARGET);
-					log_message("Target too far");
 				}
 			}
 			else
 			{
-				log_message("Can't find player, cannot attack");
 				enemy_state_set_turret(enemy, TURRET_ACQUIRE_TARGET);
 			}
 		}
@@ -402,6 +409,7 @@ void enemy_state_set_turret(struct Enemy* enemy, int state)
 	case TURRET_DEFAULT:
 	{
 		vec4_assign(&model->material_params[MMP_DIFFUSE_COL].val_vec4, &enemy->Turret.color_default);
+		sound_source_play(game_state_get()->sound, enemy->ambient_sound);
 		enemy->Turret.time_elapsed_since_alert = 0.f;
 		enemy->Turret.time_elapsed_since_attack = 0.f;
 		enemy->Turret.pulsate = true;
@@ -424,9 +432,7 @@ void enemy_state_set_turret(struct Enemy* enemy, int state)
 	break;
 	case TURRET_ACQUIRE_TARGET:
 	{
-		//vec4_assign(&model->material_params[MMP_DIFFUSE_COL].val_vec4, &enemy->Turret.color_attack);
-		vec4 color = {0.f, 0.f, 1.f, 1.f};
-		vec4_assign(&model->material_params[MMP_DIFFUSE_COL].val_vec4, &color);
+		vec4_assign(&model->material_params[MMP_DIFFUSE_COL].val_vec4, &enemy->Turret.color_attack);
 		enemy->Turret.scan = false;
 		enemy->Turret.turn_speed_current = enemy->Turret.turn_speed_when_targetting;
 	}

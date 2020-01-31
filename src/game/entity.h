@@ -200,6 +200,7 @@ struct Enemy
 	int                  current_state;
 	struct Static_Mesh*  mesh;
 	struct Sound_Source* weapon_sound;
+	struct Sound_Source* ambient_sound;
 	union
 	{
 		struct
@@ -233,6 +234,7 @@ struct Entity* entity_load(const char* filename, int directory_type, bool send_o
 bool           entity_write(struct Entity* entity, struct Parser_Object* object, bool write_transform);
 struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_entity);
 const char*    entity_type_name_get(struct Entity* entity);
+int            entity_get_num_children_of_type(struct Entity* entity, int type, struct Entity** in_children, int max_children);
 void           entity_rigidbody_on_move(Rigidbody body);
 void           entity_rigidbody_on_collision(Rigidbody body_A, Rigidbody body_B);
 void           entity_rigidbody_set(struct Entity* entity, struct Collision* collision, Rigidbody body);

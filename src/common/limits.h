@@ -22,4 +22,7 @@
 
 #define MAX_FRAME_TIME 0.5f
 
+#define MAX_ENEMY_SOUND_SOURCES 2
+#define MAX_ENEMY_MESHES 1
+
 #endif

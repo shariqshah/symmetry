@@ -20,6 +20,7 @@
 #include "texture.h"
 #include "enemy.h"
 #include "event.h"
+#include "sound_source.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -254,7 +255,7 @@ bool entity_write(struct Entity* entity, struct Parser_Object* object, bool writ
 	{
 		struct Sound_Source* sound_source = (struct Sound_Source*)entity;
 		hashmap_str_set(entity_data, "source_filename", sound_source->source_buffer->filename);
-		hashmap_bool_set(entity_data, "playing", sound_source->playing);
+		hashmap_bool_set(entity_data, "paused", sound_source_is_paused(game_state_get()->sound, sound_source));
 		hashmap_int_set(entity_data, "sound_type", sound_source->type);
 		hashmap_bool_set(entity_data, "loop", sound_source->loop);
 		hashmap_float_set(entity_data, "volume", sound_source->volume);
@@ -420,7 +421,6 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 		struct Sound_Source_Buffer* default_source_buffer = sound_source->source_buffer;
 		uint default_source_instance = sound_source->source_instance;
 
-		if(hashmap_value_exists(object->data, "playing"))                sound_source->playing          = hashmap_bool_get(object->data,  "playing");
 		if(hashmap_value_exists(object->data, "loop"))                   sound_source->loop             = hashmap_bool_get(object->data,  "loop");
 		if(hashmap_value_exists(object->data, "sound_min_distance"))     sound_source->min_distance     = hashmap_float_get(object->data, "sound_min_distance");
 		if(hashmap_value_exists(object->data, "sound_max_distance"))     sound_source->max_distance     = hashmap_float_get(object->data, "sound_max_distance");
@@ -447,7 +447,8 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 				sound_source_instance_volume_set(sound, sound_source->source_instance, sound_source->volume);
 
 				sound_update_3d(sound);
-				if(sound_source->playing)
+				bool paused = hashmap_value_exists(object->data, "paused") ? hashmap_bool_get(object->data, "paused") : false;
+				if(!paused)
 					sound_source_instance_play(sound, sound_source->source_instance);
 
 				//Stop the default sound source from playing now that we have loaded the actual buffer

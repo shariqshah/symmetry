@@ -112,7 +112,6 @@ struct Sound_Source
 {
     struct Entity               base;
     int                         type;
-    bool                        playing;
     bool                        loop;
     uint                        source_instance;
     float                       min_distance;

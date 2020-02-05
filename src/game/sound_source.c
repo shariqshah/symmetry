@@ -4,9 +4,6 @@
 #include "transform.h"
 #include "../common/log.h"
 
-static void sound_source_validate_instance(struct Sound* sound, struct Sound_Source* entity);
-static void sound_source_apply_params_to_instance(struct Sound* sound, struct Sound_Source* entity);
-
 void sound_source_validate_instance(struct Sound* sound, struct Sound_Source* entity)
 {
 	if(!sound_source_instance_is_valid(sound, entity->source_instance))
@@ -77,4 +74,10 @@ void sound_source_buffer_set(struct Sound* sound, struct Sound_Source* entity, c
 			log_error("sound_source:buffer_set", "Failed to set buffer for %s", entity->base.name);
 		}
 	}
+}
+
+bool sound_source_is_paused(struct Sound* sound, struct Sound_Source* entity)
+{
+	sound_source_validate_instance(sound, entity);
+	return sound_source_instance_is_paused(sound, entity->source_instance);
 }

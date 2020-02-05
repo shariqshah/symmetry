@@ -32,6 +32,7 @@
 #include "console.h"
 #include "debug_vars.h"
 #include "../common/version.h"
+#include "sound_source.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -241,6 +242,15 @@ void editor_render(struct Editor* editor, struct Camera * active_camera)
 					im_arc(light->radius, yaw - half_inner_angle, yaw + half_inner_angle, 15, false, abs_pos, rotation, editor->cursor_entity_color, 4);
 				}
 			}
+		}
+		break;
+		case ET_SOUND_SOURCE:
+		{
+			struct Sound_Source* sound_source = (struct Sound_Source*)editor->selected_entity;
+			quat rot = { 0.f, 0.f, 0.f, 1.f };
+			quat_axis_angle(&rot, &UNIT_X, 90.f);
+			im_circle(sound_source->min_distance, 32, false, abs_pos, rot, editor->selected_entity_color, 5);
+			im_circle(sound_source->max_distance, 32, false, abs_pos, rot, editor->selected_entity_color, 5);
 		}
 		break;
 		}
@@ -2029,28 +2039,65 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 			{
 				struct Sound* sound = game_state->sound;
 				struct Sound_Source* sound_source = (struct Sound_Source*)entity;
+				bool sound_params_modified = false;
+
 				if(nk_tree_push(context, NK_TREE_TAB, "Sound Source", NK_MAXIMIZED))
 				{
 					nk_layout_row_dynamic(context, row_height, 2);
-					nk_label(context, "Playing", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
-					int is_playing = sound_source_instance_is_paused(sound, sound_source->source_instance);
+					nk_label(context, "Playing", LABEL_FLAGS_ALIGN_LEFT);
+					int is_playing = !sound_source_is_paused(sound, sound_source);
 					int playing = nk_check_label(context, "", is_playing);
 					if(is_playing && !playing)
-						sound_source_instance_pause(sound, sound_source->source_instance);
+						sound_source_pause(sound, sound_source);
 					else if(!is_playing && playing)
-						sound_source_instance_play(sound, sound_source->source_instance);
+						sound_source_play(sound, sound_source);
 
-
-					nk_label(context, "Loop", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
-					int is_looping = sound_source_instance_loop_get(sound, sound_source->source_instance);
+					nk_label(context, "Loop", LABEL_FLAGS_ALIGN_LEFT);
+					int is_looping = sound_source->loop;
 					int looping = nk_check_label(context, "", is_looping);
 					if(is_looping != looping)
-						sound_source_instance_loop_set(sound, sound_source->source_instance, looping);
+					{
+						sound_source->loop = (bool)looping;
+						sound_params_modified = true;
+					}
 
 					nk_layout_row_dynamic(context, row_height, 1);
-					float volume = sound_source_instance_volume_get(sound, sound_source->source_instance);
-					volume = nk_propertyf(context, "Volume", 0.f, volume, 10.f, 0.5f, 0.1f);
-					sound_source_instance_volume_set(sound, sound_source->source_instance, volume);
+					float volume = nk_propertyf(context, "Volume", 0.f, sound_source->volume, 100.f, 0.5f, 0.1f);
+					if(volume != sound_source->volume)
+					{
+						sound_source->volume = volume;
+						sound_params_modified = true;
+					}
+
+					float min_distance = nk_propertyf(context, "Min Distance", 0.f, sound_source->min_distance, sound_source->max_distance, 0.5f, 0.1f);
+					if(min_distance != sound_source->min_distance)
+					{
+						sound_source->min_distance = min_distance;
+						sound_params_modified = true;
+					}
+
+					float max_distance = nk_propertyf(context, "Max Distance", sound_source->min_distance, sound_source->max_distance, FLT_MAX, 0.5f, 0.1f);
+					if(max_distance != sound_source->max_distance)
+					{
+						sound_source->max_distance = max_distance;
+						sound_params_modified = true;
+					}
+					
+					float combo_width = nk_widget_width(context), combo_height = row_height * 4;
+					nk_layout_row_dynamic(context, row_height, 2);
+					nk_label(context, "Attenuation", LABEL_FLAGS_ALIGN_LEFT);
+					int new_attenuation = nk_combo_string(context, "None\0Inverse\0Linear\0Exponential", sound_source->attenuation_type, 4, row_height, nk_vec2(combo_width, combo_height));
+					if(new_attenuation != sound_source->attenuation_type)
+					{
+						sound_source->attenuation_type = new_attenuation;
+						sound_params_modified = true;
+					}
+
+					if(sound_params_modified)
+					{
+						sound_source_validate_instance(sound, sound_source);
+						sound_source_apply_params_to_instance(sound, sound_source);
+					}
 
 					nk_layout_row_dynamic(context, row_height, 2);
 					static char sound_source_filename_buffer[MAX_FILENAME_LEN];

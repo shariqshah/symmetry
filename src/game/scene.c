@@ -655,7 +655,6 @@ struct Sound_Source* scene_sound_source_create(struct Scene* scene, const char* 
 		new_sound_source->loop = loop;
 		new_sound_source->min_distance = 0.f;
 		new_sound_source->max_distance = 10.f;
-		new_sound_source->playing = play;
 		new_sound_source->attenuation_type = SA_LINEAR;
 		new_sound_source->rolloff_factor = 0.95f;
 		new_sound_source->volume = 1.f;
@@ -667,7 +666,7 @@ struct Sound_Source* scene_sound_source_create(struct Scene* scene, const char* 
 		sound_source_instance_volume_set(sound, new_sound_source->source_instance, new_sound_source->volume);
 
 		sound_update_3d(sound);
-		if(new_sound_source->playing) sound_source_instance_play(sound, new_sound_source->source_instance);
+		if(play) sound_source_instance_play(sound, new_sound_source->source_instance);
 	}
 	else
 	{
@@ -1178,7 +1177,7 @@ struct Entity* scene_entity_duplicate(struct Scene* scene, struct Entity* entity
 	case ET_SOUND_SOURCE:
 	{
 		struct Sound_Source* sound_source = (struct Sound_Source*)entity;
-		struct Sound_Source* new_sound_source = scene_sound_source_create(scene, entity->name, entity->transform.parent, sound_source->source_buffer->filename, sound_source->type, sound_source->loop, sound_source->playing);
+		struct Sound_Source* new_sound_source = scene_sound_source_create(scene, entity->name, entity->transform.parent, sound_source->source_buffer->filename, sound_source->type, sound_source->loop, !sound_source_is_paused(game_state_get()->sound, sound_source));
 		if(!new_sound_source)
 			return new_entity;
 		new_sound_source->min_distance     = sound_source->min_distance;

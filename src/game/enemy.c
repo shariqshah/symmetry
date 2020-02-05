@@ -66,7 +66,7 @@ void enemy_init(struct Enemy* enemy, int type)
 
 void enemy_weapon_sound_set(struct Enemy* enemy, const char* sound_filename, int type)
 {
-	sound_source_buffer_set(game_state_get()->sound, sound_filename, type);
+	sound_source_buffer_set(game_state_get()->sound, enemy->weapon_sound, sound_filename, type);
 }
 
 void enemy_static_mesh_set(struct Enemy* enemy, const char* geometry_filename, int material_type)

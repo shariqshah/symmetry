@@ -5,7 +5,6 @@ Todo:
 		- Level-wide events and responses
 		- Main menu as a level or just have a pause menu where game's options etc can be changed?
 	- Implement separate property window for player related variables that can be shown in the editor similar to renderer settings etc
-	- Add all sound source properties to propery inspector
 	- Fix rotate gizmo's origin not being set to the selected entity
 	- Player shooting
 	- Player jump cooldown, don't allow jump until a certian time interval has passed, even if we're grounded
@@ -403,3 +402,4 @@ Done:
 	* Fix Turret losing target at diagonals
 	* Add turret properties to property inspector
 	* Add another ambient sound_source entity as child to enemy entity
+	* Add all sound source properties to propery inspector

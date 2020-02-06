@@ -52,7 +52,7 @@ bool init(void)
         return false;
 	}
 
-	cvars = hashmap_new();
+	cvars = hashmap_create();
     config_vars_init(cvars);
     if(!platform_init()) return false;
 

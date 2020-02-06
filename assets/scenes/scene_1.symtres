@@ -10,6 +10,8 @@ Scene_Config
 	debug_draw_enabled : false
 	debug_draw_mode : 0
 	ambient_light : 0.100 0.100 0.100
+	init_func : scene_1
+	cleanup_func : scene_1
 }
 
 Player

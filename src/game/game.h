@@ -36,6 +36,8 @@ struct Game_State
 	struct Hashmap*       cvars;
 	struct Sound*         sound;
 	struct Debug_Vars*    debug_vars;
+	struct Hashmap*       scene_init_func_table;
+	struct Hashmap*       scene_cleanup_func_table;
 };
 
 

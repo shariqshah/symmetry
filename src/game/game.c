@@ -36,6 +36,7 @@
 #include "im_render.h"
 #include "event.h"
 #include "../common/limits.h"
+#include "scene_funcs.h"
 
 #define UNUSED(a) (void)a
 #define MIN_NUM(a,b) ((a) < (b) ? (a) : (b))
@@ -67,19 +68,21 @@ bool game_init(struct Window* window, struct Hashmap* cvars)
     }
     else
     {
-		game_state->window           = window;
-		game_state->cvars            = cvars;
-		game_state->is_initialized   = false;
-		game_state->fixed_delta_time = 1.f / 60.f;
-		game_state->game_mode        = GAME_MODE_GAME;
-		game_state->renderer         = calloc(1, sizeof(*game_state->renderer));
-		game_state->scene            = calloc(1, sizeof(*game_state->scene));
-		game_state->console          = calloc(1, sizeof(*game_state->console));
-		game_state->editor           = calloc(1, sizeof(*game_state->editor));
-		game_state->gui              = calloc(1, sizeof(*game_state->gui));
-		game_state->event_manager    = calloc(1, sizeof(*game_state->event_manager));
-		game_state->sound            = calloc(1, sizeof(*game_state->sound));
-		game_state->debug_vars       = calloc(1, sizeof(*game_state->debug_vars));
+		game_state->window                   = window;
+		game_state->cvars                    = cvars;
+		game_state->is_initialized           = false;
+		game_state->fixed_delta_time         = 1.f / 60.f;
+		game_state->game_mode                = GAME_MODE_GAME;
+		game_state->renderer                 = calloc(1, sizeof(*game_state->renderer));
+		game_state->scene                    = calloc(1, sizeof(*game_state->scene));
+		game_state->console                  = calloc(1, sizeof(*game_state->console));
+		game_state->editor                   = calloc(1, sizeof(*game_state->editor));
+		game_state->gui                      = calloc(1, sizeof(*game_state->gui));
+		game_state->event_manager            = calloc(1, sizeof(*game_state->event_manager));
+		game_state->sound                    = calloc(1, sizeof(*game_state->sound));
+		game_state->debug_vars               = calloc(1, sizeof(*game_state->debug_vars));
+		game_state->scene_init_func_table    = hashmap_create();
+		game_state->scene_cleanup_func_table = hashmap_create();
 
 		log_message_callback_set(game_on_log_message);
 		log_warning_callback_set(game_on_log_warning);
@@ -94,8 +97,10 @@ bool game_init(struct Window* window, struct Hashmap* cvars)
 		{
 			log_message("Loaded GL extentions");
 		}
-
 		
+		hashmap_ptr_set(game_state->scene_init_func_table, "scene_1", &scene_1_init);
+		hashmap_ptr_set(game_state->scene_cleanup_func_table, "scene_1", &scene_1_cleanup);
+
 		event_manager_init(game_state->event_manager);
 		input_init();
 		shader_init();
@@ -104,10 +109,6 @@ bool game_init(struct Window* window, struct Hashmap* cvars)
 		gui_init(game_state->gui);
 		console_init(game_state->console);
 		geom_init();
-		//physics_init();
-		//physics_gravity_set(0.f, -9.8f, 0.f);
-		//physics_body_set_moved_callback(entity_rigidbody_on_move);
-		//physics_body_set_collision_callback(entity_rigidbody_on_collision);
 		sound_init(game_state->sound);
 		debug_vars_init(game_state->debug_vars);
 
@@ -118,7 +119,7 @@ bool game_init(struct Window* window, struct Hashmap* cvars)
 	
     /* Debug scene setup */
     //game_scene_setup();
-	scene_load(game_state->scene, "Level_1", DIRT_INSTALL);
+	scene_load(game_state->scene, "scene_1", DIRT_INSTALL);
     game_state->is_initialized = true;
 	return game_state->is_initialized;
 }
@@ -1958,6 +1959,8 @@ void game_cleanup(void)
 			free(game_state->gui);
 			free(game_state->sound);
 			free(game_state->debug_vars);
+			hashmap_free(game_state->scene_init_func_table);
+			hashmap_free(game_state->scene_cleanup_func_table);
 		}
 		free(game_state);
 		game_state = NULL;

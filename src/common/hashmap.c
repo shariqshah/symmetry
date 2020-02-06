@@ -51,7 +51,7 @@ unsigned int hashmap_generate_hash(const char* key)
     return index % HASH_MAP_NUM_BUCKETS;
 }
 
-struct Hashmap* hashmap_new(void)
+struct Hashmap* hashmap_create(void)
 {
     struct Hashmap* hashmap = malloc(sizeof(*hashmap));
     if(!hashmap)

@@ -8,6 +8,9 @@
 struct Ray;
 struct Raycast_Result;
 
+typedef void (*Scene_Init_Func)(struct Scene* scene);
+typedef void (*Scene_Cleanup_Func)(struct Scene* scene);
+
 struct Scene
 {
 	char                filename[MAX_FILENAME_LEN];
@@ -21,6 +24,8 @@ struct Scene
 	struct Enemy        enemies[MAX_SCENE_ENEMIES];
 	char                entity_archetypes[MAX_SCENE_ENTITY_ARCHETYPES][MAX_FILENAME_LEN];
     int                 active_camera_index;
+	Scene_Init_Func     init;
+	Scene_Cleanup_Func  cleanup;
 };
 
 void scene_init(struct Scene* scene);

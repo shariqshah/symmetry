@@ -20,6 +20,7 @@
 #include "sound_source.h"
 #include "enemy.h"
 #include "event.h"
+#include "scene_funcs.h"
 
 #include <assert.h>
 #include <string.h>
@@ -86,6 +87,8 @@ void scene_init(struct Scene* scene)
 	editor_init_entities(game_state->editor);
 
 	scene->active_camera_index = game_state_get()->game_mode == GAME_MODE_GAME ? CAM_GAME : CAM_EDITOR;
+	scene->init = &scene_init_stub;
+	scene->cleanup = &scene_cleanup_stub;
 }
 
 bool scene_load(struct Scene* scene, const char* filename, int directory_type)
@@ -132,6 +135,7 @@ bool scene_load(struct Scene* scene, const char* filename, int directory_type)
 		{
 			struct Hashmap* scene_data = object->data;
 			struct Render_Settings* render_settings = &game_state_get()->renderer->settings;
+			struct Game_State* game_state = game_state_get();
 
 			if(hashmap_value_exists(scene_data, "fog_type"))           render_settings->fog.mode           = hashmap_int_get(scene_data, "fog_type");
 			if(hashmap_value_exists(scene_data, "fog_density"))        render_settings->fog.density        = hashmap_float_get(scene_data, "fog_density");
@@ -143,6 +147,9 @@ bool scene_load(struct Scene* scene, const char* filename, int directory_type)
 			if(hashmap_value_exists(scene_data, "debug_draw_enabled")) render_settings->debug_draw_enabled = hashmap_bool_get(scene_data, "debug_draw_enabled");
 			if(hashmap_value_exists(scene_data, "debug_draw_mode"))    render_settings->debug_draw_mode    = hashmap_int_get(scene_data, "debug_draw_mode");
 			if(hashmap_value_exists(scene_data, "debug_draw_physics")) render_settings->debug_draw_physics = hashmap_bool_get(scene_data, "debug_draw_physics");
+			
+			scene->init = hashmap_value_exists(scene_data, "init_func") ? hashmap_ptr_get(game_state->scene_init_func_table, hashmap_str_get(scene_data, "init_func")) : &scene_init_stub;
+			scene->cleanup = hashmap_value_exists(scene_data, "cleanup_func") ? hashmap_ptr_get(game_state->scene_cleanup_func_table, hashmap_str_get(scene_data, "cleanup_func")) : &scene_init_stub;
 			num_objects_loaded++;
 		}
 		break;
@@ -211,6 +218,7 @@ bool scene_load(struct Scene* scene, const char* filename, int directory_type)
 	strncpy(scene->filename, filename, MAX_FILENAME_LEN);
 	if(num_objects_loaded > 0)
 	{
+		scene->init(scene);
 		struct Event_Manager* event_manager = game_state_get()->event_manager;
 		struct Event* scene_loaded_event = event_manager_create_new_event(event_manager);
 		scene_loaded_event->type = EVT_SCENE_LOADED;
@@ -349,6 +357,7 @@ void scene_write_entity_entry(struct Scene* scene, struct Entity* entity, struct
 void scene_destroy(struct Scene* scene)
 {
 	assert(scene);
+	scene->cleanup(scene);
 
 	for(int i = 0; i < MAX_SCENE_ENTITIES; i++)          scene_entity_base_remove(scene, &scene->entities[i]);
 	for(int i = 0; i < MAX_SCENE_CAMERAS; i++)           scene_camera_remove(scene, &scene->cameras[i]);

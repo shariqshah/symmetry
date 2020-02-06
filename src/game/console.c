@@ -57,7 +57,7 @@ void console_init(struct Console* console)
 		console->messages[i].type = CMT_NONE;
 	}
 
-	console->commands = hashmap_new();
+	console->commands = hashmap_create();
 	hashmap_ptr_set(console->commands, "scene_empty", &console_command_scene_empty);
 	hashmap_ptr_set(console->commands, "scene_save", &console_command_scene_save);
 	hashmap_ptr_set(console->commands, "scene_load", &console_command_scene_load);

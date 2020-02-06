@@ -11,7 +11,7 @@
 struct Hashmap;
 struct Variant;
 
-struct Hashmap* hashmap_new(void);
+struct Hashmap* hashmap_create(void);
 void            hashmap_free(struct Hashmap* hashmap);
 void            hashmap_copy(struct Hashmap* from, struct Hashmap* to);
 void            hashmap_value_remove(struct Hashmap* hashmap, const char* key);

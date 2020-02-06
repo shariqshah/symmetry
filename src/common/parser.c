@@ -197,7 +197,7 @@ struct Parser* parser_load_objects(FILE* file, const char* filename)
         // Read into intermediate parser object and add it to the objects list
         struct Parser_Object* object = array_grow(parser->objects, struct Parser_Object);
         object->type = parser_object_type_from_str(type_str);
-        object->data = hashmap_new();
+        object->data = hashmap_create();
 
         char format_str[64];
         char key_str[HASH_MAX_KEY_LEN];
@@ -313,7 +313,7 @@ struct Parser_Object* parser_object_new(struct Parser* parser, int type)
 		return NULL;
     }
     object->type = type;
-    object->data = hashmap_new();
+    object->data = hashmap_create();
 
     return object;
 }

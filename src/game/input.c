@@ -25,7 +25,7 @@ void input_init(void)
 	event_manager_subscribe(event_manager, EVT_KEY_PRESSED, &input_on_key);
 	event_manager_subscribe(event_manager, EVT_KEY_RELEASED, &input_on_key);
 
-	key_bindings = hashmap_new();
+	key_bindings = hashmap_create();
 
 	/* Default keys for fallback */
 	struct Key_Binding forward_keys           = {KEY_W,      KMOD_NONE, KEY_UP,     KMOD_NONE, KS_INACTIVE};

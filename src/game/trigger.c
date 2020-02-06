@@ -62,6 +62,7 @@ void trigger_update_physics(struct Trigger* trigger, struct Scene* scene, float 
 		{
 			fire_event = true;
 			trigger->triggered = true;
+			trigger->count++;
 			scene_trigger_remove(scene, trigger);
 		}
 		break;
@@ -76,6 +77,7 @@ void trigger_update_physics(struct Trigger* trigger, struct Scene* scene, float 
 			else
 			{
 				trigger->triggered = true;
+				trigger->count++;
 				fire_event = true;
 			}
 		}
@@ -83,9 +85,14 @@ void trigger_update_physics(struct Trigger* trigger, struct Scene* scene, float 
 		case TRIG_CONTINUOUS:
 		{
 			trigger->triggered = true;
+			trigger->count++;
 			fire_event = true;
 		}
+		break;
 		}
+
+		if(fire_event)
+			log_message("event triggered!");
 
 		if(fire_event && trigger->trigger_event != -1)
 		{

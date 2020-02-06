@@ -82,8 +82,8 @@ enum Entity_Ray_Mask
 
 enum Trigger_Mask
 {
-	TRIGM_PLAYER = 0,
-	TRIGM_ENEMY  = 1 << 0,
+	TRIGM_PLAYER = 1 << 0,
+	TRIGM_ENEMY  = 1 << 1,
 	TRIGM_ALL    = TRIGM_PLAYER | TRIGM_ENEMY
 };
 

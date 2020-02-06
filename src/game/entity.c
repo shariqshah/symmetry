@@ -271,6 +271,14 @@ bool entity_write(struct Entity* entity, struct Parser_Object* object, bool writ
 		enemy_write(enemy, entity_data);
 	}
 	break;
+	case ET_TRIGGER:
+	{
+		struct Trigger* trigger = (struct Trigger*)entity;
+		hashmap_int_set(entity_data, "trigger_type", trigger->type);
+		hashmap_int_set(entity_data, "trigger_mask", trigger->trigger_mask);
+		hashmap_int_set(entity_data, "trigger_event", trigger->trigger_event);
+	}
+	break;
 	};
 
 	return true;
@@ -512,6 +520,18 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 			return new_entity;
 	}
 	break;
+	case ET_TRIGGER:
+	{
+		int type          = hashmap_value_exists(object->data, "trigger_type") ? hashmap_int_get(object->data, "trigger_type") : TRIG_TOGGLE;
+		int mask          = hashmap_value_exists(object->data, "trigger_mask") ? hashmap_int_get(object->data, "trigger_mask") : TRIGM_ALL;
+		int trigger_event = hashmap_value_exists(object->data, "trigger_event") ? hashmap_int_get(object->data, "trigger_event") : -1;
+		struct Trigger* trigger = scene_trigger_create(scene, name, parent_entity, type, trigger_event, mask);
+		if(!trigger)
+			return new_entity;
+		else
+			new_entity = &trigger->base;
+	}
+	break;
 	default:
 		log_warning("Unhandled Entity type '%d' detected", type);
 		break;
@@ -628,6 +648,8 @@ const char* entity_type_name_get(struct Entity* entity)
 	case ET_ROOT:         typename = "Root";         break;
 	case ET_SOUND_SOURCE: typename = "Sound Source"; break;
 	case ET_STATIC_MESH:  typename = "Static Mesh";  break;
+	case ET_ENEMY:        typename = "Enemy";        break;
+	case ET_TRIGGER:      typename = "Trigger";      break;
 	default:              typename = "Unknown";      break;
 	};
 	return typename;

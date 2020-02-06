@@ -21,6 +21,7 @@
 #include "enemy.h"
 #include "event.h"
 #include "scene_funcs.h"
+#include "trigger.h"
 
 #include <assert.h>
 #include <string.h>
@@ -80,6 +81,12 @@ void scene_init(struct Scene* scene)
 	{
 		entity_reset(&scene->enemies[i], i);
 		scene->enemies->base.type = ET_ENEMY;
+	}
+
+	for(int i = 0; i < MAX_SCENE_TRIGGERS; i++)
+	{
+		entity_reset(&scene->triggers[i], i);
+		scene->triggers->base.type = ET_TRIGGER;
 	}
 
 	player_init(&scene->player, scene);
@@ -269,6 +276,7 @@ bool scene_save(struct Scene* scene, const char* filename, int directory_type)
 	scene_write_entity_list(scene, ET_CAMERA, parser);
 	scene_write_entity_list(scene, ET_SOUND_SOURCE, parser);
 	scene_write_entity_list(scene, ET_ENEMY, parser);
+	scene_write_entity_list(scene, ET_TRIGGER, parser);
 
     if(parser_write_objects(parser, scene_file, prefixed_filename))
         log_message("Scene saved to %s", prefixed_filename);
@@ -315,6 +323,11 @@ void scene_write_entity_list(struct Scene* scene, int entity_type, struct Parser
 		max_length = MAX_SCENE_ENEMIES;
 		entity = &scene->enemies[0].base;
 		stride = sizeof(struct Enemy);
+		break;
+	case ET_TRIGGER:
+		max_length = MAX_SCENE_TRIGGERS;
+		entity = &scene->triggers[0].base;
+		stride = sizeof(struct Trigger);
 		break;
 	default: return;
 	}
@@ -392,6 +405,12 @@ void scene_update_physics(struct Scene* scene, float fixed_dt)
 		{
 			if(scene->enemies[i].base.flags & EF_ACTIVE)
 				enemy_update_physics(&scene->enemies[i], scene, fixed_dt);
+		}
+
+		for(int i = 0; i < MAX_SCENE_TRIGGERS; i++)
+		{
+			if(scene->triggers[i].base.flags & EF_ACTIVE)
+				trigger_update_physics(&scene->triggers[i], scene, fixed_dt);
 		}
 	}
 }
@@ -503,6 +522,18 @@ void scene_post_update(struct Scene* scene)
 			continue;
 		}
 
+	}
+
+	for(int i = 0; i < MAX_SCENE_TRIGGERS; i++)
+	{
+		struct Trigger* trigger = &scene->triggers[i];
+		if(!(trigger->base.flags & EF_ACTIVE)) continue;
+
+		if(trigger->base.flags & EF_MARKED_FOR_DELETION)
+		{
+			scene_trigger_remove(scene, trigger);
+			continue;
+		}
 	}
 
 	if(scene->player.base.transform.is_modified)
@@ -712,6 +743,32 @@ struct Enemy* scene_enemy_create(struct Scene* scene, const char* name, struct E
 	return new_enemy;
 }
 
+struct Trigger* scene_trigger_create(struct Scene* scene, const char* name, struct Entity* parent, int type, int trigger_event, int mask)
+{
+	assert(scene);
+	struct Trigger* new_trigger = NULL;
+	for(int i = 0; i < MAX_SCENE_TRIGGERS; i++)
+	{
+		struct Trigger* trigger = &scene->triggers[i];
+		if(!(trigger->base.flags & EF_ACTIVE))
+		{
+			new_trigger = trigger;
+			break;
+		}
+	}
+
+	if(new_trigger)
+	{
+		entity_init(&new_trigger->base, name, parent ? parent : &scene->root_entity);
+		trigger_init(new_trigger, type, trigger_event, mask);
+	}
+	else
+	{
+		log_error("scene:trigger_create", "Max trigger limit reached!");
+	}
+
+	return new_trigger;
+}
 void scene_entity_base_remove(struct Scene* scene, struct Entity* entity)
 {
 	assert(scene && entity && entity->id >= 0);
@@ -735,6 +792,13 @@ void scene_enemy_remove(struct Scene* scene, struct Enemy* enemy)
 	assert(scene && enemy);
 	enemy_reset(enemy);
 	scene_entity_base_remove(scene, enemy);
+}
+
+void scene_trigger_remove(struct Scene* scene, struct Trigger* trigger)
+{
+	assert(scene && trigger);
+	trigger_reset(trigger);
+	scene_entity_base_remove(scene, &trigger->base);
 }
 
 void scene_camera_remove(struct Scene* scene, struct Camera* camera)
@@ -867,6 +931,23 @@ struct Enemy* scene_enemy_find(struct Scene* scene, const char* name)
 	return enemy;
 }
 
+struct Trigger* scene_trigger_find(struct Scene* scene, const char* name)
+{
+	assert(scene && name);
+	struct Trigger* trigger = NULL;
+
+	for(int i = 0; i < MAX_SCENE_TRIGGERS; i++)
+	{
+		if(strncmp(name, scene->triggers[i].base.name, MAX_ENTITY_NAME_LEN) == 0)
+		{
+			trigger = &scene->triggers[i];
+			break;
+		}
+	}
+
+	return trigger;
+}
+
 struct Entity* scene_base_entity_get(struct Scene* scene, int id, int type)
 {
 	assert(scene && id != -1 && type < ET_MAX);
@@ -881,6 +962,7 @@ struct Entity* scene_base_entity_get(struct Scene* scene, int id, int type)
 	case ET_STATIC_MESH:  entity = &scene->static_meshes[id]; break;
 	case ET_SOUND_SOURCE: entity = &scene->sound_sources[id]; break;
 	case ET_ENEMY:        entity = &scene->enemies[id];       break;
+	case ET_TRIGGER:      entity = &scene->triggers[id];      break;
 	case ET_PLAYER:       entity = &scene->player;            break;
 	case ET_ROOT:         entity = &scene->root_entity;       break;
 	}

@@ -15,6 +15,7 @@ struct Material_Param;
 struct Parser_Object;
 
 typedef void (*Collision_CB)(struct Entity* this_entity, struct Entity* other_entity, Rigidbody, Rigidbody);
+typedef void (*Trigger_Func)(struct Trigger* trigger);
 
 enum Entity_Type
 {
@@ -27,6 +28,7 @@ enum Entity_Type
     ET_STATIC_MESH,
     ET_SOUND_SOURCE,
 	ET_ENEMY,
+	ET_TRIGGER,
     ET_MAX
 };
 
@@ -74,7 +76,23 @@ enum Entity_Ray_Mask
 	ERM_STATIC_MESH  = 1 << 4,
 	ERM_SOUND_SOURCE = 1 << 5,
 	ERM_ENEMY        = 1 << 6,
-	ERM_ALL          = ERM_DEFAULT | ERM_PLAYER | ERM_CAMERA | ERM_LIGHT | ERM_STATIC_MESH | ERM_SOUND_SOURCE | ERM_ENEMY
+	ERM_TRIGGER      = 1 << 7,
+	ERM_ALL          = ERM_DEFAULT | ERM_PLAYER | ERM_CAMERA | ERM_LIGHT | ERM_STATIC_MESH | ERM_SOUND_SOURCE | ERM_ENEMY | ERM_TRIGGER
+};
+
+enum Trigger_Mask
+{
+	TRIGM_PLAYER = 0,
+	TRIGM_ENEMY  = 1 << 0,
+	TRIGM_ALL    = TRIGM_PLAYER | TRIGM_ENEMY
+};
+
+enum Trigger_Type
+{
+	TRIG_TOGGLE = 0,  // Toggled on once and fires event then wont fire event until it is deactivated and activated again
+	TRIG_CONTINUOUS,  // Continuously fire events while the trigger is active
+	TRIG_ONE_SHOT,    // Fire event once when triggerd and then get deleted
+	TRIG_MAX
 };
 
 struct Transform
@@ -224,6 +242,16 @@ struct Enemy
 			vec4  color_attack;
 		}Turret;
 	};
+};
+
+struct Trigger
+{
+	struct Entity base;
+	bool          triggered;
+	int           type;
+	int           count;
+	int           trigger_mask;
+	int           trigger_event; // Event to fire when triggered
 };
 
 void           entity_init(struct Entity* entity, const char* name, struct Entity* parent);

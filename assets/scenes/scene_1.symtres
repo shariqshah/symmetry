@@ -10,17 +10,15 @@ Scene_Config
 	debug_draw_enabled : false
 	debug_draw_mode : 0
 	ambient_light : 0.100 0.100 0.100
-	init_func : scene_1
-	cleanup_func : scene_1
 }
 
 Player
 {
 	type : 2
 	scale : 1.000 1.000 1.000
-	rotation : 0.000 0.971 0.000 -0.249
+	rotation : 0.000 -0.892 0.000 0.452
 	active : true
-	position : -30.395 2.857 -17.708
+	position : -56.360 2.292 -37.583
 	bouding_box_min : -1.500 -1.500 -1.000
 	name : Player
 	bouding_box_max : 1.500 1.500 1.000
@@ -47,7 +45,7 @@ Scene_Entity_Entry
 
 Scene_Entity_Entry
 {
-	scale : 68.000 1.000 68.000
+	scale : 135.000 1.000 135.000
 	rotation : 0.000 0.000 0.000 1.000
 	position : -17.000 0.000 -20.000
 	filename : cube
@@ -56,72 +54,54 @@ Scene_Entity_Entry
 
 Scene_Entity_Entry
 {
-	scale : 68.000 3.000 1.000
+	scale : 135.000 6.000 1.000
 	rotation : 0.000 0.000 0.000 1.000
-	position : -17.000 4.000 -87.000
+	position : -17.000 3.000 47.000
 	filename : cube_uv
 	name : Cube
 }
 
 Scene_Entity_Entry
 {
-	scale : 68.000 3.000 1.000
-	rotation : 0.000 0.000 0.000 1.000
-	position : -17.000 4.000 47.000
-	filename : cube_uv
-	name : Cube
-}
-
-Scene_Entity_Entry
-{
-	scale : 68.000 3.000 1.000
+	scale : 135.000 5.000 1.000
 	rotation : 0.000 0.707 0.000 0.707
-	position : 50.000 4.000 -20.000
+	position : 50.000 3.000 -20.000
 	filename : cube_uv
 	name : Cube
 }
 
 Scene_Entity_Entry
 {
-	scale : 68.000 3.000 1.000
+	scale : 135.000 5.000 1.000
 	rotation : 0.000 -0.707 0.000 0.707
-	position : -84.000 4.000 -20.000
+	position : -84.000 3.000 -20.000
 	filename : cube_uv
 	name : Cube
 }
 
 Scene_Entity_Entry
 {
-	scale : 18.900 3.000 1.000
+	scale : 49.800 5.000 1.000
 	rotation : 0.000 0.000 0.000 1.000
-	position : -64.000 4.000 2.000
+	position : -60.000 3.000 2.000
 	filename : cube_uv
 	name : Cube
 }
 
 Scene_Entity_Entry
 {
-	scale : 68.000 3.000 1.000
+	scale : 65.000 5.000 1.000
 	rotation : 0.000 0.000 0.000 1.000
-	position : -17.000 4.000 -87.000
+	position : 15.000 3.000 -30.000
 	filename : cube_uv
 	name : Cube
 }
 
 Scene_Entity_Entry
 {
-	scale : 68.000 3.000 1.000
+	scale : 135.000 5.000 1.000
 	rotation : 0.000 0.000 0.000 1.000
-	position : -17.000 4.000 -87.000
-	filename : cube_uv
-	name : Cube
-}
-
-Scene_Entity_Entry
-{
-	scale : 35.500 3.000 1.000
-	rotation : 0.000 0.000 0.000 1.000
-	position : 15.000 4.000 -30.000
+	position : -17.000 3.000 -87.000
 	filename : cube_uv
 	name : Cube
 }
@@ -138,7 +118,7 @@ Scene_Entity_Entry
 Scene_Entity_Entry
 {
 	scale : 1.000 1.000 1.000
-	rotation : 0.000 -0.348 0.000 0.938
+	rotation : 0.000 0.001 0.000 1.000
 	position : -13.000 3.000 4.000
 	filename : turret
 	name : Turret
@@ -156,7 +136,7 @@ Scene_Entity_Entry
 Scene_Entity_Entry
 {
 	scale : 1.000 1.000 1.000
-	rotation : 0.000 -0.288 0.000 0.958
+	rotation : 0.000 -0.001 0.000 1.000
 	position : -7.000 3.000 2.000
 	filename : turret
 	name : Turret
@@ -169,5 +149,14 @@ Scene_Entity_Entry
 	position : 5.000 3.000 6.000
 	filename : turret
 	name : Turret
+}
+
+Scene_Entity_Entry
+{
+	scale : 1.000 1.000 1.000
+	rotation : 0.000 0.000 0.000 1.000
+	position : -25.000 2.000 -18.000
+	filename : Trigger
+	name : Trigger
 }
 

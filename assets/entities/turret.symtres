@@ -5,7 +5,7 @@ Entity
 	pulsate_height : 1.5000
 	vision_range : 15.0000
 	pulsate_speed_scale : 0.1000
-	rotation : 0.000 0.001 0.000 1.001
+	rotation : 0.000 0.000 0.000 1.000
 	health : 116
 	alert_cooldown : 1.0000
 	color_alert : 1.000 1.000 0.000 1.000

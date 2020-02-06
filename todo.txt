@@ -1,10 +1,10 @@
 Todo:
-	- Figure out how to write Scene/Level specific logic, save/load it and be able to differenciate it according to specific scene
-		- How to specify and track level objectives and track them
-		- How to move from one scene to another
-		- Level-wide events and responses
-		- Main menu as a level or just have a pause menu where game's options etc can be changed?
+	- Implement Triggers
+	- Implement flag for ignoring collisions with certain entities
 	- Implement separate property window for player related variables that can be shown in the editor similar to renderer settings etc
+	- Implement game gui either with a separate nuklear context or as part of existing context
+	- Property inspector in editor should only show/apply local transformation values and world transformation values should be shown as non-editabale values
+	- Add "Select Parent" button to property inspector
 	- Fix rotate gizmo's origin not being set to the selected entity
 	- Player shooting
 	- Player jump cooldown, don't allow jump until a certian time interval has passed, even if we're grounded

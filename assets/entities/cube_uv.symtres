@@ -1,7 +1,7 @@
 Entity
 {
 	type : 6
-	scale : 68.000 3.000 1.000
+	scale : 135.000 5.000 1.000
 	material : 0
 	rotation : 0.000 0.000 0.000 1.000
 	diffuse_color : 1.000 1.000 1.000 1.000
@@ -10,9 +10,9 @@ Entity
 	active : true
 	diffuse_texture : default.tga
 	diffuse : 1.0000
-	position : -17.000 4.000 -87.000
+	position : -17.000 3.000 -87.000
 	specular_strength : 1.0000
 	name : Cube
-	uv_scale : 15.000 1.000
+	uv_scale : 5.000 63.500
 }
 

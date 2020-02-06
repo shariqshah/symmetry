@@ -253,6 +253,14 @@ void editor_render(struct Editor* editor, struct Camera * active_camera)
 			im_circle(sound_source->max_distance, 32, false, abs_pos, rot, editor->selected_entity_color, 5);
 		}
 		break;
+		case ET_TRIGGER:
+		{
+			struct Trigger* trigger = (struct Trigger*)editor->selected_entity;
+			vec3 extents = { 0.f };
+			vec3_sub(&extents, &trigger->base.derived_bounding_box.max, &trigger->base.derived_bounding_box.min);
+			im_box(extents.x, extents.y, extents.z, abs_pos, abs_rot, (vec4) { 1.f, 0.f, 0.f, 0.5f }, GDM_TRIANGLES, 5);
+		}
+		break;
 		}
 		
 		/* Draw bounding box for selected entity */
@@ -1732,6 +1740,13 @@ void editor_window_scene_hierarchy(struct nk_context* context, struct Editor* ed
 				nk_tree_pop(context);
 			}
 
+			if(nk_tree_push(context, NK_TREE_TAB, "Triggers", NK_MAXIMIZED))
+			{
+				for(int i = 0; i < MAX_SCENE_TRIGGERS; i++)      
+					editor_show_entity_in_list(editor, context, scene, &scene->triggers[i]);
+				nk_tree_pop(context);
+			}
+
 			if(nk_tree_push(context, NK_TREE_TAB, "Entities", NK_MAXIMIZED))
 			{
 				for(int i = 0; i < MAX_SCENE_ENTITIES; i++)      
@@ -2260,7 +2275,6 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 					nk_tree_pop(context);
 				}
 			}
-
 			
 			/* Enemy */
 			if(entity->type == ET_ENEMY)
@@ -2294,10 +2308,36 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 						nk_label(context, "Scan",          LABEL_FLAGS_ALIGN_LEFT); nk_labelf(context, LABEL_FLAGS_ALIGN_LEFT, "%s", enemy->Turret.scan ? "True" : "False");
 						nk_label(context, "Default Color", LABEL_FLAGS_ALIGN_LEFT); editor_widget_color_combov4(context, &enemy->Turret.color_default, 50, row_height * 2);
 						nk_label(context, "Alert Color",   LABEL_FLAGS_ALIGN_LEFT); editor_widget_color_combov4(context, &enemy->Turret.color_alert, 50, row_height * 2);
-						nk_label(context, "Attack Color", LABEL_FLAGS_ALIGN_LEFT); editor_widget_color_combov4(context, &enemy->Turret.color_attack, 50, row_height * 2);
+						nk_label(context, "Attack Color",  LABEL_FLAGS_ALIGN_LEFT); editor_widget_color_combov4(context, &enemy->Turret.color_attack, 50, row_height * 2);
 					}
 					break;
 					}
+					nk_tree_pop(context);
+				}
+			}
+
+			/* Trigger */
+			if(entity->type == ET_TRIGGER)
+			{
+				struct Trigger* trigger = (struct Trigger*)entity;
+				if(nk_tree_push(context, NK_TREE_TAB, "Trigger", NK_MAXIMIZED))
+				{
+					nk_layout_row_dynamic(context, row_height, 2);
+
+					float combo_width = nk_widget_width(context), combo_height = row_height * TRIG_MAX;
+					nk_label(context, "Type", LABEL_FLAGS_ALIGN_LEFT);
+					int trigger_type = nk_combo_string(context, "Toggle\0Continuous\0One Shot", trigger->type, TRIG_MAX, row_height, nk_vec2(combo_width, combo_height));
+					trigger->type = trigger_type;
+
+					nk_label(context, "Triggered", LABEL_FLAGS_ALIGN_LEFT);
+					nk_label(context, trigger->triggered ? "True" : "False", LABEL_FLAGS_ALIGN_LEFT);
+
+					nk_label(context, "Trigger Count", LABEL_FLAGS_ALIGN_LEFT);
+					nk_labelf(context, LABEL_FLAGS_ALIGN_LEFT, "%d", trigger->count);
+
+					nk_label(context, "Mask", LABEL_FLAGS_ALIGN_LEFT);
+					nk_labelf(context, LABEL_FLAGS_ALIGN_LEFT, "%d", trigger->trigger_mask);
+
 					nk_tree_pop(context);
 				}
 			}

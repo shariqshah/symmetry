@@ -2589,5 +2589,8 @@ void editor_post_update(struct Editor* editor)
 {
 	if(editor->hovered_entity && !(editor->hovered_entity->flags & EF_ACTIVE))
 		editor->hovered_entity = NULL;
+
+	if(editor->selected_entity && !(editor->selected_entity->flags & EF_ACTIVE))
+		editor_entity_select(editor, NULL);
 }
 

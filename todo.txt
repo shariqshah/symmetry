@@ -1,5 +1,4 @@
 Todo:
-	- Fix crash where if entity selected in editor is deleted in game mode and then returning to editor mode causes a crash
 	- Implement flag for ignoring collisions with certain entities
 	- Implement separate property window for player related variables that can be shown in the editor similar to renderer settings etc
 	- Implement game gui either with a separate nuklear context or as part of existing context
@@ -404,3 +403,4 @@ Done:
 	* Add another ambient sound_source entity as child to enemy entity
 	* Add all sound source properties to propery inspector
 	* Implement Triggers
+	* Fix crash where if entity selected in editor is deleted in game mode and then returning to editor mode causes a crash

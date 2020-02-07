@@ -4,7 +4,6 @@
 #include "../common/log.h"
 #include "sound.h"
 #include "platform.h"
-#include "physics.h"
 #include "file_io.h"
 #include "config_vars.h"
 #include "../common/hashmap.h"

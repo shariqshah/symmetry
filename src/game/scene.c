@@ -13,7 +13,6 @@
 #include "geometry.h"
 #include "editor.h"
 #include "../system/sound.h"
-#include "../system/physics.h"
 #include "../system/platform.h"
 #include "../common/hashmap.h"
 #include "renderer.h"
@@ -55,9 +54,6 @@ void scene_init(struct Scene* scene)
 	{
 		entity_reset(&scene->static_meshes[i], i);
 		struct Static_Mesh* mesh = &scene->static_meshes[i];
-		mesh->collision.collision_shape = NULL;
-		mesh->collision.rigidbody = NULL;
-		mesh->collision.on_collision = NULL;
 		mesh->model.geometry_index = -1;
 		mesh->model.material = NULL;
 	}
@@ -480,21 +476,6 @@ void scene_post_update(struct Scene* scene)
 			scene_static_mesh_remove(scene, static_mesh);
 			continue;
 		}
-
-		if(static_mesh->base.transform.is_modified)
-		{
-			if(static_mesh->collision.rigidbody && static_mesh->base.transform.sync_physics)
-			{
-				quat abs_rot = { 0.f, 0.f, 0.f, 1.f };
-				vec3 abs_pos = { 0.f, 0.f,  0.f };
-				transform_get_absolute_rot(&static_mesh->base, &abs_rot);
-				transform_get_absolute_position(&static_mesh->base, &abs_pos);
-				physics_body_rotation_set(static_mesh->collision.rigidbody, abs_rot.x, abs_rot.y, abs_rot.z, abs_rot.w);
-				physics_body_position_set(static_mesh->collision.rigidbody, abs_pos.x, abs_pos.y, abs_pos.z);
-			}
-			static_mesh->base.transform.sync_physics = false;
-			static_mesh->base.transform.is_modified = false;
-		}
 	}
 
 	for(int i = 0; i < MAX_SCENE_LIGHTS; i++)
@@ -811,10 +792,6 @@ void scene_camera_remove(struct Scene* scene, struct Camera* camera)
 void scene_static_mesh_remove(struct Scene* scene, struct Static_Mesh* mesh)
 {
 	assert(scene && mesh);
-
-	mesh->collision.on_collision = NULL;
-	if(mesh->collision.collision_shape) physics_cs_remove(mesh->collision.collision_shape);
-	if(mesh->collision.rigidbody) physics_body_remove(mesh->collision.rigidbody);
 
 	model_reset(&mesh->model, mesh);
 	scene_entity_base_remove(scene, &mesh->base);

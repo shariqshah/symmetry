@@ -14,7 +14,6 @@
 #include "../common/parser.h"
 #include "../common/hashmap.h"
 #include "../system/file_io.h"
-#include "../system/physics.h"
 #include "scene.h"
 #include "game.h"
 #include "texture.h"
@@ -597,105 +596,6 @@ const char* entity_type_name_get(struct Entity* entity)
 	default:              typename = "Unknown";      break;
 	};
 	return typename;
-}
-
-void entity_rigidbody_on_move(Rigidbody body)
-{
-	struct Entity* entity = physics_body_data_get(body);
-	vec3 pos = {0.f};
-	quat rot = {0.f};
-
-	physics_body_position_get(body, &pos.x, &pos.y, &pos.z);
-	physics_body_rotation_get(body, &rot.x, &rot.y, &rot.z, &rot.w);
-
-	quat_assign(&entity->transform.rotation, &rot);
-	transform_set_position(entity, &pos);
-	entity->transform.sync_physics = false;
-}
-
-void entity_rigidbody_on_collision(Rigidbody body_A, Rigidbody body_B)
-{
-	struct Entity* ent_A = NULL;
-	struct Entity* ent_B = NULL;
-
-	if(body_A) 
-	{
-		ent_A = physics_body_data_get(body_A);
-	}
-
-	if(body_B) 
-	{
-		ent_B = physics_body_data_get(body_B);
-	}
-
-	//if(ent_A && ent_A->collision.on_collision)
-	//{
-	//	ent_A->collision.on_collision(ent_A, ent_B ? ent_B : NULL, body_A, body_B ? body_B : NULL);
-	//}
-
-	//if(ent_B && ent_B->collision.on_collision)
-	//{
-	//	ent_B->collision.on_collision(ent_B, ent_A ? ent_A : NULL, body_B, body_A ? body_A : NULL);
-	//}
-
-	if(ent_A && ent_B)
-	{
-		//log_message("Entity %s collided with Entity %s", ent_A->name, ent_B->name);
-	}
-}
-
-void entity_rigidbody_set(struct Entity * entity, struct Collision* collision, Rigidbody body)
-{
-	assert(entity && body);
-
-	//Remove previous rigidbody if there is any
-	if(collision->rigidbody || collision->collision_shape)
-	{
-		if(collision->rigidbody)
-		{
-			physics_body_remove(collision->rigidbody);
-		}
-		else if(collision->collision_shape)
-		{
-			physics_cs_remove(collision->collision_shape);
-		}
-		collision->rigidbody = NULL;
-		collision->collision_shape = NULL;
-	}
-
-	collision->rigidbody       = body;
-	collision->collision_shape = physics_body_cs_get(body);
-
-	vec3 abs_pos = {0.f, 0.f,  0.f};
-	quat abs_rot = {0.f, 0.f, 0.f, 1.f};
-	transform_get_absolute_position(entity, &abs_pos);
-	transform_get_absolute_rot(entity, &abs_rot);
-
-	physics_body_rotation_set(body, abs_rot.x, abs_rot.y, abs_rot.z, abs_rot.w);
-	physics_body_position_set(body, abs_pos.x, abs_pos.y, abs_pos.z);
-	physics_body_data_set(body, entity);
-}
-
-void entity_collision_shape_set(struct Entity* entity, struct Collision* collision, Collision_Shape shape)
-{
-	assert(entity && shape);
-
-	if(collision->rigidbody || collision->collision_shape)
-	{
-		if(collision->rigidbody)
-		{
-			physics_body_remove(collision->rigidbody);
-		}
-		else if(collision->collision_shape)
-		{
-			physics_cs_remove(collision->collision_shape);
-		}
-		collision->rigidbody = NULL;
-		collision->collision_shape = NULL;
-	}
-
-	collision->collision_shape = shape;
-	physics_cs_data_set(shape, entity);
 }
 
 void entity_rename(struct Entity* entity, const char* new_name)

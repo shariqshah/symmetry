@@ -270,50 +270,6 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
 
-    // Debug Physics render
-	if(renderer->settings.debug_draw_physics)
-    {
-		static vec4 physics_draw_color = { 0.f, 0.f, 1.f, 1.f };
-		for(int i = 0; i < MAX_SCENE_STATIC_MESHES; i++)
-		{
-			struct Static_Mesh* mesh = &scene->static_meshes[i];
-			if(!(mesh->base.flags & EF_ACTIVE) || (!mesh->collision.collision_shape && !mesh->collision.rigidbody)) continue;
-
-			//Get collision mesh and it's props then render it
-			vec3 pos = {0.f};
-			quat rot = {0.f, 0.f, 0.f, 1.f };
-			if(mesh->collision.rigidbody)
-			{
-				physics_body_position_get(mesh->collision.rigidbody, &pos.x, &pos.y, &pos.z);
-				physics_body_rotation_get(mesh->collision.rigidbody, &rot.x, &rot.y, &rot.z, &rot.w);
-			}
-			else
-			{
-				physics_cs_position_get(mesh->collision.collision_shape, &pos.x, &pos.y, &pos.z);
-				physics_cs_rotation_get(mesh->collision.collision_shape, &rot.x, &rot.y, &rot.z, &rot.w);
-			}
-
-			int collision_shape_type = physics_cs_type_get(mesh->collision.collision_shape);
-			switch(collision_shape_type)
-			{
-			case CST_SPHERE:
-			{
-				float radius = physics_cs_sphere_radius_get(mesh->collision.collision_shape);
-				im_sphere(radius, pos, rot, physics_draw_color, GDM_TRIANGLES, 1);
-			}
-			break;
-			case CST_BOX:
-			{
-				float x = 0.f, y = 0.f, z = 0.f;
-				physics_cs_box_params_get(mesh->collision.collision_shape, &x, &y, &z);
-				im_box(x, y, z, pos, rot, physics_draw_color, GDM_TRIANGLES, 1);
-			};
-			break;
-			default: break;
-			}
-		}
-    }
-
 	//Editor related rendering
 	if(game_state->game_mode == GAME_MODE_EDITOR)
 	{

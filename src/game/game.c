@@ -30,7 +30,6 @@
 #include "../common/parser.h"
 #include "../common/hashmap.h"
 #include "../common/variant.h"
-#include "../system/physics.h"
 #include "../system/platform.h"
 #include "debug_vars.h"
 #include "im_render.h"
@@ -53,8 +52,6 @@ static void game_scene_setup(void);
 static void game_on_log_message(const char* message, va_list args);
 static void game_on_log_warning(const char* warning_message, va_list args);
 static void game_on_log_error(const char* context, const char* error_message, va_list args);
-static void on_box_move(Rigidbody body);
-static void on_collision_test(struct Entity* this_ent, struct Entity* other_ent, Rigidbody body, Rigidbody body2);
 
 static struct Game_State* game_state = NULL;
 
@@ -1972,17 +1969,6 @@ struct Game_State* game_state_get(void)
     return game_state;
 }
 
-void on_collision_test(struct Entity* this_ent, struct Entity* other_ent, Rigidbody body, Rigidbody body2)
-{
-    float y = this_ent->transform.position.y;
-    if(y < 10.f)
-    {
-		//vec3 translation = {0.f, 50.f, 0.f};
-		//transform_translate(this_ent, &translation, TS_WORLD);
-		//platform->physics.body_force_add(body, 0.f, -100.f, 0.f);
-    }
-    //platform->physics.body_force_add(body, 0.f, 500.f, 0.f);
-}
 
 void game_on_log_message(const char* message, va_list args)
 {

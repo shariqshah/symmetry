@@ -3,7 +3,6 @@
 
 #include "../common/linmath.h"
 #include "../common/num_types.h"
-#include "../system/physics.h"
 #include "../system/sound.h"
 #include "bounding_volumes.h"
 #include "material.h"
@@ -14,7 +13,6 @@ struct Entity;
 struct Material_Param;
 struct Parser_Object;
 
-typedef void (*Collision_CB)(struct Entity* this_entity, struct Entity* other_entity, Rigidbody, Rigidbody);
 typedef void (*Trigger_Func)(struct Trigger* trigger);
 
 enum Entity_Type
@@ -102,7 +100,6 @@ struct Transform
     quat            rotation;
     mat4            trans_mat;
     bool            is_modified;
-    bool            sync_physics;
     struct Entity*  parent;
     struct Entity** children;
 };
@@ -178,18 +175,10 @@ struct Light
 };
 
 
-struct Collision
-{
-    Rigidbody       rigidbody;
-    Collision_Shape collision_shape;
-    Collision_CB    on_collision;
-};
-
 struct Static_Mesh
 {
     struct Entity    base;
     struct Model     model;
-    struct Collision collision;
 };
 
 struct Player
@@ -261,10 +250,6 @@ bool           entity_write(struct Entity* entity, struct Parser_Object* object,
 struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_entity);
 const char*    entity_type_name_get(struct Entity* entity);
 int            entity_get_num_children_of_type(struct Entity* entity, int type, struct Entity** in_children, int max_children);
-void           entity_rigidbody_on_move(Rigidbody body);
-void           entity_rigidbody_on_collision(Rigidbody body_A, Rigidbody body_B);
-void           entity_rigidbody_set(struct Entity* entity, struct Collision* collision, Rigidbody body);
-void           entity_collision_shape_set(struct Entity* entity, struct Collision* collision, Collision_Shape shape); // Only used for collision shapes like plane which can't have a rigidbody attached to collision shape
 void           entity_rename(struct Entity* entity, const char* new_name);
 void           entity_update_derived_bounding_box(struct Entity* entity);
 void           entity_bounding_box_reset(struct Entity* entity, bool update_derived);

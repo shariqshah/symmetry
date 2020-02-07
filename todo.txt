@@ -16,7 +16,6 @@ Todo:
 		- Basic Enemy
 		- Main Menu Scene
 		? Split this todo into gameplay/engine todos
-	- Remove ODE completely
 	? Write entity flags to scene file or when saving entity to file?
 	? Add scene init/de-init function hashmap that maps a function that should be called when scene is loaded and unloaded. Save this to file for every scene or map functions based on the name of the scene?
 	- Release mouse when window loses focus and limit fps
@@ -404,3 +403,4 @@ Done:
 	* Implement Triggers
 	* Fix crash where if entity selected in editor is deleted in game mode and then returning to editor mode causes a crash
 	* Add "Select Parent" button to property inspector
+	* Remove ODE completely

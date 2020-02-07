@@ -239,7 +239,6 @@ void transform_update_transmat(struct Entity* entity)
 			transform_update_transmat(entity->transform.children[i]);
 	}
 	transform->is_modified = true;
-	if(entity->type == ET_STATIC_MESH) entity->transform.sync_physics = true; // Find a better way to handle this
 }
 
 void transform_destroy(struct Entity* entity)

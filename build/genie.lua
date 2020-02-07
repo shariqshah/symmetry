@@ -103,24 +103,22 @@ solution "Symmetry"
 
 		configuration "linux"
 		    includedirs {"../include/linux/sdl2/", "../include/common/soloud/", "../include/linux/"}
-		    libdirs {"../lib/linux/sdl2/", "../lib/linux/soloud/", "../lib/linux/ode/"}
+		    libdirs {"../lib/linux/sdl2/", "../lib/linux/soloud/"}
 		    linkoptions {"'-Wl,-rpath,$$ORIGIN'"}
-		    links {"SDL2", "m", "ode", "pthread"}
+		    links {"SDL2", "m", "pthread"}
 
 		configuration "macosx"
 		    includedirs {"../include/mac/sdl2/", "../include/common/soloud/", "../include/mac/"}
-		    libdirs {"../lib/mac/sdl2/", "../lib/mac/soloud/", "../lib/mac/ode/"}
-		    links {"SDL2", "m", "ode", "pthread", "soloud"}
+		    libdirs {"../lib/mac/sdl2/", "../lib/mac/soloud/"}
+		    links {"SDL2", "m", "pthread", "soloud"}
 
 		configuration {"macosx", "Debug"}
 			postbuildcommands
 			{
 				'cp ../../lib/mac/sdl2/libSDL2-2.0.0.dylib debug/',
 				'cp ../../lib/mac/soloud/libsoloud.dylib debug/',
-				'cp ../../lib/mac/ode/libode.0.16.0.dylib debug/',
 				'install_name_tool -add_rpath @executable_path/. debug/Symmetry',
 				'install_name_tool -change "/usr/local/opt/sdl2/lib/libSDL2-2.0.0.dylib" "@rpath/libSDL2-2.0.0.dylib" debug/Symmetry',
-				'install_name_tool -change "/Users/shariqshah/Dev/ode/build_cmake/libode.0.16.0.dylib" "@rpath/libode.0.16.0.dylib" debug/Symmetry',
 				'install_name_tool -change "/usr/local/lib/libsoloud.dylib" "@rpath/libsoloud.dylib" debug/Symmetry',
 			}
 
@@ -129,17 +127,15 @@ solution "Symmetry"
 			{
 				'cp ../../lib/mac/sdl2/libSDL2-2.0.0.dylib release/',
 				'cp ../../lib/mac/soloud/libsoloud.dylib release/',
-				'cp ../../lib/mac/ode/libode.0.16.0.dylib release/',
 				'install_name_tool -add_rpath @executable_path/. release/Symmetry',
 				'install_name_tool -change "/usr/local/opt/sdl2/lib/libSDL2-2.0.0.dylib" "@rpath/libSDL2-2.0.0.dylib" release/Symmetry',
-				'install_name_tool -change "/Users/shariqshah/Dev/ode/build_cmake/libode.0.16.0.dylib" "@rpath/libode.0.16.0.dylib" release/Symmetry',
 				'install_name_tool -change "/usr/local/lib/libsoloud.dylib" "@rpath/libsoloud.dylib" release/Symmetry',
 				'cp version.txt release/'
 			}
 
 		configuration {"windows", "vs2019"}
 		    includedirs	{"../include/windows/sdl2/", "../include/common/soloud/", "../include/windows/"}
-		    libdirs {"../lib/windows/sdl2/", "../lib/windows/soloud/", "../lib/windows/ode/"}
+		    libdirs {"../lib/windows/sdl2/", "../lib/windows/soloud/"}
 			
 		configuration {"not macosx", "Debug"}
 		    links {"soloud_x64_d"}
@@ -155,29 +151,25 @@ solution "Symmetry"
 			{
 				"copy ..\\..\\lib\\windows\\sdl2\\SDL2.dll release\\ /Y",
 				"copy ..\\..\\lib\\windows\\soloud\\soloud_x64.dll release\\ /Y",
-				"copy ..\\..\\lib\\windows\\ode\\ode_double.dll release\\ /Y",
 				"xcopy ..\\..\\assets ..\\..\\bin\\assets /s /e /h /i /y /d",
 				"copy release\\Symmetry.exe ..\\..\\bin\\ /Y",
 				"copy release\\SDL2.dll ..\\..\\bin\\ /Y",
 				"copy release\\soloud_x64.dll ..\\..\\bin\\ /Y",
-				"copy release\\ode_double.dll ..\\..\\bin\\ /Y",
 				"copy version.txt ..\\..\\bin\\ /Y",
 				"rmdir release\\assets",
 				"mklink /D release\\assets ..\\..\\..\\assets"
 			}
-			links {"ode_double", "SDL2"}
+			links {"SDL2"}
 			
 		configuration {"windows", "Debug", "vs2019"}
 			postbuildcommands 
 			{
 				"copy ..\\..\\lib\\windows\\sdl2\\SDL2.dll debug\\ /Y",
 				"copy ..\\..\\lib\\windows\\soloud\\soloud_x64_d.dll debug\\ /Y",
-				"copy ..\\..\\lib\\windows\\ode\\ode_doubled.dll debug\\ /Y",
-				"copy ..\\..\\lib\\windows\\ode\\ode_doubled.pdb debug\\ /Y",
 				"rmdir debug\\assets",
 				"mklink /D debug\\assets ..\\..\\..\\assets"
 			}
-			links {"ode_doubled", "SDL2"}
+			links {"SDL2"}
 
 		configuration {"not windows"}
 			postbuildcommands {"ln -fs " .. os.getcwd()  .. "/../assets " .. os.getcwd() .. "/" .. _ACTION .. "/debug"}

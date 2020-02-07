@@ -743,7 +743,7 @@ struct Enemy* scene_enemy_create(struct Scene* scene, const char* name, struct E
 	return new_enemy;
 }
 
-struct Trigger* scene_trigger_create(struct Scene* scene, const char* name, struct Entity* parent, int type, int trigger_event, int mask)
+struct Trigger* scene_trigger_create(struct Scene* scene, const char* name, struct Entity* parent, int type, int mask)
 {
 	assert(scene);
 	struct Trigger* new_trigger = NULL;
@@ -760,7 +760,7 @@ struct Trigger* scene_trigger_create(struct Scene* scene, const char* name, stru
 	if(new_trigger)
 	{
 		entity_init(&new_trigger->base, name, parent ? parent : &scene->root_entity);
-		trigger_init(new_trigger, type, trigger_event, mask);
+		trigger_init(new_trigger, type, mask);
 	}
 	else
 	{

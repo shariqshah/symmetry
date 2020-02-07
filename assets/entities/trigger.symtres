@@ -4,7 +4,6 @@ Entity
 	scale : 1.000 1.000 1.000
 	rotation : 0.000 0.000 0.000 1.000
 	trigger_mask : 1
-	trigger_event : -1
 	active : true
 	position : 0.000 0.000 0.000
 	bouding_box_min : -0.500 -0.500 -0.500

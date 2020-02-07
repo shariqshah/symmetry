@@ -7,7 +7,7 @@
 
 #include <assert.h>
 
-void trigger_init(struct Trigger* trigger, int type, int trigger_event, int trigger_mask)
+void trigger_init(struct Trigger* trigger, int type, int trigger_mask)
 {
 	assert(type < TRIG_MAX);
 
@@ -15,7 +15,6 @@ void trigger_init(struct Trigger* trigger, int type, int trigger_event, int trig
 	trigger->count = 0;
 	trigger->triggered = false;
 	trigger->type = type;
-	trigger->trigger_event = trigger_event;
 	trigger->trigger_mask = trigger_mask;
 }
 
@@ -63,7 +62,6 @@ void trigger_update_physics(struct Trigger* trigger, struct Scene* scene, float 
 			fire_event = true;
 			trigger->triggered = true;
 			trigger->count++;
-			scene_trigger_remove(scene, trigger);
 		}
 		break;
 		case TRIG_TOGGLE:
@@ -94,12 +92,15 @@ void trigger_update_physics(struct Trigger* trigger, struct Scene* scene, float 
 		if(fire_event)
 			log_message("event triggered!");
 
-		if(fire_event && trigger->trigger_event != -1)
+		if(fire_event)
 		{
 			struct Event_Manager* event_manager = game_state_get()->event_manager;
 			struct Event* trigger_event = event_manager_create_new_event(event_manager);
-			trigger_event->type = trigger->trigger_event;
+			trigger_event->type = EVT_TRIGGER;
+			trigger_event->trigger.sender = trigger;
 			event_manager_send_event(event_manager, trigger_event);
+			if(trigger->type == TRIG_ONE_SHOT)
+				scene_trigger_remove(scene, trigger);
 		}
 	}
 	else

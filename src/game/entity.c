@@ -116,60 +116,6 @@ bool entity_write(struct Entity* entity, struct Parser_Object* object, bool writ
 	hashmap_int_set(entity_data, "type", entity->type);
 	hashmap_bool_set(entity_data, "active", entity->flags & EF_ACTIVE ? true : false);
 
-	//if(entity->has_collision)
-	//{
-	//	if(entity->collision.rigidbody)
-	//		hashmap_bool_set(entity_data, "has_rigidbody", true);
-	//	else
-	//		hashmap_bool_set(entity_data, "has_rigidbody", false);
-
-	//	int shape_type = platform->physics.cs_type_get(entity->collision.collision_shape);
-	//	hashmap_int_set(entity_data, "collision_shape_type", shape_type);
-	//	switch(shape_type)
-	//	{
-	//	case CST_BOX:
-	//	{
-	//		float x, y, z;
-	//		x = y = z = 0.f;
-	//		platform->physics.cs_box_params_get(entity->collision.collision_shape, &x, &y, &z);
-	//		hashmap_float_set(entity_data, "collision_shape_x", x);
-	//		hashmap_float_set(entity_data, "collision_shape_y", y);
-	//		hashmap_float_set(entity_data, "collision_shape_z", z);
-	//	}
-	//	break;
-	//	case CST_SPHERE:
-	//	{
-	//		float radius = 0.f;
-	//		platform->physics.cs_sphere_radius_get(entity->collision.collision_shape);
-	//		hashmap_float_set(entity_data, "collision_shape_radius", radius);
-	//	}
-	//	break;
-	//	case CST_CAPSULE:
-	//	{
-	//		float length = 0.f, radius = 0.f;
-	//		platform->physics.cs_capsule_params_get(entity->collision.collision_shape, &radius, &length);
-	//		hashmap_float_set(entity_data, "collision_shape_length", length);
-	//		hashmap_float_set(entity_data, "collision_shape_radius", radius);
-	//	}
-	//	break;
-	//	case CST_PLANE:
-	//	{
-	//		float a, b, c, d;
-	//		platform->physics.cs_plane_params_get(entity->collision.collision_shape, &a, &b, &c, &d);
-	//		hashmap_float_set(entity_data, "collision_shape_a", a);
-	//		hashmap_float_set(entity_data, "collision_shape_b", b);
-	//		hashmap_float_set(entity_data, "collision_shape_c", c);
-	//		hashmap_float_set(entity_data, "collision_shape_d", d);
-	//	}
-	//	break;
-	//	default: break;
-	//	}
-
-	//}
-
-	//struct Entity* parent = entity_get_parent(entity->id);
-	//hashmap_str_set(entity_data, "parent", parent ? parent->name  : "NONE");
-
 	/* Transform */
 	hashmap_vec3_set(entity_data, "position", &entity->transform.position);
 	hashmap_vec3_set(entity_data, "scale", &entity->transform.scale);
@@ -276,7 +222,6 @@ bool entity_write(struct Entity* entity, struct Parser_Object* object, bool writ
 		struct Trigger* trigger = (struct Trigger*)entity;
 		hashmap_int_set(entity_data, "trigger_type", trigger->type);
 		hashmap_int_set(entity_data, "trigger_mask", trigger->trigger_mask);
-		hashmap_int_set(entity_data, "trigger_event", trigger->trigger_event);
 	}
 	break;
 	};
@@ -524,8 +469,7 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 	{
 		int type          = hashmap_value_exists(object->data, "trigger_type") ? hashmap_int_get(object->data, "trigger_type") : TRIG_TOGGLE;
 		int mask          = hashmap_value_exists(object->data, "trigger_mask") ? hashmap_int_get(object->data, "trigger_mask") : TRIGM_ALL;
-		int trigger_event = hashmap_value_exists(object->data, "trigger_event") ? hashmap_int_get(object->data, "trigger_event") : -1;
-		struct Trigger* trigger = scene_trigger_create(scene, name, parent_entity, type, trigger_event, mask);
+		struct Trigger* trigger = scene_trigger_create(scene, name, parent_entity, type, mask);
 		if(!trigger)
 			return new_entity;
 		else

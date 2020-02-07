@@ -251,7 +251,6 @@ struct Trigger
 	int           type;
 	int           count;
 	int           trigger_mask;
-	int           trigger_event; // Event to fire when triggered
 };
 
 void           entity_init(struct Entity* entity, const char* name, struct Entity* parent);

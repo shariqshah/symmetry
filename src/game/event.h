@@ -6,6 +6,7 @@
 #include "../common/limits.h"
 
 struct Entity;
+struct Trigger;
 
 typedef void (*Event_Handler) (const struct Event* event);
 typedef void (*Event_Handler_Object) (const struct Event* event, void* subscriber);
@@ -23,6 +24,7 @@ enum Event_Types
 	EVT_WINDOW_RESIZED,
 	EVT_TEXT_INPUT,
 	EVT_SCENE_LOADED,
+	EVT_TRIGGER,
 	EVT_MAX
 };
 
@@ -83,6 +85,11 @@ struct Scene_Loaded_Event
 	char filename[MAX_FILENAME_LEN];
 };
 
+struct Trigger_Event
+{
+	struct Trigger* sender;
+};
+
 struct Event
 {
 	int type;
@@ -95,6 +102,7 @@ struct Event
 		struct Text_Input_Event     text_input;
 		struct Window_Resized_Event window_resize;
 		struct Scene_Loaded_Event   scene_load;
+		struct Trigger_Event        trigger;
 	};
 };
 

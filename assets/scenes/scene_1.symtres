@@ -16,9 +16,9 @@ Player
 {
 	type : 2
 	scale : 1.000 1.000 1.000
-	rotation : 0.000 -0.892 0.000 0.452
+	rotation : 0.000 0.953 0.000 -0.304
 	active : true
-	position : -56.360 2.292 -37.583
+	position : -33.850 2.459 -24.439
 	bouding_box_min : -1.500 -1.500 -1.000
 	name : Player
 	bouding_box_max : 1.500 1.500 1.000
@@ -83,16 +83,16 @@ Scene_Entity_Entry
 {
 	scale : 49.800 5.000 1.000
 	rotation : 0.000 0.000 0.000 1.000
-	position : -60.000 3.000 2.000
+	position : -59.000 3.000 2.000
 	filename : cube_uv
 	name : Cube
 }
 
 Scene_Entity_Entry
 {
-	scale : 65.000 5.000 1.000
+	scale : 65.000 5.000 2.000
 	rotation : 0.000 0.000 0.000 1.000
-	position : 15.000 3.000 -30.000
+	position : 17.000 3.000 -30.000
 	filename : cube_uv
 	name : Cube
 }
@@ -145,18 +145,9 @@ Scene_Entity_Entry
 Scene_Entity_Entry
 {
 	scale : 1.000 1.000 1.000
-	rotation : 0.000 0.000 0.000 1.000
+	rotation : 0.000 -0.000 0.000 1.000
 	position : 5.000 3.000 6.000
 	filename : turret
 	name : Turret
-}
-
-Scene_Entity_Entry
-{
-	scale : 1.000 1.000 1.000
-	rotation : 0.000 0.000 0.000 1.000
-	position : -25.000 2.000 -18.000
-	filename : Trigger
-	name : Trigger
 }
 

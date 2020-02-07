@@ -1848,6 +1848,18 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 				nk_edit_unfocus(context);
 			}
 
+			if(parent_ent != &scene->root_entity)
+			{
+				nk_layout_row_dynamic(context, row_height, 1);
+				if(nk_button_label(context, "Select Parent"))
+				{
+					editor_entity_select(editor, parent_ent);
+					nk_end(context);
+					return;
+				}
+
+			}
+
 			nk_layout_row_dynamic(context, row_height, 2);
 			nk_label(context, "Children", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
 			nk_labelf(context, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, "%d", array_len(entity->transform.children));

@@ -44,7 +44,7 @@ struct Camera*       scene_camera_create(struct Scene* scene, const char* name, 
 struct Static_Mesh*  scene_static_mesh_create(struct Scene* scene, const char* name, struct Entity* parent, const char* geometry_name, int material_type);
 struct Sound_Source* scene_sound_source_create(struct Scene* scene, const char* name, struct Entity* parent, const char* filename, int type, bool loop, bool play);
 struct Enemy*        scene_enemy_create(struct Scene* scene, const char* name, struct Entity* parent, int type);
-struct Trigger*      scene_trigger_create(struct Scene* scene, const char* name, struct Entity* parent, int type, int trigger_event, int mask);
+struct Trigger*      scene_trigger_create(struct Scene* scene, const char* name, struct Entity* parent, int type, int mask);
 
 void scene_entity_base_remove(struct Scene* scene, struct Entity* entity);
 void scene_light_remove(struct Scene* scene, struct Light* light);

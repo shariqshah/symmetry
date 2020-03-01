@@ -4,16 +4,17 @@
 
 ## About
 
-A simple first person shooter that may or may not have anything to do with the concept of symmetry.
+A simple first person shooter that may or may not have anything to do with the concept of symmetry. This initially began as a rewrite of a previous
+[project](https://github.com/shariqshah/Project-Abstraction) in an attempt to use as few libraries as possible while using a much more simpler language than C++.
+The intention was for it to serve as a learning exercise by creating everything from scratch. But in order to finish this project in a finite amount of time, I later decided to considerably constrain the 
+scope of the project. I turned this into a simple first person game which serves as a more concrete goal to be achieved.
 The game has a similar structure to older games like Quake where the objective is usually to survive and get to end of the level while killing monsters/demons.
-The purpose of this project is to serve as an exercise in creating a game from the ground up using as few libraries as possible. The game uses the following 
-libraries:
+The game uses the following libraries:
 
 | Library                                      | Usage                                   |
 | ---------------------------------------------| --------------------------------------- |
 | [SDL2](https://www.libsdl.org/)              | Windowing, Input, Platform abstraction  |
 | [Soloud](http://sol.gfxile.net/soloud/)      | 3d positional audio                     |
-| [ODE](http://ode.org/)                       | Physics                                 |
 | [Nuklear](https://github.com/vurtun/nuklear) | In-game and editor UI                   |
 | [GLAD](https://github.com/dav1dde/glad-web)  | OpenGL Extension Loading                |
 

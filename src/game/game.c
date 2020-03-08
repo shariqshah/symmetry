@@ -36,6 +36,7 @@
 #include "event.h"
 #include "../common/limits.h"
 #include "scene_funcs.h"
+#include "gui_game.h"
 
 #define UNUSED(a) (void)a
 #define MIN_NUM(a,b) ((a) < (b) ? (a) : (b))
@@ -74,7 +75,8 @@ bool game_init(struct Window* window, struct Hashmap* cvars)
 		game_state->scene                    = calloc(1, sizeof(*game_state->scene));
 		game_state->console                  = calloc(1, sizeof(*game_state->console));
 		game_state->editor                   = calloc(1, sizeof(*game_state->editor));
-		game_state->gui                      = calloc(1, sizeof(*game_state->gui));
+		game_state->gui_editor                      = calloc(1, sizeof(*game_state->gui_editor));
+		game_state->gui_game                 = calloc(1, sizeof(*game_state->gui_game));
 		game_state->event_manager            = calloc(1, sizeof(*game_state->event_manager));
 		game_state->sound                    = calloc(1, sizeof(*game_state->sound));
 		game_state->debug_vars               = calloc(1, sizeof(*game_state->debug_vars));
@@ -103,7 +105,8 @@ bool game_init(struct Window* window, struct Hashmap* cvars)
 		shader_init();
 		texture_init();
 		framebuffer_init();
-		gui_init(game_state->gui);
+		gui_init(game_state->gui_editor);
+		gui_init(game_state->gui_game);
 		console_init(game_state->console);
 		geom_init();
 		sound_init(game_state->sound);
@@ -112,12 +115,12 @@ bool game_init(struct Window* window, struct Hashmap* cvars)
 		renderer_init(game_state->renderer);
 		scene_init(game_state->scene);
 		editor_init(game_state->editor);
+
     }
 	
     /* Debug scene setup */
     //game_scene_setup();
-	scene_load(game_state->scene, "scene_1", DIRT_INSTALL);
-    game_state->is_initialized = true;
+    game_state->is_initialized = scene_load(game_state->scene, "scene_1", DIRT_INSTALL) ? true : false;
 	return game_state->is_initialized;
 }
 
@@ -524,9 +527,10 @@ bool game_run(void)
 		if(frame_time > MAX_FRAME_TIME) frame_time = (1.f / 60.f); /* To deal with resuming from breakpoint we artificially set delta time */
 		accumulator += frame_time;
 
-		gui_input_begin(game_state->gui);
+		struct Gui* gui = game_state->game_mode == GAME_MODE_EDITOR ? game_state->gui_editor : game_state->gui_game;
+		gui_input_begin(gui);
 		event_manager_poll_events(game_state->event_manager, &should_window_close);
-		gui_input_end(game_state->gui);
+		gui_input_end(gui);
 
 		struct Game_State* game_state = game_state_get();
 		while(accumulator >= game_state->fixed_delta_time)
@@ -580,19 +584,34 @@ void game_update(float dt, bool* window_should_close)
 			platform_mouse_position_set(game_state_get()->window, width / 2, height / 2);
 		}
     }
-	
+	if(input_map_state_get("Pause", KS_RELEASED))
+	{
+		if(game_state->game_mode == GAME_MODE_PAUSE)
+		{
+			game_state->game_mode = GAME_MODE_GAME;
+		}
+		else if(game_state->game_mode == GAME_MODE_GAME)
+		{
+			game_state->game_mode = GAME_MODE_PAUSE;
+			input_mouse_mode_set(MM_NORMAL);
+			int width = 0, height = 0;
+			window_get_drawable_size(game_state_get()->window, &width, &height);
+			platform_mouse_position_set(game_state_get()->window, width / 2, height / 2);
+		}
+	}
+
     //game_debug(dt);
     //game_debug_gui(dt);
-    console_update(game_state->console, game_state->gui, dt);
+    console_update(game_state->console, game_state->gui_editor, dt);
     scene_update(game_state->scene, dt);
-    if(game_state->game_mode == GAME_MODE_GAME)
-    {
-		//physics_step(dt);
-    }
-    else if(game_state->game_mode == GAME_MODE_EDITOR)
+    if(game_state->game_mode == GAME_MODE_EDITOR)
     {
 		editor_update(game_state->editor, dt);
     }
+	else
+	{
+		gui_game_update(game_state->gui_game, dt);
+	}
 }
 
 void game_post_update(float dt)
@@ -606,7 +625,7 @@ void game_post_update(float dt)
 
 void game_debug_gui(float dt)
 {
-    struct Gui* gui_state = game_state->gui;
+    struct Gui* gui_state = game_state->gui_editor;
     struct nk_context* ctx = &gui_state->context;
 	
 	/* window flags */
@@ -1937,7 +1956,8 @@ void game_cleanup(void)
 			scene_destroy(game_state->scene);
 			input_cleanup();
 			renderer_cleanup(game_state->renderer);
-			gui_cleanup(game_state->gui);
+			gui_cleanup(game_state->gui_editor);
+			gui_cleanup(game_state->gui_game);
 			console_destroy(game_state->console);
             geom_cleanup();
 			framebuffer_cleanup();
@@ -1953,7 +1973,8 @@ void game_cleanup(void)
 			free(game_state->scene);
 			free(game_state->renderer);
 			free(game_state->event_manager);
-			free(game_state->gui);
+			free(game_state->gui_editor);
+			free(game_state->gui_game);
 			free(game_state->sound);
 			free(game_state->debug_vars);
 			hashmap_free(game_state->scene_init_func_table);

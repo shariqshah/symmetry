@@ -18,7 +18,8 @@ struct Sound;
 enum Game_Mode
 {
 	GAME_MODE_GAME = 0,
-	GAME_MODE_EDITOR
+	GAME_MODE_EDITOR,
+	GAME_MODE_PAUSE
 };
 
 struct Game_State
@@ -30,7 +31,8 @@ struct Game_State
 	struct Renderer*      renderer;
 	struct Scene*         scene;
 	struct Console*       console;
-	struct Gui*           gui;
+	struct Gui*           gui_editor;
+	struct Gui*           gui_game;
 	struct Event_Manager* event_manager;
 	struct Editor*        editor;
 	struct Hashmap*       cvars;

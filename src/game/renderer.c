@@ -296,7 +296,8 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
     shader_unbind();
 
     /* Render UI */
-    gui_render(game_state->gui, NK_ANTI_ALIASING_ON);
+    gui_render(game_state->gui_editor, NK_ANTI_ALIASING_ON);
+    gui_render(game_state->gui_game, NK_ANTI_ALIASING_ON);
 }
 
 void renderer_cleanup(struct Renderer* renderer)

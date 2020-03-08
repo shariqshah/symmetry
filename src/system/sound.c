@@ -100,7 +100,8 @@ void sound_cleanup(struct Sound* sound)
 
 void sound_source_instance_destroy(struct Sound* sound, uint source_instance)
 {
-	Soloud_stop(sound->soloud_context, source_instance);
+	if(sound_source_instance_is_valid(sound, source_instance))
+		Soloud_stop(sound->soloud_context, source_instance);
 }
 
 void sound_source_instance_update_position(struct Sound* sound, uint source_instance, vec3 abs_pos)

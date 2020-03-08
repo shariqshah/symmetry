@@ -57,7 +57,7 @@ void debug_vars_post_update(struct Debug_Vars* debug_vars)
 	int                display_width  = 0;
 	int                display_height = 0;
 	struct Game_State* game_state     = game_state_get();
-	struct Gui*        gui            = game_state->gui;
+	struct Gui*        gui            = game_state->gui_editor;
 	struct nk_context* context        = &gui->context;
 
 	window_get_drawable_size(game_state->window, &display_width, &display_height);

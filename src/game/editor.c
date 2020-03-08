@@ -363,7 +363,7 @@ void editor_update(struct Editor* editor, float dt)
 	editor_camera_update(editor, dt);
 
 	struct Game_State* game_state = game_state_get();
-	struct nk_context* context    = &game_state->gui->context;
+	struct nk_context* context    = &game_state->gui_editor->context;
 	int win_width = 0, win_height = 0;
 	window_get_drawable_size(game_state->window, &win_width, &win_height);
 	int half_width = win_width / 2, half_height = win_height / 2;
@@ -842,7 +842,7 @@ void editor_on_mousebutton_release(const struct Event* event)
 {
 	struct Game_State* game_state = game_state_get();
 	struct Editor*     editor     = game_state->editor;
-	struct Gui*        gui        = game_state->gui;
+	struct Gui*        gui        = game_state->gui_editor;
 
 	if(game_state->game_mode != GAME_MODE_EDITOR || game_state->console->visible)
 		return;
@@ -942,7 +942,7 @@ void editor_on_mousebutton_press(const struct Event* event)
 {
 	struct Game_State* game_state = game_state_get();
 	struct Editor*     editor     = game_state->editor;
-	struct Gui*        gui        = game_state->gui;
+	struct Gui*        gui        = game_state->gui_editor;
 	if(game_state->game_mode != GAME_MODE_EDITOR || nk_window_is_any_hovered(&gui->context) || game_state->console->visible)
 		return;
 
@@ -972,7 +972,7 @@ void editor_on_mousemotion(const struct Event* event)
 {
 	struct Game_State* game_state = game_state_get();
 	struct Editor*     editor     = game_state->editor;
-	struct Gui*        gui        = game_state->gui;
+	struct Gui*        gui        = game_state->gui_editor;
 	if(game_state->game_mode != GAME_MODE_EDITOR || nk_window_is_any_hovered(&gui->context) || game_state->console->visible)
 		return;
 
@@ -1164,7 +1164,7 @@ void editor_on_key_release(const struct Event* event)
 {
 	struct Game_State* game_state = game_state_get();
 	struct Editor*     editor     = game_state->editor;
-	struct Gui*        gui        = game_state->gui;
+	struct Gui*        gui        = game_state->gui_editor;
 	if(game_state->game_mode != GAME_MODE_EDITOR || game_state->console->visible)
 		return;
 
@@ -1351,11 +1351,11 @@ void editor_on_key_press(const struct Event* event)
 {
 	struct Game_State* game_state = game_state_get();
 	struct Editor*     editor     = game_state->editor;
-	struct Gui*        gui        = game_state->gui;
+	struct Gui*        gui        = game_state->gui_editor;
 	if(game_state->game_mode != GAME_MODE_EDITOR || nk_window_is_any_hovered(&gui->context) || game_state->console->visible)
 		return;
 
-	if(!nk_window_is_any_hovered(&game_state_get()->gui->context))
+	if(!nk_window_is_any_hovered(&game_state_get()->gui_editor->context))
 	{
 		if(event->key.key == KEY_ALT && editor->current_tool == EDITOR_TOOL_TRANSLATE && editor->current_axis != EDITOR_AXIS_Y) editor_axis_set(editor, EDITOR_AXIS_Y);
 	}
@@ -1447,7 +1447,7 @@ void editor_axis_set(struct Editor* editor, int axis)
 void editor_camera_update(struct Editor* editor, float dt)
 {
 	struct Game_State* game_state = game_state_get();
-	struct Gui*        gui        = game_state->gui;
+	struct Gui*        gui        = game_state->gui_editor;
 	if(game_state->console->visible || nk_item_is_any_active(&gui->context))
 		return;
 

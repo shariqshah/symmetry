@@ -268,9 +268,10 @@ void gui_on_key(const struct Event* event)
 {
 	assert(event->type == EVT_KEY_PRESSED || event->type == EVT_KEY_RELEASED);
 
-	int                key      = event->key.key;
-	bool               mod_ctrl = event->key.mod_ctrl;
-    struct nk_context* ctx      = &game_state_get()->gui->context;
+	struct Game_State* game_state = game_state_get();
+	int                key        = event->key.key;
+	bool               mod_ctrl   = event->key.mod_ctrl;
+    struct nk_context* ctx        = game_state->game_mode == GAME_MODE_EDITOR ? &game_state->gui_editor->context : &game_state->gui_game->context;
 
 	int down = event->type == EVT_KEY_PRESSED ? 1 : 0;
 	
@@ -339,11 +340,12 @@ void gui_on_mousebutton(const struct Event* event)
 {
 	assert(event->type == EVT_MOUSEBUTTON_PRESSED || event->type == EVT_MOUSEBUTTON_RELEASED);
 
-	int                button = event->mousebutton.button;
-	int                x      = event->mousebutton.x;
-	int                y      = event->mousebutton.y;
-	int                down   = event->type == EVT_MOUSEBUTTON_PRESSED ? 1 : 0;
-	struct nk_context* ctx    = &game_state_get()->gui->context;
+	struct Game_State* game_state = game_state_get();
+	int                button     = event->mousebutton.button;
+	int                x          = event->mousebutton.x;
+	int                y          = event->mousebutton.y;
+	int                down       = event->type == EVT_MOUSEBUTTON_PRESSED ? 1 : 0;
+	struct nk_context* ctx        = game_state->game_mode == GAME_MODE_EDITOR ? &game_state->gui_editor->context : &game_state->gui_game;
 
 	if(button == MSB_LEFT)   nk_input_button(ctx, NK_BUTTON_LEFT,   x, y, down);
 	if(button == MSB_MIDDLE) nk_input_button(ctx, NK_BUTTON_MIDDLE, x, y, down);
@@ -352,11 +354,12 @@ void gui_on_mousebutton(const struct Event* event)
 
 void gui_on_mousemotion(const struct Event* event)
 {
-	int                x    = event->mousemotion.x;
-	int                y    = event->mousemotion.y;
-	int                xrel = event->mousemotion.xrel;
-	int                yrel = event->mousemotion.yrel;
-	struct nk_context* ctx  = &game_state_get()->gui->context;
+	struct Game_State* game_state = game_state_get();
+	int                x          = event->mousemotion.x;
+	int                y          = event->mousemotion.y;
+	int                xrel       = event->mousemotion.xrel;
+	int                yrel       = event->mousemotion.yrel;
+	struct nk_context* ctx        = game_state->game_mode == GAME_MODE_EDITOR ? &game_state->gui_editor->context : &game_state->gui_game;
 
 	if(ctx->input.mouse.grabbed)
 	{
@@ -371,7 +374,8 @@ void gui_on_mousemotion(const struct Event* event)
 
 void gui_on_textinput(const struct Event* event)
 {
-	struct nk_context *ctx = &game_state_get()->gui->context;
+	struct Game_State* game_state = game_state_get();
+	struct nk_context* ctx = game_state->game_mode == GAME_MODE_EDITOR ? &game_state->gui_editor->context : &game_state->gui_game;
 	nk_glyph glyph;
 	memcpy(glyph, event->text_input.text, NK_UTF_SIZE);
 	nk_input_glyph(ctx, glyph);
@@ -381,7 +385,8 @@ void gui_on_mousewheel(const struct Event* event)
 {
 	int                x   = event->mousewheel.x;
 	int                y   = event->mousewheel.y;
-	struct nk_context* ctx = &game_state_get()->gui->context;
+	struct Game_State* game_state = game_state_get();
+	struct nk_context* ctx = game_state->game_mode == GAME_MODE_EDITOR ? &game_state->gui_editor->context : &game_state->gui_game;
 	nk_input_scroll(ctx, nk_vec2(x, y));
 }
 

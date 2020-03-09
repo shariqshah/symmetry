@@ -1,4 +1,5 @@
 Todo:
+	- Allow switching to editor mode when game is in pause mode
 	- Implement flag for ignoring collisions with certain entities
 	- Implement separate property window for player related variables that can be shown in the editor similar to renderer settings etc
 	- Implement game gui either with a separate nuklear context or as part of existing context
@@ -404,3 +405,5 @@ Done:
 	* Fix crash where if entity selected in editor is deleted in game mode and then returning to editor mode causes a crash
 	* Add "Select Parent" button to property inspector
 	* Remove ODE completely
+	* Fixed console not working in game mode
+	* Pause sound when game is in pause mode

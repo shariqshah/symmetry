@@ -51,6 +51,7 @@ void sound_master_volume_set(struct Sound* sound, float volume);
 void sound_listener_set(struct Sound* sound, struct Entity* listener);
 void sound_update_3d(struct Sound* sound);
 void sound_listener_update(struct Sound* sound);
+void sound_pause_all(struct Sound* sound, bool pause);
 
 void sound_source_instance_update_position(struct Sound* sound, uint source_instance, vec3 abs_pos);
 uint sound_source_instance_create(struct Sound* sound, struct Sound_Source_Buffer* source, bool is3d);

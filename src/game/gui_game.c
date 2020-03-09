@@ -1,6 +1,7 @@
 #include "gui_game.h"
 #include "gui.h"
 #include "game.h"
+#include "../common/log.h"
 #include "../system/platform.h"
 
 static void gui_game_pause_menu(struct nk_context* context);
@@ -45,6 +46,12 @@ void gui_game_pause_menu(struct nk_context* context)
 	{
 		nk_layout_row_dynamic(context, 30, 1);
 		nk_label(context, "Hello from the Pause Menu!", NK_TEXT_ALIGN_CENTERED | NK_TEXT_ALIGN_MIDDLE);
+
+		if(nk_button_label(context, "Button"))
+		{
+			log_message("Pressed!");
+		}
+
 		nk_end(context);
 	}
 }

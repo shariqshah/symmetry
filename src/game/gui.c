@@ -345,7 +345,7 @@ void gui_on_mousebutton(const struct Event* event)
 	int                x          = event->mousebutton.x;
 	int                y          = event->mousebutton.y;
 	int                down       = event->type == EVT_MOUSEBUTTON_PRESSED ? 1 : 0;
-	struct nk_context* ctx        = game_state->game_mode == GAME_MODE_EDITOR ? &game_state->gui_editor->context : &game_state->gui_game;
+	struct nk_context* ctx        = game_state->game_mode == GAME_MODE_EDITOR ? &game_state->gui_editor->context : &game_state->gui_game->context;
 
 	if(button == MSB_LEFT)   nk_input_button(ctx, NK_BUTTON_LEFT,   x, y, down);
 	if(button == MSB_MIDDLE) nk_input_button(ctx, NK_BUTTON_MIDDLE, x, y, down);
@@ -359,7 +359,7 @@ void gui_on_mousemotion(const struct Event* event)
 	int                y          = event->mousemotion.y;
 	int                xrel       = event->mousemotion.xrel;
 	int                yrel       = event->mousemotion.yrel;
-	struct nk_context* ctx        = game_state->game_mode == GAME_MODE_EDITOR ? &game_state->gui_editor->context : &game_state->gui_game;
+	struct nk_context* ctx        = game_state->game_mode == GAME_MODE_EDITOR ? &game_state->gui_editor->context : &game_state->gui_game->context;
 
 	if(ctx->input.mouse.grabbed)
 	{
@@ -375,7 +375,7 @@ void gui_on_mousemotion(const struct Event* event)
 void gui_on_textinput(const struct Event* event)
 {
 	struct Game_State* game_state = game_state_get();
-	struct nk_context* ctx = game_state->game_mode == GAME_MODE_EDITOR ? &game_state->gui_editor->context : &game_state->gui_game;
+	struct nk_context* ctx = game_state->game_mode == GAME_MODE_EDITOR ? &game_state->gui_editor->context : &game_state->gui_game->context;
 	nk_glyph glyph;
 	memcpy(glyph, event->text_input.text, NK_UTF_SIZE);
 	nk_input_glyph(ctx, glyph);
@@ -386,7 +386,7 @@ void gui_on_mousewheel(const struct Event* event)
 	int                x   = event->mousewheel.x;
 	int                y   = event->mousewheel.y;
 	struct Game_State* game_state = game_state_get();
-	struct nk_context* ctx = game_state->game_mode == GAME_MODE_EDITOR ? &game_state->gui_editor->context : &game_state->gui_game;
+	struct nk_context* ctx = game_state->game_mode == GAME_MODE_EDITOR ? &game_state->gui_editor->context : &game_state->gui_game->context;
 	nk_input_scroll(ctx, nk_vec2(x, y));
 }
 

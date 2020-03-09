@@ -75,7 +75,7 @@ bool game_init(struct Window* window, struct Hashmap* cvars)
 		game_state->scene                    = calloc(1, sizeof(*game_state->scene));
 		game_state->console                  = calloc(1, sizeof(*game_state->console));
 		game_state->editor                   = calloc(1, sizeof(*game_state->editor));
-		game_state->gui_editor                      = calloc(1, sizeof(*game_state->gui_editor));
+		game_state->gui_editor               = calloc(1, sizeof(*game_state->gui_editor));
 		game_state->gui_game                 = calloc(1, sizeof(*game_state->gui_game));
 		game_state->event_manager            = calloc(1, sizeof(*game_state->event_manager));
 		game_state->sound                    = calloc(1, sizeof(*game_state->sound));
@@ -589,10 +589,12 @@ void game_update(float dt, bool* window_should_close)
 		if(game_state->game_mode == GAME_MODE_PAUSE)
 		{
 			game_state->game_mode = GAME_MODE_GAME;
+			sound_pause_all(game_state->sound, false);
 		}
 		else if(game_state->game_mode == GAME_MODE_GAME)
 		{
 			game_state->game_mode = GAME_MODE_PAUSE;
+			sound_pause_all(game_state->sound, true);
 			input_mouse_mode_set(MM_NORMAL);
 			int width = 0, height = 0;
 			window_get_drawable_size(game_state_get()->window, &width, &height);
@@ -602,7 +604,7 @@ void game_update(float dt, bool* window_should_close)
 
     //game_debug(dt);
     //game_debug_gui(dt);
-    console_update(game_state->console, game_state->gui_editor, dt);
+    console_update(game_state->console, game_state->game_mode == GAME_MODE_EDITOR ? game_state->gui_editor : game_state->gui_game, dt);
     scene_update(game_state->scene, dt);
     if(game_state->game_mode == GAME_MODE_EDITOR)
     {

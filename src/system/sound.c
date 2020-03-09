@@ -63,6 +63,11 @@ void sound_listener_update(struct Sound* sound)
 								   up.x,  up.y,  up.z); // Up
 }
 
+void sound_pause_all(struct Sound* sound, bool pause)
+{
+	Soloud_setPauseAll(sound->soloud_context, pause);
+}
+
 void sound_listener_set(struct Sound* sound, struct Entity* listener)
 {
 	sound->listener = listener;

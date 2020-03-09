@@ -84,11 +84,11 @@ void console_toggle(struct Console* console)
 	}
 }
 
-void console_update(struct Console* console, struct Gui* gui_state, float dt)
+void console_update(struct Console* console, struct Gui* gui, float dt)
 {
     if(!console->visible) return;
 
-    struct nk_context* context = &gui_state->context;
+    struct nk_context* context = &gui->context;
     struct Game_State* game_state = game_state_get();
 
     int win_width = 0, win_height = 0;

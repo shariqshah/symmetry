@@ -140,7 +140,7 @@ void          event_manager_unsubscribe_with_object(struct Event_Manager* event_
 struct Event* event_manager_create_new_event(struct Event_Manager* event_manager);
 void          event_manager_send_event(struct Event_Manager* event_manager, struct Event* event);
 void          event_manager_send_event_entity(struct Event_Manager* event_manager, struct Event* event, struct Entity* entity);
-void          event_manager_poll_events(struct Event_Manager* event_manager, bool* out_quit);
+void          event_manager_poll_events(struct Event_Manager* event_manager);
 void          event_manager_cleanup(struct Event_Manager* event_manager);
 const char*   event_name_get(int event_type);
 

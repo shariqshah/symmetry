@@ -43,7 +43,7 @@
 #define MAX_NUM(a,b) ((a) < (b) ? (b) : (a))
 #define LEN(a) (sizeof(a)/sizeof(a)[0])
 
-static void game_update(float dt, bool* window_should_close);
+static void game_update(float dt);
 static void game_update_physics(float fixed_dt);
 static void game_post_update(float dt);
 static void game_render(void);
@@ -69,6 +69,7 @@ bool game_init(struct Window* window, struct Hashmap* cvars)
 		game_state->window                   = window;
 		game_state->cvars                    = cvars;
 		game_state->is_initialized           = false;
+		game_state->quit                     = false;
 		game_state->fixed_delta_time         = 1.f / 60.f;
 		game_state->game_mode                = GAME_MODE_GAME;
 		game_state->renderer                 = calloc(1, sizeof(*game_state->renderer));
@@ -517,9 +518,8 @@ bool game_run(void)
 {
     uint32 previous_time       = platform_ticks_get();
 	float  accumulator         = 0.f;
-	bool   should_window_close = false;
 
-    while(!should_window_close)
+    while(!game_state->quit)
     {
         uint32 current_time = platform_ticks_get();
 		float frame_time = (float)(current_time - previous_time) / 1000.f;
@@ -529,7 +529,7 @@ bool game_run(void)
 
 		struct Gui* gui = game_state->game_mode == GAME_MODE_EDITOR ? game_state->gui_editor : game_state->gui_game;
 		gui_input_begin(gui);
-		event_manager_poll_events(game_state->event_manager, &should_window_close);
+		event_manager_poll_events(game_state->event_manager);
 		gui_input_end(gui);
 
 		struct Game_State* game_state = game_state_get();
@@ -539,7 +539,7 @@ bool game_run(void)
 			accumulator -= game_state->fixed_delta_time;
 		}
 		
-		game_update(frame_time, &should_window_close);
+		game_update(frame_time);
 		game_post_update(frame_time);
 		game_render();
 		window_swap_buffers(game_state->window);
@@ -547,7 +547,7 @@ bool game_run(void)
     return true;
 }
 
-void game_update(float dt, bool* window_should_close)
+void game_update(float dt)
 {	
 	static int   frames = 0;
 	static int   fps = 0;
@@ -1966,7 +1966,6 @@ void game_cleanup(void)
 			texture_cleanup();
 			shader_cleanup();
 			sound_cleanup(game_state->sound);
-			//physics_cleanup();
 			debug_vars_cleanup(game_state->debug_vars);
 			event_manager_cleanup(game_state->event_manager);
 

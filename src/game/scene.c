@@ -89,6 +89,8 @@ void scene_init(struct Scene* scene)
 	editor_camera_init(game_state->editor, game_state->cvars);
 	editor_init_entities(game_state->editor);
 
+	if(game_state->game_mode == GAME_MODE_PAUSE)
+		game_state->game_mode = GAME_MODE_GAME;
 	scene->active_camera_index = game_state_get()->game_mode == GAME_MODE_GAME ? CAM_GAME : CAM_EDITOR;
 	scene->init = &scene_init_stub;
 	scene->cleanup = &scene_cleanup_stub;

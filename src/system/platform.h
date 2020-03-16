@@ -25,6 +25,7 @@ void           window_get_size(struct Window* window, int* out_width, int* out_h
 void           window_get_drawable_size(struct Window* window, int* out_width, int* out_height);
 void           window_swap_buffers(struct Window* window);
 bool           window_fullscreen_set(struct Window* window, bool fullscreen);
+bool           window_fullscreen_get(struct Window* window);
 
 // Platform functions
 bool        platform_init(void);

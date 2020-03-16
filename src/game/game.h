@@ -25,6 +25,7 @@ enum Game_Mode
 struct Game_State
 {
 	bool                  is_initialized;
+	bool                  quit;
 	int                   game_mode;
 	float                 fixed_delta_time;
 	struct Window*        window;

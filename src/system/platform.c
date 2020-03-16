@@ -31,7 +31,7 @@ struct Window* window_create(const char* title, int width, int height, int msaa,
 		}
 		new_window->sdl_window    = NULL;
 		new_window->gl_context    = NULL;
-		new_window->is_fullscreen = 0;
+		new_window->is_fullscreen = false;
     }
 
     SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
@@ -115,6 +115,11 @@ bool window_fullscreen_set(struct Window* window, bool fullscreen)
 		log_error("platform:window_fullscreen", "window_fullscreen_set failed, %s", SDL_GetError());
     }
     return success;
+}
+
+bool window_fullscreen_get(struct Window* window)
+{
+	return window->is_fullscreen;
 }
 
 void window_make_context_current(struct Window* window)

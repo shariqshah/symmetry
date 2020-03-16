@@ -1,5 +1,6 @@
 #include "event.h"
 #include "../common/log.h"
+#include "game.h"
 
 #include <string.h>
 #include <assert.h>
@@ -139,15 +140,16 @@ struct Event* event_manager_create_new_event(struct Event_Manager* event_manager
 	return new_event;
 }
 
-void event_manager_poll_events(struct Event_Manager* event_manager, bool* out_quit)
+void event_manager_poll_events(struct Event_Manager* event_manager)
 {
 	static SDL_Event event;
+	struct Game_State* game_state = game_state_get();
 	while(SDL_PollEvent(&event) != 0)
 	{
 		switch(event.type)
 		{
 		case SDL_QUIT:
-			*out_quit = true;
+			game_state->quit = true;
 			break;
 		case SDL_KEYDOWN: case SDL_KEYUP:
 		{

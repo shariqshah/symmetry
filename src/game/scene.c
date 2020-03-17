@@ -209,6 +209,7 @@ bool scene_load(struct Scene* scene, const char* filename, int directory_type)
 			transform_update_transmat(player);
 
 			if(hashmap_value_exists(player_data, "camera_clear_color")) player->camera->clear_color = hashmap_vec4_get(player_data, "camera_clear_color");
+			if(hashmap_value_exists(player_data, "player_health")) player->health = hashmap_int_get(player_data, "player_health");
 			num_objects_loaded++;
 		}
 		break;
@@ -267,6 +268,7 @@ bool scene_save(struct Scene* scene, const char* filename, int directory_type)
 	struct Parser_Object* player_object = parser_object_new(parser, PO_PLAYER);
 	entity_write(&scene->player, player_object, true);
 	hashmap_vec4_set(player_object->data, "camera_clear_color", &scene->player.camera->clear_color);
+	hashmap_int_set(player_object->data, "player_health", &scene->player.health);
 
 	scene_write_entity_list(scene, ET_DEFAULT, parser);
 	scene_write_entity_list(scene, ET_LIGHT, parser);
@@ -670,11 +672,6 @@ struct Sound_Source* scene_sound_source_create(struct Scene* scene, const char* 
 			return new_sound_source;
 		}
 
-		new_sound_source->source_instance = sound_source_instance_create(sound, new_sound_source->source_buffer, true);
-		vec3 abs_pos = { 0.f, 0.f,  0.f };
-		transform_get_absolute_position(entity, &abs_pos);
-		sound_source_instance_update_position(sound, new_sound_source->source_instance, abs_pos);
-
 		new_sound_source->loop = loop;
 		new_sound_source->min_distance = 0.f;
 		new_sound_source->max_distance = 10.f;
@@ -683,13 +680,21 @@ struct Sound_Source* scene_sound_source_create(struct Scene* scene, const char* 
 		new_sound_source->volume = 1.f;
 		new_sound_source->type = type;
 
-		sound_source_instance_loop_set(sound, new_sound_source->source_instance, new_sound_source->loop);
-		sound_source_instance_min_max_distance_set(sound, new_sound_source->source_instance, new_sound_source->min_distance, new_sound_source->max_distance);
-		sound_source_instance_attenuation_set(sound, new_sound_source->source_instance, new_sound_source->attenuation_type, new_sound_source->rolloff_factor);
-		sound_source_instance_volume_set(sound, new_sound_source->source_instance, new_sound_source->volume);
+		if(play)
+		{
+			new_sound_source->source_instance = sound_source_instance_create(sound, new_sound_source->source_buffer, true);
+			vec3 abs_pos = { 0.f, 0.f,  0.f };
+			transform_get_absolute_position(entity, &abs_pos);
+			sound_source_instance_update_position(sound, new_sound_source->source_instance, abs_pos);
 
-		sound_update_3d(sound);
-		if(play) sound_source_instance_play(sound, new_sound_source->source_instance);
+			sound_source_instance_loop_set(sound, new_sound_source->source_instance, new_sound_source->loop);
+			sound_source_instance_min_max_distance_set(sound, new_sound_source->source_instance, new_sound_source->min_distance, new_sound_source->max_distance);
+			sound_source_instance_attenuation_set(sound, new_sound_source->source_instance, new_sound_source->attenuation_type, new_sound_source->rolloff_factor);
+			sound_source_instance_volume_set(sound, new_sound_source->source_instance, new_sound_source->volume);
+
+			sound_update_3d(sound);
+			sound_source_instance_play(sound, new_sound_source->source_instance);
+		}
 	}
 	else
 	{

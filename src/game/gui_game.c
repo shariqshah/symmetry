@@ -24,10 +24,11 @@ void gui_game_update(struct Gui* gui_game, float dt)
 
 	if(game_state->game_mode == GAME_MODE_GAME)
 	{
-		if(nk_begin(context, "Game Gui", nk_rect(50, 50, 400, 200), NK_WINDOW_CLOSABLE))
+		struct Player* player = &game_state->scene->player;
+		if(nk_begin(context, "Game Gui", nk_rect(50, 50, 200, 100), NK_WINDOW_CLOSABLE))
 		{
 			nk_layout_row_dynamic(context, 30, 1);
-			nk_label(context, "Hello from the game gui!", NK_TEXT_ALIGN_CENTERED | NK_TEXT_ALIGN_MIDDLE);
+			nk_labelf(context, NK_TEXT_ALIGN_CENTERED | NK_TEXT_ALIGN_MIDDLE, "HP: %d", player->health);
 			nk_end(context);
 		}
 	}

@@ -2,14 +2,11 @@
 #define CONSOLE_H
 
 #include "../common/hashmap.h"
+#include "../common/limits.h"
 
 #include <stdbool.h>
 #include <stdarg.h>
 
-#define MAX_CONSOLE_MESSAGE_LEN 256
-#define MAX_CONSOLE_MESSAGES 1024
-#define MAX_CONSOLE_COMMAND_LEN 32
-#define MAX_CONSOLE_HISTORY 64
 
 struct Gui;
 struct Console; 

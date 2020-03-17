@@ -2,10 +2,7 @@
 #define DEBUG_VARS_H
 
 #include "../common/variant.h"
-
-#define MAX_DEBUG_VAR_NAME 64
-#define MAX_DEBUG_VARS_PER_FRAME_NUMERIC 64
-#define MAX_DEBUG_VARS_PER_FRAME_TEXTURES 8
+#include "../common/limits.h"
 
 struct Debug_Variable
 {

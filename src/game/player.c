@@ -40,6 +40,7 @@ void player_init(struct Player* player, struct Scene* scene)
     player->min_downward_distance = hashmap_float_get(config, "player_min_downward_distance");
     player->min_forward_distance  = hashmap_float_get(config, "player_min_forward_distance");
 	player->grounded              = true;
+	player->health                = 100;
 
     player->mesh = scene_static_mesh_create(scene, "Player_Mesh", player, "sphere.symbres", MAT_BLINN);
 

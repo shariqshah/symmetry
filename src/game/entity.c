@@ -387,21 +387,23 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 			sound_source->source_buffer = sound_source_buffer_create(sound, hashmap_str_get(object->data, "source_filename"), sound_source->type);
 			if(sound_source->source_buffer)
 			{
-				sound_source->source_instance = sound_source_instance_create(sound, sound_source->source_buffer, true);
-
-				vec3 abs_pos = {0.f, 0.f,  0.f};
-				transform_get_absolute_position(sound_source, &abs_pos);
-				sound_source_instance_update_position(sound, sound_source->source_instance, abs_pos);
-
-				sound_source_instance_loop_set(sound, sound_source->source_instance, sound_source->loop);
-				sound_source_instance_min_max_distance_set(sound, sound_source->source_instance, sound_source->min_distance, sound_source->max_distance);
-				sound_source_instance_attenuation_set(sound, sound_source->source_instance, sound_source->attenuation_type, sound_source->rolloff_factor);
-				sound_source_instance_volume_set(sound, sound_source->source_instance, sound_source->volume);
-
-				sound_update_3d(sound);
 				bool paused = hashmap_value_exists(object->data, "paused") ? hashmap_bool_get(object->data, "paused") : false;
 				if(!paused)
+				{
+					sound_source->source_instance = sound_source_instance_create(sound, sound_source->source_buffer, true);
+
+					vec3 abs_pos = { 0.f, 0.f,  0.f };
+					transform_get_absolute_position(sound_source, &abs_pos);
+					sound_source_instance_update_position(sound, sound_source->source_instance, abs_pos);
+
+					sound_source_instance_loop_set(sound, sound_source->source_instance, sound_source->loop);
+					sound_source_instance_min_max_distance_set(sound, sound_source->source_instance, sound_source->min_distance, sound_source->max_distance);
+					sound_source_instance_attenuation_set(sound, sound_source->source_instance, sound_source->attenuation_type, sound_source->rolloff_factor);
+					sound_source_instance_volume_set(sound, sound_source->source_instance, sound_source->volume);
+
+					sound_update_3d(sound);
 					sound_source_instance_play(sound, sound_source->source_instance);
+				}
 
 				//Stop the default sound source from playing now that we have loaded the actual buffer
 				sound_source_instance_destroy(sound, default_source_instance);

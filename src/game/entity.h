@@ -27,6 +27,7 @@ enum Entity_Type
     ET_SOUND_SOURCE,
 	ET_ENEMY,
 	ET_TRIGGER,
+	ET_DOOR,
     ET_MAX
 };
 
@@ -83,6 +84,15 @@ enum Trigger_Mask
 	TRIGM_PLAYER = 1 << 0,
 	TRIGM_ENEMY  = 1 << 1,
 	TRIGM_ALL    = TRIGM_PLAYER | TRIGM_ENEMY
+};
+
+enum Door_Mask
+{
+	DOOR_KEY_NONE  = 0,
+	DOOR_KEY_RED   = 1 << 0,
+	DOOR_KEY_GREEN = 1 << 1, 
+	DOOR_KEY_BLUE  = 1 << 2,
+	DOOR_KEY_ALL   = DOOR_KEY_RED | DOOR_KEY_GREEN | DOOR_KEY_BLUE
 };
 
 enum Trigger_Type
@@ -241,6 +251,17 @@ struct Trigger
 	int           type;
 	int           count;
 	int           trigger_mask;
+};
+
+struct Door
+{
+	struct Entity        base;
+	int                  mask;
+	int                  state;
+	float                speed;
+	struct Static_Mesh*  mesh;
+	struct Sound_Source* sound;
+	struct Trigger*      trigger;
 };
 
 void           entity_init(struct Entity* entity, const char* name, struct Entity* parent);

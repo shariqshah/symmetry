@@ -16,6 +16,7 @@
 #define MAX_SCENE_ENTITY_ARCHETYPES 32
 #define MAX_SCENE_ENEMIES           64
 #define MAX_SCENE_TRIGGERS          256
+#define MAX_SCENE_DOORS             256
 
 #define MAX_UNIFORM_NAME_LEN 64
 

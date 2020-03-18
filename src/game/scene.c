@@ -21,6 +21,7 @@
 #include "event.h"
 #include "scene_funcs.h"
 #include "trigger.h"
+#include "door.h"
 
 #include <assert.h>
 #include <string.h>
@@ -277,6 +278,7 @@ bool scene_save(struct Scene* scene, const char* filename, int directory_type)
 	scene_write_entity_list(scene, ET_SOUND_SOURCE, parser);
 	scene_write_entity_list(scene, ET_ENEMY, parser);
 	scene_write_entity_list(scene, ET_TRIGGER, parser);
+	scene_write_entity_list(scene, ET_DOOR, parser);
 
     if(parser_write_objects(parser, scene_file, prefixed_filename))
         log_message("Scene saved to %s", prefixed_filename);
@@ -329,6 +331,11 @@ void scene_write_entity_list(struct Scene* scene, int entity_type, struct Parser
 		entity = &scene->triggers[0].base;
 		stride = sizeof(struct Trigger);
 		break;
+	case ET_DOOR:
+		max_length = MAX_SCENE_DOORS;
+		entity = &scene->doors[0].base;
+		stride = sizeof(struct Door);
+		break;
 	default: return;
 	}
 
@@ -378,6 +385,8 @@ void scene_destroy(struct Scene* scene)
 	for(int i = 0; i < MAX_SCENE_STATIC_MESHES; i++)     scene_static_mesh_remove(scene, &scene->static_meshes[i]);
 	for(int i = 0; i < MAX_SCENE_SOUND_SOURCES; i++)     scene_sound_source_remove(scene, &scene->sound_sources[i]);
 	for(int i = 0; i < MAX_SCENE_ENEMIES; i++)           scene_enemy_remove(scene, &scene->enemies[i]);
+	for(int i = 0; i < MAX_SCENE_TRIGGERS; i++)          scene_trigger_remove(scene, &scene->triggers[i]);
+	for(int i = 0; i < MAX_SCENE_DOORS; i++)             scene_door_remove(scene, &scene->doors[i]);
 	for(int i = 0; i < MAX_SCENE_ENTITY_ARCHETYPES; i++) memset(&scene->entity_archetypes[i][0], '\0', MAX_FILENAME_LEN);
 	player_destroy(&scene->player);
 	entity_reset(&scene->root_entity, 0);
@@ -392,6 +401,12 @@ void scene_update(struct Scene* scene, float dt)
 		{
 			if(scene->enemies[i].base.flags & EF_ACTIVE)
 				enemy_update(&scene->enemies[i], scene, dt);
+		}
+
+		for(int i = 0; i < MAX_SCENE_DOORS; i++)
+		{
+			if(scene->doors[i].base.flags & EF_ACTIVE)
+				door_update(&scene->doors[i], scene, dt);
 		}
 	}
 }
@@ -517,6 +532,18 @@ void scene_post_update(struct Scene* scene)
 		if(trigger->base.flags & EF_MARKED_FOR_DELETION)
 		{
 			scene_trigger_remove(scene, trigger);
+			continue;
+		}
+	}
+
+	for(int i = 0; i < MAX_SCENE_DOORS; i++)
+	{
+		struct Door* door = &scene->doors[i];
+		if(!(door->base.flags & EF_ACTIVE)) continue;
+
+		if(door->base.flags & EF_MARKED_FOR_DELETION)
+		{
+			scene_door_remove(scene, door);
 			continue;
 		}
 	}
@@ -731,6 +758,33 @@ struct Enemy* scene_enemy_create(struct Scene* scene, const char* name, struct E
 	return new_enemy;
 }
 
+struct Door* scene_door_create(struct Scene* scene, const char* name, struct Entity* parent, int mask)
+{
+	assert(scene);
+	struct Door* new_door = NULL;
+	for(int i = 0; i < MAX_SCENE_DOORS; i++)
+	{
+		struct Door* door = &scene->doors[i];
+		if(!(door->base.flags & EF_ACTIVE))
+		{
+			new_door = door;
+			break;
+		}
+	}
+
+	if(new_door)
+	{
+		entity_init(&new_door->base, name, parent ? parent : &scene->root_entity);
+		door_init(new_door, mask);
+	}
+	else
+	{
+		log_error("scene:door_create", "Max door limit reached!");
+	}
+
+	return new_door;
+}
+
 struct Trigger* scene_trigger_create(struct Scene* scene, const char* name, struct Entity* parent, int type, int mask)
 {
 	assert(scene);
@@ -757,6 +811,7 @@ struct Trigger* scene_trigger_create(struct Scene* scene, const char* name, stru
 
 	return new_trigger;
 }
+
 void scene_entity_base_remove(struct Scene* scene, struct Entity* entity)
 {
 	assert(scene && entity && entity->id >= 0);
@@ -780,6 +835,13 @@ void scene_enemy_remove(struct Scene* scene, struct Enemy* enemy)
 	assert(scene && enemy);
 	enemy_reset(enemy);
 	scene_entity_base_remove(scene, enemy);
+}
+
+void scene_door_remove(struct Scene* scene, struct Door* door)
+{
+	assert(scene && door);
+	door_reset(door);
+	scene_entity_base_remove(scene, door);
 }
 
 void scene_trigger_remove(struct Scene* scene, struct Trigger* trigger)
@@ -913,6 +975,23 @@ struct Enemy* scene_enemy_find(struct Scene* scene, const char* name)
 	}
 
 	return enemy;
+}
+
+struct Door* scene_door_find(struct Scene* scene, const char* name)
+{
+	assert(scene && name);
+	struct Door* door = NULL;
+
+	for(int i = 0; i < MAX_SCENE_DOORS; i++)
+	{
+		if(strncmp(name, scene->doors[i].base.name, MAX_ENTITY_NAME_LEN) == 0)
+		{
+			door = &scene->doors[i];
+			break;
+		}
+	}
+
+	return door;
 }
 
 struct Trigger* scene_trigger_find(struct Scene* scene, const char* name)

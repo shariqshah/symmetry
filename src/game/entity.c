@@ -20,6 +20,7 @@
 #include "enemy.h"
 #include "event.h"
 #include "sound_source.h"
+#include "door.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -214,6 +215,12 @@ bool entity_write(struct Entity* entity, struct Parser_Object* object, bool writ
 	{
 		struct Enemy* enemy = (struct Enemy*)entity;
 		enemy_write(enemy, entity_data);
+	}
+	break;
+	case ET_DOOR:
+	{
+		struct Door* door = (struct Door*)entity;
+		door_write(door, entity_data);
 	}
 	break;
 	case ET_TRIGGER:
@@ -477,6 +484,13 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 			new_entity = &trigger->base;
 	}
 	break;
+	case ET_DOOR:
+	{
+		new_entity = &door_read(object, name, parent_entity)->base;
+		if(!new_entity)
+			return new_entity;
+	}
+	break;
 	default:
 		log_warning("Unhandled Entity type '%d' detected", type);
 		break;
@@ -595,6 +609,7 @@ const char* entity_type_name_get(struct Entity* entity)
 	case ET_STATIC_MESH:  typename = "Static Mesh";  break;
 	case ET_ENEMY:        typename = "Enemy";        break;
 	case ET_TRIGGER:      typename = "Trigger";      break;
+	case ET_DOOR:         typename = "Door";         break;
 	default:              typename = "Unknown";      break;
 	};
 	return typename;

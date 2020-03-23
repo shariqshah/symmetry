@@ -123,8 +123,8 @@ bool entity_write(struct Entity* entity, struct Parser_Object* object, bool writ
 
 	if(entity->type != ET_STATIC_MESH)
 	{
-		hashmap_vec3_set(entity_data, "bouding_box_min", &entity->bounding_box.min);
-		hashmap_vec3_set(entity_data, "bouding_box_max", &entity->bounding_box.max);
+		hashmap_vec3_set(entity_data, "bounding_box_min", &entity->bounding_box.min);
+		hashmap_vec3_set(entity_data, "bounding_box_max", &entity->bounding_box.max);
 	}
 
 	switch(entity->type)

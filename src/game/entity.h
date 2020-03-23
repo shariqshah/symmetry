@@ -86,20 +86,20 @@ enum Trigger_Mask
 	TRIGM_ALL    = TRIGM_PLAYER | TRIGM_ENEMY
 };
 
-enum Door_Mask
+enum Door_Key_Mask
 {
-	DOOR_KEY_NONE  = 0,
-	DOOR_KEY_RED   = 1 << 0,
-	DOOR_KEY_GREEN = 1 << 1, 
-	DOOR_KEY_BLUE  = 1 << 2,
-	DOOR_KEY_ALL   = DOOR_KEY_RED | DOOR_KEY_GREEN | DOOR_KEY_BLUE
+	DOOR_KEY_MASK_NONE  = 0,
+	DOOR_KEY_MASK_RED   = 1 << 0,
+	DOOR_KEY_MASK_GREEN = 1 << 1, 
+	DOOR_KEY_MASK_BLUE  = 1 << 2,
+	DOOR_KEY_MASK_ALL   = DOOR_KEY_MASK_RED | DOOR_KEY_MASK_GREEN | DOOR_KEY_MASK_BLUE
 };
 
 enum Trigger_Type
 {
 	TRIG_TOGGLE = 0,  // Toggled on once and fires event then wont fire event until it is deactivated and activated again
 	TRIG_CONTINUOUS,  // Continuously fire events while the trigger is active
-	TRIG_ONE_SHOT,    // Fire event once when triggerd and then get deleted
+	TRIG_ONE_SHOT,    // Fire event once when triggered and then get deleted
 	TRIG_MAX
 };
 
@@ -259,6 +259,8 @@ struct Door
 	int                  mask;
 	int                  state;
 	float                speed;
+	float                open_position;
+	float                close_position;
 	struct Static_Mesh*  mesh;
 	struct Sound_Source* sound;
 	struct Trigger*      trigger;

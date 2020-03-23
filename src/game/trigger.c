@@ -90,9 +90,6 @@ void trigger_update_physics(struct Trigger* trigger, struct Scene* scene, float 
 		}
 
 		if(fire_event)
-			log_message("event triggered!");
-
-		if(fire_event)
 		{
 			struct Event_Manager* event_manager = game_state_get()->event_manager;
 			struct Event* trigger_event = event_manager_create_new_event(event_manager);

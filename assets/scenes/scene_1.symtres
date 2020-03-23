@@ -16,13 +16,14 @@ Player
 {
 	type : 2
 	scale : 1.000 1.000 1.000
-	rotation : 0.000 0.953 0.000 -0.304
+	rotation : 0.000 -1.000 0.000 -0.033
 	active : true
-	position : -33.850 2.459 -24.439
-	bouding_box_min : -1.500 -1.500 -1.000
+	position : -20.255 2.167 -50.978
+	player_health : 100
 	name : Player
-	bouding_box_max : 1.500 1.500 1.000
+	bounding_box_min : -1.500 -1.500 -1.000
 	camera_clear_color : 0.310 0.412 0.529 1.000
+	bounding_box_max : 1.500 1.500 1.000
 }
 
 Scene_Entity_Entry
@@ -90,9 +91,9 @@ Scene_Entity_Entry
 
 Scene_Entity_Entry
 {
-	scale : 65.000 5.000 2.000
+	scale : 65.000 11.000 2.000
 	rotation : 0.000 0.000 0.000 1.000
-	position : 17.000 3.000 -30.000
+	position : 17.000 6.000 -30.000
 	filename : cube_uv
 	name : Cube
 }
@@ -102,6 +103,15 @@ Scene_Entity_Entry
 	scale : 135.000 5.000 1.000
 	rotation : 0.000 0.000 0.000 1.000
 	position : -17.000 3.000 -87.000
+	filename : cube_uv
+	name : Cube
+}
+
+Scene_Entity_Entry
+{
+	scale : 60.000 11.000 1.000
+	rotation : 0.000 0.000 0.000 1.000
+	position : -52.000 6.000 -30.000
 	filename : cube_uv
 	name : Cube
 }
@@ -149,5 +159,14 @@ Scene_Entity_Entry
 	position : 5.000 3.000 6.000
 	filename : turret
 	name : Turret
+}
+
+Scene_Entity_Entry
+{
+	scale : 1.000 1.000 1.000
+	rotation : 0.000 0.000 0.000 1.000
+	position : -18.500 1.000 -30.000
+	filename : door
+	name : Door
 }
 

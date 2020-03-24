@@ -164,7 +164,7 @@ void transform_get_absolute_forward(struct Entity* entity, vec3* res)
 {
 	quat abs_rot;
 	quat_identity(&abs_rot);
-	transform_get_absolute_rot(entity, &abs_rot);
+	transform_get_absolute_rotation(entity, &abs_rot);
 	quat_get_forward_rh(res, &abs_rot);
 }
 
@@ -187,7 +187,7 @@ void transform_get_absolute_up(struct Entity* entity, vec3* res)
 {
 	quat abs_rot;
 	quat_identity(&abs_rot);
-	transform_get_absolute_rot(entity, &abs_rot);
+	transform_get_absolute_rotation(entity, &abs_rot);
 	quat_get_up(res, &abs_rot);
 }
 
@@ -195,7 +195,7 @@ void transform_get_absolute_right(struct Entity* entity, vec3* res)
 {
 	quat abs_rot;
 	quat_identity(&abs_rot);
-	transform_get_absolute_rot(entity, &abs_rot);
+	transform_get_absolute_rotation(entity, &abs_rot);
 	quat_get_right(res, &abs_rot);
 }
 
@@ -312,7 +312,7 @@ void transform_get_absolute_scale(struct Entity* entity, vec3* res)
 	
 }
 
-void transform_get_absolute_rot(struct Entity* entity, quat* res)
+void transform_get_absolute_rotation(struct Entity* entity, quat* res)
 {
 	quat_assign(res, &entity->transform.rotation);
 	bool done = false;

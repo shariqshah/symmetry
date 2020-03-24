@@ -213,7 +213,7 @@ void editor_render(struct Editor* editor, struct Camera * active_camera)
 		vec3 abs_pos;
 		quat abs_rot;
 		transform_get_absolute_position(editor->selected_entity, &abs_pos);
-		transform_get_absolute_rot(editor->selected_entity, &abs_rot);
+		transform_get_absolute_rotation(editor->selected_entity, &abs_rot);
 		switch(editor->selected_entity->type)
 		{
 		case ET_LIGHT:
@@ -319,7 +319,7 @@ void editor_render(struct Editor* editor, struct Camera * active_camera)
 			vec3 abs_pos;
 			quat abs_rot;
 			transform_get_absolute_position(editor->hovered_entity, &abs_pos);
-			transform_get_absolute_rot(editor->hovered_entity, &abs_rot);
+			transform_get_absolute_rotation(editor->hovered_entity, &abs_rot);
 			im_sphere(1.f, abs_pos, abs_rot, editor->hovered_entity_color, GDM_TRIANGLES, 4);
 		}
 	}
@@ -1889,15 +1889,15 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 				nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Position", NK_TEXT_ALIGN_CENTERED);
 				vec3 abs_pos = { 0.f, 0.f, 0.f };
 				transform_get_absolute_position(entity, &abs_pos);
-				if(editor_widget_v3(context, &abs_pos, "#X", "#Y", "#Z", -FLT_MAX, FLT_MAX, 1.f, 1.f, row_height)) transform_set_position(entity, &abs_pos);
+				//if(editor_widget_v3(context, &abs_pos, "#X", "#Y", "#Z", -FLT_MAX, FLT_MAX, 1.f, 1.f, row_height)) transform_set_position(entity, &abs_pos);
+				if(editor_widget_v3(context, &entity->transform.position, "#X", "#Y", "#Z", -FLT_MAX, FLT_MAX, 1.f, 1.f, row_height))
+					transform_update_transmat(entity);
 
 				nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Rotation", NK_TEXT_ALIGN_CENTERED);
-				quat abs_rot = { 0.f, 0.f, 0.f, 1.f };
-				transform_get_absolute_rot(entity, &abs_rot);
 				vec3 rot_angles = { 0.f, 0.f, 0.f };
-				rot_angles.x = quat_get_pitch(&abs_rot);
-				rot_angles.y = quat_get_yaw(&abs_rot);
-				rot_angles.z = quat_get_roll(&abs_rot);
+				rot_angles.x = quat_get_pitch(&entity->transform.rotation);
+				rot_angles.y = quat_get_yaw(&entity->transform.rotation);
+				rot_angles.z = quat_get_roll(&entity->transform.rotation);
 				vec3 curr_rot = { rot_angles.x, rot_angles.y, rot_angles.z };
 
 				nk_layout_row_dynamic(context, row_height, 1); nk_property_float(context, "#X", -FLT_MAX, &curr_rot.x, FLT_MAX, 5.f, 1.f);
@@ -1912,17 +1912,31 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 				vec3 AXIS_Z = { 0.f, 0.f, 1.f };
 
 				const float epsilon = 0.0001f;
-				if(fabsf(delta.x) > epsilon) transform_rotate(entity, &AXIS_X, delta.x, TS_WORLD);
-				if(fabsf(delta.y) > epsilon) transform_rotate(entity, &AXIS_Y, delta.y, TS_WORLD);
-				if(fabsf(delta.z) > epsilon) transform_rotate(entity, &AXIS_Z, delta.z, TS_WORLD);
+				if(fabsf(delta.x) > epsilon) transform_rotate(entity, &AXIS_X, delta.x, TS_LOCAL);
+				if(fabsf(delta.y) > epsilon) transform_rotate(entity, &AXIS_Y, delta.y, TS_LOCAL);
+				if(fabsf(delta.z) > epsilon) transform_rotate(entity, &AXIS_Z, delta.z, TS_LOCAL);
 
 				nk_layout_row_dynamic(context, row_height, 1); nk_label(context, "Scale", NK_TEXT_ALIGN_CENTERED);
-				vec3 abs_scale = { 0.f, 0.f, 0.f };
-				transform_get_absolute_scale(entity, &abs_scale);
-				if(editor_widget_v3(context, &abs_scale, "#X", "#Y", "#Z", 0.1f, FLT_MAX, 1.f, 0.1f, row_height))
-				{
-					entity->transform.scale = abs_scale;
+				if(editor_widget_v3(context, &entity->transform.scale, "#X", "#Y", "#Z", 0.1f, FLT_MAX, 1.f, 0.1f, row_height))
 					transform_update_transmat(entity);
+
+				if(nk_tree_push(context, NK_TREE_NODE, "Absolute Transform Values", NK_MINIMIZED))
+				{
+					vec3 abs_pos, abs_rot_angles, abs_scale;
+					quat abs_rot;
+					transform_get_absolute_position(entity, &abs_pos);
+					transform_get_absolute_scale(entity, &abs_scale);
+					transform_get_absolute_rotation(entity, &abs_rot);
+					abs_rot_angles.x = quat_get_pitch(&abs_rot);
+					abs_rot_angles.y = quat_get_yaw(&abs_rot);
+					abs_rot_angles.z = quat_get_roll(&abs_rot);
+					
+					nk_layout_row_dynamic(context, row_height, 2);
+					nk_label(context, "Position", LABEL_FLAGS_ALIGN_LEFT); nk_labelf(context, LABEL_FLAGS_ALIGN_RIGHT, "%.1f %.1f %.1f", abs_pos.x, abs_pos.y, abs_pos.z);
+					nk_label(context, "Rotation", LABEL_FLAGS_ALIGN_LEFT); nk_labelf(context, LABEL_FLAGS_ALIGN_RIGHT, "%.1f %.1f %.1f", abs_rot_angles.x, abs_rot_angles.y, abs_rot_angles.z);
+					nk_label(context, "Scale", LABEL_FLAGS_ALIGN_LEFT);    nk_labelf(context, LABEL_FLAGS_ALIGN_RIGHT, "%.1f %.1f %.1f", abs_scale.x, abs_scale.y, abs_scale.z);
+
+					nk_tree_pop(context);
 				}
 
 				if(nk_tree_push(context, NK_TREE_TAB, "Bounding Box", NK_MINIMIZED))
@@ -2329,6 +2343,31 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 						nk_label(context, "Default Color", LABEL_FLAGS_ALIGN_LEFT); editor_widget_color_combov4(context, &enemy->Turret.color_default, 50, row_height * 2);
 						nk_label(context, "Alert Color",   LABEL_FLAGS_ALIGN_LEFT); editor_widget_color_combov4(context, &enemy->Turret.color_alert, 50, row_height * 2);
 						nk_label(context, "Attack Color",  LABEL_FLAGS_ALIGN_LEFT); editor_widget_color_combov4(context, &enemy->Turret.color_attack, 50, row_height * 2);
+
+						nk_layout_row_dynamic(context, row_height, 1);
+						if(nk_button_label(context, "Select Weapon Sound"))
+						{
+							editor_entity_select(editor, enemy->weapon_sound);
+							nk_tree_pop(context);
+							nk_end(context);
+							return;
+						}
+
+						if(nk_button_label(context, "Select Ambient Sound"))
+						{
+							editor_entity_select(editor, enemy->ambient_sound);
+							nk_tree_pop(context);
+							nk_end(context);
+							return;
+						}
+
+						if(nk_button_label(context, "Select Static Mesh"))
+						{
+							editor_entity_select(editor, enemy->mesh);
+							nk_tree_pop(context);
+							nk_end(context);
+							return;
+						}
 					}
 					break;
 					}
@@ -2379,6 +2418,7 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 					nk_checkbox_flags_label(context, "Red", &door->mask, DOOR_KEY_MASK_RED);
 					nk_checkbox_flags_label(context, "Green", &door->mask, DOOR_KEY_MASK_GREEN);
 					nk_checkbox_flags_label(context, "Blue", &door->mask, DOOR_KEY_MASK_BLUE);
+
 					nk_layout_row_dynamic(context, row_height, 1);
 					nk_property_float(context, "Speed", -FLT_MAX, &door->speed, FLT_MAX, 0.1f, 0.1f);
 					nk_property_float(context, "Open Pos", -FLT_MAX, &door->open_position, FLT_MAX, 0.1f, 0.1f);

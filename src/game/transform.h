@@ -24,7 +24,7 @@ void transform_get_up(struct Entity* entity, vec3* res);
 void transform_get_right(struct Entity* entity, vec3* res);
 void transform_update_transmat(struct Entity* entity);
 void transform_get_absolute_position(struct Entity* entity, vec3* res);
-void transform_get_absolute_rot(struct Entity* entity, quat* res);
+void transform_get_absolute_rotation(struct Entity* entity, quat* res);
 void transform_get_absolute_scale(struct Entity* entity, vec3* res);
 void transform_get_absolute_lookat(struct Entity* entity, vec3* res);
 void transform_get_absolute_up(struct Entity* entity, vec3* res);

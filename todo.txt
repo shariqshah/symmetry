@@ -1,5 +1,4 @@
 Todo:
-	- Switch transformation in property inspector to show/modify local transform values by default and show absolute transform values as read-only.
 	- Doors that open using the red/green/blue keys only as a way of progressing the level or cordoing off certain sections
 	- RGB keys to progress to next level
 	- Player/enemies getting hit by bullets
@@ -420,3 +419,4 @@ Done:
 	* Pause sound when game is in pause mode
 	* Composite door entity made up of static mesh, sound entity and trigger. Door might require 0-3 keys in order to be opened.
 	* Add door properties to property inspector in editor
+	* Switched transformation in property inspector to show/modify local transform values by default and show absolute transform values as read-only.

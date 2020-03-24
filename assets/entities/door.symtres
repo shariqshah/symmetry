@@ -10,7 +10,7 @@ Entity
 	bounding_box_max : 0.500 0.500 0.500
 	door_speed : 6.000
 	door_state : 0
-	door_mask : 1
+	door_mask : 0
 	door_open_position : -7.000
 	door_close_position : 0.000
 }

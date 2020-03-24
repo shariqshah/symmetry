@@ -12,7 +12,8 @@ enum Door_State
 	DOOR_CLOSED = 0,
 	DOOR_OPEN,
 	DOOR_CLOSING,
-	DOOR_OPENING
+	DOOR_OPENING,
+	DOOR_STATE_MAX
 };
 
 void         door_init(struct Door* door, int mask);

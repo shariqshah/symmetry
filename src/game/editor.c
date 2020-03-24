@@ -33,6 +33,7 @@
 #include "debug_vars.h"
 #include "../common/version.h"
 #include "sound_source.h"
+#include "door.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1747,6 +1748,13 @@ void editor_window_scene_hierarchy(struct nk_context* context, struct Editor* ed
 				nk_tree_pop(context);
 			}
 
+			if(nk_tree_push(context, NK_TREE_TAB, "Doors", NK_MAXIMIZED))
+			{
+				for(int i = 0; i < MAX_SCENE_DOORS; i++)      
+					editor_show_entity_in_list(editor, context, scene, &scene->doors[i]);
+				nk_tree_pop(context);
+			}
+
 			if(nk_tree_push(context, NK_TREE_TAB, "Entities", NK_MAXIMIZED))
 			{
 				for(int i = 0; i < MAX_SCENE_ENTITIES; i++)      
@@ -2350,6 +2358,55 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 					nk_label(context, "Mask", LABEL_FLAGS_ALIGN_LEFT);
 					nk_labelf(context, LABEL_FLAGS_ALIGN_LEFT, "%d", trigger->trigger_mask);
 
+					nk_tree_pop(context);
+				}
+			}
+
+			/* Door */
+			if(entity->type == ET_DOOR)
+			{
+				struct Door* door = (struct Door*)entity;
+				if(nk_tree_push(context, NK_TREE_TAB, "Door", NK_MAXIMIZED))
+				{
+					nk_layout_row_dynamic(context, row_height, 2);
+					nk_label(context, "State", LABEL_FLAGS_ALIGN_LEFT);
+					float combo_width = nk_widget_width(context), combo_height = row_height * DOOR_STATE_MAX;
+					int state = nk_combo_string(context, "Closed\0Open\0Closing\0Opening", door->state, DOOR_STATE_MAX, row_height, nk_vec2(combo_width, combo_height));
+
+					nk_layout_row_dynamic(context, row_height, 1);
+					nk_label(context, "Key Mask", NK_TEXT_ALIGN_MIDDLE | NK_TEXT_ALIGN_CENTERED);
+					nk_layout_row_dynamic(context, row_height, 3);
+					nk_checkbox_flags_label(context, "Red", &door->mask, DOOR_KEY_MASK_RED);
+					nk_checkbox_flags_label(context, "Green", &door->mask, DOOR_KEY_MASK_GREEN);
+					nk_checkbox_flags_label(context, "Blue", &door->mask, DOOR_KEY_MASK_BLUE);
+					nk_layout_row_dynamic(context, row_height, 1);
+					nk_property_float(context, "Speed", -FLT_MAX, &door->speed, FLT_MAX, 0.1f, 0.1f);
+					nk_property_float(context, "Open Pos", -FLT_MAX, &door->open_position, FLT_MAX, 0.1f, 0.1f);
+					nk_property_float(context, "Close Pos", -FLT_MAX, &door->close_position, FLT_MAX, 0.1f, 0.1f);
+
+					if(nk_button_label(context, "Select Sound Source"))
+					{
+						editor_entity_select(editor, door->sound);
+						nk_tree_pop(context);
+						nk_end(context);
+						return;
+					}
+
+					if(nk_button_label(context, "Select Trigger"))
+					{
+						editor_entity_select(editor, door->trigger);
+						nk_tree_pop(context);
+						nk_end(context);
+						return;
+					}
+
+					if(nk_button_label(context, "Select Static Mesh"))
+					{
+						editor_entity_select(editor, door->mesh);
+						nk_tree_pop(context);
+						nk_end(context);
+						return;
+					}
 					nk_tree_pop(context);
 				}
 			}

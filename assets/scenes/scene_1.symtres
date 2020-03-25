@@ -20,6 +20,7 @@ Player
 	active : true
 	position : -20.255 2.167 -50.978
 	player_health : 100
+	player_key_mask : 0
 	name : Player
 	bounding_box_min : -1.500 -1.500 -1.000
 	camera_clear_color : 0.310 0.412 0.529 1.000

@@ -2424,29 +2424,47 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 					nk_property_float(context, "Open Pos", -FLT_MAX, &door->open_position, FLT_MAX, 0.1f, 0.1f);
 					nk_property_float(context, "Close Pos", -FLT_MAX, &door->close_position, FLT_MAX, 0.1f, 0.1f);
 
-					if(nk_button_label(context, "Select Sound Source"))
-					{
-						editor_entity_select(editor, door->sound);
-						nk_tree_pop(context);
-						nk_end(context);
-						return;
-					}
+					if(nk_button_label(context, "Select Sound Source"))	editor_entity_select(editor, door->sound);
+					if(nk_button_label(context, "Select Trigger"))		editor_entity_select(editor, door->trigger);
+					if(nk_button_label(context, "Select Static Mesh"))	editor_entity_select(editor, door->mesh);
 
-					if(nk_button_label(context, "Select Trigger"))
-					{
-						editor_entity_select(editor, door->trigger);
-						nk_tree_pop(context);
-						nk_end(context);
-						return;
-					}
+					nk_tree_pop(context);
+				}
+			}
 
-					if(nk_button_label(context, "Select Static Mesh"))
-					{
-						editor_entity_select(editor, door->mesh);
-						nk_tree_pop(context);
-						nk_end(context);
-						return;
-					}
+			/* Player */
+			if(entity->type == ET_PLAYER)
+			{
+				struct Player* player = (struct Player*)entity;
+				if(nk_tree_push(context, NK_TREE_TAB, "Player", NK_MAXIMIZED))
+				{
+					nk_layout_row_dynamic(context, row_height, 1);
+					nk_property_int(context, "Health", 0, &player->health, 100, 1, 1);
+					nk_property_float(context, "Move Speed", 0.f, &player->move_speed, FLT_MAX, 0.5f, 0.5f);
+					nk_property_float(context, "Move Speed Mul", 0.f, &player->move_speed_multiplier, 10, 0.5f, 0.5f);
+					nk_property_float(context, "Turn Speed", 0.f, &player->turn_speed, FLT_MAX, 0.5f, 0.5f);
+					nk_property_float(context, "Jump Speed", 0.f, &player->jump_speed, FLT_MAX, 0.5f, 0.5f);
+					nk_property_float(context, "Gravity", -FLT_MAX, &player->gravity, FLT_MAX, 0.1f, 0.1f);
+					nk_property_float(context, "Min Ray Down Dis", 0, &player->min_downward_distance, FLT_MAX, 0.1f, 0.1f);
+					nk_property_float(context, "Min Ray Fwd Dis", 0, &player->min_forward_distance, FLT_MAX, 0.1f, 0.1f);
+
+					nk_layout_row_dynamic(context, row_height, 2);
+					nk_label(context, "Grounded", LABEL_FLAGS_ALIGN_LEFT);
+					nk_label(context, player->grounded ? "True" : "False", LABEL_FLAGS_ALIGN_LEFT);
+
+					nk_layout_row_dynamic(context, row_height, 1);
+					nk_label(context, "Key Flags", NK_TEXT_ALIGN_MIDDLE | NK_TEXT_ALIGN_CENTERED);
+					nk_layout_row_dynamic(context, row_height, 3);
+					nk_checkbox_flags_label(context, "Red", &player->key_mask, DOOR_KEY_MASK_RED);
+					nk_checkbox_flags_label(context, "Green", &player->key_mask, DOOR_KEY_MASK_GREEN);
+					nk_checkbox_flags_label(context, "Blue", &player->key_mask, DOOR_KEY_MASK_BLUE);
+
+					nk_layout_row_dynamic(context, row_height, 1);
+					if(nk_button_label(context, "Select Camera"))		  editor_entity_select(editor, player->camera);
+					if(nk_button_label(context, "Select Weapon Sound"))	  editor_entity_select(editor, player->weapon_sound);
+					if(nk_button_label(context, "Select Footstep Sound")) editor_entity_select(editor, player->footstep_sound);
+					if(nk_button_label(context, "Select Mesh"))			  editor_entity_select(editor, player->mesh);
+
 					nk_tree_pop(context);
 				}
 			}

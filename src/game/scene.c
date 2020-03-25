@@ -210,7 +210,8 @@ bool scene_load(struct Scene* scene, const char* filename, int directory_type)
 			transform_update_transmat(player);
 
 			if(hashmap_value_exists(player_data, "camera_clear_color")) player->camera->clear_color = hashmap_vec4_get(player_data, "camera_clear_color");
-			if(hashmap_value_exists(player_data, "player_health")) player->health = hashmap_int_get(player_data, "player_health");
+			if(hashmap_value_exists(player_data, "player_health"))      player->health              = hashmap_int_get(player_data, "player_health");
+			if(hashmap_value_exists(player_data, "player_key_mask"))    player->key_mask            = hashmap_int_get(player_data, "player_key_mask");
 			num_objects_loaded++;
 		}
 		break;
@@ -270,6 +271,7 @@ bool scene_save(struct Scene* scene, const char* filename, int directory_type)
 	entity_write(&scene->player, player_object, true);
 	hashmap_vec4_set(player_object->data, "camera_clear_color", &scene->player.camera->clear_color);
 	hashmap_int_set(player_object->data, "player_health", &scene->player.health);
+	hashmap_int_set(player_object->data, "player_key_mask", &scene->player.key_mask);
 
 	scene_write_entity_list(scene, ET_DEFAULT, parser);
 	scene_write_entity_list(scene, ET_LIGHT, parser);

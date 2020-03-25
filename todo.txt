@@ -1,5 +1,4 @@
 Todo:
-	- Doors that open using the red/green/blue keys only as a way of progressing the level or cordoing off certain sections
 	- RGB keys to progress to next level
 	- Player/enemies getting hit by bullets
 	- Win/fail States
@@ -11,9 +10,7 @@ Todo:
 		- Cube mapping for sky dome etc
 	- Add event sender along with events
 	- Implement flag for ignoring collisions with certain entities
-	- Implement separate property window for player related variables that can be shown in the editor similar to renderer settings etc
 	- Implement game gui either with a separate nuklear context or as part of existing context
-	- Property inspector in editor should only show/apply local transformation values and world transformation values should be shown as non-editabale values
 	- Fix rotate gizmo's origin not being set to the selected entity
 	- Player shooting
 	- Player jump cooldown, don't allow jump until a certian time interval has passed, even if we're grounded
@@ -420,3 +417,4 @@ Done:
 	* Composite door entity made up of static mesh, sound entity and trigger. Door might require 0-3 keys in order to be opened.
 	* Add door properties to property inspector in editor
 	* Switched transformation in property inspector to show/modify local transform values by default and show absolute transform values as read-only.
+	* Doors that open using the red/green/blue keys only as a way of progressing the level or cordoing off certain sections

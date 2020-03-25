@@ -66,14 +66,19 @@ void door_write(struct Door* door, struct Hashmap* entity_data)
 void door_update(struct Door* door, struct Scene* scene, float dt)
 {
 	struct Game_State* game_state = game_state_get();
+	struct Player* player = &game_state->scene->player;
+
 	switch(door->state)
 	{
 	case DOOR_CLOSED:
 		if(door->trigger->triggered)
 		{
-			door->state = DOOR_OPENING;
-			sound_source_buffer_set(game_state->sound, door->sound, "sounds/door_open.wav", ST_WAV);
-			sound_source_play(game_state->sound, door->sound);
+			if((door->mask & player->key_mask) == door->mask)
+			{
+				door->state = DOOR_OPENING;
+				sound_source_buffer_set(game_state->sound, door->sound, "sounds/door_open.wav", ST_WAV);
+				sound_source_play(game_state->sound, door->sound);
+			}
 		}
 		break;
 	case DOOR_OPEN:

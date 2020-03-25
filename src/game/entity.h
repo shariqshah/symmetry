@@ -197,7 +197,9 @@ struct Player
     struct Static_Mesh*  mesh;
     struct Camera*       camera;
 	struct Sound_Source* weapon_sound;
+	struct Sound_Source* footstep_sound;
 	int                  health;
+	int                  key_mask;
     float				 move_speed;
     float				 move_speed_multiplier;
     float				 turn_speed;

@@ -41,6 +41,7 @@ void player_init(struct Player* player, struct Scene* scene)
     player->min_forward_distance  = hashmap_float_get(config, "player_min_forward_distance");
 	player->grounded              = true;
 	player->health                = 100;
+	player->key_mask              = 0;
 
     player->mesh = scene_static_mesh_create(scene, "Player_Mesh", player, "sphere.symbres", MAT_BLINN);
 
@@ -59,10 +60,17 @@ void player_init(struct Player* player, struct Scene* scene)
 	else
 		log_error("player:init", "Could not add weapon entity to player");
 
+	struct Sound_Source* footstep_sound = scene_sound_source_create(scene, "Player_Footstep_Sound_Source", player, "sounds/player_walk.wav", ST_WAV, true, false);
+	if(footstep_sound)
+		player->footstep_sound = footstep_sound;
+	else
+		log_error("player:init", "Could not add footstep entity to player");
+
 	// Mark player camera and mesh as transient for now. We don't need to save them to file since we recreate them here anyway
 	player->camera->base.flags |= EF_TRANSIENT;
 	player->mesh->base.flags |= EF_TRANSIENT;
 	player->weapon_sound->base.flags |= EF_TRANSIENT;
+	player->footstep_sound->base.flags |= EF_TRANSIENT;
 
     transform_parent_set(player_camera, player, true);
 

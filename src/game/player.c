@@ -18,6 +18,7 @@
 #include "sound_source.h"
 
 #include <float.h>
+#include <string.h>
 
 static void player_on_mousebutton_released(const struct Event* event);
 
@@ -60,7 +61,7 @@ void player_init(struct Player* player, struct Scene* scene)
 	else
 		log_error("player:init", "Could not add weapon entity to player");
 
-	struct Sound_Source* footstep_sound = scene_sound_source_create(scene, "Player_Footstep_Sound_Source", player, "sounds/player_walk.wav", ST_WAV, true, false);
+	struct Sound_Source* footstep_sound = scene_sound_source_create(scene, "Player_Footstep_Sound_Source", player, "sounds/player_walk.wav", ST_WAV, false, false);
 	if(footstep_sound)
 		player->footstep_sound = footstep_sound;
 	else
@@ -93,6 +94,8 @@ void player_destroy(struct Player* player)
 
 void player_update_physics(struct Player* player, struct Scene* scene, float fixed_dt)
 {
+	struct Sound* sound = game_state_get()->sound;
+
     /* Look around */
 	float total_pitch    = quat_get_pitch(&player->camera->base.transform.rotation);
     float pitch          = 0.f;
@@ -234,9 +237,25 @@ void player_update_physics(struct Player* player, struct Scene* scene, float fix
 
 	translation.x *= move_speed * fixed_dt;
 	translation.z *= move_speed * fixed_dt;
-	translation.y = move_speed_vertical * fixed_dt;
+	translation.y  = move_speed_vertical * fixed_dt;
 	transform_translate(player, &translation, TS_WORLD);
 
+	if(translation.x != 0.f || translation.z != 0.f)
+	{
+		// Walking
+		if(player->grounded)
+		{
+			if(strncmp(player->footstep_sound->source_buffer->filename, "sounds/player_walk.wav", MAX_FILENAME_LEN) != 0)
+				sound_source_buffer_set(sound, player->footstep_sound, "sounds/player_walk.wav", ST_WAV);
+
+			if(sound_source_is_paused(sound, player->footstep_sound))
+				sound_source_play(sound, player->footstep_sound);
+		}
+	}
+	else
+	{
+		// Stopped walking 
+	}
 	debug_vars_show_bool("Grounded", player->grounded);
 
 }

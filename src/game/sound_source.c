@@ -4,6 +4,8 @@
 #include "transform.h"
 #include "../common/log.h"
 
+#include <string.h>
+
 void sound_source_validate_instance(struct Sound* sound, struct Sound_Source* entity)
 {
 	if(!sound_source_instance_is_valid(sound, entity->source_instance))
@@ -56,6 +58,9 @@ void sound_source_update_position(struct Sound* sound, struct Sound_Source* enti
 
 void sound_source_buffer_set(struct Sound* sound, struct Sound_Source* entity, const char* filename, int type)
 {
+	if(strncmp(filename, entity->source_buffer->filename, MAX_FILENAME_LEN) == 0)
+		return;
+
 	struct Sound_Source_Buffer* new_buffer = sound_source_buffer_create(sound, filename, type);
 	if(new_buffer)
 	{

@@ -1,4 +1,5 @@
 Todo:
+	- Implement player footstep sounds for walking, running and jumping
 	- RGB keys to progress to next level
 	- Player/enemies getting hit by bullets
 	- Win/fail States

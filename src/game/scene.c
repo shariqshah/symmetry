@@ -270,8 +270,8 @@ bool scene_save(struct Scene* scene, const char* filename, int directory_type)
 	struct Parser_Object* player_object = parser_object_new(parser, PO_PLAYER);
 	entity_write(&scene->player, player_object, true);
 	hashmap_vec4_set(player_object->data, "camera_clear_color", &scene->player.camera->clear_color);
-	hashmap_int_set(player_object->data, "player_health", &scene->player.health);
-	hashmap_int_set(player_object->data, "player_key_mask", &scene->player.key_mask);
+	hashmap_int_set(player_object->data, "player_health", scene->player.health);
+	hashmap_int_set(player_object->data, "player_key_mask", scene->player.key_mask);
 
 	scene_write_entity_list(scene, ET_DEFAULT, parser);
 	scene_write_entity_list(scene, ET_LIGHT, parser);

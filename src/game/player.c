@@ -67,11 +67,18 @@ void player_init(struct Player* player, struct Scene* scene)
 	else
 		log_error("player:init", "Could not add footstep entity to player");
 
+	struct Sound_Source* grunt_sound = scene_sound_source_create(scene, "Player_Grunt_Sound_Source", player, "sounds/player_jump_grunt.wav", ST_WAV, false, false);
+	if(grunt_sound)
+		player->grunt_sound = grunt_sound;
+	else
+		log_error("player:init", "Could not add grunt entity to player");
+
 	// Mark player camera and mesh as transient for now. We don't need to save them to file since we recreate them here anyway
 	player->camera->base.flags |= EF_TRANSIENT;
 	player->mesh->base.flags |= EF_TRANSIENT;
 	player->weapon_sound->base.flags |= EF_TRANSIENT;
 	player->footstep_sound->base.flags |= EF_TRANSIENT;
+	player->grunt_sound->base.flags |= EF_TRANSIENT;
 
     transform_parent_set(player_camera, player, true);
 
@@ -143,10 +150,13 @@ void player_update_physics(struct Player* player, struct Scene* scene, float fix
 	vec3 move_direction  = { 0.f };
 
 	static bool jumping = false;
+	static bool landed = false;
 	static float move_speed_vertical = 0.f;
 
 	// If we started jumping last frame, set jumpig to false
 	if(jumping) jumping = false;
+
+	if(landed) landed = false;
 
     if(input_map_state_get("Sprint",        KS_PRESSED))  move_speed *= player->move_speed_multiplier;
     if(input_map_state_get("Move_Forward",  KS_PRESSED))  move_direction.z -= 1.f;
@@ -226,7 +236,11 @@ void player_update_physics(struct Player* player, struct Scene* scene, float fix
 			if(distance > 0.f && distance <= player->min_downward_distance && !jumping)
 			{
 				move_speed_vertical = 0.f;
-				player->grounded = true;
+				if(!player->grounded)
+				{
+					player->grounded = true;
+					landed = true;
+				}
 			}
 		}
 	}
@@ -240,32 +254,44 @@ void player_update_physics(struct Player* player, struct Scene* scene, float fix
 	translation.y  = move_speed_vertical * fixed_dt;
 	transform_translate(player, &translation, TS_WORLD);
 
-	if(translation.x != 0.f || translation.z != 0.f)
+	// Sounds
+	if(translation.x != 0.f || translation.z != 0.f || landed)
 	{
 		if(player->grounded)
 		{
-			// Sprinting/Walking
-			if(input_map_state_get("Sprint", KS_PRESSED))
+			if(sound_source_is_paused(sound, player->footstep_sound)) // if a sound is already playing, let it finish first then switch to avoid abrupt transition
 			{
-				if(strncmp(player->footstep_sound->source_buffer->filename, "sounds/player_sprint.wav", MAX_FILENAME_LEN) != 0)
-					sound_source_buffer_set(sound, player->footstep_sound, "sounds/player_sprint.wav", ST_WAV);
-			}
-			else if(strncmp(player->footstep_sound->source_buffer->filename, "sounds/player_walk.wav", MAX_FILENAME_LEN) != 0)
-			{
-				sound_source_buffer_set(sound, player->footstep_sound, "sounds/player_walk.wav", ST_WAV);
-			}
+				// Sprinting/Walking/Jump Landing
+				if(landed)
+				{
+					if(strncmp(player->footstep_sound->source_buffer->filename, "sounds/player_jump_land.wav", MAX_FILENAME_LEN) != 0)
+						sound_source_buffer_set(sound, player->footstep_sound, "sounds/player_jump_land.wav", ST_WAV);
+				}
+				else if(input_map_state_get("Sprint", KS_PRESSED))
+				{
+					if(strncmp(player->footstep_sound->source_buffer->filename, "sounds/player_sprint.wav", MAX_FILENAME_LEN) != 0)
+						sound_source_buffer_set(sound, player->footstep_sound, "sounds/player_sprint.wav", ST_WAV);
+				}
+				else if(strncmp(player->footstep_sound->source_buffer->filename, "sounds/player_walk.wav", MAX_FILENAME_LEN) != 0)
+				{
+					sound_source_buffer_set(sound, player->footstep_sound, "sounds/player_walk.wav", ST_WAV);
+				}
 
-			if(sound_source_is_paused(sound, player->footstep_sound))
-			{
 				sound_source_play(sound, player->footstep_sound);
 			}
 		}
 	}
-	else
+
+	if(jumping)
 	{
-		// Stopped walking 
+		if(sound_source_is_paused(sound, player->grunt_sound))
+		{
+			if(strncmp(player->grunt_sound->source_buffer->filename, "sounds/player_jump_grunt.wav", MAX_FILENAME_LEN) != 0)
+				sound_source_buffer_set(sound, player->grunt_sound, "sounds/player_jump_grunt.wav", ST_WAV);
+
+			sound_source_play(sound, player->grunt_sound);
+		}
 	}
-	debug_vars_show_bool("Grounded", player->grounded);
 
 }
 

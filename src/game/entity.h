@@ -198,6 +198,7 @@ struct Player
     struct Camera*       camera;
 	struct Sound_Source* weapon_sound;
 	struct Sound_Source* footstep_sound;
+	struct Sound_Source* grunt_sound;
 	int                  health;
 	int                  key_mask;
     float				 move_speed;

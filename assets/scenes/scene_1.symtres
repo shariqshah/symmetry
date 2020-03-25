@@ -16,11 +16,11 @@ Player
 {
 	type : 2
 	scale : 1.000 1.000 1.000
-	rotation : 0.000 -1.000 0.000 -0.033
+	rotation : 0.000 -1.001 0.000 -0.000
 	active : true
-	position : -20.255 2.167 -50.978
-	player_health : 100
 	player_key_mask : 0
+	position : -18.634 2.167 -45.517
+	player_health : 100
 	name : Player
 	bounding_box_min : -1.500 -1.500 -1.000
 	camera_clear_color : 0.310 0.412 0.529 1.000

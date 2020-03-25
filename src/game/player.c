@@ -242,14 +242,23 @@ void player_update_physics(struct Player* player, struct Scene* scene, float fix
 
 	if(translation.x != 0.f || translation.z != 0.f)
 	{
-		// Walking
 		if(player->grounded)
 		{
-			if(strncmp(player->footstep_sound->source_buffer->filename, "sounds/player_walk.wav", MAX_FILENAME_LEN) != 0)
+			// Sprinting/Walking
+			if(input_map_state_get("Sprint", KS_PRESSED))
+			{
+				if(strncmp(player->footstep_sound->source_buffer->filename, "sounds/player_sprint.wav", MAX_FILENAME_LEN) != 0)
+					sound_source_buffer_set(sound, player->footstep_sound, "sounds/player_sprint.wav", ST_WAV);
+			}
+			else if(strncmp(player->footstep_sound->source_buffer->filename, "sounds/player_walk.wav", MAX_FILENAME_LEN) != 0)
+			{
 				sound_source_buffer_set(sound, player->footstep_sound, "sounds/player_walk.wav", ST_WAV);
+			}
 
 			if(sound_source_is_paused(sound, player->footstep_sound))
+			{
 				sound_source_play(sound, player->footstep_sound);
+			}
 		}
 	}
 	else

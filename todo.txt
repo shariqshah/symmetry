@@ -1,6 +1,7 @@
 Todo:
-	- Implement player footstep sounds for walking, running and jumping
 	- RGB keys to progress to next level
+	- Visual indicator on doors corresponding to their key masks
+	- Audio cues when player does not have the right key combination to open a particular door
 	- Player/enemies getting hit by bullets
 	- Win/fail States
 	- Remove excessive repitition in scene and editor code that handles multiple entity types
@@ -13,8 +14,8 @@ Todo:
 	- Implement flag for ignoring collisions with certain entities
 	- Implement game gui either with a separate nuklear context or as part of existing context
 	- Fix rotate gizmo's origin not being set to the selected entity
+	- Ambient/Background music 
 	- Player shooting
-	- Player jump cooldown, don't allow jump until a certian time interval has passed, even if we're grounded
 	- Sky Cube maps
 	- Scrolling textures
 	- Apply the selected entity's transformation when duplicating an entity that has an entity archetype
@@ -419,3 +420,5 @@ Done:
 	* Add door properties to property inspector in editor
 	* Switched transformation in property inspector to show/modify local transform values by default and show absolute transform values as read-only.
 	* Doors that open using the red/green/blue keys only as a way of progressing the level or cordoing off certain sections
+	* Implemented player footstep sounds for walking, running and jumping
+	* Player jump cooldown, don't allow jump until a certian time interval has passed, even if we're grounded

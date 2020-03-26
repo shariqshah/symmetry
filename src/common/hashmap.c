@@ -147,6 +147,12 @@ void hashmap_int_set(struct Hashmap* hashmap, const char* key, const int value)
     variant_assign_int(&new_entry->value, value);
 }
 
+void hashmap_uint_set(struct Hashmap* hashmap, const char* key, const uint value)
+{
+    struct Hashmap_Entry* new_entry = hashmap_entry_new(hashmap, key);
+    variant_assign_uint(&new_entry->value, value);
+}
+
 void hashmap_double_set(struct Hashmap* hashmap, const char* key, const double value)
 {
     struct Hashmap_Entry* new_entry = hashmap_entry_new(hashmap, key);
@@ -237,6 +243,13 @@ int hashmap_int_get(const struct Hashmap* hashmap, const char* key)
     struct Variant* variant = hashmap_value_get(hashmap, key);
     if(variant->type == VT_STR)	variant_from_str(variant, variant->val_str, VT_INT);
     return variant->val_int;
+}
+
+uint hashmap_uint_get(const struct Hashmap* hashmap, const char* key)
+{
+    struct Variant* variant = hashmap_value_get(hashmap, key);
+    if(variant->type == VT_STR)	variant_from_str(variant, variant->val_str, VT_UINT);
+    return variant->val_uint;
 }
 
 double hashmap_double_get(const struct Hashmap* hashmap, const char* key)

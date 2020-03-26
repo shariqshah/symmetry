@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include "../common/num_types.h"
 
+typedef void (*Timer_Callback_Func) (uint32 interval, void* param);
+
 enum Video_Drivers_Linux
 {
     VD_X11 = 0,
@@ -52,5 +54,7 @@ void*       platform_load_function(void* library_handle, const char* func_name);
 bool        platform_load_gl(const char* name);
 void        platform_unload_gl(void);
 void*       platform_load_function_gl(const char* func_name);
+int         platform_timer_add(uint32 interval_ms, Timer_Callback_Func callback, void* param);
+bool        platform_timer_remove(int timer_id);
 
 #endif

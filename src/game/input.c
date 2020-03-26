@@ -283,6 +283,7 @@ void input_on_key(const struct Event* event)
 	if(mod_shift) mods |= KMD_SHIFT;
 	if(mod_alt)   mods |= KMD_ALT;
 
+	struct Event_Manager* event_manager = game_state_get()->event_manager;
 	char* map_key = NULL;
 	struct Variant* value = NULL;
 	HASHMAP_FOREACH(key_bindings, map_key, value)
@@ -292,6 +293,10 @@ void input_on_key(const struct Event* event)
 		if(key_binding->key_primary == key && (key_binding->mods_primary & mods) == key_binding->mods_primary)
 		{
 			key_binding->state = event->type == EVT_KEY_PRESSED ? KS_PRESSED : KS_RELEASED;
+			struct Event* input_map_event = event_manager_create_new_event(event_manager);
+			input_map_event->type = event->type == EVT_KEY_PRESSED ? EVT_INPUT_MAP_PRESSED : EVT_INPUT_MAP_RELEASED;
+			strncpy(&input_map_event->input_map.name, map_key, HASH_MAX_KEY_LEN);
+			event_manager_send_event(event_manager, input_map_event);
 			break;
 		}
 
@@ -299,6 +304,10 @@ void input_on_key(const struct Event* event)
 		if(key_binding->key_secondary == key && (key_binding->mods_secondary & mods) == key_binding->mods_secondary)
 		{
 			key_binding->state = event->type == EVT_KEY_PRESSED ? KS_PRESSED : KS_RELEASED;
+			struct Event* input_map_event = event_manager_create_new_event(event_manager);
+			input_map_event->type = event->type == EVT_KEY_PRESSED ? EVT_INPUT_MAP_PRESSED : EVT_INPUT_MAP_RELEASED;
+			strncpy(&input_map_event->input_map.name, map_key, HASH_MAX_KEY_LEN);
+			event_manager_send_event(event_manager, input_map_event);
 			break;
 		}
 	}

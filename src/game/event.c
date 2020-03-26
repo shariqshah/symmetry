@@ -327,6 +327,8 @@ const char* event_name_get(int event_type)
 	case EVT_TEXT_INPUT:           return "Text Input";
 	case EVT_SCENE_LOADED:         return "Scene Loaded";
 	case EVT_TRIGGER:              return "Trigger Activated";
+	case EVT_INPUT_MAP_PRESSED:    return "Input Map Pressed";
+	case EVT_INPUT_MAP_RELEASED:   return "Input Map Released";
 	case EVT_MAX:                  return "Max Number of Events";
 	default: return "Invalid event_type";
 	}

@@ -25,6 +25,8 @@ enum Event_Types
 	EVT_TEXT_INPUT,
 	EVT_SCENE_LOADED,
 	EVT_TRIGGER,
+	EVT_INPUT_MAP_PRESSED,
+	EVT_INPUT_MAP_RELEASED,
 	EVT_MAX
 };
 
@@ -33,6 +35,11 @@ enum Event_Subscription_Type
 	EST_NONE = 0,
 	EST_WITHOUT_OBJECT,
 	EST_WITH_OBJECT
+};
+
+struct Input_Map_Event
+{
+	char name[HASH_MAX_KEY_LEN];
 };
 
 struct Key_Event
@@ -103,6 +110,7 @@ struct Event
 		struct Window_Resized_Event window_resize;
 		struct Scene_Loaded_Event   scene_load;
 		struct Trigger_Event        trigger;
+		struct Input_Map_Event      input_map;
 	};
 };
 

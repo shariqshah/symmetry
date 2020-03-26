@@ -4,9 +4,8 @@
 #include "linmath.h"
 #include "num_types.h"
 #include "array.h"
+#include "limits.h"
 
-#define HASH_MAP_NUM_BUCKETS 10
-#define HASH_MAX_KEY_LEN     128
 
 struct Hashmap;
 struct Variant;
@@ -21,6 +20,7 @@ struct Variant* hashmap_value_get(const struct Hashmap* hashmap, const char* key
 
 void  	  	hashmap_float_set(struct Hashmap* hashmap, const char* key, const float value);
 void  	  	hashmap_int_set(struct Hashmap* hashmap, const char* key, const int value);
+void  	  	hashmap_uint_set(struct Hashmap* hashmap, const char* key, const uint value);
 void  	  	hashmap_double_set(struct Hashmap* hashmap, const char* key, const double value);
 void  	  	hashmap_bool_set(struct Hashmap* hashmap, const char* key, const bool value);
 void  	  	hashmap_vec2_set(struct Hashmap* hashmap, const char* key, const vec2* value);
@@ -37,6 +37,7 @@ void  	  	hashmap_ptr_set(struct Hashmap* hashmap, const char* key, void* value)
 
 float      	hashmap_float_get(const struct Hashmap* hashmap, const char* key);
 int        	hashmap_int_get(const struct Hashmap* hashmap, const char* key);
+uint        hashmap_uint_get(const struct Hashmap* hashmap, const char* key);
 double     	hashmap_double_get(const struct Hashmap* hashmap, const char* key);
 bool       	hashmap_bool_get(const struct Hashmap* hashmap, const char* key);
 vec2       	hashmap_vec2_get(const struct Hashmap* hashmap, const char* key);

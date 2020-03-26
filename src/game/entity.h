@@ -209,6 +209,7 @@ struct Player
 	float				 min_downward_distance;
 	float				 min_forward_distance;
 	bool				 grounded;
+	bool                 can_jump;
 };
 
 struct Enemy

@@ -395,3 +395,16 @@ void* platform_load_function_gl(const char* func_name)
     if(!func_ptr) log_error("platform:load_function_gl", "Failed to load GL function '%s' from library, SDL : (%s)", func_name, SDL_GetError());
     return func_ptr;
 }
+
+int platform_timer_add(uint32 interval_ms, Timer_Callback_Func callback, void* param)
+{
+    SDL_TimerID timer_id = SDL_AddTimer(interval_ms, callback, param);
+    if(timer_id == 0)
+        log_error("platform:tiemr_add", "Failed to add timer, SDL : (%s)", SDL_GetError());
+    return timer_id;
+}
+
+bool platform_timer_remove(int timer_id)
+{
+    return (bool)SDL_RemoveTimer(timer_id);
+}

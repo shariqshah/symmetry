@@ -21,6 +21,7 @@
 #include <string.h>
 
 static void player_on_mousebutton_released(const struct Event* event);
+static void player_on_input_map_released(const struct Event* event);
 
 void player_init(struct Player* player, struct Scene* scene)
 {
@@ -41,6 +42,7 @@ void player_init(struct Player* player, struct Scene* scene)
     player->min_downward_distance = hashmap_float_get(config, "player_min_downward_distance");
     player->min_forward_distance  = hashmap_float_get(config, "player_min_forward_distance");
 	player->grounded              = true;
+	player->can_jump              = true;
 	player->health                = 100;
 	player->key_mask              = 0;
 
@@ -74,11 +76,11 @@ void player_init(struct Player* player, struct Scene* scene)
 		log_error("player:init", "Could not add grunt entity to player");
 
 	// Mark player camera and mesh as transient for now. We don't need to save them to file since we recreate them here anyway
-	player->camera->base.flags |= EF_TRANSIENT;
-	player->mesh->base.flags |= EF_TRANSIENT;
-	player->weapon_sound->base.flags |= EF_TRANSIENT;
+	player->camera->base.flags         |= EF_TRANSIENT;
+	player->mesh->base.flags           |= EF_TRANSIENT;
+	player->weapon_sound->base.flags   |= EF_TRANSIENT;
 	player->footstep_sound->base.flags |= EF_TRANSIENT;
-	player->grunt_sound->base.flags |= EF_TRANSIENT;
+	player->grunt_sound->base.flags    |= EF_TRANSIENT;
 
     transform_parent_set(player_camera, player, true);
 
@@ -89,11 +91,13 @@ void player_init(struct Player* player, struct Scene* scene)
 	sound_listener_update(game_state->sound);
 
 	event_manager_subscribe(game_state->event_manager, EVT_MOUSEBUTTON_RELEASED, &player_on_mousebutton_released);
+	event_manager_subscribe(game_state->event_manager, EVT_INPUT_MAP_RELEASED, &player_on_input_map_released);
 }
 
 void player_destroy(struct Player* player)
 {
 	event_manager_unsubscribe(game_state_get()->event_manager, EVT_MOUSEBUTTON_RELEASED, &player_on_mousebutton_released);
+	event_manager_unsubscribe(game_state_get()->event_manager, EVT_INPUT_MAP_RELEASED, &player_on_input_map_released);
     entity_reset(player, player->base.id);
 	scene_entity_base_remove(game_state_get()->scene, &player->base);
     player->base.flags = EF_NONE;
@@ -146,11 +150,11 @@ void player_update_physics(struct Player* player, struct Scene* scene, float fix
 		transform_rotate(player->camera, &rot_axis_pitch, pitch, TS_LOCAL);
 
     /* Movement */
-    float move_speed     = player->move_speed;
-	vec3 move_direction  = { 0.f };
+    float move_speed    = player->move_speed;
+	vec3 move_direction = { 0.f };
 
-	static bool jumping = false;
-	static bool landed = false;
+	static bool  jumping             = false;
+	static bool  landed              = false;
 	static float move_speed_vertical = 0.f;
 
 	// If we started jumping last frame, set jumpig to false
@@ -165,11 +169,16 @@ void player_update_physics(struct Player* player, struct Scene* scene, float fix
     if(input_map_state_get("Move_Right",    KS_PRESSED))  move_direction.x += 1.f;
 	if(input_map_state_get("Jump", KS_PRESSED))
 	{
-		if(player->grounded)
+		if(player->grounded && player->can_jump)
 		{
 			move_speed_vertical += player->jump_speed;
 			jumping = true;
 			player->grounded = false;
+			player->can_jump = false;
+		}
+		else
+		{
+			player->can_jump = false;
 		}
 	}
 
@@ -293,6 +302,17 @@ void player_update_physics(struct Player* player, struct Scene* scene, float fix
 		}
 	}
 
+	debug_vars_show_bool("Grounded", player->grounded);
+}
+
+void player_on_input_map_released(const struct Event* event)
+{
+	struct Game_State* game_state = game_state_get();
+	if(strncmp("Jump", event->input_map.name, HASH_MAX_KEY_LEN) == 0)
+	{
+		struct Player* player = &game_state->scene->player;
+		player->can_jump = true;
+	}
 }
 
 void player_on_mousebutton_released(const struct Event* event)

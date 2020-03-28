@@ -1,7 +1,4 @@
 Todo:
-	- RGB keys to progress to next level
-	- Visual indicator on doors corresponding to their key masks
-	- Audio cues when player does not have the right key combination to open a particular door
 	- Player/enemies getting hit by bullets
 	- Win/fail States
 	- Remove excessive repitition in scene and editor code that handles multiple entity types
@@ -422,3 +419,6 @@ Done:
 	* Doors that open using the red/green/blue keys only as a way of progressing the level or cordoing off certain sections
 	* Implemented player footstep sounds for walking, running and jumping
 	* Player jump cooldown, don't allow jump until a certian time interval has passed, even if we're grounded
+	* RGB keys to progress to next level
+	* Visual indicator on doors corresponding to their key masks
+	* Audio cues when player does not have the right key combination to open a particular door

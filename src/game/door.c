@@ -84,6 +84,16 @@ void door_update(struct Door* door, struct Scene* scene, float dt)
 				sound_source_buffer_set(game_state->sound, door->sound, "sounds/door_open.wav", ST_WAV);
 				sound_source_play(game_state->sound, door->sound);
 			}
+			else
+			{
+				// Player does not have the right keys so the door is locked
+				if(!door->lock_sound_played && sound_source_is_paused(game_state->sound, door->sound))
+				{
+					sound_source_buffer_set(game_state->sound, door->sound, "sounds/door_locked.wav", ST_WAV);
+					sound_source_play(game_state->sound, door->sound);
+					door->lock_sound_played = true;
+				}
+			}
 		}
 		break;
 	case DOOR_OPEN:
@@ -107,6 +117,9 @@ void door_update(struct Door* door, struct Scene* scene, float dt)
 			door->state = DOOR_CLOSED;
 		break;
 	}
+
+	if(!door->trigger->triggered)
+		door->lock_sound_played = false;
 }
 
 void door_update_key_indicator_materials(struct Door* door)
@@ -180,4 +193,4 @@ void door_on_trigger(struct Event* event, void* door_ptr)
 	case DOOR_CLOSING:
 		break;
 	}
-}
+} 

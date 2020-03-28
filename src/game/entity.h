@@ -265,6 +265,7 @@ struct Door
 	float                speed;
 	float                open_position;
 	float                close_position;
+	bool                 lock_sound_played;
 	struct Static_Mesh*  mesh;
 	struct Static_Mesh*  key_indicator_red;
 	struct Static_Mesh*  key_indicator_green;

@@ -2415,9 +2415,9 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 					nk_layout_row_dynamic(context, row_height, 1);
 					nk_label(context, "Key Mask", NK_TEXT_ALIGN_MIDDLE | NK_TEXT_ALIGN_CENTERED);
 					nk_layout_row_dynamic(context, row_height, 3);
-					nk_checkbox_flags_label(context, "Red", &door->mask, DOOR_KEY_MASK_RED);
-					nk_checkbox_flags_label(context, "Green", &door->mask, DOOR_KEY_MASK_GREEN);
-					nk_checkbox_flags_label(context, "Blue", &door->mask, DOOR_KEY_MASK_BLUE);
+					if(nk_checkbox_flags_label(context, "Red", &door->mask, DOOR_KEY_MASK_RED))     door_update_key_indicator_materials(door);
+					if(nk_checkbox_flags_label(context, "Green", &door->mask, DOOR_KEY_MASK_GREEN)) door_update_key_indicator_materials(door);
+					if(nk_checkbox_flags_label(context, "Blue", &door->mask, DOOR_KEY_MASK_BLUE))   door_update_key_indicator_materials(door);
 
 					nk_layout_row_dynamic(context, row_height, 1);
 					nk_property_float(context, "Speed", -FLT_MAX, &door->speed, FLT_MAX, 0.1f, 0.1f);

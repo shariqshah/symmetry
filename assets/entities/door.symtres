@@ -62,9 +62,54 @@ Entity
 	active : true
 	diffuse_texture : default.tga
 	diffuse : 1.0000
-	position : 0.000 4.500 0.000
+	position : 0.006 4.500 0.000
 	specular_strength : 62.0000
 	name : Door_Mesh
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 1
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 0.100 0.100 0.100
+	geometry : cube.symbres
+	active : true
+	diffuse_texture : white.tga
+	position : -2.000 9.500 0.000
+	name : Door_Key_Indicator_Red
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 1
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 0.100 0.100 0.100
+	geometry : cube.symbres
+	active : true
+	diffuse_texture : white.tga
+	position : -0.250 9.500 0.000
+	name : Door_Key_Indicator_Green
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 1
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 0.100 0.100 0.100
+	geometry : cube.symbres
+	active : true
+	diffuse_texture : white.tga
+	position : 1.500 9.500 0.000
+	name : Door_Key_Indicator_Blue
 	uv_scale : 0.300 0.200
 }
 

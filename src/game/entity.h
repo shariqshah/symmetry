@@ -266,6 +266,9 @@ struct Door
 	float                open_position;
 	float                close_position;
 	struct Static_Mesh*  mesh;
+	struct Static_Mesh*  key_indicator_red;
+	struct Static_Mesh*  key_indicator_green;
+	struct Static_Mesh*  key_indicator_blue;
 	struct Sound_Source* sound;
 	struct Trigger*      trigger;
 };

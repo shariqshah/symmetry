@@ -13,6 +13,11 @@
 static void door_on_scene_loaded(struct Event* event, void* door_ptr);
 static void door_on_trigger(struct Event* event, void* door_ptr);
 
+static const vec4 KEY_INDICATOR_COLOR_RED      = { 0.87, 0.32, 0.40, 1.0f };
+static const vec4 KEY_INDICATOR_COLOR_GREEN    = { 0.53, 0.67, 0.28, 1.0f };
+static const vec4 KEY_INDICATOR_COLOR_BLUE     = { 0.47, 0.67, 0.89, 1.0f };
+static const vec4 KEY_INDICATOR_COLOR_DISABLED = { 0.1, 0.1, 0.1, 1.0f };
+
 void door_init(struct Door* door, int mask)
 {
 	struct Game_State* game_state = game_state_get();
@@ -104,17 +109,43 @@ void door_update(struct Door* door, struct Scene* scene, float dt)
 	}
 }
 
+void door_update_key_indicator_materials(struct Door* door)
+{
+	if((door->mask & DOOR_KEY_MASK_RED))   
+		vec4_assign(&door->key_indicator_red->model.material_params[MMP_DIFFUSE_COL].val_vec4, &KEY_INDICATOR_COLOR_RED);
+	else
+		vec4_assign(&door->key_indicator_red->model.material_params[MMP_DIFFUSE_COL].val_vec4, &KEY_INDICATOR_COLOR_DISABLED);
+
+	if((door->mask & DOOR_KEY_MASK_GREEN)) 
+		vec4_assign(&door->key_indicator_green->model.material_params[MMP_DIFFUSE_COL].val_vec4, &KEY_INDICATOR_COLOR_GREEN);
+	else
+		vec4_assign(&door->key_indicator_green->model.material_params[MMP_DIFFUSE_COL].val_vec4, &KEY_INDICATOR_COLOR_DISABLED);
+
+	if((door->mask & DOOR_KEY_MASK_BLUE))  
+		vec4_assign(&door->key_indicator_blue->model.material_params[MMP_DIFFUSE_COL].val_vec4, &KEY_INDICATOR_COLOR_BLUE);
+	else
+		vec4_assign(&door->key_indicator_blue->model.material_params[MMP_DIFFUSE_COL].val_vec4, &KEY_INDICATOR_COLOR_DISABLED);
+}
+
 void door_on_scene_loaded(struct Event* event, void* door_ptr)
 {
-	struct Door* door              = (struct Door*)door_ptr;
-	struct Entity* door_mesh[1]    = { NULL };
+	struct Door*   door            = (struct Door*)door_ptr;
+	struct Entity* door_meshes[4]  = { NULL };
 	struct Entity* door_sound[1]   = { NULL };
 	struct Entity* door_trigger[1] = { NULL };
 
-	if(entity_get_num_children_of_type(door, ET_STATIC_MESH, &door_mesh, 1) == 1)
-		door->mesh = door_mesh[0];
+	if(entity_get_num_children_of_type(door, ET_STATIC_MESH, &door_meshes, 4) >= 4)
+	{
+		door->mesh                = door_meshes[0];
+		door->key_indicator_red   = door_meshes[1];
+		door->key_indicator_green = door_meshes[2];
+		door->key_indicator_blue  = door_meshes[3];
+		door_update_key_indicator_materials(door);
+	}
 	else
+	{
 		log_error("door:on_scene_load", "Could not find mesh entity for door %s", door->base.name);
+	}
 
 	if(entity_get_num_children_of_type(door, ET_SOUND_SOURCE, &door_sound, 1) == 1)
 		door->sound = door_sound[0];

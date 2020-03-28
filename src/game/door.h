@@ -21,5 +21,6 @@ void         door_reset(struct Door* door);
 void         door_update(struct Door* door, struct Scene* scene, float dt);
 struct Door* door_read(struct Parser_Object* object, const char* name, struct Entity* parent_entity);
 void         door_write(struct Door* door, struct Hashmap* entity_data);
+void         door_update_key_indicator_materials(struct Door* door);
 
 #endif

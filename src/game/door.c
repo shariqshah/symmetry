@@ -30,7 +30,7 @@ void door_init(struct Door* door, int mask)
 	door->close_position = 0.f;
 	door->state          = DOOR_CLOSED;
 
-	event_manager_subscribe_with_object(event_manager, EVT_SCENE_LOADED, &door_on_scene_loaded, (void*)door);
+	event_manager_subscribe_with_subscriber(event_manager, EVT_SCENE_LOADED, &door_on_scene_loaded, (void*)door);
 }
 
 void door_reset(struct Door* door)
@@ -39,8 +39,8 @@ void door_reset(struct Door* door)
 	door->speed = 0.f;
 
 	struct Event_Manager* event_manager = game_state_get()->event_manager;
-	event_manager_unsubscribe_with_object(event_manager, EVT_TRIGGER, &door_on_trigger, (void*)door);
-	event_manager_unsubscribe_with_object(event_manager, EVT_SCENE_LOADED, &door_on_scene_loaded, (void*)door);
+	event_manager_unsubscribe_with_subscriber(event_manager, EVT_TRIGGER, &door_on_trigger, (void*)door);
+	event_manager_unsubscribe_with_subscriber(event_manager, EVT_SCENE_LOADED, &door_on_scene_loaded, (void*)door);
 }
 
 struct Door* door_read(struct Parser_Object* object, const char* name, struct Entity* parent_entity)
@@ -169,7 +169,7 @@ void door_on_scene_loaded(struct Event* event, void* door_ptr)
 	{
 		door->trigger = door_trigger[0];
 		struct Event_Manager* event_manager = game_state_get()->event_manager;
-		event_manager_subscribe_with_object(event_manager, EVT_TRIGGER, &door_on_trigger, (void*)door);
+		event_manager_subscribe_with_subscriber(event_manager, EVT_TRIGGER, &door_on_trigger, (void*)door);
 	}
 	else
 	{

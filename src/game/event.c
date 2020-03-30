@@ -38,7 +38,7 @@ void event_manager_subscribe(struct Event_Manager* event_manager, int event_type
 	for(int i = 0; i < MAX_EVENT_SUBSCRIPTIONS; i++)
 	{
 		struct Event_Subscription* subscription = &event_manager->event_subsciptions[i];
-		if(subscription->type == EST_WITHOUT_OBJECT && subscription->event_type == event_type && subscription->handler == handler_func)
+		if(subscription->type == EST_WITHOUT_OBJECTS && subscription->event_type == event_type && subscription->Subscription_Without_Objects.handler == handler_func)
 		{
 			log_message("Already subscibed to %s event", event_name_get(event_type));
 			subscribed = true;
@@ -55,10 +55,10 @@ void event_manager_subscribe(struct Event_Manager* event_manager, int event_type
 			struct Event_Subscription* subscription = &event_manager->event_subsciptions[i];
 			if(subscription->type == EST_NONE)
 			{
-				subscription->type       = EST_WITHOUT_OBJECT;
-				subscription->event_type = event_type;
-				subscription->handler    = handler_func;
-				subscribed               = true;
+				subscribed                                         = true;
+				subscription->type                                 = EST_WITHOUT_OBJECTS;
+				subscription->event_type                           = event_type;
+				subscription->Subscription_Without_Objects.handler = handler_func;
 				break;
 			}
 		}
@@ -77,31 +77,33 @@ void event_manager_unsubscribe(struct Event_Manager* event_manager, int event_ty
 	for(int i = 0; i < MAX_EVENT_SUBSCRIPTIONS; i++)
 	{
 		struct Event_Subscription* subscription = &event_manager->event_subsciptions[i];
-		if(subscription->type != EST_WITHOUT_OBJECT) continue;
-		if(subscription->event_type == event_type && subscription->handler == handler_func)
+		if(subscription->type != EST_WITHOUT_OBJECTS) continue;
+		if(subscription->event_type == event_type && subscription->Subscription_Without_Objects.handler == handler_func)
 		{
-			subscription->handler    = NULL;
-			subscription->event_type = EVT_NONE;
-			subscription->type       = EST_NONE;
+			subscription->Subscription_Without_Objects.handler = NULL;
+			subscription->event_type                           = EVT_NONE;
+			subscription->type                                 = EST_NONE;
 			break;
 		}
 	}
 }
 
-void event_manager_unsubscribe_with_object(struct Event_Manager* event_manager, int event_type, Event_Handler_Object handler_func, void* subscriber)
+void event_manager_unsubscribe_with_subscriber(struct Event_Manager* event_manager, int event_type, Event_Handler_Subscriber handler_func, void* subscriber)
 {
 	assert(event_manager && event_type < EVT_MAX);
 
 	for(int i = 0; i < MAX_EVENT_SUBSCRIPTIONS; i++)
 	{
 		struct Event_Subscription* subscription = &event_manager->event_subsciptions[i];
-		if(subscription->type != EST_WITH_OBJECT) continue;
-		if(subscription->event_type == event_type && subscription->handler_with_object == handler_func && subscription->subscriber == subscriber)
+		if(subscription->type != EST_SUBSCRIBER) continue;
+		if(subscription->event_type == event_type && 
+		   subscription->Subscription_Subscriber.handler == handler_func && 
+		   subscription->Subscription_Subscriber.subscriber == subscriber)
 		{
-			subscription->handler_with_object = NULL;
-			subscription->event_type          = EVT_NONE;
-			subscription->type                = EST_NONE;
-			subscription->subscriber          = NULL;
+			subscription->Subscription_Subscriber.handler    = NULL;
+			subscription->event_type                         = EVT_NONE;
+			subscription->type                               = EST_NONE;
+			subscription->Subscription_Subscriber.subscriber = NULL;
 			break;
 		}
 	}
@@ -235,19 +237,26 @@ void event_manager_poll_events(struct Event_Manager* event_manager)
 				for(int i = 0; i < MAX_EVENT_SUBSCRIPTIONS; i++)
 				{
 					struct Event_Subscription* subscription = &event_manager->event_subsciptions[i];
-					if(subscription->type == EST_NONE) continue;
-
-					if(subscription->event_type == user_event->type)
+					if(subscription->type != EST_NONE && subscription->event_type == user_event->type)
 					{
-						if(subscription->type == EST_WITHOUT_OBJECT)
+						switch(subscription->type)
 						{
-							if(subscription->handler) 
-								subscription->handler(user_event);
-						}
-						else if(subscription->type == EST_WITH_OBJECT)
-						{
-							if(subscription->handler_with_object)
-								subscription->handler_with_object(user_event, subscription->subscriber);
+						case EST_WITHOUT_OBJECTS:
+							if(subscription->Subscription_Without_Objects.handler)
+								subscription->Subscription_Without_Objects.handler(user_event);
+							break;
+						case EST_SENDER:
+							if(subscription->Subscription_Sender.handler)
+								subscription->Subscription_Sender.handler(user_event, subscription->Subscription_Sender.sender);
+							break;
+						case EST_SUBSCRIBER:
+							if(subscription->Subscription_Subscriber.handler)
+								subscription->Subscription_Subscriber.handler(user_event, subscription->Subscription_Subscriber.subscriber);
+							break;
+						case EST_SUBSCRIBER_SENDER:
+							if(subscription->Subscription_Subscriber_Sender.handler)
+								subscription->Subscription_Subscriber_Sender.handler(user_event, subscription->Subscription_Subscriber_Sender.subscriber, subscription->Subscription_Subscriber_Sender.sender);
+							break;
 						}
 					}
 				}
@@ -262,7 +271,7 @@ void event_manager_poll_events(struct Event_Manager* event_manager)
 	}
 }
 
-void event_manager_subscribe_with_object(struct Event_Manager* event_manager, int event_type, Event_Handler_Object handler_func, void* subscriber)
+void event_manager_subscribe_with_subscriber(struct Event_Manager* event_manager, int event_type, Event_Handler_Subscriber handler_func, void* subscriber)
 {
 	assert(event_manager && event_type < EVT_MAX && event_type > EVT_NONE);
 
@@ -271,7 +280,10 @@ void event_manager_subscribe_with_object(struct Event_Manager* event_manager, in
 	for(int i = 0; i < MAX_EVENT_SUBSCRIPTIONS; i++)
 	{
 		struct Event_Subscription* subscription = &event_manager->event_subsciptions[i];
-		if(subscription->type == EST_WITH_OBJECT && subscription->event_type == event_type && subscription->handler_with_object == handler_func && subscription->subscriber == subscriber)
+		if(subscription->type == EST_SUBSCRIBER && 
+		   subscription->event_type == event_type && 
+		   subscription->Subscription_Subscriber.handler == handler_func && 
+		   subscription->Subscription_Subscriber.subscriber == subscriber)
 		{
 			log_message("Already subscibed to %s event", event_name_get(event_type));
 			subscribed = true;
@@ -288,11 +300,11 @@ void event_manager_subscribe_with_object(struct Event_Manager* event_manager, in
 			struct Event_Subscription* subscription = &event_manager->event_subsciptions[i];
 			if(subscription->type == EST_NONE)
 			{
-				subscription->type                = EST_WITH_OBJECT;
-				subscription->event_type          = event_type;
-				subscription->handler_with_object = handler_func;
-				subscription->subscriber          = subscriber;
-				subscribed                        = true;
+				subscribed                                       = true;
+				subscription->type                               = EST_SUBSCRIBER;
+				subscription->event_type                         = event_type;
+				subscription->Subscription_Subscriber.handler    = handler_func;
+				subscription->Subscription_Subscriber.subscriber = subscriber;
 				break;
 			}
 		}
@@ -341,11 +353,149 @@ void event_manager_send_event_entity(struct Event_Manager* event_manager, struct
 	for(int i = 0; i < MAX_EVENT_SUBSCRIPTIONS; i++)
 	{
 		struct Event_Subscription* subscription = &event_manager->event_subsciptions[i];
-		if(subscription->type != EST_WITH_OBJECT) continue;
+		if(subscription->type != EST_SUBSCRIBER) continue;
 
-		if(subscription->event_type == event->type && subscription->subscriber == entity && subscription->handler_with_object)
+		if(subscription->event_type == event->type && 
+		   subscription->Subscription_Subscriber.subscriber == entity &&
+		   subscription->Subscription_Subscriber.handler)
 		{
-			subscription->handler_with_object(event, (void*)entity);
+			subscription->Subscription_Subscriber.handler(event, (void*)entity);
+			break;
+		}
+	}
+}
+
+void event_manager_subscribe_with_sender(struct Event_Manager* event_manager, int event_type, Event_Handler_Sender handler_func, void* sender)
+{
+	assert(event_manager && event_type < EVT_MAX && event_type > EVT_NONE && sender);
+
+	//Check if this handler/subscriber already exists
+	bool subscribed = false;
+	for(int i = 0; i < MAX_EVENT_SUBSCRIPTIONS; i++)
+	{
+		struct Event_Subscription* subscription = &event_manager->event_subsciptions[i];
+		if(subscription->type == EST_SENDER &&
+		   subscription->event_type == event_type &&
+		   subscription->Subscription_Sender.handler == handler_func &&
+		   subscription->Subscription_Sender.sender == sender)
+		{
+			log_message("Already subscibed to %s event", event_name_get(event_type));
+			subscribed = true;
+			break;
+		}
+	}
+
+	//Now that we've established that we are not subscribed already we find an empty slot and 
+	//create a new subscription there
+	if(!subscribed)
+	{
+		for(int i = 0; i < MAX_EVENT_SUBSCRIPTIONS; i++)
+		{
+			struct Event_Subscription* subscription = &event_manager->event_subsciptions[i];
+			if(subscription->type == EST_NONE)
+			{
+				subscribed                                = true;
+				subscription->type                        = EST_SENDER;
+				subscription->event_type                  = event_type;
+				subscription->Subscription_Sender.handler = handler_func;
+				subscription->Subscription_Sender.sender  = sender;
+				break;
+			}
+		}
+	}
+
+	//if subscribed is still not true, it can only mean that all the existing slots are taken
+	//Show an error message in that case
+	if(!subscribed)
+		log_error("event_manager:subscribe_with_sender", "Could not subscribe to %s event", event_name_get(event_type));
+}
+
+void event_manager_subscribe_with_subscriber_sender(struct Event_Manager* event_manager, int event_type, Event_Handler_Subscriber_Sender handler_func, void* subscriber, void* sender)
+{
+	assert(event_manager && event_type < EVT_MAX && event_type > EVT_NONE && sender && subscriber);
+
+	//Check if this handler/subscriber/sender already exists
+	bool subscribed = false;
+	for(int i = 0; i < MAX_EVENT_SUBSCRIPTIONS; i++)
+	{
+		struct Event_Subscription* subscription = &event_manager->event_subsciptions[i];
+		if(subscription->type == EST_SUBSCRIBER_SENDER && 
+		   subscription->event_type == event_type && 
+		   subscription->Subscription_Subscriber_Sender.handler == handler_func && 
+		   subscription->Subscription_Subscriber_Sender.sender == sender &&
+		   subscription->Subscription_Subscriber_Sender.subscriber == subscriber)
+		{
+			log_message("Already subscibed to %s event", event_name_get(event_type));
+			subscribed = true;
+			break;
+		}
+	}
+
+	//Now that we've established that we are not subscribed already we find an empty slot and 
+	//create a new subscription there
+	if(!subscribed)
+	{
+		for(int i = 0; i < MAX_EVENT_SUBSCRIPTIONS; i++)
+		{
+			struct Event_Subscription* subscription = &event_manager->event_subsciptions[i];
+			if(subscription->type == EST_NONE)
+			{
+				subscribed                                              = true;
+				subscription->type                                      = EST_SUBSCRIBER_SENDER;
+				subscription->event_type                                = event_type;
+				subscription->Subscription_Subscriber_Sender.handler    = handler_func;
+				subscription->Subscription_Subscriber_Sender.sender     = sender;
+				subscription->Subscription_Subscriber_Sender.subscriber = subscriber;
+				break;
+			}
+		}
+	}
+
+	//if subscribed is still not true, it can only mean that all the existing slots are taken
+	//Show an error message in that case
+	if(!subscribed)
+		log_error("event_manager:subscribe_with_sender", "Could not subscribe to %s event", event_name_get(event_type));
+}
+
+void event_manager_unsubscribe_sender(struct Event_Manager* event_manager, int event_type, Event_Handler_Sender handler_func, void* sender)
+{
+	assert(event_manager && event_type < EVT_MAX);
+
+	for(int i = 0; i < MAX_EVENT_SUBSCRIPTIONS; i++)
+	{
+		struct Event_Subscription* subscription = &event_manager->event_subsciptions[i];
+		if(subscription->type != EST_SENDER) continue;
+		if(subscription->event_type == event_type && 
+		   subscription->Subscription_Sender.handler == handler_func && 
+		   subscription->Subscription_Sender.sender == sender)
+		{
+			subscription->event_type                  = EVT_NONE;
+			subscription->type                        = EST_NONE;
+			subscription->Subscription_Sender.handler = NULL;
+			subscription->Subscription_Sender.sender  = NULL;
+			break;
+		}
+	}
+}
+
+void event_manager_unsubscribe_with_subscriber_sender(struct Event_Manager* event_manager, int event_type, Event_Handler_Subscriber_Sender handler_func, void* subscriber, void* sender)
+{
+	assert(event_manager && event_type < EVT_MAX);
+
+	for(int i = 0; i < MAX_EVENT_SUBSCRIPTIONS; i++)
+	{
+		struct Event_Subscription* subscription = &event_manager->event_subsciptions[i];
+		if(subscription->type != EST_SUBSCRIBER) continue;
+		if(subscription->event_type == event_type && 
+		   subscription->Subscription_Subscriber_Sender.handler == handler_func && 
+		   subscription->Subscription_Subscriber_Sender.subscriber == subscriber &&
+		   subscription->Subscription_Subscriber_Sender.sender == sender)
+		{
+			subscription->event_type                                = EVT_NONE;
+			subscription->type                                      = EST_NONE;
+			subscription->Subscription_Subscriber_Sender.handler    = NULL;
+			subscription->Subscription_Subscriber_Sender.subscriber = NULL;
+			subscription->Subscription_Subscriber_Sender.sender     = NULL;
 			break;
 		}
 	}

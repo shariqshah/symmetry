@@ -61,7 +61,7 @@ void enemy_init(struct Enemy* enemy, int type)
 	}
 
 	struct Event_Manager* event_manager = game_state->event_manager;
-	event_manager_subscribe_with_object(event_manager, EVT_SCENE_LOADED, &enemy_on_scene_loaded, (void*)enemy);
+	event_manager_subscribe_with_subscriber(event_manager, EVT_SCENE_LOADED, &enemy_on_scene_loaded, (void*)enemy);
 }
 
 void enemy_weapon_sound_set(struct Enemy* enemy, const char* sound_filename, int type)
@@ -120,7 +120,7 @@ void enemy_reset(struct Enemy* enemy)
 	enemy->health = 0;
 
 	struct Event_Manager* event_manager = game_state_get()->event_manager;
-	event_manager_unsubscribe_with_object(event_manager, EVT_SCENE_LOADED, &enemy_on_scene_loaded, (void*)enemy);
+	event_manager_unsubscribe_with_subscriber(event_manager, EVT_SCENE_LOADED, &enemy_on_scene_loaded, (void*)enemy);
 }
 
 struct Enemy* enemy_read(struct Parser_Object* object, const char* name, struct Entity* parent_entity)

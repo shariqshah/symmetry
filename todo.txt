@@ -1,13 +1,15 @@
 Todo:
-	- Player/enemies getting hit by bullets
 	- Win/fail States
+	- Save scene init/cleanup funcs if there are any assigned when saving scene
+	- Save case sensitive file names when scene entity entries
+	- Investigate whether toggle trigger is working properly
+	- Player/enemies getting hit by bullets
 	- Remove excessive repitition in scene and editor code that handles multiple entity types
 	- Allow switching to editor mode when game is in pause mode
 	- Rendering Additions:
 		- Color grading
 		- Shadow mapping
 		- Cube mapping for sky dome etc
-	- Add event sender along with events
 	- Implement flag for ignoring collisions with certain entities
 	- Implement game gui either with a separate nuklear context or as part of existing context
 	- Fix rotate gizmo's origin not being set to the selected entity

@@ -10,16 +10,18 @@ Scene_Config
 	debug_draw_enabled : false
 	debug_draw_mode : 0
 	ambient_light : 0.100 0.100 0.100
+	init_func: scene_1
+	cleanup_func: scene_1
 }
 
 Player
 {
 	type : 2
 	scale : 1.000 1.000 1.000
-	rotation : 0.000 -1.001 0.000 -0.000
+	rotation : 0.000 -0.612 0.000 0.792
 	active : true
 	player_key_mask : 0
-	position : -18.634 2.167 -45.517
+	position : -33.501 2.167 -45.463
 	player_health : 100
 	name : Player
 	bounding_box_min : -1.500 -1.500 -1.000
@@ -101,9 +103,9 @@ Scene_Entity_Entry
 
 Scene_Entity_Entry
 {
-	scale : 135.000 5.000 1.000
+	scale : 135.000 11.000 1.000
 	rotation : 0.000 0.000 0.000 1.000
-	position : -17.000 3.000 -87.000
+	position : -17.000 6.000 -87.000
 	filename : cube_uv
 	name : Cube
 }
@@ -113,6 +115,15 @@ Scene_Entity_Entry
 	scale : 60.000 11.000 1.000
 	rotation : 0.000 0.000 0.000 1.000
 	position : -52.000 6.000 -30.000
+	filename : cube_uv
+	name : Cube
+}
+
+Scene_Entity_Entry
+{
+	scale : 51.000 11.000 1.000
+	rotation : 0.000 -0.707 0.000 0.707
+	position : 18.000 6.000 -55.000
 	filename : cube_uv
 	name : Cube
 }
@@ -164,9 +175,27 @@ Scene_Entity_Entry
 
 Scene_Entity_Entry
 {
+	scale : 30.500 11.000 55.000
+	rotation : 0.000 0.000 0.000 1.000
+	position : 34.000 6.000 -59.000
+	filename : trigger
+	name : Scene_End_Trigger
+}
+
+Scene_Entity_Entry
+{
 	scale : 1.000 1.000 1.000
 	rotation : 0.000 0.000 0.000 1.000
 	position : -18.500 1.000 -30.000
+	filename : door
+	name : Door
+}
+
+Scene_Entity_Entry
+{
+	scale : 1.000 1.000 1.000
+	rotation : 0.000 0.707 0.000 0.707
+	position : 18.000 1.000 -84.000
 	filename : door
 	name : Door
 }

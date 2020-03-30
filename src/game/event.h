@@ -9,7 +9,9 @@ struct Entity;
 struct Trigger;
 
 typedef void (*Event_Handler) (const struct Event* event);
-typedef void (*Event_Handler_Object) (const struct Event* event, void* subscriber);
+typedef void (*Event_Handler_Sender) (const struct Event* event, void* sender);
+typedef void (*Event_Handler_Subscriber) (const struct Event* event, void* subscriber);
+typedef void (*Event_Handler_Subscriber_Sender) (const struct Event* event, void* subscriber, void* sender);
 
 
 enum Event_Types
@@ -33,8 +35,10 @@ enum Event_Types
 enum Event_Subscription_Type
 {
 	EST_NONE = 0,
-	EST_WITHOUT_OBJECT,
-	EST_WITH_OBJECT
+	EST_WITHOUT_OBJECTS,
+	EST_SENDER,
+	EST_SUBSCRIBER,
+	EST_SUBSCRIBER_SENDER
 };
 
 struct Input_Map_Event
@@ -120,16 +124,29 @@ struct Event_Subscription
 	int event_type;
 	union
 	{
-		struct
+		struct 
 		{
 			Event_Handler handler;
-		};
+		} Subscription_Without_Objects;
 
-		struct
+		struct 
 		{
-			Event_Handler_Object handler_with_object;
-			void*                subscriber;
-		};
+			Event_Handler_Subscriber handler;
+			void*                    subscriber;
+		} Subscription_Subscriber;
+
+		struct 
+		{
+			Event_Handler_Sender handler;
+			void*                sender;
+		} Subscription_Sender;
+
+		struct 
+		{
+			Event_Handler_Subscriber_Sender handler;
+			void*                           sender;
+			void*                           subscriber;
+		} Subscription_Subscriber_Sender;
 	};
 };
 
@@ -142,9 +159,13 @@ struct Event_Manager
 
 void          event_manager_init(struct Event_Manager* event_manager);
 void          event_manager_subscribe(struct Event_Manager* event_manager, int event_type, Event_Handler event_handler_func);
-void          event_manager_subscribe_with_object(struct Event_Manager* event_manager, int event_type, Event_Handler_Object handler_func, void* subscriber);
-void          event_manager_unsubscribe(struct Event_Manager* event_manager, int event_type, Event_Handler subscriber);
-void          event_manager_unsubscribe_with_object(struct Event_Manager* event_manager, int event_type, Event_Handler_Object handler_func, void* subscriber);
+void          event_manager_subscribe_with_sender(struct Event_Manager* event_manager, int event_type, Event_Handler_Sender handler_func, void* sender);
+void          event_manager_subscribe_with_subscriber(struct Event_Manager* event_manager, int event_type, Event_Handler_Subscriber handler_func, void* subscriber);
+void          event_manager_subscribe_with_subscriber_sender(struct Event_Manager* event_manager, int event_type, Event_Handler_Subscriber_Sender handler_func, void* subscriber, void* sender);
+void          event_manager_unsubscribe(struct Event_Manager* event_manager, int event_type, Event_Handler handler_func);
+void          event_manager_unsubscribe_sender(struct Event_Manager* event_manager, int event_type, Event_Handler_Sender handler_func, void* sender);
+void          event_manager_unsubscribe_with_subscriber(struct Event_Manager* event_manager, int event_type, Event_Handler_Subscriber handler_func, void* subscriber);
+void          event_manager_unsubscribe_with_subscriber_sender(struct Event_Manager* event_manager, int event_type, Event_Handler_Subscriber_Sender handler_func, void* subscriber, void* sender);
 struct Event* event_manager_create_new_event(struct Event_Manager* event_manager);
 void          event_manager_send_event(struct Event_Manager* event_manager, struct Event* event);
 void          event_manager_send_event_entity(struct Event_Manager* event_manager, struct Event* event, struct Entity* entity);

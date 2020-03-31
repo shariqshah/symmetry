@@ -24,6 +24,7 @@ void event_manager_init(struct Event_Manager* event_manager)
 		struct Event* event = &event_manager->event_pool[i];
 		memset(event, '\0', sizeof(struct Event));
 		event->type = EVT_NONE;
+		event->sender = NULL;
 	}
 
 	event_manager->sdl_event_id = SDL_RegisterEvents(1);
@@ -246,7 +247,7 @@ void event_manager_poll_events(struct Event_Manager* event_manager)
 								subscription->Subscription_Without_Objects.handler(user_event);
 							break;
 						case EST_SENDER:
-							if(subscription->Subscription_Sender.handler)
+							if(subscription->Subscription_Sender.handler && user_event->sender == subscription->Subscription_Sender.sender)
 								subscription->Subscription_Sender.handler(user_event, subscription->Subscription_Sender.sender);
 							break;
 						case EST_SUBSCRIBER:
@@ -254,7 +255,7 @@ void event_manager_poll_events(struct Event_Manager* event_manager)
 								subscription->Subscription_Subscriber.handler(user_event, subscription->Subscription_Subscriber.subscriber);
 							break;
 						case EST_SUBSCRIBER_SENDER:
-							if(subscription->Subscription_Subscriber_Sender.handler)
+							if(subscription->Subscription_Subscriber_Sender.handler && user_event->sender == subscription->Subscription_Sender.sender)
 								subscription->Subscription_Subscriber_Sender.handler(user_event, subscription->Subscription_Subscriber_Sender.subscriber, subscription->Subscription_Subscriber_Sender.sender);
 							break;
 						}
@@ -264,6 +265,7 @@ void event_manager_poll_events(struct Event_Manager* event_manager)
 				//return event to the pool now that it is consumed
 				memset(user_event, '\0', sizeof(*user_event));
 				user_event->type = EVT_NONE;
+				user_event->sender = NULL;
 			}
 		}
 		break;

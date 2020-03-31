@@ -65,9 +65,6 @@ void sound_source_buffer_set(struct Sound* sound, struct Sound_Source* entity, c
 	if(new_buffer)
 	{
 		sound_source_instance_destroy(sound, entity->source_instance);
-		if(entity->source_buffer)
-			sound_source_buffer_destroy(sound, entity->source_buffer);
-
 		entity->source_buffer = new_buffer;
 		entity->type = type;
 		entity->source_instance = sound_source_instance_create(sound, entity->source_buffer, true);

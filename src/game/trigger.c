@@ -95,6 +95,7 @@ void trigger_update_physics(struct Trigger* trigger, struct Scene* scene, float 
 			struct Event* trigger_event = event_manager_create_new_event(event_manager);
 			trigger_event->type = EVT_TRIGGER;
 			trigger_event->trigger.sender = trigger;
+			trigger_event->sender = trigger;
 			event_manager_send_event(event_manager, trigger_event);
 			if(trigger->type == TRIG_ONE_SHOT)
 				scene_trigger_remove(scene, trigger);

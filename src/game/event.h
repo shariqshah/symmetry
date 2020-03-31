@@ -103,7 +103,8 @@ struct Trigger_Event
 
 struct Event
 {
-	int type;
+	int   type;
+	void* sender;
 	union
 	{
 		struct Key_Event            key;

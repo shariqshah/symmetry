@@ -12,6 +12,7 @@ Scene_Config
 	debug_draw_enabled : false
 	debug_draw_mode : 0
 	ambient_light : 0.100 0.100 0.100
+	next_scene : scene_2
 }
 
 Player

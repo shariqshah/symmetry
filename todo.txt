@@ -1,12 +1,12 @@
 Todo:
-	- Win/fail States
 	- In-Game Gui
-		- Player Death Screen
-		- Proceed to next level Screen
+		x Player Death Screen
+		x Proceed to next level Screen
 		- Key Required Screen
 		- HUD showing health, keys currently acquired
 	- Save case sensitive file names when scene entity entries
-	- Player/enemies getting hit by bullets
+	- Disbale all player actions when scene cleared dialog or scene restart dialog are active
+	- Enemies getting hit by bullets
 	- Memory utils that provide allocation tracking
 	- Remove excessive repitition in scene and editor code that handles multiple entity types
 	- Allow switching to editor mode when game is in pause mode
@@ -25,9 +25,8 @@ Todo:
 	- Gameplay level features:
 		- Each scene should always have a directional light that serves as the main source of light when there are no other lights
 		- Each scene should always have a texture cube that serves as the sky 
-		- Triggers
-		- Basic Enemy
-		- Main Menu Scene
+		x Triggers
+		x Basic Enemy
 		? Split this todo into gameplay/engine todos
 	? Write entity flags to scene file or when saving entity to file?
 	? Add scene init/de-init function hashmap that maps a function that should be called when scene is loaded and unloaded. Save this to file for every scene or map functions based on the name of the scene?
@@ -429,3 +428,4 @@ Done:
 	* Visual indicator on doors corresponding to their key masks
 	* Audio cues when player does not have the right key combination to open a particular door
 	* Added saving scene init/cleanup funcs if there are any assigned when saving scene
+	* Win/fail States

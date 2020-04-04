@@ -44,4 +44,9 @@ void scene_1_cleanup(struct Scene* scene)
 void scene_on_end_trigger(const struct Event* event, void* sender)
 {
 	log_message("Scene_End_Trigger triggered, Move to next scene now!");
+	struct Event_Manager* event_manager = game_state_get()->event_manager;
+	struct Event* scene_cleared_event = event_manager_create_new_event(event_manager);
+	scene_cleared_event->type = EVT_SCENE_CLEARED;
+	scene_cleared_event->scene_cleared.scene = game_state_get()->scene;
+	event_manager_send_event(event_manager, scene_cleared_event);
 }

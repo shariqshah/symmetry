@@ -16,6 +16,7 @@
 #include "im_render.h"
 #include "event.h"
 #include "sound_source.h"
+#include "entity.h"
 
 #include <float.h>
 #include <string.h>
@@ -353,5 +354,22 @@ void player_on_mousebutton_released(const struct Event* event)
 			sound_source_play(game_state->sound, player->weapon_sound);
 		}
 
+	}
+}
+
+void player_apply_damage(struct Player* player, struct Enemy* enemy)
+{
+	log_message("Player hit!");
+	player->health -= enemy->damage;
+
+	if(player->health <= 0)
+	{
+		log_message("Player Ded!");
+		struct Event_Manager* event_manager = game_state_get()->event_manager;
+		struct Event* player_death_event = event_manager_create_new_event(event_manager);
+		player_death_event->type = EVT_PLAYER_DIED;
+		player_death_event->player_death.player = player;
+		player_death_event->player_death.enemy = enemy;
+		event_manager_send_event(event_manager, player_death_event);
 	}
 }

@@ -37,6 +37,7 @@ void scene_init(struct Scene* scene)
 	struct Game_State* game_state = game_state_get();
 
 	strncpy(scene->filename, "UNNAMED_SCENE", MAX_FILENAME_LEN);
+	memset(scene->next_level_filename, '\0', MAX_FILENAME_LEN);
 
 	//Initialize the root entity
 	entity_init(&scene->root_entity, "ROOT_ENTITY", NULL);
@@ -156,6 +157,12 @@ bool scene_load(struct Scene* scene, const char* filename, int directory_type)
 			
 			scene->init = hashmap_value_exists(scene_data, "init_func") ? hashmap_ptr_get(game_state->scene_init_func_table, hashmap_str_get(scene_data, "init_func")) : &scene_init_stub;
 			scene->cleanup = hashmap_value_exists(scene_data, "cleanup_func") ? hashmap_ptr_get(game_state->scene_cleanup_func_table, hashmap_str_get(scene_data, "cleanup_func")) : &scene_init_stub;
+
+			if(hashmap_value_exists(scene_data, "next_scene"))
+				strncpy(scene->next_level_filename, hashmap_str_get(scene_data, "next_scene"), MAX_FILENAME_LEN);
+			else
+				memcpy(scene->next_level_filename, '\0', MAX_FILENAME_LEN);
+
 			num_objects_loaded++;
 		}
 		break;

@@ -53,6 +53,9 @@ static void game_scene_setup(void);
 static void game_on_log_message(const char* message, va_list args);
 static void game_on_log_warning(const char* warning_message, va_list args);
 static void game_on_log_error(const char* context, const char* error_message, va_list args);
+static void game_on_player_death(struct Event* event);
+static void game_on_scene_loaded(struct Event* event);
+static void game_on_scene_cleared(struct Event* event);
 
 static struct Game_State* game_state = NULL;
 
@@ -70,6 +73,7 @@ bool game_init(struct Window* window, struct Hashmap* cvars)
 		game_state->cvars                    = cvars;
 		game_state->is_initialized           = false;
 		game_state->quit                     = false;
+		game_state->update_scene             = true;
 		game_state->fixed_delta_time         = 1.f / 60.f;
 		game_state->game_mode                = GAME_MODE_GAME;
 		game_state->renderer                 = calloc(1, sizeof(*game_state->renderer));
@@ -101,6 +105,8 @@ bool game_init(struct Window* window, struct Hashmap* cvars)
 		hashmap_ptr_set(game_state->scene_init_func_table, "scene_1", &scene_1_init);
 		hashmap_ptr_set(game_state->scene_cleanup_func_table, "scene_1", &scene_1_cleanup);
 
+		srand(time(NULL));
+
 		event_manager_init(game_state->event_manager);
 		input_init();
 		shader_init();
@@ -108,6 +114,7 @@ bool game_init(struct Window* window, struct Hashmap* cvars)
 		framebuffer_init();
 		gui_init(game_state->gui_editor);
 		gui_init(game_state->gui_game);
+		gui_game_init(game_state->gui_game);
 		console_init(game_state->console);
 		geom_init();
 		sound_init(game_state->sound);
@@ -121,6 +128,10 @@ bool game_init(struct Window* window, struct Hashmap* cvars)
 	
     /* Debug scene setup */
     //game_scene_setup();
+	event_manager_subscribe(game_state->event_manager, EVT_SCENE_LOADED, &game_on_scene_loaded);
+	event_manager_subscribe(game_state->event_manager, EVT_SCENE_CLEARED, &game_on_scene_cleared);
+	event_manager_subscribe(game_state->event_manager, EVT_PLAYER_DIED, &game_on_player_death);
+
     game_state->is_initialized = scene_load(game_state->scene, "scene_1", DIRT_INSTALL) ? true : false;
 	return game_state->is_initialized;
 }
@@ -570,49 +581,61 @@ void game_update(float dt)
     if(input_map_state_get("Editor_Toggle",     KS_RELEASED)) 
     {
 		if(game_state->game_mode == GAME_MODE_EDITOR)
-		{
-			game_state->game_mode = GAME_MODE_GAME;
-			game_state->scene->active_camera_index = CAM_GAME;
-		}
+			game_mode_set(GAME_MODE_GAME);
 		else if(game_state->game_mode == GAME_MODE_GAME)
-		{
-			game_state->game_mode = GAME_MODE_EDITOR;
-			game_state->scene->active_camera_index = CAM_EDITOR;
-			input_mouse_mode_set(MM_NORMAL);
-			int width = 0, height = 0;
-			window_get_drawable_size(game_state_get()->window, &width, &height);
-			platform_mouse_position_set(game_state_get()->window, width / 2, height / 2);
-		}
+			game_mode_set(GAME_MODE_EDITOR);
     }
 	if(input_map_state_get("Pause", KS_RELEASED))
 	{
 		if(game_state->game_mode == GAME_MODE_PAUSE)
-		{
-			game_state->game_mode = GAME_MODE_GAME;
-			sound_pause_all(game_state->sound, false);
-		}
+			game_mode_set(GAME_MODE_GAME);
 		else if(game_state->game_mode == GAME_MODE_GAME)
-		{
-			game_state->game_mode = GAME_MODE_PAUSE;
-			sound_pause_all(game_state->sound, true);
-			input_mouse_mode_set(MM_NORMAL);
-			int width = 0, height = 0;
-			window_get_drawable_size(game_state_get()->window, &width, &height);
-			platform_mouse_position_set(game_state_get()->window, width / 2, height / 2);
-		}
+			game_mode_set(GAME_MODE_PAUSE);
 	}
 
     //game_debug(dt);
     //game_debug_gui(dt);
     console_update(game_state->console, game_state->game_mode == GAME_MODE_EDITOR ? game_state->gui_editor : game_state->gui_game, dt);
-    scene_update(game_state->scene, dt);
+	if(game_state->update_scene)
+		scene_update(game_state->scene, dt);
+
     if(game_state->game_mode == GAME_MODE_EDITOR)
-    {
 		editor_update(game_state->editor, dt);
-    }
 	else
-	{
 		gui_game_update(game_state->gui_game, dt);
+}
+
+void game_mode_set(int new_mode)
+{
+	if(new_mode == game_state->game_mode)
+		return;
+
+	if(new_mode == GAME_MODE_EDITOR)
+	{
+		game_state->game_mode = new_mode;
+		game_state->scene->active_camera_index = CAM_EDITOR;
+		input_mouse_mode_set(MM_NORMAL);
+		sound_pause_all(game_state->sound, true);
+		int width = 0, height = 0;
+		window_get_drawable_size(game_state_get()->window, &width, &height);
+		platform_mouse_position_set(game_state_get()->window, width / 2, height / 2);
+	}
+	else if(new_mode == GAME_MODE_PAUSE)
+	{
+		game_state->game_mode = new_mode;
+		game_state->scene->active_camera_index = CAM_GAME;
+		sound_pause_all(game_state->sound, true);
+		input_mouse_mode_set(MM_NORMAL);
+		int width = 0, height = 0;
+		window_get_drawable_size(game_state_get()->window, &width, &height);
+		platform_mouse_position_set(game_state_get()->window, width / 2, height / 2);
+	}
+	else if(new_mode == GAME_MODE_GAME)
+	{
+		game_state->game_mode = new_mode;
+		game_state->scene->active_camera_index = CAM_GAME;
+		game_state->game_mode = GAME_MODE_GAME;
+		sound_pause_all(game_state->sound, false);
 	}
 }
 
@@ -1958,6 +1981,7 @@ void game_cleanup(void)
 			scene_destroy(game_state->scene);
 			input_cleanup();
 			renderer_cleanup(game_state->renderer);
+			gui_game_cleanup(game_state->gui_game);
 			gui_cleanup(game_state->gui_editor);
 			gui_cleanup(game_state->gui_game);
 			console_destroy(game_state->console);
@@ -2010,5 +2034,21 @@ void game_on_log_error(const char* context, const char* error_message, va_list a
 void game_update_physics(float fixed_dt)
 {
 	struct Game_State* game_state = game_state_get();
-	scene_update_physics(game_state->scene, fixed_dt);
+	if(game_state->update_scene)
+		scene_update_physics(game_state->scene, fixed_dt);
+}
+
+void game_on_scene_loaded(struct Event* event)
+{
+	game_state->update_scene = true;
+}
+
+void game_on_scene_cleared(struct Event* event)
+{
+	game_state->update_scene = false;
+}
+
+void game_on_player_death(struct Event* event)
+{
+	game_state->update_scene = false;
 }

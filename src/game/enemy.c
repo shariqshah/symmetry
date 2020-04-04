@@ -11,10 +11,13 @@
 #include "../system/platform.h"
 #include "debug_vars.h"
 #include "im_render.h"
+#include "player.h"
 
 #include <string.h>
 #include <math.h>
 #include <assert.h>
+#include <stdlib.h>
+
 
 static void enemy_on_scene_loaded(struct Event* event, void* enemy_ptr);
 static void enemy_update_physics_turret(struct Enemy* enemy, struct Game_State* game_state, float fixed_dt);
@@ -381,6 +384,12 @@ void enemy_update_ai_turret(struct Enemy* enemy, struct Game_State* game_state, 
 				{
 					enemy->Turret.time_elapsed_since_attack = 0.f;
 					sound_source_play(game_state->sound, enemy->weapon_sound);
+					int hit_chance = 4;
+					int roll = rand() % 10;
+					if(roll <= hit_chance)
+					{
+						player_apply_damage(&scene->player, enemy);
+					}
 				}
 				else
 				{

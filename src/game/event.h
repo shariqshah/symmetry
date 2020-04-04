@@ -29,6 +29,8 @@ enum Event_Types
 	EVT_TRIGGER,
 	EVT_INPUT_MAP_PRESSED,
 	EVT_INPUT_MAP_RELEASED,
+	EVT_PLAYER_DIED,
+	EVT_SCENE_CLEARED,
 	EVT_MAX
 };
 
@@ -101,6 +103,17 @@ struct Trigger_Event
 	struct Trigger* sender;
 };
 
+struct Player_Death_Event
+{
+	struct Player* player;
+	struct Enemy*  enemy;
+};
+
+struct Scene_Cleared_Event
+{
+	struct Scene* scene;
+};
+
 struct Event
 {
 	int   type;
@@ -116,6 +129,8 @@ struct Event
 		struct Scene_Loaded_Event   scene_load;
 		struct Trigger_Event        trigger;
 		struct Input_Map_Event      input_map;
+		struct Player_Death_Event   player_death;
+		struct Scene_Cleared_Event  scene_cleared;
 	};
 };
 

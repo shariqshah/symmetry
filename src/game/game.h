@@ -26,6 +26,7 @@ struct Game_State
 {
 	bool                  is_initialized;
 	bool                  quit;
+	bool                  update_scene;
 	int                   game_mode;
 	float                 fixed_delta_time;
 	struct Window*        window;
@@ -48,5 +49,6 @@ struct Game_State* game_state_get(void);
 bool               game_init(struct Window* window, struct Hashmap* cvars);
 bool               game_run(void);
 void               game_cleanup(void);
+void               game_mode_set(int new_mode);
 
 #endif

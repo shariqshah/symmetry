@@ -250,6 +250,7 @@ bool scene_save(struct Scene* scene, const char* filename, int directory_type)
 	}
 
     struct Parser* parser = parser_new();
+	struct Game_State* game_state = game_state_get();
 
 	// Scene configuration
     struct Parser_Object* scene_config_object = parser_object_new(parser, PO_SCENE_CONFIG);
@@ -265,6 +266,8 @@ bool scene_save(struct Scene* scene, const char* filename, int directory_type)
 	hashmap_bool_set(scene_data, "debug_draw_enabled", render_settings->debug_draw_enabled);
 	hashmap_int_set(scene_data, "debug_draw_mode", render_settings->debug_draw_mode);
 	hashmap_bool_set(scene_data, "debug_draw_physics", render_settings->debug_draw_physics);
+	if(scene->init)    hashmap_str_set(scene_data, "init_func", filename);
+	if(scene->cleanup) hashmap_str_set(scene_data, "cleanup_func", filename);
 
 	// Player
 	struct Parser_Object* player_object = parser_object_new(parser, PO_PLAYER);

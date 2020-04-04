@@ -1,8 +1,13 @@
 Todo:
 	- Win/fail States
-	- Save scene init/cleanup funcs if there are any assigned when saving scene
+	- In-Game Gui
+		- Player Death Screen
+		- Proceed to next level Screen
+		- Key Required Screen
+		- HUD showing health, keys currently acquired
 	- Save case sensitive file names when scene entity entries
 	- Player/enemies getting hit by bullets
+	- Memory utils that provide allocation tracking
 	- Remove excessive repitition in scene and editor code that handles multiple entity types
 	- Allow switching to editor mode when game is in pause mode
 	- Rendering Additions:
@@ -423,3 +428,4 @@ Done:
 	* RGB keys to progress to next level
 	* Visual indicator on doors corresponding to their key masks
 	* Audio cues when player does not have the right key combination to open a particular door
+	* Added saving scene init/cleanup funcs if there are any assigned when saving scene

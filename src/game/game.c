@@ -113,7 +113,6 @@ bool game_init(struct Window* window, struct Hashmap* cvars)
 		texture_init();
 		framebuffer_init();
 		gui_init(game_state->gui_editor);
-		gui_init(game_state->gui_game);
 		gui_game_init(game_state->gui_game);
 		console_init(game_state->console);
 		geom_init();
@@ -538,7 +537,7 @@ bool game_run(void)
 		if(frame_time > MAX_FRAME_TIME) frame_time = (1.f / 60.f); /* To deal with resuming from breakpoint we artificially set delta time */
 		accumulator += frame_time;
 
-		struct Gui* gui = game_state->game_mode == GAME_MODE_EDITOR ? game_state->gui_editor : game_state->gui_game;
+		struct Gui* gui = game_state->game_mode == GAME_MODE_EDITOR ? game_state->gui_editor : game_state->gui_game->gui;
 		gui_input_begin(gui);
 		event_manager_poll_events(game_state->event_manager);
 		gui_input_end(gui);
@@ -595,7 +594,7 @@ void game_update(float dt)
 
     //game_debug(dt);
     //game_debug_gui(dt);
-    console_update(game_state->console, game_state->game_mode == GAME_MODE_EDITOR ? game_state->gui_editor : game_state->gui_game, dt);
+    console_update(game_state->console, game_state->game_mode == GAME_MODE_EDITOR ? game_state->gui_editor : game_state->gui_game->gui, dt);
 	if(game_state->update_scene)
 		scene_update(game_state->scene, dt);
 
@@ -1983,7 +1982,6 @@ void game_cleanup(void)
 			renderer_cleanup(game_state->renderer);
 			gui_game_cleanup(game_state->gui_game);
 			gui_cleanup(game_state->gui_editor);
-			gui_cleanup(game_state->gui_game);
 			console_destroy(game_state->console);
             geom_cleanup();
 			framebuffer_cleanup();

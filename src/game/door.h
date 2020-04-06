@@ -1,6 +1,8 @@
 #ifndef DOOR_H
 #define DOOR_H
 
+#include "../common/linmath.h"
+
 struct Door;
 struct Static_Mesh;
 struct Sound_Source;
@@ -15,6 +17,11 @@ enum Door_State
 	DOOR_OPENING,
 	DOOR_STATE_MAX
 };
+
+extern vec4 KEY_INDICATOR_COLOR_RED;
+extern vec4 KEY_INDICATOR_COLOR_GREEN;
+extern vec4 KEY_INDICATOR_COLOR_BLUE;
+extern vec4 KEY_INDICATOR_COLOR_DISABLED;
 
 void         door_init(struct Door* door, int mask);
 void         door_reset(struct Door* door);

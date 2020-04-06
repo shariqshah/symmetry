@@ -1,9 +1,4 @@
 Todo:
-	- In-Game Gui
-		x Player Death Screen
-		x Proceed to next level Screen
-		- Key Required Screen
-		- HUD showing health, keys currently acquired
 	- Save case sensitive file names when scene entity entries
 	- Disbale all player actions when scene cleared dialog or scene restart dialog are active
 	- Enemies getting hit by bullets
@@ -429,3 +424,4 @@ Done:
 	* Audio cues when player does not have the right key combination to open a particular door
 	* Added saving scene init/cleanup funcs if there are any assigned when saving scene
 	* Win/fail States
+	x In-Game Gui

@@ -12,17 +12,16 @@ Scene_Config
 	debug_draw_enabled : false
 	debug_draw_mode : 0
 	ambient_light : 0.100 0.100 0.100
-	next_scene : scene_2
 }
 
 Player
 {
 	type : 2
 	scale : 1.000 1.000 1.000
-	rotation : 0.000 -0.612 0.000 0.792
+	rotation : 0.000 -0.956 0.000 0.298
 	active : true
 	player_key_mask : 0
-	position : -33.501 2.167 -45.463
+	position : -31.232 2.167 -49.335
 	player_health : 100
 	name : Player
 	bounding_box_min : -1.500 -1.500 -1.000

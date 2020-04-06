@@ -12,6 +12,7 @@
 #include "../system/platform.h"
 #include "../system/file_io.h"
 #include "event.h"
+#include "gui_game.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -156,7 +157,7 @@ void gui_render(struct Gui* gui, enum nk_anti_aliasing AA)
     scale.y = (float)display_height/(float)height;
 
     /* setup global state */
-    glViewport(0,0,display_width,display_height);
+    glViewport(0, 0, display_width, display_height);
     glEnable(GL_BLEND);
     glBlendEquation(GL_FUNC_ADD);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -189,7 +190,7 @@ void gui_render(struct Gui* gui, enum nk_anti_aliasing AA)
             /* fill convert configuration */
             struct nk_convert_config config;
             static const struct nk_draw_vertex_layout_element vertex_layout[] =
-	    {
+			{
                 {NK_VERTEX_POSITION, NK_FORMAT_FLOAT, NK_OFFSETOF(struct Gui_Vertex, pos)},
                 {NK_VERTEX_TEXCOORD, NK_FORMAT_FLOAT, NK_OFFSETOF(struct Gui_Vertex, uv)},
                 {NK_VERTEX_COLOR, NK_FORMAT_R8G8B8A8, NK_OFFSETOF(struct Gui_Vertex, col)},
@@ -271,7 +272,7 @@ void gui_on_key(const struct Event* event)
 	struct Game_State* game_state = game_state_get();
 	int                key        = event->key.key;
 	bool               mod_ctrl   = event->key.mod_ctrl;
-    struct nk_context* ctx        = game_state->game_mode == GAME_MODE_EDITOR ? &game_state->gui_editor->context : &game_state->gui_game->context;
+    struct nk_context* ctx        = game_state->game_mode == GAME_MODE_EDITOR ? &game_state->gui_editor->context : &game_state->gui_game->gui->context;
 
 	int down = event->type == EVT_KEY_PRESSED ? 1 : 0;
 	
@@ -345,7 +346,7 @@ void gui_on_mousebutton(const struct Event* event)
 	int                x          = event->mousebutton.x;
 	int                y          = event->mousebutton.y;
 	int                down       = event->type == EVT_MOUSEBUTTON_PRESSED ? 1 : 0;
-	struct nk_context* ctx        = game_state->game_mode == GAME_MODE_EDITOR ? &game_state->gui_editor->context : &game_state->gui_game->context;
+	struct nk_context* ctx        = game_state->game_mode == GAME_MODE_EDITOR ? &game_state->gui_editor->context : &game_state->gui_game->gui->context;
 
 	if(button == MSB_LEFT)   nk_input_button(ctx, NK_BUTTON_LEFT,   x, y, down);
 	if(button == MSB_MIDDLE) nk_input_button(ctx, NK_BUTTON_MIDDLE, x, y, down);
@@ -359,7 +360,7 @@ void gui_on_mousemotion(const struct Event* event)
 	int                y          = event->mousemotion.y;
 	int                xrel       = event->mousemotion.xrel;
 	int                yrel       = event->mousemotion.yrel;
-	struct nk_context* ctx        = game_state->game_mode == GAME_MODE_EDITOR ? &game_state->gui_editor->context : &game_state->gui_game->context;
+	struct nk_context* ctx        = game_state->game_mode == GAME_MODE_EDITOR ? &game_state->gui_editor->context : &game_state->gui_game->gui->context;
 
 	if(ctx->input.mouse.grabbed)
 	{
@@ -375,7 +376,7 @@ void gui_on_mousemotion(const struct Event* event)
 void gui_on_textinput(const struct Event* event)
 {
 	struct Game_State* game_state = game_state_get();
-	struct nk_context* ctx = game_state->game_mode == GAME_MODE_EDITOR ? &game_state->gui_editor->context : &game_state->gui_game->context;
+	struct nk_context* ctx = game_state->game_mode == GAME_MODE_EDITOR ? &game_state->gui_editor->context : &game_state->gui_game->gui->context;
 	nk_glyph glyph;
 	memcpy(glyph, event->text_input.text, NK_UTF_SIZE);
 	nk_input_glyph(ctx, glyph);
@@ -386,7 +387,7 @@ void gui_on_mousewheel(const struct Event* event)
 	int                x   = event->mousewheel.x;
 	int                y   = event->mousewheel.y;
 	struct Game_State* game_state = game_state_get();
-	struct nk_context* ctx = game_state->game_mode == GAME_MODE_EDITOR ? &game_state->gui_editor->context : &game_state->gui_game->context;
+	struct nk_context* ctx = game_state->game_mode == GAME_MODE_EDITOR ? &game_state->gui_editor->context : &game_state->gui_game->gui->context;
 	nk_input_scroll(ctx, nk_vec2(x, y));
 }
 

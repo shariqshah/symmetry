@@ -159,9 +159,7 @@ bool scene_load(struct Scene* scene, const char* filename, int directory_type)
 			scene->cleanup = hashmap_value_exists(scene_data, "cleanup_func") ? hashmap_ptr_get(game_state->scene_cleanup_func_table, hashmap_str_get(scene_data, "cleanup_func")) : &scene_init_stub;
 
 			if(hashmap_value_exists(scene_data, "next_scene"))
-				strncpy(scene->next_level_filename, hashmap_str_get(scene_data, "next_scene"), MAX_FILENAME_LEN);
-			else
-				memcpy(scene->next_level_filename, '\0', MAX_FILENAME_LEN);
+				strncpy(scene->next_level_filename, hashmap_value_exists(scene_data, "next_scene") ? hashmap_str_get(scene_data, "next_scene") : "NONE", MAX_FILENAME_LEN);
 
 			num_objects_loaded++;
 		}
@@ -275,6 +273,7 @@ bool scene_save(struct Scene* scene, const char* filename, int directory_type)
 	hashmap_bool_set(scene_data, "debug_draw_physics", render_settings->debug_draw_physics);
 	if(scene->init)    hashmap_str_set(scene_data, "init_func", filename);
 	if(scene->cleanup) hashmap_str_set(scene_data, "cleanup_func", filename);
+	hashmap_str_set(scene_data, "next_scene", scene->next_level_filename != '\0' ? scene->next_level_filename : "NONE");
 
 	// Player
 	struct Parser_Object* player_object = parser_object_new(parser, PO_PLAYER);

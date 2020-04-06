@@ -26,6 +26,7 @@
 #include "scene.h"
 #include "event.h"
 #include "debug_vars.h"
+#include "gui_game.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -297,7 +298,7 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
 
     /* Render UI */
     gui_render(game_state->gui_editor, NK_ANTI_ALIASING_ON);
-    gui_render(game_state->gui_game, NK_ANTI_ALIASING_ON);
+    gui_render(game_state->gui_game->gui, NK_ANTI_ALIASING_ON);
 }
 
 void renderer_cleanup(struct Renderer* renderer)

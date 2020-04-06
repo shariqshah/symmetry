@@ -41,7 +41,7 @@ void console_init(struct Console* console)
 	
     console->visible                      = false;
     console->scroll_to_bottom             = true;
-    console->text_region_height           = 22.f;
+    console->text_region_height           = 30.f;
     console->line_height                  = 20.f;
     console->current_message_index        = -1;
 	console->current_history_index        =  0;

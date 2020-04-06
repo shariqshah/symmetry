@@ -5,6 +5,7 @@
 #include "transform.h"
 #include "trigger.h"
 #include "event.h"
+#include "gui_game.h"
 #include "sound_source.h"
 #include "../common/log.h"
 #include "../common/parser.h"
@@ -13,10 +14,10 @@
 static void door_on_scene_loaded(struct Event* event, void* door_ptr);
 static void door_on_trigger(struct Event* event, void* door_ptr);
 
-static const vec4 KEY_INDICATOR_COLOR_RED      = { 0.87, 0.32, 0.40, 1.0f };
-static const vec4 KEY_INDICATOR_COLOR_GREEN    = { 0.53, 0.67, 0.28, 1.0f };
-static const vec4 KEY_INDICATOR_COLOR_BLUE     = { 0.47, 0.67, 0.89, 1.0f };
-static const vec4 KEY_INDICATOR_COLOR_DISABLED = { 0.1, 0.1, 0.1, 1.0f };
+vec4 KEY_INDICATOR_COLOR_RED      = { 0.87, 0.32, 0.40, 1.0f };
+vec4 KEY_INDICATOR_COLOR_GREEN    = { 0.53, 0.67, 0.28, 1.0f };
+vec4 KEY_INDICATOR_COLOR_BLUE     = { 0.47, 0.67, 0.89, 1.0f };
+vec4 KEY_INDICATOR_COLOR_DISABLED = { 0.1, 0.1, 0.1, 1.0f };
 
 void door_init(struct Door* door, int mask)
 {
@@ -93,6 +94,7 @@ void door_update(struct Door* door, struct Scene* scene, float dt)
 					sound_source_play(game_state->sound, door->sound);
 					door->lock_sound_played = true;
 				}
+				gui_game_show_door_locked_dialog(game_state->gui_game, door);
 			}
 		}
 		break;

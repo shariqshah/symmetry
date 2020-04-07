@@ -45,7 +45,7 @@ enum Event_Subscription_Type
 
 struct Input_Map_Event
 {
-	char name[HASH_MAX_KEY_LEN];
+	char name[MAX_HASH_KEY_LEN];
 };
 
 struct Key_Event

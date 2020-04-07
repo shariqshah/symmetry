@@ -6,14 +6,9 @@
 
 static void scene_on_end_trigger(const struct Event* event, void* sender);
 
-void scene_init_stub(struct Scene* scene)
+void scene_func_stub(struct Scene* scene)
 {
-	log_warning("Scene Init Stub Called");
-}
-
-void scene_cleanup_stub(struct Scene* scene)
-{
-	log_warning("Scene Cleanup Stub Called");
+	log_warning("Scene Func Stub Called");
 }
 
 void scene_1_init(struct Scene* scene)

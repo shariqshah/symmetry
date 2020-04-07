@@ -106,6 +106,7 @@ static void editor_window_scene_hierarchy(struct nk_context* context, struct Edi
 static void editor_window_property_inspector(struct nk_context* context, struct Editor* editor, struct Game_State* game_state);
 static void editor_window_renderer_settings(struct nk_context* context, struct Editor* editor, struct Game_State* game_state);
 static void editor_window_settings_editor(struct nk_context* context, struct Editor* editor, struct Game_State* game_state);
+static void editor_window_settings_scene(struct nk_context* context, struct Editor* editor, struct Game_State* game_state);
 static void editor_axis_set(struct Editor* editor, int axis);
 static void editor_entity_select(struct Editor* editor, struct Entity* entity);
 static void editor_tool_set(struct Editor* editor, int mode);
@@ -117,6 +118,7 @@ void editor_init(struct Editor* editor)
 {
     editor->window_settings_renderer           = 0;
     editor->window_settings_editor             = 0;
+    editor->window_settings_scene              = 0;
 	editor->window_property_inspector          = 0;
 	editor->window_scene_heirarchy             = 0;
 	editor->window_scene_dialog                = 0;
@@ -425,8 +427,9 @@ void editor_update(struct Editor* editor, float dt)
 		if(nk_menu_begin_label(context, "Settings", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, nk_vec2(150, 100)))
 		{
 			nk_layout_row_dynamic(context, row_height, 1);
-			if(nk_menu_item_label(context, "Editor Settings", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE)) editor->window_settings_editor = !editor->window_settings_editor;
+			if(nk_menu_item_label(context, "Editor Settings", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE)) editor->window_settings_editor   = !editor->window_settings_editor;
 			if(nk_menu_item_label(context, "Render Settings", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE)) editor->window_settings_renderer = !editor->window_settings_renderer;
+			if(nk_menu_item_label(context, "Scene Settings",  NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE)) editor->window_settings_scene    = !editor->window_settings_scene;
 			nk_menu_end(context);
 		}
 
@@ -643,6 +646,7 @@ void editor_update(struct Editor* editor, float dt)
 	if(editor->window_property_inspector) editor_window_property_inspector(context, editor, game_state);
 	if(editor->window_settings_renderer) editor_window_renderer_settings(context, editor, game_state);
 	if(editor->window_settings_editor) editor_window_settings_editor(context, editor, game_state);
+	if(editor->window_settings_scene) editor_window_settings_scene(context, editor, game_state);
 	
 	if(editor->tool_mesh_draw_enabled && editor->selected_entity)
 	{
@@ -2484,12 +2488,14 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 
 void editor_window_renderer_settings(struct nk_context* context, struct Editor* editor, struct Game_State* game_state)
 {
-	int win_width = 0, win_height = 0;
-	window_get_drawable_size(game_state->window, &win_width, &win_height);
-	int half_width = win_width / 2, half_height = win_height / 2;
+	int drawable_width = 0, drawable_height = 0;
+	window_get_drawable_size(game_state->window, &drawable_width, &drawable_height);
+	int window_width = 300;
+	int window_height = 350;
+	int window_x = (drawable_width / 2) - (window_width / 2), window_y = (drawable_height / 2) - (window_height / 2);
 
 	const int row_height = 25;
-	if(nk_begin_titled(context, "Renderer_Settings_Window", "Renderer Settings", nk_rect(half_width, half_height, 300, 350), window_flags))
+	if(nk_begin_titled(context, "Renderer_Settings_Window", "Renderer Settings", nk_rect(window_x, window_y, window_width, window_height), window_flags))
 	{
 		struct Render_Settings* render_settings = &game_state->renderer->settings;
 		if(nk_tree_push(context, NK_TREE_TAB, "Debug", NK_MAXIMIZED))
@@ -2508,55 +2514,6 @@ void editor_window_renderer_settings(struct nk_context* context, struct Editor* 
 			editor_widget_color_combov4(context, &render_settings->debug_draw_color, 200, 400);
 			nk_tree_pop(context);
 		}
-
-		if(nk_tree_push(context, NK_TREE_TAB, "Fog", NK_MAXIMIZED))
-		{
-			static const char* fog_modes[] = { "None", "Linear", "Exponential", "Exponential Squared" };
-			nk_layout_row_dynamic(context, row_height, 2);
-			nk_label(context, "Color", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
-			editor_widget_color_combov3(context, &render_settings->fog.color, 200, 400);
-
-			nk_layout_row_dynamic(context, row_height, 2);
-			nk_label(context, "Fog Mode", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
-			render_settings->fog.mode = nk_combo(context,
-				fog_modes,
-				4,
-				render_settings->fog.mode,
-				20,
-				nk_vec2(180, 100));
-
-			nk_layout_row_dynamic(context, row_height, 2);
-			nk_label(context, "Density", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
-			struct nk_rect bounds = nk_widget_bounds(context);
-			nk_slider_float(context, 0.f, &render_settings->fog.density, 1.f, 0.005);
-			if(nk_input_is_mouse_hovering_rect(&context->input, bounds))
-			{
-				if(nk_tooltip_begin(context, 100))
-				{
-					nk_layout_row_dynamic(context, row_height, 1);
-					nk_labelf(context, NK_TEXT_ALIGN_CENTERED, "%.3f", render_settings->fog.density);
-					nk_tooltip_end(context);
-				}
-			}
-
-			nk_layout_row_dynamic(context, row_height, 1);
-			nk_property_float(context,
-				"Start Distance",
-				0.f,
-				&render_settings->fog.start_dist,
-				render_settings->fog.max_dist,
-				5.f, 10.f);
-
-			nk_layout_row_dynamic(context, row_height, 1);
-			nk_property_float(context,
-				"Max Distance",
-				render_settings->fog.start_dist,
-				&render_settings->fog.max_dist,
-				10000.f,
-				5.f, 10.f);
-
-			nk_tree_pop(context);
-		}
 	}
 	else
 	{
@@ -2567,12 +2524,14 @@ void editor_window_renderer_settings(struct nk_context* context, struct Editor* 
 
 void editor_window_settings_editor(struct nk_context* context, struct Editor* editor, struct Game_State* game_state)
 {
-	int win_width = 0, win_height = 0;
-	window_get_drawable_size(game_state->window, &win_width, &win_height);
-	int half_width = win_width / 2, half_height = win_height / 2;
+	int drawable_width = 0, drawable_height = 0;
+	window_get_drawable_size(game_state->window, &drawable_width, &drawable_height);
+	int window_width = 300;
+	int window_height = 350;
+	int window_x = (drawable_width / 2) - (window_width / 2), window_y = (drawable_height / 2) - (window_height / 2);
 
 	const int row_height = 25;
-	if(nk_begin_titled(context, "Window_Settings_Editor", "Editor Settings", nk_rect(half_width, half_height, 300, 350), window_flags))
+	if(nk_begin_titled(context, "Window_Settings_Editor", "Editor Settings", nk_rect(window_x, window_y, window_width, window_height), window_flags))
 	{
 		nk_layout_row_dynamic(context, row_height, 2);
 		nk_label(context, "Grid Enabled", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
@@ -2591,6 +2550,158 @@ void editor_window_settings_editor(struct nk_context* context, struct Editor* ed
 	else
 	{
 		editor->window_settings_editor = 0;
+	}
+	nk_end(context);
+}
+
+void editor_window_settings_scene(struct nk_context* context, struct Editor* editor, struct Game_State* game_state)
+{
+	struct Scene* scene = game_state->scene;
+	int drawable_width = 0, drawable_height = 0;
+	window_get_drawable_size(game_state->window, &drawable_width, &drawable_height);
+	int window_width = 300;
+	int window_height = 350;
+	int window_x = (drawable_width / 2) - (window_width / 2), window_y = (drawable_height / 2) - (window_height / 2);
+
+	const int row_height = 25;
+	if(nk_begin_titled(context, "Scene_Settings_Window", "Scene Settings", nk_recti(window_x, window_y, window_width, window_height), window_flags))
+	{
+
+		/* Next Scene */
+		nk_layout_row_dynamic(context, row_height, 2);
+		nk_label(context, "Next Scene", LABEL_FLAGS_ALIGN_LEFT);
+		static char next_scene_filename_buffer[MAX_FILENAME_LEN];
+		static bool next_scene_filename_copied = false;
+		if(!next_scene_filename_copied)
+		{
+			strncpy(next_scene_filename_buffer, scene->next_level_filename, MAX_FILENAME_LEN);
+			next_scene_filename_copied = true;
+		}
+
+		nk_tooltip(context, "Enter the name of the scene file without extension");
+		int edit_flags = NK_EDIT_GOTO_END_ON_ACTIVATE | NK_EDIT_FIELD | NK_EDIT_SIG_ENTER;
+		int next_scene_edit_state = nk_edit_string_zero_terminated(context, edit_flags, next_scene_filename_buffer, MAX_FILENAME_LEN, NULL);
+		if(next_scene_edit_state & NK_EDIT_COMMITED)
+		{
+			scene_save(scene, scene->filename, DIRT_INSTALL);
+			strncpy(scene->next_level_filename, next_scene_filename_buffer, MAX_FILENAME_LEN);
+			nk_edit_unfocus(context);
+		}
+		else if((next_scene_edit_state & NK_EDIT_DEACTIVATED) && next_scene_filename_copied)
+		{
+			next_scene_filename_copied = false;
+		}
+
+		/* Init Func */
+		nk_label(context, "Init Func", LABEL_FLAGS_ALIGN_LEFT);
+		static char init_func_name_buffer[MAX_HASH_KEY_LEN];
+		static bool init_func_name_copied = false;
+		if(!init_func_name_copied)
+		{
+			strncpy(init_func_name_buffer, scene->init_func_name, MAX_HASH_KEY_LEN);
+			init_func_name_copied = true;
+		}
+
+		int scene_init_edit_state = nk_edit_string_zero_terminated(context, edit_flags, init_func_name_buffer, MAX_HASH_KEY_LEN, NULL);
+		if(scene_init_edit_state & NK_EDIT_COMMITED)
+		{
+			if(scene_init_func_assign(scene, init_func_name_buffer))
+			{
+				nk_edit_unfocus(context);
+				scene_save(scene, scene->filename, DIRT_INSTALL);
+			}
+			else
+			{
+				init_func_name_copied = false;
+			}
+		}
+		else if(scene_init_edit_state & NK_EDIT_DEACTIVATED && init_func_name_copied)
+		{
+			init_func_name_copied = false;
+		}
+
+		/* Cleanup Func */
+		nk_label(context, "Cleanup Func", LABEL_FLAGS_ALIGN_LEFT);
+		static char cleanup_func_name_buffer[MAX_HASH_KEY_LEN];
+		static bool cleanup_func_name_copied = false;
+		if(!cleanup_func_name_copied)
+		{
+			strncpy(cleanup_func_name_buffer, scene->cleanup_func_name, MAX_HASH_KEY_LEN);
+			cleanup_func_name_copied = true;
+		}
+
+		int cleanup_func_edit_state = nk_edit_string_zero_terminated(context, edit_flags, cleanup_func_name_buffer, MAX_HASH_KEY_LEN, NULL);
+		if(cleanup_func_edit_state & NK_EDIT_COMMITED)
+		{
+			if(scene_cleanup_func_assign(scene, cleanup_func_name_buffer))
+			{
+				scene_save(scene, scene->filename, DIRT_INSTALL);
+				nk_edit_unfocus(context);
+			}
+			else
+			{
+				cleanup_func_name_copied = false;
+			}
+		}
+		else if(cleanup_func_edit_state & NK_EDIT_DEACTIVATED && cleanup_func_name_copied)
+		{
+			cleanup_func_name_copied = false;
+		}
+
+		/* Render Settings */
+		struct Render_Settings* render_settings = &game_state->renderer->settings;
+		if(nk_tree_push(context, NK_TREE_TAB, "Fog", NK_MAXIMIZED))
+		{
+			static const char* fog_modes[] = { "None", "Linear", "Exponential", "Exponential Squared" };
+			nk_layout_row_dynamic(context, row_height, 2);
+			nk_label(context, "Color", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+			editor_widget_color_combov3(context, &render_settings->fog.color, 200, 400);
+
+			nk_layout_row_dynamic(context, row_height, 2);
+			nk_label(context, "Fog Mode", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+			render_settings->fog.mode = nk_combo(context,
+												 fog_modes,
+												 4,
+												 render_settings->fog.mode,
+												 20,
+												 nk_vec2(180, 100));
+
+			nk_layout_row_dynamic(context, row_height, 2);
+			nk_label(context, "Density", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
+			struct nk_rect bounds = nk_widget_bounds(context);
+			nk_slider_float(context, 0.f, &render_settings->fog.density, 1.f, 0.005);
+			if(nk_input_is_mouse_hovering_rect(&context->input, bounds))
+			{
+				if(nk_tooltip_begin(context, 100))
+				{
+					nk_layout_row_dynamic(context, row_height, 1);
+					nk_labelf(context, NK_TEXT_ALIGN_CENTERED, "%.3f", render_settings->fog.density);
+					nk_tooltip_end(context);
+				}
+			}
+
+			nk_layout_row_dynamic(context, row_height, 1);
+			nk_property_float(context,
+							  "Start Distance",
+							  0.f,
+							  &render_settings->fog.start_dist,
+							  render_settings->fog.max_dist,
+							  5.f, 10.f);
+
+			nk_layout_row_dynamic(context, row_height, 1);
+			nk_property_float(context,
+							  "Max Distance",
+							  render_settings->fog.start_dist,
+							  &render_settings->fog.max_dist,
+							  10000.f,
+							  5.f, 10.f);
+
+			nk_tree_pop(context);
+		}
+	}
+	else
+	{
+		editor->window_settings_renderer = 0;
 	}
 	nk_end(context);
 }

@@ -11,8 +11,6 @@
 #define SKIN_TEXTURE_WIDTH  256
 #define SKIN_TEXTURE_HEIGHT 256
 
-static float key_opacity_full = 1.f;
-static float key_opacity_reduced = 0.3f;
 
 static void gui_game_pause_menu(struct nk_context* context);
 static void gui_game_next_level_dialog(struct nk_context* context);
@@ -71,11 +69,13 @@ void gui_game_update(struct Game_Gui* game_gui, float dt)
 	if(game_state->game_mode == GAME_MODE_GAME)
 	{
 		// HUD
-		int hud_offset_x  = 50;
-		int hud_offset_y  = 50;
-		int hp_gui_width  = 130;
-		int hp_gui_height = 48;
-		struct Player* player = &game_state->scene->player;
+		const float	   key_opacity_full    = 1.f;
+		const float	   key_opacity_reduced = 0.3f;
+		int			   hud_offset_x        = 50;
+		int			   hud_offset_y        = 50;
+		int			   hp_gui_width        = 130;
+		int			   hp_gui_height       = 48;
+		struct Player* player              = &game_state->scene->player;
 		if(nk_begin(context, "HP Gui", nk_recti(hud_offset_x, hud_offset_y, hp_gui_width, hp_gui_height), NK_WINDOW_BACKGROUND | NK_WINDOW_NO_SCROLLBAR))
 		{
 			nk_layout_row_dynamic(context, 40, 2);
@@ -194,15 +194,15 @@ void gui_game_show_door_locked_dialog(struct Game_Gui* game_gui, struct Door* do
 
 void gui_game_pause_menu(struct nk_context* context)
 {
-	struct Game_State* game_state = game_state_get();
-	int row_height = 30;
-	int popup_x = 0;
-	int popup_y = 0;
-	int popup_width = 300;
-	int popup_height = 200;
-	int display_width = 0;
-	int display_height = 0;
-	int popup_flags = NK_WINDOW_TITLE | NK_WINDOW_BORDER;
+	struct Game_State* game_state     = game_state_get();
+	int                row_height     = 30;
+	int                popup_x        = 0;
+	int                popup_y        = 0;
+	int                popup_width    = 300;
+	int                popup_height   = 200;
+	int                display_width  = 0;
+	int                display_height = 0;
+	int                popup_flags    = NK_WINDOW_TITLE | NK_WINDOW_BORDER;
 	window_get_drawable_size(game_state_get()->window, &display_width, &display_height);
 	popup_x = (display_width / 2) - (popup_width / 2);
 	popup_y = (display_height / 2) - (popup_height / 2);

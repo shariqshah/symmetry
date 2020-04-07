@@ -13,6 +13,7 @@ struct Editor
 {
     int                 window_settings_renderer;
     int                 window_settings_editor;
+    int                 window_settings_scene;
 	int                 window_scene_heirarchy;
 	int                 window_property_inspector;
 	int                 window_scene_dialog;

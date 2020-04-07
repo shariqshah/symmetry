@@ -29,19 +29,19 @@ bool parser_load(FILE* file, const char* filename, Parser_Assign_Func assign_fun
 	
     /* Read line by line, ignore comments */
     char format_str[64];
-    char key_str[HASH_MAX_KEY_LEN];
+    char key_str[MAX_HASH_KEY_LEN];
     char value_str[MAX_VALUE_LEN];
     char line_buffer[MAX_LINE_LEN];
-    memset(key_str, '\0', HASH_MAX_KEY_LEN);
+    memset(key_str, '\0', MAX_HASH_KEY_LEN);
     memset(line_buffer, '\0', MAX_LINE_LEN);
     memset(format_str, '\0', 64);
-    snprintf(format_str, 64, " %%%d[^: ] : %%%d[^\n]", HASH_MAX_KEY_LEN, MAX_VALUE_LEN);
+    snprintf(format_str, 64, " %%%d[^: ] : %%%d[^\n]", MAX_HASH_KEY_LEN, MAX_VALUE_LEN);
 	
     while(fgets(line_buffer, MAX_LINE_LEN - 1, file))
     {
 		current_line++;
-		memset(key_str, '\0', HASH_MAX_KEY_LEN);
-		memset(value_str, '\0', HASH_MAX_KEY_LEN);
+		memset(key_str, '\0', MAX_HASH_KEY_LEN);
+		memset(value_str, '\0', MAX_HASH_KEY_LEN);
 
 		if(strlen(line_buffer) == 0 || isspace(line_buffer[0]) != 0)
 		{
@@ -91,13 +91,13 @@ struct Parser* parser_load_objects(FILE* file, const char* filename)
 
     int current_line = 0;
     char line_buffer[MAX_LINE_LEN];
-    char type_str[HASH_MAX_KEY_LEN];
+    char type_str[MAX_HASH_KEY_LEN];
     char obj_str[1024];
 	
     while(fgets(line_buffer, MAX_LINE_LEN - 1, file))
     {
 		current_line++;
-		memset(type_str, '\0', HASH_MAX_KEY_LEN);
+		memset(type_str, '\0', MAX_HASH_KEY_LEN);
 
 		if(strlen(line_buffer) == 0 || isspace(line_buffer[0]) != 0)
 		{
@@ -115,8 +115,8 @@ struct Parser* parser_load_objects(FILE* file, const char* filename)
 		}
 
 		// Check if type string is valid
-		size_t type_str_len = strnlen(type_str, HASH_MAX_KEY_LEN);
-		if(type_str_len < 3 || strncmp(type_str, "{", HASH_MAX_KEY_LEN) == 0 || strncmp(type_str, "}", HASH_MAX_KEY_LEN) == 0)
+		size_t type_str_len = strnlen(type_str, MAX_HASH_KEY_LEN);
+		if(type_str_len < 3 || strncmp(type_str, "{", MAX_HASH_KEY_LEN) == 0 || strncmp(type_str, "}", MAX_HASH_KEY_LEN) == 0)
 		{
 			log_warning("Invalid object type '%s' on line %d", type_str, current_line);
 			continue;
@@ -200,15 +200,15 @@ struct Parser* parser_load_objects(FILE* file, const char* filename)
         object->data = hashmap_create();
 
         char format_str[64];
-        char key_str[HASH_MAX_KEY_LEN];
+        char key_str[MAX_HASH_KEY_LEN];
         char value_str[MAX_VALUE_LEN];
 
         memset(format_str, '\0', 64);
-        snprintf(format_str, 64, " %%%d[^: ] : %%%d[^\r\n]", HASH_MAX_KEY_LEN, MAX_VALUE_LEN);
+        snprintf(format_str, 64, " %%%d[^: ] : %%%d[^\r\n]", MAX_HASH_KEY_LEN, MAX_VALUE_LEN);
         char* line = strtok(obj_str, "\r\n");
         do
         {
-            memset(key_str, '\0', HASH_MAX_KEY_LEN);
+            memset(key_str, '\0', MAX_HASH_KEY_LEN);
             memset(value_str, '\0', MAX_VALUE_LEN);
 
             if(strlen(line) == 0)
@@ -238,14 +238,14 @@ int parser_object_type_from_str(const char* str)
 {
     int object_type = PO_UNKNOWN;
 
-    if(strncmp(str, "Entity", HASH_MAX_KEY_LEN) == 0)                  object_type = PO_ENTITY;
-    else if(strncmp(str, "Model", HASH_MAX_KEY_LEN) == 0)              object_type = PO_MODEL;
-    else if(strncmp(str, "Material", HASH_MAX_KEY_LEN) == 0)           object_type = PO_MATERIAL;
-    else if(strncmp(str, "Config", HASH_MAX_KEY_LEN) == 0)             object_type = PO_CONFIG;
-    else if(strncmp(str, "Key", HASH_MAX_KEY_LEN) == 0)                object_type = PO_KEY;
-    else if(strncmp(str, "Scene_Entity_Entry", HASH_MAX_KEY_LEN) == 0) object_type = PO_SCENE_ENTITY_ENTRY;
-    else if(strncmp(str, "Scene_Config", HASH_MAX_KEY_LEN) == 0)       object_type = PO_SCENE_CONFIG;
-    else if(strncmp(str, "Player", HASH_MAX_KEY_LEN) == 0)             object_type = PO_PLAYER;
+    if(strncmp(str, "Entity", MAX_HASH_KEY_LEN) == 0)                  object_type = PO_ENTITY;
+    else if(strncmp(str, "Model", MAX_HASH_KEY_LEN) == 0)              object_type = PO_MODEL;
+    else if(strncmp(str, "Material", MAX_HASH_KEY_LEN) == 0)           object_type = PO_MATERIAL;
+    else if(strncmp(str, "Config", MAX_HASH_KEY_LEN) == 0)             object_type = PO_CONFIG;
+    else if(strncmp(str, "Key", MAX_HASH_KEY_LEN) == 0)                object_type = PO_KEY;
+    else if(strncmp(str, "Scene_Entity_Entry", MAX_HASH_KEY_LEN) == 0) object_type = PO_SCENE_ENTITY_ENTRY;
+    else if(strncmp(str, "Scene_Config", MAX_HASH_KEY_LEN) == 0)       object_type = PO_SCENE_CONFIG;
+    else if(strncmp(str, "Player", MAX_HASH_KEY_LEN) == 0)             object_type = PO_PLAYER;
 
     return object_type;
 }

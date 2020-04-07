@@ -69,24 +69,23 @@ bool game_init(struct Window* window, struct Hashmap* cvars)
     }
     else
     {
-		game_state->window                   = window;
-		game_state->cvars                    = cvars;
-		game_state->is_initialized           = false;
-		game_state->quit                     = false;
-		game_state->update_scene             = true;
-		game_state->fixed_delta_time         = 1.f / 60.f;
-		game_state->game_mode                = GAME_MODE_GAME;
-		game_state->renderer                 = calloc(1, sizeof(*game_state->renderer));
-		game_state->scene                    = calloc(1, sizeof(*game_state->scene));
-		game_state->console                  = calloc(1, sizeof(*game_state->console));
-		game_state->editor                   = calloc(1, sizeof(*game_state->editor));
-		game_state->gui_editor               = calloc(1, sizeof(*game_state->gui_editor));
-		game_state->gui_game                 = calloc(1, sizeof(*game_state->gui_game));
-		game_state->event_manager            = calloc(1, sizeof(*game_state->event_manager));
-		game_state->sound                    = calloc(1, sizeof(*game_state->sound));
-		game_state->debug_vars               = calloc(1, sizeof(*game_state->debug_vars));
-		game_state->scene_init_func_table    = hashmap_create();
-		game_state->scene_cleanup_func_table = hashmap_create();
+		game_state->window           = window;
+		game_state->cvars            = cvars;
+		game_state->is_initialized   = false;
+		game_state->quit             = false;
+		game_state->update_scene     = true;
+		game_state->fixed_delta_time = 1.f / 60.f;
+		game_state->game_mode        = GAME_MODE_GAME;
+		game_state->renderer         = calloc(1, sizeof(*game_state->renderer));
+		game_state->scene            = calloc(1, sizeof(*game_state->scene));
+		game_state->console          = calloc(1, sizeof(*game_state->console));
+		game_state->editor           = calloc(1, sizeof(*game_state->editor));
+		game_state->gui_editor       = calloc(1, sizeof(*game_state->gui_editor));
+		game_state->gui_game         = calloc(1, sizeof(*game_state->gui_game));
+		game_state->event_manager    = calloc(1, sizeof(*game_state->event_manager));
+		game_state->sound            = calloc(1, sizeof(*game_state->sound));
+		game_state->debug_vars       = calloc(1, sizeof(*game_state->debug_vars));
+		game_state->scene_func_table = hashmap_create();
 
 		log_message_callback_set(game_on_log_message);
 		log_warning_callback_set(game_on_log_warning);
@@ -102,8 +101,9 @@ bool game_init(struct Window* window, struct Hashmap* cvars)
 			log_message("Loaded GL extentions");
 		}
 		
-		hashmap_ptr_set(game_state->scene_init_func_table, "scene_1", &scene_1_init);
-		hashmap_ptr_set(game_state->scene_cleanup_func_table, "scene_1", &scene_1_cleanup);
+		hashmap_ptr_set(game_state->scene_func_table, "scene_func_stub", &scene_func_stub);
+		hashmap_ptr_set(game_state->scene_func_table, "scene_1_init", &scene_1_init);
+		hashmap_ptr_set(game_state->scene_func_table, "scene_1_cleanup", &scene_1_cleanup);
 
 		srand(time(NULL));
 
@@ -2000,8 +2000,7 @@ void game_cleanup(void)
 			free(game_state->gui_game);
 			free(game_state->sound);
 			free(game_state->debug_vars);
-			hashmap_free(game_state->scene_init_func_table);
-			hashmap_free(game_state->scene_cleanup_func_table);
+			hashmap_free(game_state->scene_func_table);
 		}
 		free(game_state);
 		game_state = NULL;
@@ -2012,7 +2011,6 @@ struct Game_State* game_state_get(void)
 {
     return game_state;
 }
-
 
 void game_on_log_message(const char* message, va_list args)
 {

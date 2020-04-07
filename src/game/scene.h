@@ -8,8 +8,7 @@
 struct Ray;
 struct Raycast_Result;
 
-typedef void (*Scene_Init_Func)(struct Scene* scene);
-typedef void (*Scene_Cleanup_Func)(struct Scene* scene);
+typedef void (*Scene_Func)(struct Scene* scene);
 
 struct Scene
 {
@@ -27,8 +26,10 @@ struct Scene
 	struct Door         doors[MAX_SCENE_DOORS];
 	char                entity_archetypes[MAX_SCENE_ENTITY_ARCHETYPES][MAX_FILENAME_LEN];
     int                 active_camera_index;
-	Scene_Init_Func     init;
-	Scene_Cleanup_Func  cleanup;
+	char                init_func_name[MAX_HASH_KEY_LEN];
+	char                cleanup_func_name[MAX_HASH_KEY_LEN];
+	Scene_Func          init;
+	Scene_Func          cleanup;
 };
 
 void scene_init(struct Scene* scene);
@@ -38,6 +39,8 @@ void scene_destroy(struct Scene* scene);
 void scene_update(struct Scene* scene, float dt);
 void scene_update_physics(struct Scene* scene, float fixed_dt);
 void scene_post_update(struct Scene* scene);
+bool scene_cleanup_func_assign(struct Scene* scene, const char* cleanup_func_name);
+bool scene_init_func_assign(struct Scene* scene, const char* init_func_name);
 
 struct Entity*       scene_entity_duplicate(struct Scene* scene, struct Entity* entity);
 struct Entity*       scene_entity_create(struct Scene* scene, const char* name, struct Entity* parent);

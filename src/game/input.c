@@ -295,7 +295,7 @@ void input_on_key(const struct Event* event)
 			key_binding->state = event->type == EVT_KEY_PRESSED ? KS_PRESSED : KS_RELEASED;
 			struct Event* input_map_event = event_manager_create_new_event(event_manager);
 			input_map_event->type = event->type == EVT_KEY_PRESSED ? EVT_INPUT_MAP_PRESSED : EVT_INPUT_MAP_RELEASED;
-			strncpy(&input_map_event->input_map.name, map_key, HASH_MAX_KEY_LEN);
+			strncpy(&input_map_event->input_map.name, map_key, MAX_HASH_KEY_LEN);
 			event_manager_send_event(event_manager, input_map_event);
 			break;
 		}
@@ -306,7 +306,7 @@ void input_on_key(const struct Event* event)
 			key_binding->state = event->type == EVT_KEY_PRESSED ? KS_PRESSED : KS_RELEASED;
 			struct Event* input_map_event = event_manager_create_new_event(event_manager);
 			input_map_event->type = event->type == EVT_KEY_PRESSED ? EVT_INPUT_MAP_PRESSED : EVT_INPUT_MAP_RELEASED;
-			strncpy(&input_map_event->input_map.name, map_key, HASH_MAX_KEY_LEN);
+			strncpy(&input_map_event->input_map.name, map_key, MAX_HASH_KEY_LEN);
 			event_manager_send_event(event_manager, input_map_event);
 			break;
 		}

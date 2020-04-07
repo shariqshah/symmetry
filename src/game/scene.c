@@ -94,8 +94,50 @@ void scene_init(struct Scene* scene)
 	if(game_state->game_mode == GAME_MODE_PAUSE)
 		game_state->game_mode = GAME_MODE_GAME;
 	scene->active_camera_index = game_state_get()->game_mode == GAME_MODE_GAME ? CAM_GAME : CAM_EDITOR;
-	scene->init = &scene_init_stub;
-	scene->cleanup = &scene_cleanup_stub;
+	scene->init = NULL;
+	scene->cleanup = NULL;
+	scene_init_func_assign(scene, "scene_func_stub");
+	scene_cleanup_func_assign(scene, "scene_func_stub");
+}
+
+bool scene_init_func_assign(struct Scene* scene, const char* init_func_name)
+{
+	struct Game_State* game_state = game_state_get();
+	if(!hashmap_value_exists(game_state->scene_func_table, init_func_name))
+	{
+		log_error("scene:init_func_assign", "Could not find func called '%s' in scene function table", init_func_name);
+		if(!scene->init)
+		{
+			scene->init = (Scene_Func)hashmap_ptr_get(game_state->scene_func_table, "scene_func_stub");
+			strncpy(scene->init_func_name, "scene_func_stub", MAX_HASH_KEY_LEN);
+			log_warning("Assigned Stub Func as init for scene '%s'", scene->filename);
+		}
+		return false;
+	}
+
+	scene->init = (Scene_Func)hashmap_ptr_get(game_state->scene_func_table, init_func_name);
+	strncpy(scene->init_func_name, init_func_name, MAX_HASH_KEY_LEN);
+	return true;
+}
+
+bool scene_cleanup_func_assign(struct Scene* scene, const char* cleanup_func_name)
+{
+	struct Game_State* game_state = game_state_get();
+	if(!hashmap_value_exists(game_state->scene_func_table, cleanup_func_name))
+	{
+		log_error("scene:cleanup_func_assign", "Could not find func called '%s' in scene function table", cleanup_func_name);
+		if(!scene->cleanup)
+		{
+			scene->cleanup = (Scene_Func)hashmap_ptr_get(game_state->scene_func_table, "scene_func_stub");
+			strncpy(scene->cleanup_func_name, "scene_func_stub", MAX_HASH_KEY_LEN);
+			log_warning("Assigned Stub Func as cleanup for scene '%s'", scene->filename);
+		}
+		return false;
+	}
+
+	scene->cleanup = (Scene_Func)hashmap_ptr_get(game_state->scene_func_table, cleanup_func_name);
+	strncpy(scene->cleanup_func_name, cleanup_func_name, MAX_HASH_KEY_LEN);
+	return true;
 }
 
 bool scene_load(struct Scene* scene, const char* filename, int directory_type)
@@ -105,7 +147,7 @@ bool scene_load(struct Scene* scene, const char* filename, int directory_type)
     FILE* scene_file = io_file_open(directory_type, prefixed_filename, "rb");
 	if(!scene_file)
 	{
-		log_error("scene:load", "Failed to open scene file %s for reading");
+		log_error("scene:load", "Failed to open scene file %s for reading", filename);
 		return false;
 	}
 
@@ -155,8 +197,8 @@ bool scene_load(struct Scene* scene, const char* filename, int directory_type)
 			if(hashmap_value_exists(scene_data, "debug_draw_mode"))    render_settings->debug_draw_mode    = hashmap_int_get(scene_data, "debug_draw_mode");
 			if(hashmap_value_exists(scene_data, "debug_draw_physics")) render_settings->debug_draw_physics = hashmap_bool_get(scene_data, "debug_draw_physics");
 			
-			scene->init = hashmap_value_exists(scene_data, "init_func") ? hashmap_ptr_get(game_state->scene_init_func_table, hashmap_str_get(scene_data, "init_func")) : &scene_init_stub;
-			scene->cleanup = hashmap_value_exists(scene_data, "cleanup_func") ? hashmap_ptr_get(game_state->scene_cleanup_func_table, hashmap_str_get(scene_data, "cleanup_func")) : &scene_init_stub;
+			scene_init_func_assign(scene, hashmap_value_exists(scene_data, "init_func") ? hashmap_str_get(scene_data, "init_func") : "scene_func_stub");
+			scene_cleanup_func_assign(scene, hashmap_value_exists(scene_data, "cleanup_func") ? hashmap_str_get(scene_data, "cleanup_func") : "scene_func_stub");
 
 			if(hashmap_value_exists(scene_data, "next_scene"))
 				strncpy(scene->next_level_filename, hashmap_value_exists(scene_data, "next_scene") ? hashmap_str_get(scene_data, "next_scene") : "NONE", MAX_FILENAME_LEN);
@@ -271,8 +313,8 @@ bool scene_save(struct Scene* scene, const char* filename, int directory_type)
 	hashmap_bool_set(scene_data, "debug_draw_enabled", render_settings->debug_draw_enabled);
 	hashmap_int_set(scene_data, "debug_draw_mode", render_settings->debug_draw_mode);
 	hashmap_bool_set(scene_data, "debug_draw_physics", render_settings->debug_draw_physics);
-	if(scene->init)    hashmap_str_set(scene_data, "init_func", filename);
-	if(scene->cleanup) hashmap_str_set(scene_data, "cleanup_func", filename);
+	if(scene->init)    hashmap_str_set(scene_data, "init_func", scene->init_func_name);
+	if(scene->cleanup) hashmap_str_set(scene_data, "cleanup_func", scene->cleanup_func_name);
 	hashmap_str_set(scene_data, "next_scene", scene->next_level_filename != '\0' ? scene->next_level_filename : "NONE");
 
 	// Player
@@ -282,6 +324,7 @@ bool scene_save(struct Scene* scene, const char* filename, int directory_type)
 	hashmap_int_set(player_object->data, "player_health", scene->player.health);
 	hashmap_int_set(player_object->data, "player_key_mask", scene->player.key_mask);
 
+	// Entity Lists
 	scene_write_entity_list(scene, ET_DEFAULT, parser);
 	scene_write_entity_list(scene, ET_LIGHT, parser);
 	scene_write_entity_list(scene, ET_STATIC_MESH, parser);

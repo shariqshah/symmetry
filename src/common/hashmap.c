@@ -28,7 +28,7 @@ static struct Hashmap_Entry* hashmap_entry_new(struct Hashmap* hashmap, const ch
 	struct Hashmap_Entry* new_entry = NULL;
 	for(int i = 0; i < array_len(hashmap->buckets[index]); i++) /* Look for duplicates and over-write if found */
 	{
-		if(strncmp(key, hashmap->buckets[index][i].key, HASH_MAX_KEY_LEN) == 0)
+		if(strncmp(key, hashmap->buckets[index][i].key, MAX_HASH_KEY_LEN) == 0)
 		{
 			new_entry = &hashmap->buckets[index][i];
 			if(new_entry->key) free(new_entry->key);
@@ -98,13 +98,13 @@ struct Variant* hashmap_value_get(const struct Hashmap* hashmap, const char* key
     struct Variant* value = NULL;
     unsigned int index    = hashmap_generate_hash(key);
     int key_len           = (int)strlen(key);
-    int compare_len       = key_len < HASH_MAX_KEY_LEN ? key_len : HASH_MAX_KEY_LEN;
+    int compare_len       = key_len < MAX_HASH_KEY_LEN ? key_len : MAX_HASH_KEY_LEN;
 	for(int i = 0; i < array_len(hashmap->buckets[index]); i++)
 	{
 		// Check for the length of the key to avoid partial matches. We might be looking for 
 		// "Diffuse" and we'll get matched to "Diffuse_Color" if we're relying on the length
 		// of "Diffuse" only
-		if(strnlen(hashmap->buckets[index][i].key, HASH_MAX_KEY_LEN) == compare_len && strncmp(key, hashmap->buckets[index][i].key, compare_len) == 0)
+		if(strnlen(hashmap->buckets[index][i].key, MAX_HASH_KEY_LEN) == compare_len && strncmp(key, hashmap->buckets[index][i].key, compare_len) == 0)
 		{
 			value = &hashmap->buckets[index][i].value;
 			break;
@@ -120,7 +120,7 @@ void hashmap_value_remove(struct Hashmap* hashmap, const char* key)
 	int index_to_remove = -1;
 	for(int i = 0; i < array_len(hashmap->buckets[index]); i++)
 	{
-		if(strncmp(key, hashmap->buckets[index][i].key, HASH_MAX_KEY_LEN) == 0)
+		if(strncmp(key, hashmap->buckets[index][i].key, MAX_HASH_KEY_LEN) == 0)
 		{
 			index_to_remove = i;
 			break;

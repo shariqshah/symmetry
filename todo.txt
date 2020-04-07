@@ -424,4 +424,4 @@ Done:
 	* Audio cues when player does not have the right key combination to open a particular door
 	* Added saving scene init/cleanup funcs if there are any assigned when saving scene
 	* Win/fail States
-	x In-Game Gui
+	* In-Game Gui

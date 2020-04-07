@@ -309,7 +309,7 @@ void player_update_physics(struct Player* player, struct Scene* scene, float fix
 void player_on_input_map_released(const struct Event* event)
 {
 	struct Game_State* game_state = game_state_get();
-	if(strncmp("Jump", event->input_map.name, HASH_MAX_KEY_LEN) == 0)
+	if(strncmp("Jump", event->input_map.name, MAX_HASH_KEY_LEN) == 0)
 	{
 		struct Player* player = &game_state->scene->player;
 		player->can_jump = true;

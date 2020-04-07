@@ -37,6 +37,6 @@
 #define MAX_DEBUG_VARS_PER_FRAME_TEXTURES 8
 
 #define HASH_MAP_NUM_BUCKETS 10
-#define HASH_MAX_KEY_LEN     128
+#define MAX_HASH_KEY_LEN     128
 
 #endif

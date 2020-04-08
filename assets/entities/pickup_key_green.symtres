@@ -1,0 +1,44 @@
+Entity
+{
+	type : 11
+	scale : 1.000 1.000 1.000
+	pickup_key_type : 2
+	rotation : 0.000 0.000 0.000 1.000
+	pickup_spin_speed : 5.0000
+	active : true
+	position : -37.000 2.000 -74.000
+	pickup_type : 0
+	name : Pickup_Key_Green
+	bounding_box_min : -0.500 -0.500 -0.500
+	bounding_box_max : 0.500 0.500 0.500
+}
+
+Entity
+{
+	type : 9
+	scale : 1.000 1.000 1.000
+	rotation : 0.000 0.000 0.000 1.000
+	trigger_mask : 1
+	active : true
+	position : 0.000 0.000 0.000
+	trigger_type : 0
+	name : Pickup_Key_Green_Trigger
+	bounding_box_min : -0.500 -0.500 -0.500
+	bounding_box_max : 0.500 0.500 0.500
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 1
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 0.870 0.320 0.400 1.000
+	geometry : pickup_key.symbres
+	active : true
+	diffuse_texture : white.tga
+	position : 0.000 0.000 0.000
+	name : Pickup_Key_Green_Mesh
+	uv_scale : 1.000 1.000
+}
+

@@ -101,6 +101,7 @@ struct Scene_Loaded_Event
 struct Trigger_Event
 {
 	struct Trigger* sender;
+	struct Entity*  triggering_entity;
 };
 
 struct Player_Death_Event

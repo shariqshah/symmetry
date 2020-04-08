@@ -489,7 +489,7 @@ void event_manager_unsubscribe_with_subscriber_sender(struct Event_Manager* even
 	for(int i = 0; i < MAX_EVENT_SUBSCRIPTIONS; i++)
 	{
 		struct Event_Subscription* subscription = &event_manager->event_subsciptions[i];
-		if(subscription->type != EST_SUBSCRIBER) continue;
+		if(subscription->type != EST_SUBSCRIBER_SENDER) continue;
 		if(subscription->event_type == event_type && 
 		   subscription->Subscription_Subscriber_Sender.handler == handler_func && 
 		   subscription->Subscription_Subscriber_Sender.subscriber == subscriber &&

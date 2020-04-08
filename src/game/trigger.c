@@ -27,16 +27,18 @@ void trigger_update_physics(struct Trigger* trigger, struct Scene* scene, float 
 {
 	// Check if we're triggered and fire the associated event
 	bool intersecting = false;
+	struct Entity* triggering_entity = NULL;
 	if(trigger->trigger_mask & TRIGM_PLAYER)
 	{
 		int intersection = bv_intersect_bounding_boxes(&trigger->base.derived_bounding_box, &scene->player.base.derived_bounding_box);
 		if(intersection == IT_INSIDE || intersection == IT_INTERSECT)
 		{
 			intersecting = true;
+			triggering_entity = &scene->player.base;
 		}
 	}
 
-	if(trigger->trigger_mask & TRIGM_ENEMY)
+	if(!intersecting && trigger->trigger_mask & TRIGM_ENEMY)
 	{
 		for(int i = 0; i < MAX_SCENE_ENEMIES; i++)
 		{
@@ -48,6 +50,8 @@ void trigger_update_physics(struct Trigger* trigger, struct Scene* scene, float 
 			if(intersection == IT_INTERSECT || intersection == IT_INSIDE)
 			{
 				intersecting = true;
+				triggering_entity = &enemy->base;
+				break;
 			}
 		}
 	}
@@ -95,6 +99,7 @@ void trigger_update_physics(struct Trigger* trigger, struct Scene* scene, float 
 			struct Event* trigger_event = event_manager_create_new_event(event_manager);
 			trigger_event->type = EVT_TRIGGER;
 			trigger_event->trigger.sender = trigger;
+			trigger_event->trigger.triggering_entity = triggering_entity;
 			trigger_event->sender = trigger;
 			event_manager_send_event(event_manager, trigger_event);
 			if(trigger->type == TRIG_ONE_SHOT)

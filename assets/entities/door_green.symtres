@@ -9,7 +9,7 @@ Entity
 	active : true
 	door_speed : 6.0000
 	position : -18.500 1.000 -30.000
-	door_mask : 0
+	door_mask : 2
 	name : Door
 	bounding_box_min : -0.500 -0.500 -0.500
 	bounding_box_max : 0.500 0.500 0.500
@@ -40,7 +40,7 @@ Entity
 	sound_min_distance : 0.0000
 	active : true
 	position : 0.000 0.000 0.000
-	source_filename : sounds/door_close.wav
+	source_filename : sounds/door_locked.wav
 	sound_type : 1
 	sound_max_distance : 30.0000
 	name : Door_Sound
@@ -62,7 +62,7 @@ Entity
 	active : true
 	diffuse_texture : default.tga
 	diffuse : 1.0000
-	position : 0.000 4.500 0.000
+	position : 0.012 4.500 0.000
 	specular_strength : 62.0000
 	name : Door_Mesh
 	uv_scale : 0.300 0.200
@@ -89,7 +89,7 @@ Entity
 	scale : 1.000 1.000 1.000
 	material : 1
 	rotation : 0.000 0.000 0.000 1.000
-	diffuse_color : 0.100 0.100 0.100
+	diffuse_color : 0.530 0.670 0.280
 	geometry : cube.symbres
 	active : true
 	diffuse_texture : white.tga

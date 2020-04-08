@@ -24,6 +24,7 @@ struct Scene
 	struct Enemy        enemies[MAX_SCENE_ENEMIES];
 	struct Trigger      triggers[MAX_SCENE_TRIGGERS];
 	struct Door         doors[MAX_SCENE_DOORS];
+	struct Pickup       pickups[MAX_SCENE_PICKUPS];
 	char                entity_archetypes[MAX_SCENE_ENTITY_ARCHETYPES][MAX_FILENAME_LEN];
     int                 active_camera_index;
 	char                init_func_name[MAX_HASH_KEY_LEN];
@@ -51,6 +52,7 @@ struct Sound_Source* scene_sound_source_create(struct Scene* scene, const char* 
 struct Enemy*        scene_enemy_create(struct Scene* scene, const char* name, struct Entity* parent, int type);
 struct Trigger*      scene_trigger_create(struct Scene* scene, const char* name, struct Entity* parent, int type, int mask);
 struct Door*         scene_door_create(struct Scene* scene, const char* name, struct Entity* parent, int mask);
+struct Pickup*       scene_pickup_create(struct Scene* scene, const char* name, struct Entity* parent, int type);
 
 void scene_entity_base_remove(struct Scene* scene, struct Entity* entity);
 void scene_light_remove(struct Scene* scene, struct Light* light);
@@ -60,6 +62,7 @@ void scene_sound_source_remove(struct Scene* scene, struct Sound_Source* source)
 void scene_enemy_remove(struct Scene* scene, struct Enemy* enemy);
 void scene_trigger_remove(struct Scene* scene, struct Trigger* trigger);
 void scene_door_remove(struct Scene* scene, struct Door* door);
+void scene_pickup_remove(struct Scene* scene, struct Pickup* pickup);
 
 void*                scene_find(struct Scene* scene, const char* name); // Looks in all entity type arrays and returns the first one found. Result should be cast back to expected type
 struct Entity*       scene_entity_find(struct Scene* scene, const char* name);
@@ -67,10 +70,10 @@ struct Light*        scene_light_find(struct Scene* scene, const char* name);
 struct Camera*       scene_camera_find(struct Scene* scene, const char* name);
 struct Static_Mesh*  scene_static_mesh_find(struct Scene* scene, const char* name);
 struct Sound_Source* scene_sound_source_find(struct Scene* scene, const char* name);
-struct Entity*       scene_base_entity_get(struct Scene* scene, int id, int type);
 struct Enemy*        scene_enemy_find(struct Scene* scene, const char* name);
 struct Trigger*      scene_trigger_find(struct Scene* scene, const char* name);
 struct Door*         scene_door_find(struct Scene* scene, const char* name);
+struct Pickup*       scene_pickup_find(struct Scene* scene, const char* name);
 
 void scene_entity_parent_set(struct Scene* scene, struct Entity* entity, struct Entity* parent);
 void scene_entity_parent_reset(struct Scene* scene, struct Entity* entity); // Sets root entity as parent

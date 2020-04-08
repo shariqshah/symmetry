@@ -12,7 +12,6 @@
 #include "../common/hashmap.h"
 
 static void door_on_scene_loaded(struct Event* event, void* door_ptr);
-static void door_on_trigger(struct Event* event, void* door_ptr);
 
 vec4 KEY_INDICATOR_COLOR_RED      = { 0.87, 0.32, 0.40, 1.0f };
 vec4 KEY_INDICATOR_COLOR_GREEN    = { 0.53, 0.67, 0.28, 1.0f };
@@ -40,7 +39,6 @@ void door_reset(struct Door* door)
 	door->speed = 0.f;
 
 	struct Event_Manager* event_manager = game_state_get()->event_manager;
-	event_manager_unsubscribe_with_subscriber(event_manager, EVT_TRIGGER, &door_on_trigger, (void*)door);
 	event_manager_unsubscribe_with_subscriber(event_manager, EVT_SCENE_LOADED, &door_on_scene_loaded, (void*)door);
 }
 
@@ -168,31 +166,7 @@ void door_on_scene_loaded(struct Event* event, void* door_ptr)
 		log_error("door:on_scene_load", "Could not find sound entity for door %s", door->base.name);
 
 	if(entity_get_num_children_of_type(door, ET_TRIGGER, &door_trigger, 1) == 1)
-	{
 		door->trigger = door_trigger[0];
-		struct Event_Manager* event_manager = game_state_get()->event_manager;
-		event_manager_subscribe_with_subscriber(event_manager, EVT_TRIGGER, &door_on_trigger, (void*)door);
-	}
 	else
-	{
 		log_error("door:on_scene_load", "Could not find trigger entity for door %s", door->base.name);
-	}
-
 }
-
-void door_on_trigger(struct Event* event, void* door_ptr)
-{
-	struct Game_State* game_state = game_state_get();
-	struct Door* door = (struct Door*)door_ptr;
-	//log_message("Trigger %s triggered for door %s", door->trigger->base.name, door->base.name);
-	switch(door->state)
-	{
-	case DOOR_CLOSED:
-		break;
-	case DOOR_OPEN:
-		break;
-	case DOOR_OPENING:
-	case DOOR_CLOSING:
-		break;
-	}
-} 

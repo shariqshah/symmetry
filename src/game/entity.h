@@ -28,6 +28,7 @@ enum Entity_Type
 	ET_ENEMY,
 	ET_TRIGGER,
 	ET_DOOR,
+	ET_PICKUP,
     ET_MAX
 };
 
@@ -65,6 +66,13 @@ enum Entity_Flags
 	EF_IGNORE_RAYCAST                 = 1 << 6
 };
 
+enum Pickup_Type
+{
+	PICKUP_KEY = 0,
+	PICKUP_HEALTH,
+	PICKUP_MAX
+};
+
 enum Entity_Ray_Mask
 {
 	ERM_NONE         = 0,
@@ -76,7 +84,9 @@ enum Entity_Ray_Mask
 	ERM_SOUND_SOURCE = 1 << 5,
 	ERM_ENEMY        = 1 << 6,
 	ERM_TRIGGER      = 1 << 7,
-	ERM_ALL          = ERM_DEFAULT | ERM_PLAYER | ERM_CAMERA | ERM_LIGHT | ERM_STATIC_MESH | ERM_SOUND_SOURCE | ERM_ENEMY | ERM_TRIGGER
+	ERM_DOOR         = 1 << 8,
+	ERM_PICKUP       = 1 << 9,
+	ERM_ALL          = ERM_DEFAULT | ERM_PLAYER | ERM_CAMERA | ERM_LIGHT | ERM_STATIC_MESH | ERM_SOUND_SOURCE | ERM_ENEMY | ERM_TRIGGER | ERM_DOOR | ERM_PICKUP
 };
 
 enum Trigger_Mask
@@ -272,6 +282,20 @@ struct Door
 	struct Static_Mesh*  key_indicator_blue;
 	struct Sound_Source* sound;
 	struct Trigger*      trigger;
+};
+
+struct Pickup
+{
+	struct Entity base;
+	int type;
+	union
+	{
+		int health;
+		int key_type;
+	};
+	float  spin_speed;
+	struct Static_Mesh* mesh;
+	struct Trigger* trigger;
 };
 
 void           entity_init(struct Entity* entity, const char* name, struct Entity* parent);

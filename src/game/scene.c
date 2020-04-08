@@ -22,6 +22,7 @@
 #include "scene_funcs.h"
 #include "trigger.h"
 #include "door.h"
+#include "pickup.h"
 
 #include <assert.h>
 #include <string.h>
@@ -78,13 +79,25 @@ void scene_init(struct Scene* scene)
 	for(int i = 0; i < MAX_SCENE_ENEMIES; i++)
 	{
 		entity_reset(&scene->enemies[i], i);
-		scene->enemies->base.type = ET_ENEMY;
+		scene->enemies[i].base.type = ET_ENEMY;
 	}
 
 	for(int i = 0; i < MAX_SCENE_TRIGGERS; i++)
 	{
 		entity_reset(&scene->triggers[i], i);
-		scene->triggers->base.type = ET_TRIGGER;
+		scene->triggers[i].base.type = ET_TRIGGER;
+	}
+
+	for(int i = 0; i < MAX_SCENE_DOORS; i++)
+	{
+		entity_reset(&scene->doors[i], i);
+		scene->doors[i].base.type = ET_DOOR;
+	}
+
+	for(int i = 0; i < MAX_SCENE_PICKUPS; i++)
+	{
+		entity_reset(&scene->pickups[i], i);
+		scene->pickups[i].base.type = ET_PICKUP;
 	}
 
 	player_init(&scene->player, scene);
@@ -333,6 +346,7 @@ bool scene_save(struct Scene* scene, const char* filename, int directory_type)
 	scene_write_entity_list(scene, ET_ENEMY, parser);
 	scene_write_entity_list(scene, ET_TRIGGER, parser);
 	scene_write_entity_list(scene, ET_DOOR, parser);
+	scene_write_entity_list(scene, ET_PICKUP, parser);
 
     if(parser_write_objects(parser, scene_file, prefixed_filename))
         log_message("Scene saved to %s", prefixed_filename);
@@ -390,6 +404,11 @@ void scene_write_entity_list(struct Scene* scene, int entity_type, struct Parser
 		entity = &scene->doors[0].base;
 		stride = sizeof(struct Door);
 		break;
+	case ET_PICKUP:
+		max_length = MAX_SCENE_PICKUPS;
+		entity = &scene->pickups[0].base;
+		stride = sizeof(struct Pickup);
+		break;
 	default: return;
 	}
 
@@ -441,6 +460,7 @@ void scene_destroy(struct Scene* scene)
 	for(int i = 0; i < MAX_SCENE_ENEMIES; i++)           scene_enemy_remove(scene, &scene->enemies[i]);
 	for(int i = 0; i < MAX_SCENE_TRIGGERS; i++)          scene_trigger_remove(scene, &scene->triggers[i]);
 	for(int i = 0; i < MAX_SCENE_DOORS; i++)             scene_door_remove(scene, &scene->doors[i]);
+	for(int i = 0; i < MAX_SCENE_PICKUPS; i++)           scene_pickup_remove(scene, &scene->pickups[i]);
 	for(int i = 0; i < MAX_SCENE_ENTITY_ARCHETYPES; i++) memset(&scene->entity_archetypes[i][0], '\0', MAX_FILENAME_LEN);
 	player_destroy(&scene->player);
 	entity_reset(&scene->root_entity, 0);
@@ -461,6 +481,12 @@ void scene_update(struct Scene* scene, float dt)
 		{
 			if(scene->doors[i].base.flags & EF_ACTIVE)
 				door_update(&scene->doors[i], scene, dt);
+		}
+
+		for(int i = 0; i < MAX_SCENE_PICKUPS; i++)
+		{
+			if(scene->pickups[i].base.flags & EF_ACTIVE)
+				pickup_update(&scene->pickups[i], dt);
 		}
 	}
 }
@@ -598,6 +624,18 @@ void scene_post_update(struct Scene* scene)
 		if(door->base.flags & EF_MARKED_FOR_DELETION)
 		{
 			scene_door_remove(scene, door);
+			continue;
+		}
+	}
+
+	for(int i = 0; i < MAX_SCENE_PICKUPS; i++)
+	{
+		struct Pickup* pickup = &scene->pickups[i];
+		if(!(pickup->base.flags & EF_ACTIVE)) continue;
+
+		if(pickup->base.flags & EF_MARKED_FOR_DELETION)
+		{
+			scene_pickup_remove(scene, pickup);
 			continue;
 		}
 	}
@@ -839,6 +877,33 @@ struct Door* scene_door_create(struct Scene* scene, const char* name, struct Ent
 	return new_door;
 }
 
+struct Pickup* scene_pickup_create(struct Scene* scene, const char* name, struct Entity* parent, int type)
+{
+	assert(scene);
+	struct Pickup* new_pickup = NULL;
+	for(int i = 0; i < MAX_SCENE_PICKUPS; i++)
+	{
+		struct Pickup* pickup = &scene->pickups[i];
+		if(!(pickup->base.flags & EF_ACTIVE))
+		{
+			new_pickup = pickup;
+			break;
+		}
+	}
+
+	if(new_pickup)
+	{
+		entity_init(&new_pickup->base, name, parent ? parent : &scene->root_entity);
+		pickup_init(new_pickup, type);
+	}
+	else
+	{
+		log_error("scene:pickup_create", "Max pickup limit reached!");
+	}
+
+	return new_pickup;
+}
+
 struct Trigger* scene_trigger_create(struct Scene* scene, const char* name, struct Entity* parent, int type, int mask)
 {
 	assert(scene);
@@ -896,6 +961,13 @@ void scene_door_remove(struct Scene* scene, struct Door* door)
 	assert(scene && door);
 	door_reset(door);
 	scene_entity_base_remove(scene, door);
+}
+
+void scene_pickup_remove(struct Scene* scene, struct Pickup* pickup)
+{
+	assert(scene && pickup);
+	pickup_reset(pickup);
+	scene_entity_base_remove(scene, pickup);
 }
 
 void scene_trigger_remove(struct Scene* scene, struct Trigger* trigger)
@@ -1048,6 +1120,23 @@ struct Door* scene_door_find(struct Scene* scene, const char* name)
 	return door;
 }
 
+struct Pickup* scene_pickup_find(struct Scene* scene, const char* name)
+{
+	assert(scene && name);
+	struct Pickup* pickup = NULL;
+
+	for(int i = 0; i < MAX_SCENE_PICKUPS; i++)
+	{
+		if(strncmp(name, scene->pickups[i].base.name, MAX_ENTITY_NAME_LEN) == 0)
+		{
+			pickup = &scene->pickups[i];
+			break;
+		}
+	}
+
+	return pickup;
+}
+
 struct Trigger* scene_trigger_find(struct Scene* scene, const char* name)
 {
 	assert(scene && name);
@@ -1063,28 +1152,6 @@ struct Trigger* scene_trigger_find(struct Scene* scene, const char* name)
 	}
 
 	return trigger;
-}
-
-struct Entity* scene_base_entity_get(struct Scene* scene, int id, int type)
-{
-	assert(scene && id != -1 && type < ET_MAX);
-
-	struct Entity* entity = NULL;
-
-	switch(type)
-	{
-	case ET_DEFAULT:      entity = &scene->entities[id];      break;
-	case ET_CAMERA:       entity = &scene->cameras[id];       break;
-	case ET_LIGHT:        entity = &scene->lights[id];        break;
-	case ET_STATIC_MESH:  entity = &scene->static_meshes[id]; break;
-	case ET_SOUND_SOURCE: entity = &scene->sound_sources[id]; break;
-	case ET_ENEMY:        entity = &scene->enemies[id];       break;
-	case ET_TRIGGER:      entity = &scene->triggers[id];      break;
-	case ET_PLAYER:       entity = &scene->player;            break;
-	case ET_ROOT:         entity = &scene->root_entity;       break;
-	}
-
-	return entity;
 }
 
 void* scene_find(struct Scene* scene, const char* name)
@@ -1107,6 +1174,15 @@ void* scene_find(struct Scene* scene, const char* name)
 	if(entity) return entity;
 
 	entity = scene_enemy_find(scene, name);
+	if(entity) return entity;
+
+	entity = scene_trigger_find(scene, name);
+	if(entity) return entity;
+
+	entity = scene_door_find(scene, name);
+	if(entity) return entity;
+
+	entity = scene_pickup_find(scene, name);
 	if(entity) return entity;
 
 	return entity;
@@ -1174,6 +1250,30 @@ void scene_ray_intersect(struct Scene* scene, struct Ray* ray, struct Raycast_Re
 			max_length = 1;
 			entity = &scene->player;
 			stride = sizeof(struct Player);
+			break;
+		case ET_ENEMY:
+			if(!(ray_mask & ERM_ENEMY)) continue;
+			max_length = MAX_SCENE_ENEMIES;
+			entity = &scene->enemies[0].base;
+			stride = sizeof(struct Enemy);
+			break;
+		case ET_TRIGGER:
+			if(!(ray_mask & ERM_TRIGGER)) continue;
+			max_length = MAX_SCENE_TRIGGERS;
+			entity = &scene->triggers[0].base;
+			stride = sizeof(struct Trigger);
+			break;
+		case ET_DOOR:
+			if(!(ray_mask & ERM_DOOR)) continue;
+			max_length = MAX_SCENE_DOORS;
+			entity = &scene->doors[0].base;
+			stride = sizeof(struct Door);
+			break;
+		case ET_PICKUP:
+			if(!(ray_mask & ERM_PICKUP)) continue;
+			max_length = MAX_SCENE_PICKUPS;
+			entity = &scene->pickups[0].base;
+			stride = sizeof(struct Pickup);
 			break;
 		default: continue;
 		}
@@ -1249,6 +1349,30 @@ struct Entity* scene_ray_intersect_closest(struct Scene* scene, struct Ray* ray,
 			max_length = 1;
 			entity = &scene->player;
 			stride = sizeof(struct Player);
+			break;
+		case ET_ENEMY:
+			if(!(ray_mask & ERM_ENEMY)) continue;
+			max_length = MAX_SCENE_ENEMIES;
+			entity = &scene->enemies[0].base;
+			stride = sizeof(struct Enemy);
+			break;
+		case ET_TRIGGER:
+			if(!(ray_mask & ERM_TRIGGER)) continue;
+			max_length = MAX_SCENE_TRIGGERS;
+			entity = &scene->triggers[0].base;
+			stride = sizeof(struct Trigger);
+			break;
+		case ET_DOOR:
+			if(!(ray_mask & ERM_DOOR)) continue;
+			max_length = MAX_SCENE_DOORS;
+			entity = &scene->doors[0].base;
+			stride = sizeof(struct Door);
+			break;
+		case ET_PICKUP:
+			if(!(ray_mask & ERM_PICKUP)) continue;
+			max_length = MAX_SCENE_PICKUPS;
+			entity = &scene->pickups[0].base;
+			stride = sizeof(struct Pickup);
 			break;
 		default: continue;
 		}

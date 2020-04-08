@@ -17,6 +17,7 @@
 #define MAX_SCENE_ENEMIES           64
 #define MAX_SCENE_TRIGGERS          256
 #define MAX_SCENE_DOORS             256
+#define MAX_SCENE_PICKUPS           32
 
 #define MAX_UNIFORM_NAME_LEN 64
 
@@ -38,5 +39,7 @@
 
 #define HASH_MAP_NUM_BUCKETS 10
 #define MAX_HASH_KEY_LEN     128
+
+#define MAX_PLAYER_HEALTH 100
 
 #endif

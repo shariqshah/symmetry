@@ -21,6 +21,7 @@
 #include <float.h>
 #include <string.h>
 
+
 static void player_on_mousebutton_released(const struct Event* event);
 static void player_on_input_map_released(const struct Event* event);
 
@@ -44,7 +45,7 @@ void player_init(struct Player* player, struct Scene* scene)
     player->min_forward_distance  = hashmap_float_get(config, "player_min_forward_distance");
 	player->grounded              = true;
 	player->can_jump              = true;
-	player->health                = 100;
+	player->health                = MAX_PLAYER_HEALTH;
 	player->key_mask              = 0;
 
     player->mesh = scene_static_mesh_create(scene, "Player_Mesh", player, "sphere.symbres", MAT_BLINN);
@@ -371,5 +372,18 @@ void player_apply_damage(struct Player* player, struct Enemy* enemy)
 		player_death_event->player_death.player = player;
 		player_death_event->player_death.enemy = enemy;
 		event_manager_send_event(event_manager, player_death_event);
+	}
+}
+
+void player_on_pickup(struct Player* player, struct Pickup* pickup)
+{
+	switch(pickup->type)
+	{
+	case PICKUP_HEALTH:
+		player->health = min(MAX_PLAYER_HEALTH, player->health + pickup->health);
+		break;
+	case PICKUP_KEY:
+		player->key_mask |= pickup->key_type;
+		break;
 	}
 }

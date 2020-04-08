@@ -21,6 +21,7 @@
 #include "event.h"
 #include "sound_source.h"
 #include "door.h"
+#include "pickup.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -172,7 +173,7 @@ bool entity_write(struct Entity* entity, struct Parser_Object* object, bool writ
 			hashmap_vec2_set(entity_data, "uv_scale", &model->material_params[MMP_UV_SCALE].val_vec2);
 			break;
 		case MAT_UNSHADED:
-			hashmap_vec3_set(entity_data, "diffuse_color", &model->material_params[MMP_DIFFUSE_COL].val_vec3);
+			hashmap_vec4_set(entity_data, "diffuse_color", &model->material_params[MMP_DIFFUSE_COL].val_vec4);
 			hashmap_str_set(entity_data, "diffuse_texture", model->material_params[MMP_DIFFUSE_TEX].val_int == -1 ? "default.tga" : texture_get_name(model->material_params[MMP_DIFFUSE_TEX].val_int));
 			hashmap_vec2_set(entity_data, "uv_scale", &model->material_params[MMP_UV_SCALE].val_vec2);
 			break;
@@ -217,17 +218,23 @@ bool entity_write(struct Entity* entity, struct Parser_Object* object, bool writ
 		enemy_write(enemy, entity_data);
 	}
 	break;
+	case ET_TRIGGER:
+	{
+		struct Trigger* trigger = (struct Trigger*)entity;
+		hashmap_int_set(entity_data, "trigger_type", trigger->type);
+		hashmap_int_set(entity_data, "trigger_mask", trigger->trigger_mask);
+	}
+	break;
 	case ET_DOOR:
 	{
 		struct Door* door = (struct Door*)entity;
 		door_write(door, entity_data);
 	}
 	break;
-	case ET_TRIGGER:
+	case ET_PICKUP:
 	{
-		struct Trigger* trigger = (struct Trigger*)entity;
-		hashmap_int_set(entity_data, "trigger_type", trigger->type);
-		hashmap_int_set(entity_data, "trigger_mask", trigger->trigger_mask);
+		struct Pickup* pickup = (struct Pickup*)entity;
+		pickup_write(pickup, entity_data);
 	}
 	break;
 	};
@@ -491,6 +498,13 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 			return new_entity;
 	}
 	break;
+	case ET_PICKUP:
+	{
+		new_entity = &pickup_read(object, name, parent_entity)->base;
+		if(!new_entity)
+			return new_entity;
+	}
+	break;
 	default:
 		log_warning("Unhandled Entity type '%d' detected", type);
 		break;
@@ -610,6 +624,7 @@ const char* entity_type_name_get(struct Entity* entity)
 	case ET_ENEMY:        typename = "Enemy";        break;
 	case ET_TRIGGER:      typename = "Trigger";      break;
 	case ET_DOOR:         typename = "Door";         break;
+	case ET_PICKUP:       typename = "Pickup";       break;
 	default:              typename = "Unknown";      break;
 	};
 	return typename;

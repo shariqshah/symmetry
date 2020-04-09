@@ -1,6 +1,5 @@
 Todo:
 	- Game End
-	- Pickup sounds
 	- Don't save parent entity's transform when saving entity archetype. Only save the transformation values for children
 	- Save case sensitive file names when scene entity entries
 	- Disbale all player actions when scene cleared dialog or scene restart dialog are active
@@ -429,3 +428,4 @@ Done:
 	* Win/fail States
 	* In-Game Gui
 	* Pickups
+	* Pickup sounds

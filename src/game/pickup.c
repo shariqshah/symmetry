@@ -9,15 +9,17 @@
 #include "material.h"
 #include "door.h"
 #include "transform.h"
+#include "sound_source.h"
 
 static void pickup_on_scene_loaded(struct Event* event, void* pickup_ptr);
 static void pickup_on_trigger(struct Event* event, void* pickup_ptr, void* trigger_ptr);
 
 void pickup_init(struct Pickup* pickup, int type)
 {
-	pickup->base.type = ET_PICKUP;
-	pickup->type = type;
+	pickup->base.type  = ET_PICKUP;
+	pickup->type       = type;
 	pickup->spin_speed = 5.f;
+	pickup->picked_up  = false;
 	switch(type)
 	{
 	case PICKUP_KEY:    pickup->key_type = DOOR_KEY_MASK_NONE; break;
@@ -68,6 +70,7 @@ void pickup_on_scene_loaded(struct Event* event, void* pickup_ptr)
 	struct Pickup* pickup = (struct Pickup*)pickup_ptr;
 	struct Trigger* pickup_trigger[1] = { NULL };
 	struct Static_Mesh* pickup_mesh[1] = { NULL };
+	struct Sound_Source* sound_source[1] = { NULL };
 
 	if(entity_get_num_children_of_type(pickup, ET_TRIGGER, &pickup_trigger, 1) == 1)
 	{
@@ -92,20 +95,23 @@ void pickup_on_scene_loaded(struct Event* event, void* pickup_ptr)
 			case DOOR_KEY_MASK_BLUE:  vec4_assign(&pickup->mesh->model.material_params[MMP_DIFFUSE_COL].val_vec4, &KEY_INDICATOR_COLOR_BLUE);  break;
 			}
 		}
-		else if(pickup->type == PICKUP_HEALTH)
-		{
-			log_message("Break");
-		}
 	}
 	else
 	{
 		log_error("pickup:on_scene_loaded", "Could not find mesh for pickup %s", pickup->base.name);
 	}
+
+	if(entity_get_num_children_of_type(pickup, ET_SOUND_SOURCE, &sound_source, 1) == 1)
+		pickup->sound = sound_source[0];
+	else
+		log_error("pickup:on_scene_loaded", "Could not find mesh for pickup %s", pickup->base.name);
 }
 
 void pickup_update(struct Pickup* pickup, float dt)
 {
 	transform_rotate(pickup->mesh, &UNIT_Y, pickup->spin_speed * dt, TS_WORLD);
+	if(pickup->picked_up &&  sound_source_is_paused(game_state_get()->sound, pickup->sound))
+		scene_pickup_remove(game_state_get()->scene, pickup);
 }
 
 void pickup_on_trigger(struct Event* event, void* pickup_ptr, void* trigger_ptr)
@@ -115,8 +121,10 @@ void pickup_on_trigger(struct Event* event, void* pickup_ptr, void* trigger_ptr)
 	{
 	case ET_PLAYER: player_on_pickup(event->trigger.triggering_entity, pickup); break;
 	case ET_ENEMY:
+		// Handle this if we add enemies that can move around
 	break;
 	}
 
-	scene_pickup_remove(game_state_get()->scene, pickup);
+	sound_source_play(game_state_get()->sound, pickup->sound);
+	pickup->picked_up = true;
 }

@@ -293,9 +293,11 @@ struct Pickup
 		int health;
 		int key_type;
 	};
-	float  spin_speed;
-	struct Static_Mesh* mesh;
-	struct Trigger* trigger;
+	float                spin_speed;
+	bool                 picked_up;
+	struct Static_Mesh*  mesh;
+	struct Trigger*      trigger;
+	struct Sound_Source* sound;
 };
 
 void           entity_init(struct Entity* entity, const char* name, struct Entity* parent);

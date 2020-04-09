@@ -12,25 +12,28 @@ typedef void (*Scene_Func)(struct Scene* scene);
 
 struct Scene
 {
-	char                filename[MAX_FILENAME_LEN];
-	char                next_level_filename[MAX_FILENAME_LEN];
-    struct Entity       root_entity;
-    struct Player       player;
-    struct Entity       entities[MAX_SCENE_ENTITIES];
-    struct Static_Mesh  static_meshes[MAX_SCENE_STATIC_MESHES];
-    struct Camera       cameras[MAX_SCENE_CAMERAS];
-    struct Light        lights[MAX_SCENE_LIGHTS];
-    struct Sound_Source sound_sources[MAX_SCENE_SOUND_SOURCES];
-	struct Enemy        enemies[MAX_SCENE_ENEMIES];
-	struct Trigger      triggers[MAX_SCENE_TRIGGERS];
-	struct Door         doors[MAX_SCENE_DOORS];
-	struct Pickup       pickups[MAX_SCENE_PICKUPS];
-	char                entity_archetypes[MAX_SCENE_ENTITY_ARCHETYPES][MAX_FILENAME_LEN];
-    int                 active_camera_index;
-	char                init_func_name[MAX_HASH_KEY_LEN];
-	char                cleanup_func_name[MAX_HASH_KEY_LEN];
-	Scene_Func          init;
-	Scene_Func          cleanup;
+	char                        filename[MAX_FILENAME_LEN];
+	char                        next_level_filename[MAX_FILENAME_LEN];
+    struct Entity               root_entity;
+    struct Player               player;
+    struct Entity               entities[MAX_SCENE_ENTITIES];
+    struct Static_Mesh          static_meshes[MAX_SCENE_STATIC_MESHES];
+    struct Camera               cameras[MAX_SCENE_CAMERAS];
+    struct Light                lights[MAX_SCENE_LIGHTS];
+    struct Sound_Source         sound_sources[MAX_SCENE_SOUND_SOURCES];
+	struct Enemy                enemies[MAX_SCENE_ENEMIES];
+	struct Trigger              triggers[MAX_SCENE_TRIGGERS];
+	struct Door                 doors[MAX_SCENE_DOORS];
+	struct Pickup               pickups[MAX_SCENE_PICKUPS];
+	char                        entity_archetypes[MAX_SCENE_ENTITY_ARCHETYPES][MAX_FILENAME_LEN];
+    int                         active_camera_index;
+	char                        init_func_name[MAX_HASH_KEY_LEN];
+	char                        cleanup_func_name[MAX_HASH_KEY_LEN];
+	struct Sound_Source_Buffer* background_music_buffer;
+	int                         background_music_instance;
+	float                       background_music_volume;
+	Scene_Func                  init;
+	Scene_Func                  cleanup;
 };
 
 void scene_init(struct Scene* scene);
@@ -42,6 +45,8 @@ void scene_update_physics(struct Scene* scene, float fixed_dt);
 void scene_post_update(struct Scene* scene);
 bool scene_cleanup_func_assign(struct Scene* scene, const char* cleanup_func_name);
 bool scene_init_func_assign(struct Scene* scene, const char* init_func_name);
+bool scene_background_music_set(struct Scene* scene, const char* filename);
+void scene_background_music_volume_set(struct Scene* scene, float new_volume);
 
 struct Entity*       scene_entity_duplicate(struct Scene* scene, struct Entity* entity);
 struct Entity*       scene_entity_create(struct Scene* scene, const char* name, struct Entity* parent);

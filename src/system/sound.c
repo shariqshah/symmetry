@@ -126,12 +126,12 @@ uint sound_source_instance_create(struct Sound* sound, struct Sound_Source_Buffe
 	if(is3d)
 	{
 		source_instance = Soloud_play3dEx(sound->soloud_context,
-								 source->type == ST_WAV ? source->wav : source->wavstream,
-								 0.f, 0.f, 0.f,
-								 0.f, 0.f, 0.f,
-								 1.f,
-								 true,
-								 0);
+										  source->type == ST_WAV ? source->wav : source->wavstream,
+										  0.f, 0.f, 0.f,
+										  0.f, 0.f, 0.f,
+										  1.f,
+										  true,
+										  0);
 	}
 	else
 	{

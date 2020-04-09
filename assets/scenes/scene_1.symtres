@@ -1,6 +1,7 @@
 Scene_Config
 {
 	debug_draw_color : 0.800 0.400 0.100 1.000
+	background_music_filename : sounds/scene_background_music_default.ogg
 	fog_type : 1
 	fog_density : 0.1000
 	fog_color : 0.310 0.412 0.529
@@ -9,6 +10,7 @@ Scene_Config
 	fog_max_distance : 450.0000
 	cleanup_func : scene_1_cleanup
 	init_func : scene_1_init
+	background_music_volume : 0.0100
 	debug_draw_enabled : false
 	debug_draw_mode : 0
 	next_scene : test

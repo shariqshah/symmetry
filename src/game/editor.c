@@ -2196,17 +2196,8 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 						{
 							if(strncmp(sound_source_filename_buffer, sound_source->source_buffer->filename, MAX_FILENAME_LEN) != 0)
 							{
-								struct Sound_Source_Buffer* new_source_buffer = sound_source_buffer_create(sound, sound_source_filename_buffer, ST_WAV_STREAM);
-								if(new_source_buffer)
-								{
-									sound_source_buffer_stop_all(sound, sound_source->source_buffer);
-									sound_source_instance_destroy(sound, sound_source->source_instance);
-									sound_source->source_instance = sound_source_instance_create(sound, new_source_buffer, true);
-									sound_source->source_buffer = new_source_buffer;
-									sound_source->base.transform.is_modified = true; // Fake a transformation so that post-update the new sound source position is updated
-									if(playing)
-										sound_source_instance_play(sound, sound_source->source_instance);
-								}
+								if(sound_source_buffer_set(sound, sound_source, sound_source_filename_buffer, ST_WAV) && playing)
+									sound_source_instance_play(sound, sound_source->source_instance);
 							}
 							sound_source_filename_copied = false;
 							nk_contextual_close(context);
@@ -2628,12 +2619,10 @@ void editor_window_settings_scene(struct nk_context* context, struct Editor* edi
 			next_scene_filename_copied = true;
 		}
 
-		nk_tooltip(context, "Enter the name of the scene file without extension");
 		int edit_flags = NK_EDIT_GOTO_END_ON_ACTIVATE | NK_EDIT_FIELD | NK_EDIT_SIG_ENTER;
 		int next_scene_edit_state = nk_edit_string_zero_terminated(context, edit_flags, next_scene_filename_buffer, MAX_FILENAME_LEN, NULL);
 		if(next_scene_edit_state & NK_EDIT_COMMITED)
 		{
-			scene_save(scene, scene->filename, DIRT_INSTALL);
 			strncpy(scene->next_level_filename, next_scene_filename_buffer, MAX_FILENAME_LEN);
 			nk_edit_unfocus(context);
 		}
@@ -2656,14 +2645,9 @@ void editor_window_settings_scene(struct nk_context* context, struct Editor* edi
 		if(scene_init_edit_state & NK_EDIT_COMMITED)
 		{
 			if(scene_init_func_assign(scene, init_func_name_buffer))
-			{
 				nk_edit_unfocus(context);
-				scene_save(scene, scene->filename, DIRT_INSTALL);
-			}
 			else
-			{
 				init_func_name_copied = false;
-			}
 		}
 		else if(scene_init_edit_state & NK_EDIT_DEACTIVATED && init_func_name_copied)
 		{
@@ -2684,19 +2668,43 @@ void editor_window_settings_scene(struct nk_context* context, struct Editor* edi
 		if(cleanup_func_edit_state & NK_EDIT_COMMITED)
 		{
 			if(scene_cleanup_func_assign(scene, cleanup_func_name_buffer))
-			{
-				scene_save(scene, scene->filename, DIRT_INSTALL);
 				nk_edit_unfocus(context);
-			}
 			else
-			{
 				cleanup_func_name_copied = false;
-			}
 		}
 		else if(cleanup_func_edit_state & NK_EDIT_DEACTIVATED && cleanup_func_name_copied)
 		{
 			cleanup_func_name_copied = false;
 		}
+
+		/* Background Music */
+		nk_layout_row_dynamic(context, row_height, 2);
+		nk_label(context, "Background Music Filename", LABEL_FLAGS_ALIGN_LEFT);
+		static char background_music_filename_buffer[MAX_FILENAME_LEN];
+		static bool background_music_filename_copied = false;
+		if(!background_music_filename_copied)
+		{
+			strncpy(background_music_filename_buffer, scene->background_music_buffer->filename, MAX_FILENAME_LEN);
+			background_music_filename_copied = true;
+		}
+
+		int background_music_filename_edit_state = nk_edit_string_zero_terminated(context, edit_flags, background_music_filename_buffer, MAX_FILENAME_LEN, NULL);
+		if(background_music_filename_edit_state & NK_EDIT_COMMITED)
+		{
+			if(scene_background_music_set(scene, background_music_filename_buffer))
+				nk_edit_unfocus;
+			else
+				background_music_filename_copied = false;
+		}
+		else
+		{
+			background_music_filename_copied = false;
+		}
+
+		nk_layout_row_dynamic(context, row_height, 1);
+		float new_volume = scene->background_music_volume;
+		if((new_volume = nk_propertyf(context, "Music Volume", 0.f, scene->background_music_volume, 1.f, 0.1f, 0.1f)) != scene->background_music_volume)
+			scene_background_music_volume_set(scene, new_volume);
 
 		/* Render Settings */
 		struct Render_Settings* render_settings = &game_state->renderer->settings;

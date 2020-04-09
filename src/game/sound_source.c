@@ -56,10 +56,10 @@ void sound_source_update_position(struct Sound* sound, struct Sound_Source* enti
 	}
 }
 
-void sound_source_buffer_set(struct Sound* sound, struct Sound_Source* entity, const char* filename, int type)
+bool sound_source_buffer_set(struct Sound* sound, struct Sound_Source* entity, const char* filename, int type)
 {
 	if(strncmp(filename, entity->source_buffer->filename, MAX_FILENAME_LEN) == 0)
-		return;
+		return true;
 
 	struct Sound_Source_Buffer* new_buffer = sound_source_buffer_create(sound, filename, type);
 	if(new_buffer)
@@ -69,10 +69,12 @@ void sound_source_buffer_set(struct Sound* sound, struct Sound_Source* entity, c
 		entity->type = type;
 		entity->source_instance = sound_source_instance_create(sound, entity->source_buffer, true);
 		sound_source_apply_params_to_instance(sound, entity);
+		return true;
 	}
 	else
 	{
 		log_error("sound_source:buffer_set", "Failed to set buffer for %s", entity->base.name);
+		return false;
 	}
 }
 

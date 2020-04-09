@@ -104,6 +104,9 @@ void scene_init(struct Scene* scene)
 	editor_camera_init(game_state->editor, game_state->cvars);
 	editor_init_entities(game_state->editor);
 
+	scene->background_music_volume = 0.1f;
+	scene_background_music_set(scene, "sounds/scene_background_music_default.ogg");
+
 	if(game_state->game_mode == GAME_MODE_PAUSE)
 		game_state->game_mode = GAME_MODE_GAME;
 	scene->active_camera_index = game_state_get()->game_mode == GAME_MODE_GAME ? CAM_GAME : CAM_EDITOR;
@@ -111,6 +114,41 @@ void scene_init(struct Scene* scene)
 	scene->cleanup = NULL;
 	scene_init_func_assign(scene, "scene_func_stub");
 	scene_cleanup_func_assign(scene, "scene_func_stub");
+}
+
+bool scene_background_music_set(struct Scene* scene, const char* filename)
+{
+	struct Sound* sound = game_state_get()->sound;
+	scene->background_music_buffer = sound_source_buffer_create(sound, filename, ST_WAV_STREAM);
+	if(scene->background_music_buffer)
+	{
+		scene->background_music_instance = sound_source_instance_create(sound, scene->background_music_buffer, false);
+		if(scene->background_music_instance != 0)
+		{
+			sound_source_instance_volume_set(sound, scene->background_music_instance, scene->background_music_volume);
+			sound_source_instance_loop_set(sound, scene->background_music_instance, true);
+			sound_source_instance_play(sound, scene->background_music_instance);
+			return true;
+		}
+		else
+		{
+			log_error("scene:background_music_set", "Failed to create instance for scene background music file '%s'", filename);
+			return false;
+		}
+	}
+	else
+	{
+		log_error("scene:background_music_set", "Failed to create buffer from scene background music file '%s'", filename);
+		return false;
+	}
+}
+
+void scene_background_music_volume_set(struct Scene* scene, float new_volume)
+{
+	struct Sound* sound = game_state_get()->sound;
+	scene->background_music_volume = fmaxf(0.f, new_volume);
+	if(sound_source_instance_is_valid(sound, scene->background_music_instance))
+		sound_source_instance_volume_set(sound, scene->background_music_instance, scene->background_music_volume);
 }
 
 bool scene_init_func_assign(struct Scene* scene, const char* init_func_name)
@@ -215,6 +253,22 @@ bool scene_load(struct Scene* scene, const char* filename, int directory_type)
 
 			if(hashmap_value_exists(scene_data, "next_scene"))
 				strncpy(scene->next_level_filename, hashmap_value_exists(scene_data, "next_scene") ? hashmap_str_get(scene_data, "next_scene") : "NONE", MAX_FILENAME_LEN);
+
+			if(hashmap_value_exists(scene_data, "background_music_filename"))
+			{
+				const char* background_music_filename = hashmap_str_get(scene_data, "background_music_filename");
+				if(!scene_background_music_set(scene, background_music_filename))
+				{
+					log_error("scene:load", "Faield to set scene background music to '%s'. Reverting to default", background_music_filename);
+					scene_background_music_set(scene, "sounds/scene_background_default_music.ogg");
+				}
+			}
+
+			if(hashmap_value_exists(scene_data, "background_music_volume"))
+			{
+				float new_volume = hashmap_float_get(scene_data, "background_music_volume"); 
+				scene_background_music_volume_set(scene, new_volume);
+			}
 
 			num_objects_loaded++;
 		}
@@ -329,6 +383,8 @@ bool scene_save(struct Scene* scene, const char* filename, int directory_type)
 	if(scene->init)    hashmap_str_set(scene_data, "init_func", scene->init_func_name);
 	if(scene->cleanup) hashmap_str_set(scene_data, "cleanup_func", scene->cleanup_func_name);
 	hashmap_str_set(scene_data, "next_scene", scene->next_level_filename != '\0' ? scene->next_level_filename : "NONE");
+	hashmap_str_set(scene_data, "background_music_filename", scene->background_music_buffer->filename);
+	hashmap_float_set(scene_data, "background_music_volume", scene->background_music_volume);
 
 	// Player
 	struct Parser_Object* player_object = parser_object_new(parser, PO_PLAYER);
@@ -465,6 +521,12 @@ void scene_destroy(struct Scene* scene)
 	player_destroy(&scene->player);
 	entity_reset(&scene->root_entity, 0);
 	scene->root_entity.flags &= ~EF_ACTIVE;
+
+	struct Sound* sound = game_state_get()->sound;
+	sound_source_instance_destroy(sound, scene->background_music_instance);
+	sound_source_buffer_destroy(sound, scene->background_music_buffer);
+	scene->background_music_buffer = NULL;
+	scene->background_music_instance = -1;
 }
 
 void scene_update(struct Scene* scene, float dt)

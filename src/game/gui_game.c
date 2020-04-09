@@ -122,7 +122,7 @@ void gui_game_show_door_locked_dialog(struct Game_Gui* game_gui, struct Door* do
 	{
 		struct Player* player = &game_state->scene->player;
 		int label_flags = NK_TEXT_ALIGN_CENTERED | NK_TEXT_ALIGN_MIDDLE;
-		int key_needed_gui_width = 300;
+		int key_needed_gui_width = 350;
 		int key_needed_gui_height = 48;
 		int display_width  = 0;
 		int display_height = 0;
@@ -175,14 +175,12 @@ void gui_game_show_door_locked_dialog(struct Game_Gui* game_gui, struct Door* do
 			{
 				nk_layout_row_push(context, 0.15f);
 				nk_label_colored(context, "GREEN", label_flags, nk_rgba_fv(&KEY_INDICATOR_COLOR_GREEN));
-				keys_needed++;
 			}
 
 			if(blue_needed)
 			{
 				nk_layout_row_push(context, 0.15f);
 				nk_label_colored(context, "BLUE", label_flags, nk_rgba_fv(&KEY_INDICATOR_COLOR_BLUE));
-				keys_needed++;
 			}
 
 			nk_layout_row_push(context, 0.25f);

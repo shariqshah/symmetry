@@ -117,14 +117,18 @@ void pickup_update(struct Pickup* pickup, float dt)
 void pickup_on_trigger(struct Event* event, void* pickup_ptr, void* trigger_ptr)
 {
 	struct Pickup* pickup = (struct Pickup*) pickup_ptr;
-	switch(event->trigger.triggering_entity->type)
+	if(!pickup->picked_up)
 	{
-	case ET_PLAYER: player_on_pickup(event->trigger.triggering_entity, pickup); break;
-	case ET_ENEMY:
-		// Handle this if we add enemies that can move around
-	break;
-	}
+		switch(event->trigger.triggering_entity->type)
+		{
+		case ET_PLAYER: player_on_pickup(event->trigger.triggering_entity, pickup); break;
+		case ET_ENEMY:
+			// Handle this if we add enemies that can move around
+			break;
+		}
 
-	sound_source_play(game_state_get()->sound, pickup->sound);
-	pickup->picked_up = true;
+		sound_source_play(game_state_get()->sound, pickup->sound);
+		pickup->mesh->base.flags |= EF_SKIP_RENDER; // Hide mesh to ensure effect is instantaneous
+		pickup->picked_up = true;
+	}
 }

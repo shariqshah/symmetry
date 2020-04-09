@@ -1,14 +1,16 @@
 Entity
 {
-	type : 11 
+	type : 11
 	scale : 1.000 1.000 1.000
+	pickup_key_type : 1
 	rotation : 0.000 0.000 0.000 1.000
-	active : true
-	position : 0.000 0.000 0.000
+	pickup_spin_speed : 120.0000
+	position : -37.000 2.000 -74.000
+	flags : 1
+	pickup_type : 0
 	name : Pickup_Key_Red
-    pickup_type : 0
-    pickup_key_type : 1
-    pickup_spin_speed : 5.000
+	bounding_box_min : -0.500 -0.500 -0.500
+	bounding_box_max : 0.500 0.500 0.500
 }
 
 Entity
@@ -17,8 +19,8 @@ Entity
 	scale : 1.000 1.000 1.000
 	rotation : 0.000 0.000 0.000 1.000
 	trigger_mask : 1
-	active : true
 	position : 0.000 0.000 0.000
+	flags : 9
 	trigger_type : 0
 	name : Pickup_Key_Red_Trigger
 	bounding_box_min : -0.500 -0.500 -0.500
@@ -31,11 +33,11 @@ Entity
 	scale : 1.000 1.000 1.000
 	material : 1
 	rotation : 0.000 0.000 0.000 1.000
-	diffuse_color : 1.000 1.000 1.000 1.000
+	diffuse_color : 0.870 0.320 0.400 1.000
 	geometry : pickup_key.symbres
-	active : true
 	diffuse_texture : white.tga
 	position : 0.000 0.000 0.000
+	flags : 137
 	name : Pickup_Key_Red_Mesh
 	uv_scale : 1.000 1.000
 }
@@ -49,8 +51,8 @@ Entity
 	rotation : 0.000 0.000 0.000 1.000
 	loop : false
 	sound_min_distance : 0.0000
-	active : true
 	position : 0.000 0.000 0.000
+	flags : 9
 	source_filename : sounds/pickup_key.wav
 	sound_type : 1
 	sound_max_distance : 30.0000
@@ -60,3 +62,4 @@ Entity
 	paused : true
 	bounding_box_max : 0.500 0.500 0.500
 }
+

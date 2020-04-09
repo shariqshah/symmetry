@@ -119,8 +119,8 @@ void editor_init(struct Editor* editor)
     editor->window_settings_renderer           = 0;
     editor->window_settings_editor             = 0;
     editor->window_settings_scene              = 0;
-	editor->window_property_inspector          = 0;
-	editor->window_scene_heirarchy             = 0;
+	editor->window_property_inspector          = 1;
+	editor->window_scene_heirarchy             = 1;
 	editor->window_scene_dialog                = 0;
 	editor->window_entity_dialog               = 0;
 	editor->camera_looking_around              = 0;
@@ -380,7 +380,7 @@ void editor_update(struct Editor* editor, float dt)
 
 		nk_layout_row_begin(context, NK_DYNAMIC, editor->top_panel_height - 5, 8);
 		nk_layout_row_push(context, 0.03f);
-		if(nk_menu_begin_label(context, "File", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, nk_vec2(150, 150)))
+		if(nk_menu_begin_label(context, "File", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, nk_vec2(150, 250)))
 		{
 			nk_layout_row_dynamic(context, row_height, 1);
 			if(nk_menu_item_label(context, "New Scene", NK_TEXT_ALIGN_MIDDLE | NK_TEXT_ALIGN_LEFT))
@@ -416,10 +416,8 @@ void editor_update(struct Editor* editor, float dt)
 			}
 				
 			if(nk_menu_item_label(context, "Back to Game", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE))
-			{
-				game_state->game_mode = GAME_MODE_GAME;
-				game_state->scene->active_camera_index = CAM_GAME;
-			}
+				game_mode_set(GAME_MODE_GAME);
+
 			nk_menu_end(context);
 		}
 
@@ -1718,10 +1716,38 @@ void editor_window_scene_hierarchy(struct nk_context* context, struct Editor* ed
 				nk_tree_pop(context);
 			}
 
+			if(nk_tree_push(context, NK_TREE_TAB, "Doors", NK_MAXIMIZED))
+			{
+				for(int i = 0; i < MAX_SCENE_DOORS; i++)      
+					editor_show_entity_in_list(editor, context, scene, &scene->doors[i]);
+				nk_tree_pop(context);
+			}
+
+			if(nk_tree_push(context, NK_TREE_TAB, "Enemies", NK_MAXIMIZED))
+			{
+				for(int i = 0; i < MAX_SCENE_ENEMIES; i++)      
+					editor_show_entity_in_list(editor, context, scene, &scene->enemies[i]);
+				nk_tree_pop(context);
+			}
+
+			if(nk_tree_push(context, NK_TREE_TAB, "Entities", NK_MAXIMIZED))
+			{
+				for(int i = 0; i < MAX_SCENE_ENTITIES; i++)      
+					editor_show_entity_in_list(editor, context, scene, &scene->entities[i]);
+				nk_tree_pop(context);
+			}
+
 			if(nk_tree_push(context, NK_TREE_TAB, "Lights", NK_MAXIMIZED))
 			{
 				for(int i = 0; i < MAX_SCENE_LIGHTS; i++)        
 					editor_show_entity_in_list(editor, context, scene, &scene->lights[i]);
+				nk_tree_pop(context);
+			}
+
+			if(nk_tree_push(context, NK_TREE_TAB, "Pickups", NK_MAXIMIZED))
+			{
+				for(int i = 0; i < MAX_SCENE_PICKUPS; i++)        
+					editor_show_entity_in_list(editor, context, scene, &scene->pickups[i]);
 				nk_tree_pop(context);
 			}
 
@@ -1739,31 +1765,10 @@ void editor_window_scene_hierarchy(struct nk_context* context, struct Editor* ed
 				nk_tree_pop(context);
 			}
 
-			if(nk_tree_push(context, NK_TREE_TAB, "Enemies", NK_MAXIMIZED))
-			{
-				for(int i = 0; i < MAX_SCENE_ENEMIES; i++)      
-					editor_show_entity_in_list(editor, context, scene, &scene->enemies[i]);
-				nk_tree_pop(context);
-			}
-
 			if(nk_tree_push(context, NK_TREE_TAB, "Triggers", NK_MAXIMIZED))
 			{
 				for(int i = 0; i < MAX_SCENE_TRIGGERS; i++)      
 					editor_show_entity_in_list(editor, context, scene, &scene->triggers[i]);
-				nk_tree_pop(context);
-			}
-
-			if(nk_tree_push(context, NK_TREE_TAB, "Doors", NK_MAXIMIZED))
-			{
-				for(int i = 0; i < MAX_SCENE_DOORS; i++)      
-					editor_show_entity_in_list(editor, context, scene, &scene->doors[i]);
-				nk_tree_pop(context);
-			}
-
-			if(nk_tree_push(context, NK_TREE_TAB, "Entities", NK_MAXIMIZED))
-			{
-				for(int i = 0; i < MAX_SCENE_ENTITIES; i++)      
-					editor_show_entity_in_list(editor, context, scene, &scene->entities[i]);
 				nk_tree_pop(context);
 			}
 
@@ -1818,10 +1823,24 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 				copy_entity_name = true;
 			}
 
-			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "ID", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%d", entity->id);
-			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Selected", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%s", (entity->flags & EF_SELECTED_IN_EDITOR) ? "True" : "False");
-			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Entity Type", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%s", entity_type_name_get(entity));
-			nk_layout_row_dynamic(context, row_height, 2); nk_label(context, "Archetype", NK_TEXT_ALIGN_LEFT); nk_label(context, entity->archetype_index == -1 ? "None" : scene->entity_archetypes[entity->archetype_index], NK_TEXT_ALIGN_RIGHT);
+			nk_layout_row_dynamic(context, row_height, 2);
+			nk_label(context, "ID", NK_TEXT_ALIGN_LEFT);          nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%d", entity->id);
+			nk_label(context, "Selected", NK_TEXT_ALIGN_LEFT);    nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%s", (entity->flags & EF_SELECTED_IN_EDITOR) ? "True" : "False");
+			nk_label(context, "Entity Type", NK_TEXT_ALIGN_LEFT); nk_labelf(context, NK_TEXT_ALIGN_RIGHT, "%s", entity_type_name_get(entity));
+			nk_label(context, "Archetype", NK_TEXT_ALIGN_LEFT);   nk_label(context, entity->archetype_index == -1 ? "None" : scene->entity_archetypes[entity->archetype_index], NK_TEXT_ALIGN_RIGHT);
+
+			if(nk_tree_push(context, NK_TREE_NODE, "Flags", NK_MINIMIZED))
+			{
+				nk_layout_row_dynamic(context, row_height, 1);
+				nk_checkbox_flags_label(context, "Active",           &entity->flags, EF_ACTIVE);
+				nk_checkbox_flags_label(context, "Transient",        &entity->flags, EF_TRANSIENT);
+				nk_checkbox_flags_label(context, "Hide in Editor",   &entity->flags, EF_HIDE_IN_EDITOR_SCENE_HIERARCHY);
+				nk_checkbox_flags_label(context, "Skip Render",      &entity->flags, EF_SKIP_RENDER);
+				nk_checkbox_flags_label(context, "Ignore Raycast",   &entity->flags, EF_IGNORE_RAYCAST);
+				nk_checkbox_flags_label(context, "Ignore Collision", &entity->flags, EF_IGNORE_COLLISION);
+				nk_tree_pop(context);
+			}
+
 			nk_layout_row_dynamic(context, row_height + 5, 2);
 			nk_label(context, "Parent Name", NK_TEXT_ALIGN_LEFT);
 			static char parent_name[MAX_ENTITY_NAME_LEN];
@@ -2432,6 +2451,37 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 					if(nk_button_label(context, "Select Sound Source"))	editor_entity_select(editor, door->sound);
 					if(nk_button_label(context, "Select Trigger"))		editor_entity_select(editor, door->trigger);
 					if(nk_button_label(context, "Select Static Mesh"))	editor_entity_select(editor, door->mesh);
+
+					nk_tree_pop(context);
+				}
+			}
+
+			/* Pickups */
+			if(entity->type == ET_PICKUP)
+			{
+				struct Pickup* pickup = (struct Pickup*)entity;
+				if(nk_tree_push(context, NK_TREE_TAB, "Pickup", NK_MAXIMIZED))
+				{
+					float combo_width = nk_widget_width(context), combo_height = row_height * PICKUP_MAX;
+					pickup->type = nk_combo_string(context, "Key\0Health", pickup->type, PICKUP_MAX, row_height, nk_vec2(combo_width, combo_height));
+					switch(pickup->type)
+					{
+					case PICKUP_KEY:
+						nk_layout_row_dynamic(context, row_height, 3);
+						if(nk_check_label(context, "Red", pickup->key_type == DOOR_KEY_MASK_RED ? 1 : 0))	  pickup->key_type = DOOR_KEY_MASK_RED;
+						if(nk_check_label(context, "Green", pickup->key_type == DOOR_KEY_MASK_GREEN ? 1 : 0)) pickup->key_type = DOOR_KEY_MASK_GREEN;
+						if(nk_check_label(context, "Blue", pickup->key_type == DOOR_KEY_MASK_BLUE ? 1 : 0))   pickup->key_type = DOOR_KEY_MASK_BLUE;
+						break;
+					case PICKUP_HEALTH:
+						nk_layout_row_dynamic(context, row_height, 1);
+						nk_property_int(context, "Health Amount", 5, &pickup->health, 100, 5, 5);
+						break;
+					}
+					nk_layout_row_dynamic(context, row_height, 1);
+					nk_property_float(context, "Spin Speed", 0.f, &pickup->spin_speed, 1000.f, 1.f, 1.f);
+					if(nk_button_label(context, "Select Mesh"))         editor_entity_select(editor, pickup->mesh);
+					if(nk_button_label(context, "Select Sound Source")) editor_entity_select(editor, pickup->sound);
+					if(nk_button_label(context, "Select Trigger"))      editor_entity_select(editor, pickup->trigger);
 
 					nk_tree_pop(context);
 				}

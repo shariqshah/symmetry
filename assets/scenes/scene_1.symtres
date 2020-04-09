@@ -19,10 +19,10 @@ Player
 {
 	type : 2
 	scale : 1.000 1.000 1.000
-	rotation : 0.000 -0.482 0.000 0.877
-	active : true
+	rotation : 0.000 -0.488 0.000 0.873
 	player_key_mask : 0
 	position : -55.691 2.167 -8.502
+	flags : 1
 	player_health : 100
 	name : Player
 	bounding_box_min : -1.500 -1.500 -1.000
@@ -122,7 +122,7 @@ Scene_Entity_Entry
 
 Scene_Entity_Entry
 {
-	scale : 51.000 11.000 1.000
+	scale : 51.000 11.000 0.750
 	rotation : 0.000 -0.707 0.000 0.707
 	position : 18.000 6.000 -55.000
 	filename : cube_uv
@@ -195,9 +195,9 @@ Scene_Entity_Entry
 Scene_Entity_Entry
 {
 	scale : 1.000 1.000 1.000
-	rotation : 0.000 0.707 0.000 0.707
-	position : 18.000 1.000 -84.000
-	filename : door
+	rotation : 0.000 -0.707 0.000 0.707
+	position : 18.000 1.000 -83.000
+	filename : door_rgb
 	name : Door
 }
 

@@ -63,7 +63,8 @@ enum Entity_Flags
 	EF_TRANSIENT                      = 1 << 3, // Do not save the entity when saving the scene. The entity will still be saved if it is individually saved to file
 	EF_HIDE_IN_EDITOR_SCENE_HIERARCHY = 1 << 4,
 	EF_SKIP_RENDER                    = 1 << 5,
-	EF_IGNORE_RAYCAST                 = 1 << 6
+	EF_IGNORE_RAYCAST                 = 1 << 6,
+	EF_IGNORE_COLLISION               = 1 << 7
 };
 
 enum Pickup_Type
@@ -129,7 +130,7 @@ struct Entity
     int                 id;
     int                 type;
 	int                 archetype_index;
-	uchar               flags;
+	uint                flags;
     char                name[MAX_ENTITY_NAME_LEN];
 	struct Bounding_Box bounding_box;
 	struct Bounding_Box derived_bounding_box;

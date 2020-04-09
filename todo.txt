@@ -11,7 +11,6 @@ Todo:
 		- Color grading
 		- Shadow mapping
 		- Cube mapping for sky dome etc
-	- Implement flag for ignoring collisions with certain entities
 	- Implement game gui either with a separate nuklear context or as part of existing context
 	- Fix rotate gizmo's origin not being set to the selected entity
 	- Ambient/Background music 
@@ -429,3 +428,4 @@ Done:
 	* In-Game Gui
 	* Pickups
 	* Pickup sounds
+	* Implemented flag for ignoring collisions with certain entities

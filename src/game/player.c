@@ -205,6 +205,10 @@ void player_update_physics(struct Player* player, struct Scene* scene, float fix
 		for(int i = 0; i < ray_result.num_entities_intersected; i++)
 		{
 			struct Entity* colliding_entity = ray_result.entities_intersected[i];
+
+			if(colliding_entity->flags & EF_IGNORE_COLLISION) 
+				continue;
+
 			float distance = bv_distance_ray_bounding_box(&forward_ray, &colliding_entity->derived_bounding_box);
 			if(distance > 0.f && distance <= player->min_forward_distance && colliding_entity != player->mesh)
 			{
@@ -241,8 +245,12 @@ void player_update_physics(struct Player* player, struct Scene* scene, float fix
 		for(int i = 0; i < down_ray_result.num_entities_intersected; i++)
 		{
 			struct Entity* colliding_entity = down_ray_result.entities_intersected[i];
+
 			if(colliding_entity == player->mesh)
 				continue;
+			if(colliding_entity->flags & EF_IGNORE_COLLISION)
+				continue;
+
 			float distance = bv_distance_ray_bounding_box(&downward_ray, &colliding_entity->derived_bounding_box);
 			if(distance > 0.f && distance <= player->min_downward_distance && !jumping)
 			{

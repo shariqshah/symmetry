@@ -115,7 +115,6 @@ bool entity_write(struct Entity* entity, struct Parser_Object* object, bool writ
 
 	hashmap_str_set(entity_data, "name", entity->name);
 	hashmap_int_set(entity_data, "type", entity->type);
-	hashmap_bool_set(entity_data, "active", entity->flags & EF_ACTIVE ? true : false);
 
 	/* Transform */
 	hashmap_vec3_set(entity_data, "position", &entity->transform.position);
@@ -127,6 +126,9 @@ bool entity_write(struct Entity* entity, struct Parser_Object* object, bool writ
 		hashmap_vec3_set(entity_data, "bounding_box_min", &entity->bounding_box.min);
 		hashmap_vec3_set(entity_data, "bounding_box_max", &entity->bounding_box.max);
 	}
+
+	uint flags = entity->flags & ~(EF_SELECTED_IN_EDITOR | EF_MARKED_FOR_DELETION); // Unset flags only used during run-time
+	hashmap_uint_set(entity_data, "flags", flags);
 
 	switch(entity->type)
 	{
@@ -527,6 +529,8 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 		if(hashmap_value_exists(object->data, "bounding_box_min")) new_entity->bounding_box.min = hashmap_vec3_get(object->data, "bounding_box_min");
 		if(hashmap_value_exists(object->data, "bounding_box_max")) new_entity->bounding_box.max = hashmap_vec3_get(object->data, "bounding_box_max");
 	}
+
+	if(hashmap_value_exists(object->data, "flags")) new_entity->flags = hashmap_uint_get(object->data, "flags");
 
 	transform_update_transmat(new_entity);
 

@@ -60,7 +60,7 @@ solution "Symmetry"
 		description = "Generate version.h from git revision number",
 		execute  = function()
 			local major_version = 0
-			local minor_version = 1
+			local minor_version = 2
 			local revision_number = os.outputof("git rev-list --count HEAD")
 			local branch = os.outputof("git rev-parse --abbrev-ref HEAD")
 

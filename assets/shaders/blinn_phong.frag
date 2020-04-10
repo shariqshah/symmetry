@@ -46,7 +46,7 @@ vec3 calc_point_light(in Light light)
 		{
 			diffuse_comp = light.color * diffuse * cos_ang_incidence;
 			vec3 vertex_to_eye = normalize(camera_pos - vertex);
-			vec3 halfway = normalize(light_direction + vertex_to_eye);
+			vec3 halfway = normalize(light.direction + vertex_to_eye);
 			float specular_factor = max(0.0, dot(normalized_normal, halfway));
 			specular_factor = pow(specular_factor, specular_strength);
 			specular_comp = light.color * specular * specular_factor;

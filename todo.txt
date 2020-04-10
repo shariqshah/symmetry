@@ -3,7 +3,6 @@ Todo:
 	- Don't save parent entity's transform when saving entity archetype. Only save the transformation values for children
 	- Enemies getting hit by bullets
 	- Add weapon flash, muzzle mesh to turrets
-	- Add muzzle mesh to player
 	- Save case sensitive file names when scene entity entries
 	- Disbale all player actions when scene cleared dialog or scene restart dialog are active
 	- Memory utils that provide allocation tracking
@@ -434,3 +433,4 @@ Done:
 	* Background music track per scene specified in scene properties
 	* Fixed bug where child entities' absolute position does not change when parent rotates
 	* Player weapon mesh and lighting
+	* Added muzzle mesh to player

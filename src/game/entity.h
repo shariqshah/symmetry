@@ -65,7 +65,8 @@ enum Entity_Flags
 	EF_SKIP_RENDER                    = 1 << 5,
 	EF_IGNORE_RAYCAST                 = 1 << 6,
 	EF_IGNORE_COLLISION               = 1 << 7,
-	EF_ALWAYS_RENDER                  = 1 << 8
+	EF_ALWAYS_RENDER                  = 1 << 8,
+	EF_DISABLE_BACKFACE_CULL          = 1 << 9
 };
 
 enum Pickup_Type
@@ -208,6 +209,7 @@ struct Player
     struct Entity        base;
     struct Static_Mesh*  body_mesh;
     struct Static_Mesh*  weapon_mesh;
+    struct Static_Mesh*  muzzle_flash_mesh;
     struct Camera*       camera;
 	struct Sound_Source* weapon_sound;
 	struct Sound_Source* footstep_sound;

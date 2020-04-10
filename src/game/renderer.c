@@ -93,6 +93,8 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
 				 active_camera->clear_color.w);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	static mat4 mvp;
 	for(int i = 0; i < MAT_MAX; i++)
@@ -229,6 +231,10 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
 			}
 
 			/* Render the geometry */
+			if(mesh->base.flags & EF_DISABLE_BACKFACE_CULL)
+				glDisable(GL_CULL_FACE);
+			else
+				glEnable(GL_CULL_FACE);
 			geom_render(mesh->model.geometry_index, GDM_TRIANGLES);
 
 			for(int k = 0; k < MMP_MAX; k++)

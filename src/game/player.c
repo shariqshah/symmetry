@@ -18,6 +18,7 @@
 #include "sound_source.h"
 #include "entity.h"
 #include "gui_game.h"
+#include "texture.h"
 
 #include <float.h>
 #include <string.h>
@@ -78,6 +79,13 @@ void player_init(struct Player* player, struct Scene* scene)
 	transform_translate(player->weapon_mesh, &translation, TS_LOCAL);
 	transform_rotate(player->weapon_mesh, &UNIT_Y, 90.f, TS_LOCAL);
 	transform_scale(player->weapon_mesh, &(vec3){0.3f, 0.1f, 0.1f});
+
+	player->muzzle_flash_mesh = scene_static_mesh_create(scene, "Player_Muzzle_Flash_Mesh", player_camera, "muzzle_flash.symbres", MAT_BLINN);
+	transform_translate(player->muzzle_flash_mesh, &(vec3) {0.f, -0.3f, -2.75f}, TS_LOCAL);
+	transform_rotate(player->muzzle_flash_mesh, &UNIT_X, 90.f, TS_LOCAL);
+	player->muzzle_flash_mesh->model.material_params[MMP_DIFFUSE_TEX].val_int = texture_create_from_file("white.tga", TU_DIFFUSE);
+	player->muzzle_flash_mesh->model.material_params[MMP_DIFFUSE].val_float = 6.f;
+	vec4_fill(&player->muzzle_flash_mesh->model.material_params[MMP_DIFFUSE_COL].val_vec4, 0.9f, 0.4f, 0.f, 1.f);
 	
 	struct Sound_Source* weapon_sound = scene_sound_source_create(scene, "Player_Weapon_Sound_Source", player, "sounds/bullet_1.wav", ST_WAV, false, false);
 	if(weapon_sound)
@@ -98,13 +106,14 @@ void player_init(struct Player* player, struct Scene* scene)
 		log_error("player:init", "Could not add grunt entity to player");
 
 	// Mark player camera and mesh as transient for now. We don't need to save them to file since we recreate them here anyway
-	player->camera->base.flags         |= EF_TRANSIENT;
-	player->footstep_sound->base.flags |= EF_TRANSIENT;
-	player->grunt_sound->base.flags    |= EF_TRANSIENT;
-	player->body_mesh->base.flags      |= EF_TRANSIENT | EF_IGNORE_COLLISION | EF_ALWAYS_RENDER;
-	player->weapon_mesh->base.flags    |= EF_TRANSIENT | EF_IGNORE_COLLISION | EF_ALWAYS_RENDER;
-	player->weapon_light->base.flags   |= EF_TRANSIENT;
-	player->weapon_sound->base.flags   |= EF_TRANSIENT;
+	player->camera->base.flags            |= EF_TRANSIENT;
+	player->footstep_sound->base.flags    |= EF_TRANSIENT;
+	player->grunt_sound->base.flags       |= EF_TRANSIENT;
+	player->body_mesh->base.flags         |= EF_TRANSIENT | EF_IGNORE_COLLISION | EF_ALWAYS_RENDER;
+	player->weapon_mesh->base.flags       |= EF_TRANSIENT | EF_IGNORE_COLLISION | EF_ALWAYS_RENDER;
+	player->muzzle_flash_mesh->base.flags |= EF_TRANSIENT | EF_IGNORE_COLLISION | EF_ALWAYS_RENDER;
+	player->weapon_light->base.flags      |= EF_TRANSIENT;
+	player->weapon_sound->base.flags      |= EF_TRANSIENT;
 
     transform_parent_set(player_camera, player, true);
 
@@ -385,6 +394,7 @@ void player_on_mousebutton_released(const struct Event* event)
 
 		int intensity = player->weapon_light_intensity_min + rand() % player->weapon_light_intensity_max;
 		player->weapon_light->intensity = intensity;
+		transform_scale(player->muzzle_flash_mesh, &(vec3){1.f, 1.f, 1.f});
 		sound_source_play(game_state->sound, player->weapon_sound);
 	}
 }
@@ -426,5 +436,13 @@ void player_update(struct Player* player, float dt)
 		player->weapon_light->intensity -= player->weapon_light_intensity_decay * dt;
 		if(player->weapon_light->intensity < 0.f)
 			player->weapon_light->intensity = 0.f;
+	}
+
+	if(player->muzzle_flash_mesh->base.transform.scale.x > 0.f)
+	{
+		player->muzzle_flash_mesh->base.transform.scale.x -= player->weapon_light_intensity_decay * dt;
+		player->muzzle_flash_mesh->base.transform.scale.y -= player->weapon_light_intensity_decay * dt;
+		player->muzzle_flash_mesh->base.transform.scale.z -= player->weapon_light_intensity_decay * dt;
+		transform_update_transmat(player->muzzle_flash_mesh);
 	}
 }

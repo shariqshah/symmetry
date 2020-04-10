@@ -17,9 +17,11 @@
 #include "event.h"
 #include "sound_source.h"
 #include "entity.h"
+#include "gui_game.h"
 
 #include <float.h>
 #include <string.h>
+#include <stdlib.h>
 
 
 static void player_on_mousebutton_released(const struct Event* event);
@@ -36,27 +38,23 @@ void player_init(struct Player* player, struct Scene* scene)
 	player->base.bounding_box.max = (vec3){  1.5f,  1.5f,  1.0f };
 
     struct Hashmap* config = game_state->cvars;
-    player->move_speed            = hashmap_float_get(config, "player_move_speed");
-    player->move_speed_multiplier = hashmap_float_get(config, "player_move_speed_multiplier");
-    player->turn_speed            = hashmap_float_get(config, "player_turn_speed");
-    player->jump_speed            = hashmap_float_get(config, "player_jump_speed");
-    player->gravity               = hashmap_float_get(config, "player_gravity");
-    player->min_downward_distance = hashmap_float_get(config, "player_min_downward_distance");
-    player->min_forward_distance  = hashmap_float_get(config, "player_min_forward_distance");
-	player->grounded              = true;
-	player->can_jump              = true;
-	player->health                = MAX_PLAYER_HEALTH;
-	player->key_mask              = 0;
+    player->move_speed                   = hashmap_float_get(config, "player_move_speed");
+    player->move_speed_multiplier        = hashmap_float_get(config, "player_move_speed_multiplier");
+    player->turn_speed                   = hashmap_float_get(config, "player_turn_speed");
+    player->jump_speed                   = hashmap_float_get(config, "player_jump_speed");
+    player->gravity                      = hashmap_float_get(config, "player_gravity");
+    player->min_downward_distance        = hashmap_float_get(config, "player_min_downward_distance");
+    player->min_forward_distance         = hashmap_float_get(config, "player_min_forward_distance");
+	player->grounded                     = true;
+	player->can_jump                     = true;
+	player->health                       = MAX_PLAYER_HEALTH;
+	player->key_mask                     = 0;
+	player->weapon_light_intensity_min   = 1.f;
+	player->weapon_light_intensity_max   = 5.f;
+	player->weapon_light_intensity_decay = 30.f;
 
     player->body_mesh = scene_static_mesh_create(scene, "Player_Body_Mesh", player, "sphere.symbres", MAT_BLINN);
-	player->weapon_mesh = scene_static_mesh_create(scene, "PLayer_Weapon_Mesh", player, "player_weapon.symbres", MAT_BLINN);
-	player->body_mesh->base.flags |= EF_IGNORE_COLLISION | EF_ALWAYS_RENDER;
-	player->weapon_mesh->base.flags |= EF_IGNORE_COLLISION | EF_ALWAYS_RENDER;
 
-	vec3 translation = { 0.f, 1.f, -1.5f };
-	transform_translate(player->weapon_mesh, &translation, TS_LOCAL);
-	transform_rotate(player->weapon_mesh, &UNIT_Y, 90.f, TS_LOCAL);
-	transform_scale(player->weapon_mesh, &(vec3){0.2f, 0.1f, 0.1f});
 
     struct Camera* player_camera = &scene->cameras[CAM_GAME];
     entity_rename(player_camera, "Player_Camera");
@@ -67,6 +65,20 @@ void player_init(struct Player* player, struct Scene* scene)
     player_camera->clear_color.w = 1.f;
     player->camera = player_camera;
 
+	vec3 translation = { 0.f, -0.3f, -1.75f };
+	player->weapon_light = scene_light_create(scene, "Player_Weapon_Light", player_camera, LT_SPOT);
+	transform_translate(player->weapon_light, &translation, TS_LOCAL);
+	player->weapon_light->intensity   = 0.f;
+	player->weapon_light->radius      = 25.f;
+	player->weapon_light->outer_angle = 80.f;
+	player->weapon_light->inner_angle = 50.f;
+	vec3_fill(&player->weapon_light->color, 0.9f, 0.4f, 0.f);
+
+	player->weapon_mesh = scene_static_mesh_create(scene, "Player_Weapon_Mesh", player_camera, "player_weapon.symbres", MAT_BLINN);
+	transform_translate(player->weapon_mesh, &translation, TS_LOCAL);
+	transform_rotate(player->weapon_mesh, &UNIT_Y, 90.f, TS_LOCAL);
+	transform_scale(player->weapon_mesh, &(vec3){0.3f, 0.1f, 0.1f});
+	
 	struct Sound_Source* weapon_sound = scene_sound_source_create(scene, "Player_Weapon_Sound_Source", player, "sounds/bullet_1.wav", ST_WAV, false, false);
 	if(weapon_sound)
 		player->weapon_sound = weapon_sound;
@@ -87,10 +99,12 @@ void player_init(struct Player* player, struct Scene* scene)
 
 	// Mark player camera and mesh as transient for now. We don't need to save them to file since we recreate them here anyway
 	player->camera->base.flags         |= EF_TRANSIENT;
-	player->body_mesh->base.flags      |= EF_TRANSIENT;
-	player->weapon_sound->base.flags   |= EF_TRANSIENT;
 	player->footstep_sound->base.flags |= EF_TRANSIENT;
 	player->grunt_sound->base.flags    |= EF_TRANSIENT;
+	player->body_mesh->base.flags      |= EF_TRANSIENT | EF_IGNORE_COLLISION | EF_ALWAYS_RENDER;
+	player->weapon_mesh->base.flags    |= EF_TRANSIENT | EF_IGNORE_COLLISION | EF_ALWAYS_RENDER;
+	player->weapon_light->base.flags   |= EF_TRANSIENT;
+	player->weapon_sound->base.flags   |= EF_TRANSIENT;
 
     transform_parent_set(player_camera, player, true);
 
@@ -341,13 +355,12 @@ void player_on_mousebutton_released(const struct Event* event)
 	struct Scene* scene = game_state->scene;
 	struct Player* player = &scene->player;
 
-	if(game_state->game_mode != GAME_MODE_GAME)
+	if(game_state->game_mode != GAME_MODE_GAME || game_state->gui_game->show_next_level_dialog || game_state->gui_game->show_restart_level_dialog)
 		return;
 
 	/* Aiming and Projectiles*/
 	if(button == MSB_LEFT)
 	{
-		log_message("Right Click");
 		int half_width = 0, half_height = 0;
 		window_get_drawable_size(game_state->window, &half_width, &half_height);
 		half_width /= 2;
@@ -366,11 +379,13 @@ void player_on_mousebutton_released(const struct Event* event)
 			vec3_scale(&collision_point, &collision_point, distance);
 			vec3_add(&collision_point, &collision_point, &bullet_ray.origin);
 			//struct Static_Mesh* bullet = scene_static_mesh_create(game_state_get()->scene, "bullet", NULL, "cube.symbres", MAT_UNSHADED);
-			struct Light* bullet = entity_load("Spot", DIRT_INSTALL, true);
-			if(bullet) transform_set_position(bullet, &collision_point);
-			sound_source_play(game_state->sound, player->weapon_sound);
+			//struct Light* bullet = entity_load("Spot", DIRT_INSTALL, true);
+			//if(bullet) transform_set_position(bullet, &collision_point);
 		}
 
+		int intensity = player->weapon_light_intensity_min + rand() % player->weapon_light_intensity_max;
+		player->weapon_light->intensity = intensity;
+		sound_source_play(game_state->sound, player->weapon_sound);
 	}
 }
 
@@ -401,5 +416,15 @@ void player_on_pickup(struct Player* player, struct Pickup* pickup)
 	case PICKUP_KEY:
 		player->key_mask |= pickup->key_type;
 		break;
+	}
+}
+
+void player_update(struct Player* player, float dt)
+{
+	if(player->weapon_light->intensity > 0.f)
+	{
+		player->weapon_light->intensity -= player->weapon_light_intensity_decay * dt;
+		if(player->weapon_light->intensity < 0.f)
+			player->weapon_light->intensity = 0.f;
 	}
 }

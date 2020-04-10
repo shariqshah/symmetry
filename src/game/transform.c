@@ -136,6 +136,7 @@ void transform_rotate(struct Entity*       entity,
 		quat_mul(&transform->rotation, &transform->rotation, &new_rot);
 	else
 		quat_mul(&transform->rotation, &new_rot, &transform->rotation);
+	quat_norm(&transform->rotation, &transform->rotation);
 	transform_update_transmat(entity);
 }
 
@@ -278,19 +279,9 @@ void transform_set_position(struct Entity* entity, vec3* new_position)
 
 void transform_get_absolute_position(struct Entity* entity, vec3* res)
 {
-	vec3_assign(res, &entity->transform.position);
-	bool done = false;
-	struct Entity* parent = entity->transform.parent;
-	while(!done)
-	{
-		if(!parent)
-		{
-			done = true;
-			break;
-		}
-		vec3_add(res, res, &parent->transform.position);
-		parent = parent->transform.parent;
-	}
+	res->x = entity->transform.trans_mat.mat[12];
+	res->y = entity->transform.trans_mat.mat[13];
+	res->z = entity->transform.trans_mat.mat[14];
 }
 
 void transform_get_absolute_scale(struct Entity* entity, vec3* res)

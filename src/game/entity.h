@@ -212,6 +212,10 @@ struct Player
 	struct Sound_Source* weapon_sound;
 	struct Sound_Source* footstep_sound;
 	struct Sound_Source* grunt_sound;
+	struct Light*        weapon_light;
+	int                  weapon_light_intensity_min;
+	int                  weapon_light_intensity_max;
+	float                weapon_light_intensity_decay;
 	int                  health;
 	int                  key_mask;
     float				 move_speed;

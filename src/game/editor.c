@@ -233,8 +233,7 @@ void editor_render(struct Editor* editor, struct Camera * active_camera)
 			if(light->type != LT_DIR)
 			{
 				quat rotation = editor->selected_entity->transform.rotation;
-				vec3 axis = { 1.f, 0.f, 0.f };
-				quat_axis_angle(&rotation, &axis, 90.f);
+				quat_axis_angle(&rotation, &UNIT_X, -90.f);
 				im_circle(light->radius, 30, false, abs_pos, rotation, editor->cursor_entity_color, 3);
 
 				if(light->type == LT_SPOT)
@@ -244,6 +243,8 @@ void editor_render(struct Editor* editor, struct Camera * active_camera)
 					float half_inner_angle = light->inner_angle / 2.f;
 					im_arc(light->radius, yaw - half_outer_angle, yaw + half_outer_angle, 15, false, abs_pos, rotation, editor->selected_entity_color, 3);
 					im_arc(light->radius, yaw - half_inner_angle, yaw + half_inner_angle, 15, false, abs_pos, rotation, editor->cursor_entity_color, 4);
+					//im_arc(light->radius, -half_outer_angle, half_outer_angle, 15, false, abs_pos, rotation, editor->selected_entity_color, 3);
+					//im_arc(light->radius, -half_inner_angle, half_inner_angle, 15, false, abs_pos, rotation, editor->cursor_entity_color, 4);
 				}
 			}
 		}

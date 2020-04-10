@@ -27,6 +27,7 @@ static void console_command_entity_save(struct Console* console, const char* com
 static void console_command_entity_load(struct Console* console, const char* command);
 static void console_command_debug_vars_toggle(struct Console* console, const char* command);
 static void console_command_debug_vars_location_set(struct Console* console, const char* command);
+static void console_command_switch_camera(struct Console* console, const char* command);
 static void console_command_help(struct Console* console, const char* command);
 
 void console_init(struct Console* console)
@@ -39,10 +40,10 @@ void console_init(struct Console* console)
     console_message_color[CMT_COMMAND] = nk_rgb(114, 173, 224);
     console_message_color[CMT_NONE]    = nk_rgb(255, 0, 255);
 	
-    console->visible                      = false;
-    console->scroll_to_bottom             = true;
-    console->text_region_height           = 30.f;
-    console->line_height                  = 20.f;
+    console->visible                      =  false;
+    console->scroll_to_bottom             =  true;
+    console->text_region_height           =  30.f;
+    console->line_height                  =  20.f;
     console->current_message_index        = -1;
 	console->current_history_index        =  0;
 	console->current_history_browse_index =  0;
@@ -66,6 +67,7 @@ void console_init(struct Console* console)
 	hashmap_ptr_set(console->commands, "entity_load", &console_command_entity_load);
 	hashmap_ptr_set(console->commands, "debug_vars_toggle", &console_command_debug_vars_toggle);
 	hashmap_ptr_set(console->commands, "debug_vars_location", &console_command_debug_vars_location_set);
+	hashmap_ptr_set(console->commands, "switch_camera", &console_command_switch_camera);
 	hashmap_ptr_set(console->commands, "help", &console_command_help);
 
 	struct Event_Manager* event_manager = game_state_get()->event_manager;
@@ -359,4 +361,10 @@ void console_command_scene_reload(struct Console* console, const char* command)
 	strncpy(filename, scene->filename, MAX_FILENAME_LEN);
 	if(!scene_load(scene, filename, DIRT_INSTALL))
 		log_error("scene_load", "Command failed");
+}
+
+void console_command_switch_camera(struct Console* console, const char* command)
+{
+	struct Scene* scene = game_state_get()->scene;
+	scene->active_camera_index = scene->active_camera_index == CAM_GAME ? CAM_EDITOR : CAM_GAME;
 }

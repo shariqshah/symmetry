@@ -533,6 +533,7 @@ void scene_update(struct Scene* scene, float dt)
 {
 	if(game_state_get()->game_mode == GAME_MODE_GAME) 
 	{
+		player_update(&scene->player, dt);
 		for(int i = 0; i < MAX_SCENE_ENEMIES; i++)
 		{
 			if(scene->enemies[i].base.flags & EF_ACTIVE)

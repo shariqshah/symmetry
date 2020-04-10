@@ -124,7 +124,7 @@ void im_box(float x, float y, float z, vec3 position, quat rotation, vec4 color,
 	active_geom->draw_order = draw_order;
 	active_geom->prim_geom_index = geom_create_from_file("cube.symbres");
 	vec3_assign(&active_geom->position, &position);
-	vec3 scale =  { x, y, z}; 
+	vec3 scale =  { x, y, z }; 
 	vec3_assign(&active_geom->scale, &scale);
 	vec4_assign(&active_geom->color, &color);
 	quat_assign(&active_geom->rotation, &rotation);

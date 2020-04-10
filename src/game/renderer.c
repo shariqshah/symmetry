@@ -188,8 +188,7 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
 			struct Geometry* geometry = geom_get(mesh->model.geometry_index);
 
 			/* Check if model is in frustum */
-
-			int intersection = bv_intersect_frustum_box(&active_camera->frustum, &mesh->base.derived_bounding_box);
+			int intersection = mesh->base.flags & EF_ALWAYS_RENDER ? IT_INSIDE : bv_intersect_frustum_box(&active_camera->frustum, &mesh->base.derived_bounding_box);
 			if(intersection == IT_INSIDE || intersection == IT_INTERSECT)
 			{
 				num_indices += geometry->indices_length;

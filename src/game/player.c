@@ -48,7 +48,15 @@ void player_init(struct Player* player, struct Scene* scene)
 	player->health                = MAX_PLAYER_HEALTH;
 	player->key_mask              = 0;
 
-    player->mesh = scene_static_mesh_create(scene, "Player_Mesh", player, "sphere.symbres", MAT_BLINN);
+    player->body_mesh = scene_static_mesh_create(scene, "Player_Body_Mesh", player, "sphere.symbres", MAT_BLINN);
+	player->weapon_mesh = scene_static_mesh_create(scene, "PLayer_Weapon_Mesh", player, "player_weapon.symbres", MAT_BLINN);
+	player->body_mesh->base.flags |= EF_IGNORE_COLLISION | EF_ALWAYS_RENDER;
+	player->weapon_mesh->base.flags |= EF_IGNORE_COLLISION | EF_ALWAYS_RENDER;
+
+	vec3 translation = { 0.f, 1.f, -1.5f };
+	transform_translate(player->weapon_mesh, &translation, TS_LOCAL);
+	transform_rotate(player->weapon_mesh, &UNIT_Y, 90.f, TS_LOCAL);
+	transform_scale(player->weapon_mesh, &(vec3){0.2f, 0.1f, 0.1f});
 
     struct Camera* player_camera = &scene->cameras[CAM_GAME];
     entity_rename(player_camera, "Player_Camera");
@@ -79,7 +87,7 @@ void player_init(struct Player* player, struct Scene* scene)
 
 	// Mark player camera and mesh as transient for now. We don't need to save them to file since we recreate them here anyway
 	player->camera->base.flags         |= EF_TRANSIENT;
-	player->mesh->base.flags           |= EF_TRANSIENT;
+	player->body_mesh->base.flags      |= EF_TRANSIENT;
 	player->weapon_sound->base.flags   |= EF_TRANSIENT;
 	player->footstep_sound->base.flags |= EF_TRANSIENT;
 	player->grunt_sound->base.flags    |= EF_TRANSIENT;
@@ -210,7 +218,7 @@ void player_update_physics(struct Player* player, struct Scene* scene, float fix
 				continue;
 
 			float distance = bv_distance_ray_bounding_box(&forward_ray, &colliding_entity->derived_bounding_box);
-			if(distance > 0.f && distance <= player->min_forward_distance && colliding_entity != player->mesh)
+			if(distance > 0.f && distance <= player->min_forward_distance && colliding_entity != player->body_mesh)
 			{
 				vec3 intersection_point = forward_ray.direction;
 				vec3_scale(&intersection_point, &intersection_point, distance);
@@ -237,7 +245,7 @@ void player_update_physics(struct Player* player, struct Scene* scene, float fix
 	move_speed_vertical += player->gravity;
 	struct Raycast_Result down_ray_result;
 	struct Ray downward_ray;
-	transform_get_absolute_position(player->mesh, &downward_ray.origin);
+	transform_get_absolute_position(player->body_mesh, &downward_ray.origin);
 	vec3_fill(&downward_ray.direction, 0.f, -1.f, 0.f);
 	scene_ray_intersect(scene, &downward_ray, &down_ray_result, ERM_STATIC_MESH);
 	if(down_ray_result.num_entities_intersected > 0)
@@ -246,7 +254,7 @@ void player_update_physics(struct Player* player, struct Scene* scene, float fix
 		{
 			struct Entity* colliding_entity = down_ray_result.entities_intersected[i];
 
-			if(colliding_entity == player->mesh)
+			if(colliding_entity == player->body_mesh)
 				continue;
 			if(colliding_entity->flags & EF_IGNORE_COLLISION)
 				continue;
@@ -348,7 +356,7 @@ void player_on_mousebutton_released(const struct Event* event)
 
 		struct Entity* colliding_entity = scene_ray_intersect_closest(scene, &bullet_ray, ERM_STATIC_MESH);
 
-		if(!colliding_entity || colliding_entity == player->mesh)
+		if(!colliding_entity || colliding_entity == player->body_mesh)
 			return;
 
 		float distance = bv_distance_ray_bounding_box(&bullet_ray, &colliding_entity->derived_bounding_box);

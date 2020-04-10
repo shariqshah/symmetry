@@ -2509,7 +2509,7 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 					if(nk_button_label(context, "Select Camera"))		  editor_entity_select(editor, player->camera);
 					if(nk_button_label(context, "Select Weapon Sound"))	  editor_entity_select(editor, player->weapon_sound);
 					if(nk_button_label(context, "Select Footstep Sound")) editor_entity_select(editor, player->footstep_sound);
-					if(nk_button_label(context, "Select Mesh"))			  editor_entity_select(editor, player->mesh);
+					if(nk_button_label(context, "Select Mesh"))			  editor_entity_select(editor, player->body_mesh);
 
 					nk_tree_pop(context);
 				}

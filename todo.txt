@@ -1,11 +1,11 @@
 Todo:
 	- Game End
 	- Don't save parent entity's transform when saving entity archetype. Only save the transformation values for children
+	- Player weapon mesh and lighting
+	- Enemies getting hit by bullets
 	- Save case sensitive file names when scene entity entries
 	- Disbale all player actions when scene cleared dialog or scene restart dialog are active
-	- Enemies getting hit by bullets
 	- Memory utils that provide allocation tracking
-	- Background music track per scene specified in scene properties
 	- Remove excessive repitition in scene and editor code that handles multiple entity types
 	- Allow switching to editor mode when game is in pause mode
 	- Rendering Additions:
@@ -430,3 +430,4 @@ Done:
 	* Pickups
 	* Pickup sounds
 	* Implemented flag for ignoring collisions with certain entities
+	* Background music track per scene specified in scene properties

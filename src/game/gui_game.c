@@ -25,11 +25,12 @@ void gui_game_init(struct Game_Gui* game_gui)
 	game_gui->show_next_level_dialog    = false;
 	game_gui->show_restart_level_dialog = false;
 	game_gui->skin.skin_texture         = texture_create_from_file("gui_skin.tga", TU_DIFFUSE);
-	game_gui->skin.button               = nk_subimage_id(game_gui->skin.skin_texture, SKIN_TEXTURE_WIDTH, SKIN_TEXTURE_HEIGHT, nk_recti(32, 32, 128, 48));
-	game_gui->skin.button_active        = nk_subimage_id(game_gui->skin.skin_texture, SKIN_TEXTURE_WIDTH, SKIN_TEXTURE_HEIGHT, nk_recti(32, 32, 128, 48));
-	game_gui->skin.button_hover         = nk_subimage_id(game_gui->skin.skin_texture, SKIN_TEXTURE_WIDTH, SKIN_TEXTURE_HEIGHT, nk_recti(32, 32, 128, 48));
-	game_gui->skin.hp                   = nk_subimage_id(game_gui->skin.skin_texture, SKIN_TEXTURE_WIDTH, SKIN_TEXTURE_HEIGHT, nk_recti(32, 0,  32, 32));
-	game_gui->skin.key                  = nk_subimage_id(game_gui->skin.skin_texture, SKIN_TEXTURE_WIDTH, SKIN_TEXTURE_HEIGHT, nk_recti(0,  32, 32, 32));
+	game_gui->skin.button               = nk_subimage_id(game_gui->skin.skin_texture, SKIN_TEXTURE_WIDTH, SKIN_TEXTURE_HEIGHT, nk_recti(32,  32, 128, 48));
+	game_gui->skin.button_active        = nk_subimage_id(game_gui->skin.skin_texture, SKIN_TEXTURE_WIDTH, SKIN_TEXTURE_HEIGHT, nk_recti(32,  32, 128, 48));
+	game_gui->skin.button_hover         = nk_subimage_id(game_gui->skin.skin_texture, SKIN_TEXTURE_WIDTH, SKIN_TEXTURE_HEIGHT, nk_recti(32,  32, 128, 48));
+	game_gui->skin.hp                   = nk_subimage_id(game_gui->skin.skin_texture, SKIN_TEXTURE_WIDTH, SKIN_TEXTURE_HEIGHT, nk_recti(32,  0,  32, 32));
+	game_gui->skin.key                  = nk_subimage_id(game_gui->skin.skin_texture, SKIN_TEXTURE_WIDTH, SKIN_TEXTURE_HEIGHT, nk_recti(0,   32, 32, 32));
+	game_gui->skin.crosshair            = nk_subimage_id(game_gui->skin.skin_texture, SKIN_TEXTURE_WIDTH, SKIN_TEXTURE_HEIGHT, nk_recti(112, 0, 32, 32));
 
 	struct nk_context* context = &game_gui->gui->context;
 	context->style.button.normal = nk_style_item_image(game_gui->skin.button);
@@ -38,9 +39,8 @@ void gui_game_init(struct Game_Gui* game_gui)
 
 	context->style.window.border_color = nk_rgba_f(0.f, 0.f, 0.f, 1.f);
 	context->style.window.background = nk_rgba_f(0.f, 0.f, 0.f, 1.f);
-	context->style.window.fixed_background = nk_style_item_image(nk_subimage_id(game_gui->skin.skin_texture, 
-																				SKIN_TEXTURE_WIDTH, SKIN_TEXTURE_HEIGHT, 
-																				nk_recti(32, 32, 128, 48)));
+	game_gui->skin.hud_background = nk_style_item_image(nk_subimage_id(game_gui->skin.skin_texture, SKIN_TEXTURE_WIDTH, SKIN_TEXTURE_HEIGHT, nk_recti(32, 32, 128, 48)));
+	game_gui->skin.menu_background = nk_style_item_color(nk_rgba_f(0.2f, 0.2f, 0.2f, 0.6f));
 	//context->style.window.fixed_background = nk_style_item_color(nk_rgba_f(0.f, 0.f, 0.f, 0.05f));
 
 	gui_font_set(game_gui->gui, "6809_chargen.ttf", 30.f);
@@ -69,6 +69,7 @@ void gui_game_update(struct Game_Gui* game_gui, float dt)
 	if(game_state->game_mode == GAME_MODE_GAME)
 	{
 		// HUD
+		context->style.window.fixed_background = game_gui->skin.hud_background;
 		const float	   key_opacity_full    = 1.f;
 		const float	   key_opacity_reduced = 0.3f;
 		int			   hud_offset_x        = 50;
@@ -98,6 +99,18 @@ void gui_game_update(struct Game_Gui* game_gui, float dt)
 			nk_image_color(context, game_gui->skin.key, nk_rgba_f(KEY_INDICATOR_COLOR_GREEN.x, KEY_INDICATOR_COLOR_GREEN.y, KEY_INDICATOR_COLOR_GREEN.z, (player->key_mask & DOOR_KEY_MASK_GREEN) == DOOR_KEY_MASK_GREEN ? key_opacity_full : key_opacity_reduced));
 			nk_image_color(context, game_gui->skin.key, nk_rgba_f(KEY_INDICATOR_COLOR_BLUE.x, KEY_INDICATOR_COLOR_BLUE.y, KEY_INDICATOR_COLOR_BLUE.z, (player->key_mask & DOOR_KEY_MASK_BLUE) == DOOR_KEY_MASK_BLUE ? key_opacity_full : key_opacity_reduced));
 			
+			nk_end(context);
+		}
+
+		int crosshair_width = 50;
+		int crosshair_height = 32;
+		int crosshair_x = (display_width / 2) - (crosshair_width / 2);
+		int crosshair_y = (display_height / 2) - (crosshair_height / 2);
+		context->style.window.fixed_background = nk_style_item_hide();
+		if(nk_begin(context, "Crosshair", nk_recti(crosshair_x, crosshair_y, crosshair_width, crosshair_height), NK_WINDOW_BACKGROUND | NK_WINDOW_NO_SCROLLBAR))
+		{
+			nk_layout_row_dynamic(context, crosshair_height, 1);
+			nk_image_color(context, game_gui->skin.crosshair, nk_rgba_f(1.f, 1.f, 1.f, 0.3f));
 			nk_end(context);
 		}
 
@@ -161,6 +174,7 @@ void gui_game_show_door_locked_dialog(struct Game_Gui* game_gui, struct Door* do
 
 		if(nk_begin(context, "Key Needed Gui", nk_recti(key_needed_gui_x, key_needed_gui_y, key_needed_gui_width, key_needed_gui_height), NK_WINDOW_BACKGROUND | NK_WINDOW_NO_SCROLLBAR))
 		{
+			context->style.window.fixed_background = game_gui->skin.menu_background;
 			nk_layout_row_begin(context, NK_DYNAMIC, 40, keys_needed + 2);
 			nk_layout_row_push(context, starting_ratio);
 			nk_label(context, "YOU NEED THE", label_flags);
@@ -193,6 +207,7 @@ void gui_game_show_door_locked_dialog(struct Game_Gui* game_gui, struct Door* do
 void gui_game_pause_menu(struct nk_context* context)
 {
 	struct Game_State* game_state     = game_state_get();
+	struct Game_Gui*   game_gui       = game_state->gui_game;
 	int                row_height     = 30;
 	int                popup_x        = 0;
 	int                popup_y        = 0;
@@ -208,6 +223,7 @@ void gui_game_pause_menu(struct nk_context* context)
 	int background_window_flags = NK_WINDOW_BACKGROUND;
 	if(nk_begin(context, "Pause Gui", nk_rect(0, 0, display_width, display_height), background_window_flags))
 	{
+		context->style.window.fixed_background = game_gui->skin.menu_background;
 		nk_window_set_focus(context, "Pause Gui");
 		if(nk_popup_begin(context, NK_POPUP_DYNAMIC, "Game Paused", popup_flags, nk_recti(popup_x, popup_y, popup_width, popup_height)))
 		{
@@ -254,6 +270,7 @@ static void gui_game_next_level_dialog(struct nk_context* context)
 	int background_window_flags = NK_WINDOW_BACKGROUND;
 	if(nk_begin(context, "Scene Cleared", nk_rect(0, 0, display_width, display_height), background_window_flags))
 	{
+		context->style.window.fixed_background = game_gui->skin.menu_background;
 		nk_window_set_focus(context, "Scene Cleared");
 		if(nk_popup_begin(context, NK_POPUP_DYNAMIC, "Scene Cleared!", popup_flags, nk_recti(popup_x, popup_y, popup_width, popup_height)))
 		{
@@ -314,6 +331,7 @@ static void gui_game_restart_level_dialog(struct nk_context* context)
 	int background_window_flags = NK_WINDOW_BACKGROUND;
 	if(nk_begin(context, "Player Died Gui", nk_rect(0, 0, display_width, display_height), background_window_flags))
 	{
+		context->style.window.fixed_background = game_gui->skin.menu_background;
 		nk_window_set_focus(context, "Player Died Gui");
 		if(nk_popup_begin(context, NK_POPUP_DYNAMIC, "You Died", popup_flags, nk_recti(popup_x, popup_y, popup_width, popup_height)))
 		{

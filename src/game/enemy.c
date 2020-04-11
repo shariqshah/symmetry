@@ -12,6 +12,7 @@
 #include "debug_vars.h"
 #include "im_render.h"
 #include "player.h"
+#include "texture.h"
 
 #include <string.h>
 #include <math.h>
@@ -32,13 +33,35 @@ void enemy_init(struct Enemy* enemy, int type)
 	enemy->base.type = ET_ENEMY;
 	enemy->type = type;
 
+	////Muzzle
+	//enemy->muzzle_light_intensity_min   = 1.f;
+	//enemy->muzzle_light_intensity_max   = 5.f;
+	//enemy->muzzle_light_intensity_decay = 30.f;
+	//
+	//vec3 translation = { 0.f, 0.f, -1.f };
+	//enemy->muzzle_light = scene_light_create(scene, "Enemy_Muzzle_Light", enemy, LT_SPOT);
+	//transform_translate(enemy->muzzle_light, &translation, TS_LOCAL);
+	//enemy->muzzle_light->intensity   = 0.f;
+	//enemy->muzzle_light->radius      = 25.f;
+	//enemy->muzzle_light->outer_angle = 80.f;
+	//enemy->muzzle_light->inner_angle = 50.f;
+	//vec3_fill(&enemy->muzzle_light->color, 0.9f, 0.4f, 0.f);
+
+	//enemy->muzzle_light_mesh = scene_static_mesh_create(scene, "Enemy_Muzzle_Light_Mesh", enemy, "muzzle_flash.symbres", MAT_BLINN);
+	//transform_translate(enemy->muzzle_light_mesh, &(vec3) {0.f, 0.f, -1.f}, TS_LOCAL);
+	//transform_rotate(enemy->muzzle_light_mesh, &UNIT_X, 90.f, TS_LOCAL);
+	//transform_scale(enemy->muzzle_light_mesh, &(vec3){0.f});
+	//enemy->muzzle_light_mesh->model.material_params[MMP_DIFFUSE_TEX].val_int = texture_create_from_file("white.tga", TU_DIFFUSE);
+	//enemy->muzzle_light_mesh->model.material_params[MMP_DIFFUSE].val_float = 6.f;
+	//vec4_fill(&enemy->muzzle_light_mesh->model.material_params[MMP_DIFFUSE_COL].val_vec4, 0.9f, 0.4f, 0.f, 1.f);
+
 	/* Initialization specific to each enemy type */
 	switch(enemy->type)
 	{
 	case ENEMY_TURRET:
 	{
 		enemy->health                            = 100;
-		enemy->damage                            = 10;
+		enemy->damage                            = 20;
 		enemy->Turret.yaw_direction_positive     = true;
 		enemy->Turret.scan                       = false;
 		enemy->Turret.turn_speed_default         = 50.f;
@@ -56,6 +79,7 @@ void enemy_init(struct Enemy* enemy, int type)
 		enemy->Turret.time_elapsed_since_alert   = 0.f;
 		enemy->Turret.time_elapsed_since_attack  = 0.f;
 		enemy->Turret.vision_range               = 15.f;
+		enemy->hit_chance                        = 4;
 	}
 	break;
 	default:
@@ -89,6 +113,22 @@ void enemy_static_mesh_set(struct Enemy* enemy, const char* geometry_filename, i
 
 void enemy_update(struct Enemy* enemy, struct Scene* scene, float dt)
 {
+	if(enemy->muzzle_light->intensity > 0.f)
+	{
+		enemy->muzzle_light->intensity -= enemy->muzzle_light_intensity_decay * dt;
+		if(enemy->muzzle_light->intensity < 0.f)
+			enemy->muzzle_light->intensity = 0.f;
+	}
+
+	if(enemy->muzzle_light_mesh->base.transform.scale.x > 0.f)
+	{
+		enemy->muzzle_light_mesh->base.transform.scale.x -= enemy->muzzle_light_intensity_decay * dt;
+		enemy->muzzle_light_mesh->base.transform.scale.y -= enemy->muzzle_light_intensity_decay * dt;
+		enemy->muzzle_light_mesh->base.transform.scale.z -= enemy->muzzle_light_intensity_decay * dt;
+		transform_update_transmat(enemy->muzzle_light_mesh);
+	}
+
+	// AI Update
 	static float enemy_update_interval = 1.f / 60.f;
 	static float time_elapsed_since_last_update = 0.f;
 
@@ -139,8 +179,12 @@ struct Enemy* enemy_read(struct Parser_Object* object, const char* name, struct 
 		new_enemy = scene_enemy_create(scene, name, parent_entity, enemy_type); // Create enemy with default values then read and update from file if necessary
 		if(!new_enemy)
 			return new_enemy;
-		if(hashmap_value_exists(object->data, "health")) new_enemy->health = hashmap_int_get(object->data, "health");
-		if(hashmap_value_exists(object->data, "damage")) new_enemy->damage = hashmap_int_get(object->data, "damage");
+		if(hashmap_value_exists(object->data, "health"))                       new_enemy->health                       = hashmap_int_get(object->data, "health");
+		if(hashmap_value_exists(object->data, "damage"))                       new_enemy->damage                       = hashmap_int_get(object->data, "damage");
+		if(hashmap_value_exists(object->data, "hit_chance"))                   new_enemy->hit_chance                   = hashmap_int_get(object->data, "hit_chance");
+		if(hashmap_value_exists(object->data, "muzzle_light_intensity_decay")) new_enemy->muzzle_light_intensity_decay = hashmap_float_get(object->data, "muzzle_light_intensity_decay");
+		if(hashmap_value_exists(object->data, "muzzle_light_intensity_min"))   new_enemy->muzzle_light_intensity_min   = hashmap_int_get(object->data, "muzzle_light_intensity_min");
+		if(hashmap_value_exists(object->data, "muzzle_light_intensity_max"))   new_enemy->muzzle_light_intensity_max   = hashmap_int_get(object->data, "muzzle_light_intensity_max");
 
 		switch(new_enemy->type)
 		{
@@ -169,6 +213,10 @@ void enemy_write(struct Enemy* enemy, struct Hashmap* entity_data)
 	hashmap_int_set(entity_data, "enemy_type", enemy->type);
 	hashmap_int_set(entity_data, "health", enemy->health);
 	hashmap_int_set(entity_data, "damage", enemy->damage);
+	hashmap_int_set(entity_data, "hit_chance", enemy->hit_chance);
+	hashmap_int_set(entity_data, "muzzle_light_intensity_decay", enemy->muzzle_light_intensity_decay);
+	hashmap_int_set(entity_data, "muzzle_light_intensity_min", enemy->muzzle_light_intensity_min);
+	hashmap_int_set(entity_data, "muzzle_light_intensity_max", enemy->muzzle_light_intensity_max);
 
 	switch(enemy->type)
 	{
@@ -198,9 +246,12 @@ void enemy_on_scene_loaded(struct Event* event, void* enemy_ptr)
 	// Assign pointers to static_mesh and sound_source child entities
 	struct Entity* enemy_mesh[MAX_ENEMY_MESHES] = { NULL };
 	struct Entity* enemy_sound_sources[MAX_ENEMY_SOUND_SOURCES] = { NULL };
+	struct Entity* enemy_lights[MAX_ENEMY_LIGHTS] = { NULL };
+
 	if(entity_get_num_children_of_type(enemy, ET_STATIC_MESH, &enemy_mesh, MAX_ENEMY_MESHES) == MAX_ENEMY_MESHES)
 	{
-		enemy->mesh = enemy_mesh[0];
+		enemy->muzzle_light_mesh = enemy_mesh[0];
+		enemy->mesh = enemy_mesh[1];
 	}
 	else
 	{
@@ -216,6 +267,11 @@ void enemy_on_scene_loaded(struct Event* event, void* enemy_ptr)
 	{
 		log_error("enemy:on_scene_load", "Could not find %d child sound source entities for enemy %s", MAX_ENEMY_SOUND_SOURCES, enemy->base.name);
 	}
+
+	if(entity_get_num_children_of_type(enemy, ET_LIGHT, &enemy_lights, MAX_ENEMY_LIGHTS) == MAX_ENEMY_LIGHTS)
+		enemy->muzzle_light = enemy_lights[0];
+	else
+		log_error("enemy:on_scene_load", "Could not find %d child light entities for enemy %s", MAX_ENEMY_LIGHTS, enemy->base.name);
 
 	// Do other post-scene-load initialization stuff per enemy type here
 	switch(enemy->type)
@@ -384,9 +440,12 @@ void enemy_update_ai_turret(struct Enemy* enemy, struct Game_State* game_state, 
 				{
 					enemy->Turret.time_elapsed_since_attack = 0.f;
 					sound_source_play(game_state->sound, enemy->weapon_sound);
+					enemy->muzzle_light->intensity = enemy->muzzle_light_intensity_min + rand() % enemy->muzzle_light_intensity_max;
+					transform_scale(enemy->muzzle_light_mesh, &(vec3){1.f, 1.f, 1.f});
+
 					int hit_chance = 4;
 					int roll = rand() % 10;
-					if(roll <= hit_chance)
+					if(roll <= enemy->hit_chance)
 					{
 						player_apply_damage(&scene->player, enemy);
 					}
@@ -456,5 +515,15 @@ void enemy_state_set_turret(struct Enemy* enemy, int state)
 		enemy->Turret.time_elapsed_since_attack = enemy->Turret.attack_cooldown;
 	}
 	break;
+	}
+}
+
+void enemy_apply_damage(struct Enemy* enemy, int damage)
+{
+	enemy->health -= damage;
+	vec4_fill(&enemy->mesh->model.material_params[MMP_DIFFUSE_COL].val_vec4, 0.7f, 0.3f, 0.1f, 1.f);
+	if(enemy->health <= 0)
+	{
+		scene_enemy_remove(game_state_get()->scene, enemy);
 	}
 }

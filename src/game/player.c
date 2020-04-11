@@ -19,6 +19,7 @@
 #include "entity.h"
 #include "gui_game.h"
 #include "texture.h"
+#include "enemy.h"
 
 #include <float.h>
 #include <string.h>
@@ -53,6 +54,7 @@ void player_init(struct Player* player, struct Scene* scene)
 	player->weapon_light_intensity_min   = 1.f;
 	player->weapon_light_intensity_max   = 5.f;
 	player->weapon_light_intensity_decay = 30.f;
+	player->damage                       = 25;
 
     player->body_mesh = scene_static_mesh_create(scene, "Player_Body_Mesh", player, "sphere.symbres", MAT_BLINN);
 
@@ -83,6 +85,7 @@ void player_init(struct Player* player, struct Scene* scene)
 	player->muzzle_flash_mesh = scene_static_mesh_create(scene, "Player_Muzzle_Flash_Mesh", player_camera, "muzzle_flash.symbres", MAT_BLINN);
 	transform_translate(player->muzzle_flash_mesh, &(vec3) {0.f, -0.3f, -2.75f}, TS_LOCAL);
 	transform_rotate(player->muzzle_flash_mesh, &UNIT_X, 90.f, TS_LOCAL);
+	transform_scale(player->muzzle_flash_mesh, &(vec3){0.f});
 	player->muzzle_flash_mesh->model.material_params[MMP_DIFFUSE_TEX].val_int = texture_create_from_file("white.tga", TU_DIFFUSE);
 	player->muzzle_flash_mesh->model.material_params[MMP_DIFFUSE].val_float = 6.f;
 	vec4_fill(&player->muzzle_flash_mesh->model.material_params[MMP_DIFFUSE_COL].val_vec4, 0.9f, 0.4f, 0.f, 1.f);
@@ -257,9 +260,6 @@ void player_update_physics(struct Player* player, struct Scene* scene, float fix
 				vec3 norm_scaled = { 0.f };
 				vec3_scale(&normal, &normal, dot);
 				vec3_sub(&move_direction, &move_direction, &normal);
-				debug_vars_show_vec3("Normal", &normal);
-				debug_vars_show_vec3("Dir", &move_direction);
-				debug_vars_show_float("Dot", dot);
 			}
 		}
 	}
@@ -376,7 +376,12 @@ void player_on_mousebutton_released(const struct Event* event)
 		half_height /= 2;
 		struct Ray bullet_ray = camera_screen_coord_to_ray(player->camera, half_width, half_height);
 
-		struct Entity* colliding_entity = scene_ray_intersect_closest(scene, &bullet_ray, ERM_STATIC_MESH);
+		struct Entity* colliding_entity = scene_ray_intersect_closest(scene, &bullet_ray, ERM_ENEMY);
+
+		int intensity = player->weapon_light_intensity_min + rand() % player->weapon_light_intensity_max;
+		player->weapon_light->intensity = intensity;
+		transform_scale(player->muzzle_flash_mesh, &(vec3){1.f, 1.f, 1.f});
+		sound_source_play(game_state->sound, player->weapon_sound);
 
 		if(!colliding_entity || colliding_entity == player->body_mesh)
 			return;
@@ -384,18 +389,14 @@ void player_on_mousebutton_released(const struct Event* event)
 		float distance = bv_distance_ray_bounding_box(&bullet_ray, &colliding_entity->derived_bounding_box);
 		if(distance > 0.f)
 		{
-			vec3 collision_point = bullet_ray.direction;
-			vec3_scale(&collision_point, &collision_point, distance);
-			vec3_add(&collision_point, &collision_point, &bullet_ray.origin);
+			//vec3 collision_point = bullet_ray.direction;
+			//vec3_scale(&collision_point, &collision_point, distance);
+			//vec3_add(&collision_point, &collision_point, &bullet_ray.origin);
 			//struct Static_Mesh* bullet = scene_static_mesh_create(game_state_get()->scene, "bullet", NULL, "cube.symbres", MAT_UNSHADED);
 			//struct Light* bullet = entity_load("Spot", DIRT_INSTALL, true);
 			//if(bullet) transform_set_position(bullet, &collision_point);
+			enemy_apply_damage((struct Enemy*)colliding_entity, player->damage);
 		}
-
-		int intensity = player->weapon_light_intensity_min + rand() % player->weapon_light_intensity_max;
-		player->weapon_light->intensity = intensity;
-		transform_scale(player->muzzle_flash_mesh, &(vec3){1.f, 1.f, 1.f});
-		sound_source_play(game_state->sound, player->weapon_sound);
 	}
 }
 

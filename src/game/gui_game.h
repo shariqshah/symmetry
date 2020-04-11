@@ -11,14 +11,17 @@ struct Game_Gui
 
 	struct
 	{
-		int             skin_texture;
-		struct nk_image button;
-		struct nk_image button_hover;
-		struct nk_image button_active;
-		struct nk_image check;
-		struct nk_image check_cursor;
-		struct nk_image hp;
-		struct nk_image key;
+		int                  skin_texture;
+		struct nk_image      button;
+		struct nk_image      button_hover;
+		struct nk_image      button_active;
+		struct nk_image      check;
+		struct nk_image      check_cursor;
+		struct nk_image      hp;
+		struct nk_image      key;
+		struct nk_image      crosshair;
+		struct nk_style_item hud_background;
+		struct nk_style_item menu_background;
 	} skin;
 };
 

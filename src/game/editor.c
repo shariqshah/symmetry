@@ -1833,12 +1833,13 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 			if(nk_tree_push(context, NK_TREE_NODE, "Flags", NK_MINIMIZED))
 			{
 				nk_layout_row_dynamic(context, row_height, 1);
-				nk_checkbox_flags_label(context, "Active",           &entity->flags, EF_ACTIVE);
-				nk_checkbox_flags_label(context, "Transient",        &entity->flags, EF_TRANSIENT);
-				nk_checkbox_flags_label(context, "Hide in Editor",   &entity->flags, EF_HIDE_IN_EDITOR_SCENE_HIERARCHY);
-				nk_checkbox_flags_label(context, "Skip Render",      &entity->flags, EF_SKIP_RENDER);
-				nk_checkbox_flags_label(context, "Ignore Raycast",   &entity->flags, EF_IGNORE_RAYCAST);
-				nk_checkbox_flags_label(context, "Ignore Collision", &entity->flags, EF_IGNORE_COLLISION);
+				nk_checkbox_flags_label(context, "Active",                &entity->flags, EF_ACTIVE);
+				nk_checkbox_flags_label(context, "Transient",             &entity->flags, EF_TRANSIENT);
+				nk_checkbox_flags_label(context, "Hide in Editor",        &entity->flags, EF_HIDE_IN_EDITOR_SCENE_HIERARCHY);
+				nk_checkbox_flags_label(context, "Skip Render",           &entity->flags, EF_SKIP_RENDER);
+				nk_checkbox_flags_label(context, "Ignore Raycast",        &entity->flags, EF_IGNORE_RAYCAST);
+				nk_checkbox_flags_label(context, "Ignore Collision",      &entity->flags, EF_IGNORE_COLLISION);
+				nk_checkbox_flags_label(context, "Disable Backface Cull", &entity->flags, EF_DISABLE_BACKFACE_CULL);
 				nk_tree_pop(context);
 			}
 

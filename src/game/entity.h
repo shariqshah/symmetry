@@ -219,6 +219,7 @@ struct Player
 	int                  weapon_light_intensity_max;
 	float                weapon_light_intensity_decay;
 	int                  health;
+	int                  damage;
 	int                  key_mask;
     float				 move_speed;
     float				 move_speed_multiplier;
@@ -237,7 +238,13 @@ struct Enemy
 	int                  type;
 	int                  health;
 	int                  damage;
+	int                  hit_chance;
 	int                  current_state;
+	float                muzzle_light_intensity_decay;
+	int                  muzzle_light_intensity_min;
+	int                  muzzle_light_intensity_max;
+	struct Static_Mesh*  muzzle_light_mesh;
+	struct Light*        muzzle_light;
 	struct Static_Mesh*  mesh;
 	struct Sound_Source* weapon_sound;
 	struct Sound_Source* ambient_sound;

@@ -21,15 +21,24 @@ Player
 {
 	type : 2
 	scale : 1.000 1.000 1.000
-	rotation : 0.000 -0.488 0.000 0.873
+	rotation : 0.000 0.345 0.000 0.939
 	player_key_mask : 0
-	position : -55.691 2.167 -8.502
+	position : -10.436 2.167 27.829
 	flags : 1
 	player_health : 100
 	name : Player
 	bounding_box_min : -1.500 -1.500 -1.000
 	camera_clear_color : 0.310 0.412 0.529 1.000
 	bounding_box_max : 1.500 1.500 1.000
+}
+
+Scene_Entity_Entry
+{
+	scale : 1.000 4.000 -10.000
+	rotation : 0.000 0.000 0.000 1.000
+	position : -29.000 3.000 25.000
+	filename : collision_default
+	name : Collision
 }
 
 Scene_Entity_Entry

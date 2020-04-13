@@ -320,6 +320,9 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 	struct Entity* new_entity = NULL;
 	switch(type)
 	{
+	case ET_DEFAULT:
+		new_entity = scene_entity_create(scene, name, parent_entity);
+		break;
 	case ET_CAMERA:
 	{
 		bool has_fbo = false;
@@ -509,12 +512,13 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 	break;
 	default:
 		log_warning("Unhandled Entity type '%d' detected", type);
+		return new_entity;
 		break;
 	}
 	
 	vec3 position = { 0.f, 0.f, 0.f };
 	quat rotation = { 0.f, 0.f, 0.f, 1.f };
-	vec3 scale = { 1.f, 1.f, 1.f };
+	vec3 scale    = { 1.f, 1.f, 1.f };
 
 	if(hashmap_value_exists(object->data, "position")) position = hashmap_vec3_get(object->data, "position");
 	if(hashmap_value_exists(object->data, "rotation")) rotation = hashmap_quat_get(object->data, "rotation");

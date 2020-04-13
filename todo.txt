@@ -1,9 +1,8 @@
 Todo:
 	- Game End
+	- Add functionality to editor that enables adding a default empty entity without having to load it from file
+	- Fix crash when default entity type is loaded from file
 	- Don't save parent entity's transform when saving entity archetype. Only save the transformation values for children
-	- Enemies getting hit by bullets
-	- Add weapon flash, muzzle mesh to turrets
-	- Add collision-only entities that can be used to manually approximate collision mesh for an entity
 	- Save case sensitive file names when scene entity entries
 	- Disbale all player actions when scene cleared dialog or scene restart dialog are active
 	- Memory utils that provide allocation tracking
@@ -435,3 +434,5 @@ Done:
 	* Fixed bug where child entities' absolute position does not change when parent rotates
 	* Player weapon mesh and lighting
 	* Added muzzle mesh to player
+	* Add weapon flash, muzzle mesh to turrets
+	* Enemies getting hit by bullets

@@ -232,7 +232,7 @@ void player_update_physics(struct Player* player, struct Scene* scene, float fix
 	// Get all the entities that intersect then check the distance if it is less than
 	// or equal to min_collision_distance then we are colliding
 	struct Raycast_Result ray_result;
-	scene_ray_intersect(scene, &forward_ray, &ray_result, ERM_STATIC_MESH);
+	scene_ray_intersect(scene, &forward_ray, &ray_result, ERM_STATIC_MESH | ERM_DEFAULT);
 	debug_vars_show_int("Colliding Entities", ray_result.num_entities_intersected);
 	if(ray_result.num_entities_intersected > 0)
 	{
@@ -270,7 +270,7 @@ void player_update_physics(struct Player* player, struct Scene* scene, float fix
 	struct Ray downward_ray;
 	transform_get_absolute_position(player->body_mesh, &downward_ray.origin);
 	vec3_fill(&downward_ray.direction, 0.f, -1.f, 0.f);
-	scene_ray_intersect(scene, &downward_ray, &down_ray_result, ERM_STATIC_MESH);
+	scene_ray_intersect(scene, &downward_ray, &down_ray_result, ERM_STATIC_MESH | ERM_DEFAULT);
 	if(down_ray_result.num_entities_intersected > 0)
 	{
 		for(int i = 0; i < down_ray_result.num_entities_intersected; i++)
@@ -376,7 +376,7 @@ void player_on_mousebutton_released(const struct Event* event)
 		half_height /= 2;
 		struct Ray bullet_ray = camera_screen_coord_to_ray(player->camera, half_width, half_height);
 
-		struct Entity* colliding_entity = scene_ray_intersect_closest(scene, &bullet_ray, ERM_ENEMY);
+		struct Entity* colliding_entity = scene_ray_intersect_closest(scene, &bullet_ray, ERM_ENEMY | ERM_STATIC_MESH | ERM_DEFAULT);
 
 		int intensity = player->weapon_light_intensity_min + rand() % player->weapon_light_intensity_max;
 		player->weapon_light->intensity = intensity;
@@ -386,15 +386,17 @@ void player_on_mousebutton_released(const struct Event* event)
 		if(!colliding_entity || colliding_entity == player->body_mesh)
 			return;
 
+		if(colliding_entity->type != ET_ENEMY) // If we did not hit an enemy, check if we hit it's mesh instead. If the mesh has a parent enemy entity, assume we hit an enemy otherwise stop
+		{
+			if(colliding_entity->transform.parent->type == ET_ENEMY)
+				colliding_entity = colliding_entity->transform.parent;
+			else
+				return;
+		}
+
 		float distance = bv_distance_ray_bounding_box(&bullet_ray, &colliding_entity->derived_bounding_box);
 		if(distance > 0.f)
 		{
-			//vec3 collision_point = bullet_ray.direction;
-			//vec3_scale(&collision_point, &collision_point, distance);
-			//vec3_add(&collision_point, &collision_point, &bullet_ray.origin);
-			//struct Static_Mesh* bullet = scene_static_mesh_create(game_state_get()->scene, "bullet", NULL, "cube.symbres", MAT_UNSHADED);
-			//struct Light* bullet = entity_load("Spot", DIRT_INSTALL, true);
-			//if(bullet) transform_set_position(bullet, &collision_point);
 			enemy_apply_damage((struct Enemy*)colliding_entity, player->damage);
 		}
 	}

@@ -174,7 +174,7 @@ void editor_init(struct Editor* editor)
 void editor_init_entities(struct Editor* editor)
 {
 	editor->selected_entity = NULL;
-	editor->cursor_entity = scene_static_mesh_create(game_state_get()->scene, "EDITOR_SELECTED_ENTITY_WIREFRAME", NULL, "sphere.symbres", MAT_UNSHADED);
+	editor->cursor_entity = scene_static_mesh_create(game_state_get()->scene, "EDITOR_SELECTED_ENTITY_WIREFRAME", NULL, "cube.symbres", MAT_UNSHADED);
 	editor->cursor_entity->base.flags |= EF_TRANSIENT | EF_SKIP_RENDER | EF_HIDE_IN_EDITOR_SCENE_HIERARCHY | EF_IGNORE_RAYCAST;
 }
 

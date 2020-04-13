@@ -15,6 +15,7 @@
 #include "game.h"
 #include "gui.h"
 #include "../common/hashmap.h"
+#include "../common/memory_utils.h"
 #include "geometry.h"
 #include "material.h"
 #include "editor.h"
@@ -61,7 +62,7 @@ void renderer_init(struct Renderer* renderer)
     renderer->settings.ambient_light      = hashmap_vec3_get(cvars,  "ambient_light");
 	
     renderer->debug_shader = shader_create("debug.vert", "debug.frag", NULL);
-    renderer->sprite_batch = malloc(sizeof(*renderer->sprite_batch));
+    renderer->sprite_batch = memory_allocate(sizeof(*renderer->sprite_batch));
 
     if(!renderer->sprite_batch)
 		log_error("renderer:init", "Failed to allocated sprite batch");
@@ -314,7 +315,7 @@ void renderer_cleanup(struct Renderer* renderer)
     }
     im_cleanup();
     sprite_batch_remove(renderer->sprite_batch);
-    free(renderer->sprite_batch);
+    memory_free(renderer->sprite_batch);
 }
 
 void renderer_on_framebuffer_size_changed(const struct Event* event)

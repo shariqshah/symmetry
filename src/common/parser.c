@@ -4,6 +4,7 @@
 #include "array.h"
 #include "log.h"
 #include "string_utils.h"
+#include "memory_utils.h"
 
 #include <string.h>
 #include <ctype.h>
@@ -80,7 +81,7 @@ struct Parser* parser_load_objects(FILE* file, const char* filename)
 		return false;
     }
 
-    struct Parser* parser = malloc(sizeof(*parser));
+    struct Parser* parser = memory_allocate(sizeof(*parser));
     if(!parser)
     {
         log_error("parser:load_objects", "Out of memeory");
@@ -279,13 +280,13 @@ void parser_free(struct Parser *parser)
         object->type = PO_UNKNOWN;
     }
 	array_free(parser->objects);
-	free(parser);
+	memory_free(parser);
 }
 
 struct Parser* parser_new(void)
 {
     struct Parser* parser = NULL;
-    parser = malloc(sizeof(*parser));
+    parser = memory_allocate(sizeof(*parser));
     if(!parser)
     {
 		log_error("parser:new", "Out of memory");
@@ -296,7 +297,7 @@ struct Parser* parser_new(void)
     if(!parser->objects)
     {
 		log_error("parser:new", "Could not create objects array for parser");
-		free(parser);
+		memory_free(parser);
 		return NULL;
     }
 

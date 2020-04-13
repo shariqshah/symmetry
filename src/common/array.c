@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "array.h"
+#include "memory_utils.h"
 
 struct Array
 {
@@ -26,7 +27,7 @@ static struct Array* array_get_ptr(void* array_data)
 void* array_new_(size_t object_size, int capacity)
 {
 	int initial_capacity    = capacity == 0 ? ARRAY_MIN_CAPACITY : capacity;
-	struct Array* new_array = malloc(sizeof(*new_array) + (object_size * initial_capacity));
+	struct Array* new_array = memory_allocate(sizeof(*new_array) + (object_size * initial_capacity));
 	new_array->object_size  = object_size;
 	new_array->length       = capacity;
 	new_array->capacity     = initial_capacity;
@@ -37,7 +38,7 @@ void* array_new_(size_t object_size, int capacity)
 void array_free(void* array)
 {
 	struct Array* array_ptr = array_get_ptr(array);
-	free(array_ptr);
+	memory_free(array_ptr);
 }
 
 void* array_top(struct Array* array)
@@ -52,7 +53,7 @@ void* array_grow_(void** array)
 	if(++array_ptr->length > array_ptr->capacity)
 	{
 		array_ptr->capacity = array_ptr->capacity << 1; /* LShift by 1 means (number * number) */
-		char* new_data = realloc(array_ptr, sizeof(*array_ptr) + (array_ptr->object_size * array_ptr->capacity));
+		char* new_data = memory_reallocate(array_ptr, sizeof(*array_ptr) + (array_ptr->object_size * array_ptr->capacity));
 		if(new_data)
 		{
 			array_ptr = (struct Array*)new_data;
@@ -76,7 +77,7 @@ int array_reset_(void** array, int length)
 	int new_capacity = length < ARRAY_MIN_CAPACITY ? ARRAY_MIN_CAPACITY : length;
 	int new_length = new_capacity;
 	array_free(*array);
-	array_ptr = calloc(1, sizeof(*array_ptr) + (new_capacity * object_size));
+	array_ptr = memory_allocate_and_clear(1, sizeof(*array_ptr) + (new_capacity * object_size));
 	if(array_ptr)
 	{
 		array_ptr->length = new_length;
@@ -109,7 +110,7 @@ struct Array* array_reallocate(struct Array* array)
 	if((array->length << 2) < array->capacity && array->capacity > ARRAY_MIN_CAPACITY)
 	{
 		array->capacity = array->capacity >> 1;
-		array = realloc(array, sizeof(*array) + (array->object_size * array->capacity));
+		array = memory_reallocate(array, sizeof(*array) + (array->object_size * array->capacity));
 		/* TODO: Maybe error handling here? */
 	}
 	return array;
@@ -126,9 +127,7 @@ int array_remove_at_(void** array, int index)
 		{
 			char* current_location   = array_ptr->data + (array_ptr->object_size * index);
 			char* location_after_obj = current_location + array_ptr->object_size;
-			memmove(current_location,
-					location_after_obj,
-					array_ptr->object_size * (array_ptr->length - next_index));
+			memmove(current_location, location_after_obj, array_ptr->object_size * (array_ptr->length - next_index));
 			array_ptr->length--;
 			if(!(array_ptr = array_reallocate(array_ptr)))
 				success = 0;
@@ -182,8 +181,7 @@ void array_inc_cap_by_(void** array, int cap)
 	if(cap > 0)
 	{
 		array_ptr->capacity += cap;
-		char* new_data = realloc(array_ptr,
-								 sizeof(*array_ptr) + (array_ptr->object_size * array_ptr->capacity));
+		char* new_data = memory_reallocate(array_ptr, sizeof(*array_ptr) + (array_ptr->object_size * array_ptr->capacity));
 		if(new_data)
 		{
 			array_ptr = (struct Array*)new_data;

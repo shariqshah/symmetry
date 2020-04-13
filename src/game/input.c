@@ -6,6 +6,7 @@
 #include "../common/log.h"
 #include "gui.h"
 #include "../common/string_utils.h"
+#include "../common/memory_utils.h"
 #include "../common/hashmap.h"
 #include "../common/variant.h"
 #include "../common/parser.h"
@@ -88,7 +89,7 @@ void input_cleanup(void)
 	struct Variant* value = NULL;
 	HASHMAP_FOREACH(key_bindings, key, value)
 	{
-		free(value->val_voidptr);
+		memory_free(value->val_voidptr);
 	}
 
 	hashmap_free(key_bindings);
@@ -339,7 +340,7 @@ bool input_map_create(const char* name, struct Key_Binding key_combination)
 		input_map_remove(name);
 	}
 
-	struct Key_Binding* new_keybinding = malloc(sizeof(*new_keybinding));
+	struct Key_Binding* new_keybinding = memory_allocate(sizeof(*new_keybinding));
 	if(!new_keybinding)
 	{
 		log_error("input:map_create", "Out of memory");
@@ -382,7 +383,7 @@ bool input_map_remove(const char* name)
 	if(hashmap_value_exists(key_bindings, name))
 	{
 		struct Key_Binding* current_key = (struct Key_Binding*)hashmap_ptr_get(key_bindings, name);
-		free(current_key);
+		memory_free(current_key);
 		hashmap_value_remove(key_bindings, name);
 	}
 	else

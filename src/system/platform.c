@@ -3,6 +3,7 @@
 #include "config_vars.h"
 #include "../common/hashmap.h"
 #include "../common/string_utils.h"
+#include "../common/memory_utils.h"
 
 #include <SDL.h>
 
@@ -23,7 +24,7 @@ struct Window* window_create(const char* title, int width, int height, int msaa,
     struct Window* new_window = NULL;
     if(!new_window)
     {
-		new_window = malloc(sizeof(*new_window));
+		new_window = memory_allocate(sizeof(*new_window));
 		if(!new_window)
 		{
 			log_error("window_create", "Out of memory");
@@ -63,7 +64,7 @@ struct Window* window_create(const char* title, int width, int height, int msaa,
     if(!sdl_window)
     {
 		log_error("window_create:SDL_CreateWindow", "Could not create window :  %s", SDL_GetError());
-		free(new_window);
+		memory_free(new_window);
 		new_window = NULL;
 		return new_window;
     }
@@ -74,7 +75,7 @@ struct Window* window_create(const char* title, int width, int height, int msaa,
     {
 		log_error("window_create:SDL_GL_CreateContext", "Failed to create GL context : %s", SDL_GetError());
         window_destroy(new_window);
-		free(new_window);
+		memory_free(new_window);
 		new_window = NULL;
 		return new_window;
     }
@@ -351,7 +352,7 @@ void* platform_load_library(const char *name)
 #endif
     void* lib_handle = SDL_LoadObject(lib_name);
     if(!lib_handle) log_error("platform:load_library", "Failed to load library '%s', SDL : (%s)", lib_name, SDL_GetError());
-    free(install_dir);
+    memory_free(install_dir);
     return lib_handle;
 }
 

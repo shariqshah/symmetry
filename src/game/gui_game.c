@@ -2,6 +2,7 @@
 #include "game.h"
 #include "scene.h"
 #include "../common/log.h"
+#include "../common/memory_utils.h"
 #include "../system/platform.h"
 #include "event.h"
 #include "input.h"
@@ -20,7 +21,7 @@ static void gui_game_on_scene_cleared(struct Event* event);
 
 void gui_game_init(struct Game_Gui* game_gui)
 {
-	game_gui->gui = calloc(1, sizeof(*game_gui->gui));
+	game_gui->gui = memory_allocate_and_clear(1, sizeof(*game_gui->gui));
 	gui_init(game_gui->gui);
 	game_gui->show_next_level_dialog    = false;
 	game_gui->show_restart_level_dialog = false;
@@ -54,7 +55,7 @@ void gui_game_cleanup(struct Game_Gui* game_gui)
 {
 	texture_remove(game_gui->skin.skin_texture);
 	gui_cleanup(game_gui->gui);
-	free(game_gui->gui);
+	memory_free(game_gui->gui);
 
 	struct Event_Manager* event_manager = game_state_get()->event_manager;
 	event_manager_unsubscribe(event_manager, EVT_PLAYER_DIED, &gui_game_on_player_death);

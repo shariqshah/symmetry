@@ -2,6 +2,7 @@
 #include "../common/array.h"
 #include "../common/num_types.h"
 #include "../common/string_utils.h"
+#include "../common/memory_utils.h"
 #include "../common/log.h"
 #include "renderer.h"
 #include "texture.h"
@@ -57,9 +58,9 @@ char* run_preprocessor(char* shader_text, const char* custom_defines)
 				if(file_contents)
 				{
 					char* shader_text_new = str_new("%s\n%s", file_contents, shader_text);
-					free(shader_text);
-					free(file_contents);
-					free(path);
+					memory_free(shader_text);
+					memory_free(file_contents);
+					memory_free(path);
 					shader_text = shader_text_new;
 				}
 			}
@@ -71,13 +72,13 @@ char* run_preprocessor(char* shader_text, const char* custom_defines)
     if(custom_defines)
     {
         char* shader_text_with_custom_defines = str_new("%s\n%s", custom_defines, shader_text);
-        free(shader_text);
+        memory_free(shader_text);
         shader_text = shader_text_with_custom_defines;
     }
     
     // Insert #version line at the top
     char* shader_text_with_version = str_new("%s\n%s", GLSL_VERSION_STR, shader_text);
-    free(shader_text);
+    memory_free(shader_text);
     shader_text = shader_text_with_version;
     
 	return shader_text;
@@ -126,28 +127,28 @@ int shader_create(const char* vert_shader_name, const char* frag_shader_name, co
 	{
 		GLint log_size = 0;
 		GL_CHECK(glGetShaderiv(vert_shader, GL_INFO_LOG_LENGTH, &log_size));
-		char* message = (char *)malloc(sizeof(char) * log_size);
+		char* message = (char *)memory_allocate(sizeof(char) * log_size);
 		GL_CHECK(glGetShaderInfoLog(vert_shader, log_size, NULL, message));
 
 		log_error("shader:create", "COMPILING VS %s : %s", vert_shader_name, message);
 		debug_print_shader(vert_source);
-		free(message);
+		memory_free(message);
 	}
 
 	if(!is_frag_compiled)
 	{
 		GLint log_size = 0;
 		GL_CHECK(glGetShaderiv(frag_shader, GL_INFO_LOG_LENGTH, &log_size));
-		char* message = (char *)malloc(sizeof(char) * log_size);
+		char* message = (char *)memory_allocate(sizeof(char) * log_size);
 		GL_CHECK(glGetShaderInfoLog(frag_shader, log_size, NULL, message));
 
 		log_error("shader:create", "COMPILING FS %s : %s", frag_shader_name, message);
 		debug_print_shader(frag_source);
-		free(message);
+		memory_free(message);
 	}
 
-	free(vert_source);
-	free(frag_source);
+	memory_free(vert_source);
+	memory_free(frag_source);
 		
 	if(!is_vert_compiled || !is_frag_compiled)
 	{
@@ -173,10 +174,10 @@ int shader_create(const char* vert_shader_name, const char* frag_shader_name, co
 	{
 		GLint log_size = 0;
 		GL_CHECK(glGetProgramiv(program, GL_INFO_LOG_LENGTH, &log_size));
-		char* message = (char *)malloc(sizeof(char) * log_size);
+		char* message = (char *)memory_allocate(sizeof(char) * log_size);
 		GL_CHECK(glGetProgramInfoLog(program, log_size, NULL, message));
 		log_error("shader:create", "LINK SHADER : %s", message);
-		free(message);
+		memory_free(message);
 
 		GL_CHECK(glDeleteProgram(program));
 		GL_CHECK(glDeleteShader(vert_shader));
@@ -208,8 +209,8 @@ int shader_create(const char* vert_shader_name, const char* frag_shader_name, co
 	*new_shader = program;
 	
 	log_message("%s, %s compiled into shader program", vert_shader_name, frag_shader_name);
-	free(vs_path);
-	free(fs_path);
+	memory_free(vs_path);
+	memory_free(fs_path);
 	
 	return index;
 }

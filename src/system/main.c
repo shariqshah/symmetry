@@ -8,6 +8,7 @@
 #include "config_vars.h"
 #include "../common/hashmap.h"
 #include "../game/game.h"
+#include "../common/memory_utils.h"
 
 struct Wndow;
 
@@ -59,8 +60,8 @@ bool init(void)
     char* user_path    = platform_user_directory_get("SS_Games", "Symmetry");
     log_init("Log.txt", user_path);
     io_file_init(install_path, user_path);
-    free(install_path);
-    free(user_path);
+    memory_free(install_path);
+    memory_free(user_path);
     if(!config_vars_load(cvars, "config.symtres", DIRT_USER))
     {
         log_error("main:init", "Could not load config, reverting to defaults");

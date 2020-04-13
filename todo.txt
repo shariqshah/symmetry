@@ -1,11 +1,9 @@
 Todo:
 	- Game End
 	- Add functionality to editor that enables adding a default empty entity without having to load it from file
-	- Fix crash when default entity type is loaded from file
 	- Don't save parent entity's transform when saving entity archetype. Only save the transformation values for children
 	- Save case sensitive file names when scene entity entries
 	- Disbale all player actions when scene cleared dialog or scene restart dialog are active
-	- Memory utils that provide allocation tracking
 	- Remove excessive repitition in scene and editor code that handles multiple entity types
 	- Allow switching to editor mode when game is in pause mode
 	- Rendering Additions:
@@ -436,3 +434,5 @@ Done:
 	* Added muzzle mesh to player
 	* Add weapon flash, muzzle mesh to turrets
 	* Enemies getting hit by bullets
+	* Fixed crash when default entity type is loaded from file
+	* Memory utils that provide allocation tracking

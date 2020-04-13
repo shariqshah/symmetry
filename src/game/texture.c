@@ -1,6 +1,7 @@
 #include "texture.h"
 #include "../common/array.h"
 #include "../common/string_utils.h"
+#include "../common/memory_utils.h"
 #include "../common/log.h"
 #include "../common/num_types.h"
 #include "renderer.h"
@@ -93,7 +94,7 @@ int texture_create_from_file(const char* filename, int texture_unit)
 			{
 				log_error("texture:create_from_file", "Error creating texture");
 			}
-			if(img_data) free(img_data);
+			if(img_data) memory_free(img_data);
 		}
 		fclose(file);
 	}
@@ -101,7 +102,7 @@ int texture_create_from_file(const char* filename, int texture_unit)
 	{
 		log_error("texture:create_from_file", "Could not open file %s", filename);
 	}
-	free(full_path);
+	memory_free(full_path);
 	return index;
 }
 
@@ -116,7 +117,7 @@ void texture_remove(int index)
 			if(texture->ref_count < 0)
 			{	
 				glDeleteTextures(1, &texture->handle);
-				if(texture->name) free(texture->name);
+				if(texture->name) memory_free(texture->name);
 				texture->name            = NULL;
 				texture->ref_count       = -1;
 				texture->texture_unit    = -1;
@@ -214,7 +215,7 @@ int load_img(FILE* file, GLubyte** image_data, int* width, int* height, int* fmt
 
 			 size_t bytes_per_pixel = header.bitsperpixel / 8;
 			 size_t image_size = (bytes_per_pixel * header.width * header.height);
-			 *image_data = malloc(image_size);
+			 *image_data = memory_allocate(image_size);
 			 if(!*image_data)
 			 {
 				 log_error("texture:load_img", "Out of memory");
@@ -237,7 +238,7 @@ int load_img(FILE* file, GLubyte** image_data, int* width, int* height, int* fmt
 					 if(fread(&pixel, 1, bytes_per_pixel, file) != bytes_per_pixel)
 					 {
 						 log_error("texture:load_img", "Unexpected end of file at pixel %d", i);
-						 free(*image_data);
+						 memory_free(*image_data);
 						 *image_data = NULL;
 						 return success;
 					 }
@@ -258,7 +259,7 @@ int load_img(FILE* file, GLubyte** image_data, int* width, int* height, int* fmt
                      if(fread(chunk, 1, chunk_size, file) != chunk_size)
 					 {
 						 log_error("texture:img_load", "Unexpected end of file at chunk %d", i);
-						 free(*image_data);
+						 memory_free(*image_data);
 						 *image_data = NULL;
 						 return success;
 					 }
@@ -283,7 +284,7 @@ int load_img(FILE* file, GLubyte** image_data, int* width, int* height, int* fmt
 							 if(fread(&chunk[1], 1, bytes_per_pixel, file) != bytes_per_pixel)
 							 {
 								 log_error("texture:img_load", "Unexpected end of file at pixel %d", i);
-								 free(*image_data);
+								 memory_free(*image_data);
 								 *image_data = NULL;
 								 return success;
 							 }

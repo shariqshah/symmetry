@@ -2,6 +2,7 @@
 #include "variant.h"
 #include "log.h"
 #include "string_utils.h"
+#include "memory_utils.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -31,7 +32,7 @@ static struct Hashmap_Entry* hashmap_entry_new(struct Hashmap* hashmap, const ch
 		if(strncmp(key, hashmap->buckets[index][i].key, MAX_HASH_KEY_LEN) == 0)
 		{
 			new_entry = &hashmap->buckets[index][i];
-			if(new_entry->key) free(new_entry->key);
+			if(new_entry->key) memory_free(new_entry->key);
 			break;
 		}
 	}
@@ -53,7 +54,7 @@ unsigned int hashmap_generate_hash(const char* key)
 
 struct Hashmap* hashmap_create(void)
 {
-    struct Hashmap* hashmap = malloc(sizeof(*hashmap));
+    struct Hashmap* hashmap = memory_allocate(sizeof(*hashmap));
     if(!hashmap)
 		return NULL;
     for(int i = 0; i < HASH_MAP_NUM_BUCKETS; i++)
@@ -73,7 +74,7 @@ void hashmap_free(struct Hashmap* hashmap)
 			struct Hashmap_Entry* entry = &hashmap->buckets[i][j];
 			if(entry->key)
 			{
-				free(entry->key);
+				memory_free(entry->key);
 				entry->key = NULL;
 			}
 			variant_free(&entry->value);
@@ -81,7 +82,7 @@ void hashmap_free(struct Hashmap* hashmap)
 		array_free(hashmap->buckets[i]);
 		hashmap->buckets[i] = NULL;
 	}
-	free(hashmap);
+	memory_free(hashmap);
 	hashmap = NULL;
 }
 

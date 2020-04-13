@@ -31,6 +31,7 @@
 #include "../common/hashmap.h"
 #include "../common/variant.h"
 #include "../system/platform.h"
+#include "../common/memory_utils.h"
 #include "debug_vars.h"
 #include "im_render.h"
 #include "event.h"
@@ -61,7 +62,7 @@ static struct Game_State* game_state = NULL;
 
 bool game_init(struct Window* window, struct Hashmap* cvars)
 {
-    game_state = malloc(sizeof(*game_state));
+    game_state = memory_allocate(sizeof(*game_state));
     if(!game_state)
     {
 		log_error("game:init", "Out of memory, failed to allocate game_state");
@@ -76,15 +77,15 @@ bool game_init(struct Window* window, struct Hashmap* cvars)
 		game_state->update_scene     = true;
 		game_state->fixed_delta_time = 1.f / 60.f;
 		game_state->game_mode        = GAME_MODE_GAME;
-		game_state->renderer         = calloc(1, sizeof(*game_state->renderer));
-		game_state->scene            = calloc(1, sizeof(*game_state->scene));
-		game_state->console          = calloc(1, sizeof(*game_state->console));
-		game_state->editor           = calloc(1, sizeof(*game_state->editor));
-		game_state->gui_editor       = calloc(1, sizeof(*game_state->gui_editor));
-		game_state->gui_game         = calloc(1, sizeof(*game_state->gui_game));
-		game_state->event_manager    = calloc(1, sizeof(*game_state->event_manager));
-		game_state->sound            = calloc(1, sizeof(*game_state->sound));
-		game_state->debug_vars       = calloc(1, sizeof(*game_state->debug_vars));
+		game_state->renderer         = memory_allocate_and_clear(1, sizeof(*game_state->renderer));
+		game_state->scene            = memory_allocate_and_clear(1, sizeof(*game_state->scene));
+		game_state->console          = memory_allocate_and_clear(1, sizeof(*game_state->console));
+		game_state->editor           = memory_allocate_and_clear(1, sizeof(*game_state->editor));
+		game_state->gui_editor       = memory_allocate_and_clear(1, sizeof(*game_state->gui_editor));
+		game_state->gui_game         = memory_allocate_and_clear(1, sizeof(*game_state->gui_game));
+		game_state->event_manager    = memory_allocate_and_clear(1, sizeof(*game_state->event_manager));
+		game_state->sound            = memory_allocate_and_clear(1, sizeof(*game_state->sound));
+		game_state->debug_vars       = memory_allocate_and_clear(1, sizeof(*game_state->debug_vars));
 		game_state->scene_func_table = hashmap_create();
 
 		log_message_callback_set(game_on_log_message);
@@ -1991,18 +1992,18 @@ void game_cleanup(void)
 			debug_vars_cleanup(game_state->debug_vars);
 			event_manager_cleanup(game_state->event_manager);
 
-			free(game_state->editor);
-			free(game_state->console);
-			free(game_state->scene);
-			free(game_state->renderer);
-			free(game_state->event_manager);
-			free(game_state->gui_editor);
-			free(game_state->gui_game);
-			free(game_state->sound);
-			free(game_state->debug_vars);
+			memory_free(game_state->editor);
+			memory_free(game_state->console);
+			memory_free(game_state->scene);
+			memory_free(game_state->renderer);
+			memory_free(game_state->event_manager);
+			memory_free(game_state->gui_editor);
+			memory_free(game_state->gui_game);
+			memory_free(game_state->sound);
+			memory_free(game_state->debug_vars);
 			hashmap_free(game_state->scene_func_table);
 		}
-		free(game_state);
+		memory_free(game_state);
 		game_state = NULL;
     }
 }

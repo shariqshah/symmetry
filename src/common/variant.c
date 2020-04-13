@@ -1,6 +1,7 @@
 #include "variant.h"
 #include "log.h"
 #include "string_utils.h"
+#include "memory_utils.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -116,7 +117,7 @@ void variant_assign_quatf(struct Variant* variant, const float x, const float y,
 void variant_assign_mat4(struct Variant* variant, const mat4* source)
 {
 	if(variant->type != VT_MAT4) variant_free(variant);
-	variant->val_mat4 = malloc(sizeof(mat4));
+	variant->val_mat4 = memory_allocate(sizeof(mat4));
 	if(!variant->val_mat4)
 	{
 		log_error("variant_init_mat4", "Out of memory");
@@ -139,14 +140,14 @@ void variant_free(struct Variant* variant)
 	case VT_MAT4:
 		if(variant->val_mat4)
 		{
-			free(variant->val_mat4);
+			memory_free(variant->val_mat4);
 			variant->val_mat4 = NULL;
 		}
 		break;
 	case VT_STR:
 		if(variant->val_str)
 		{
-			free(variant->val_str);
+			memory_free(variant->val_str);
 			variant->val_str = NULL;
 		}
 		break;

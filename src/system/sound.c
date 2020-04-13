@@ -4,6 +4,7 @@
 #include "../common/hashmap.h"
 #include "../common/variant.h"
 #include "../common/string_utils.h"
+#include "../common/memory_utils.h"
 
 #include "../game/entity.h"
 #include "../game/transform.h"
@@ -250,7 +251,7 @@ struct Sound_Source_Buffer* sound_source_buffer_create(struct Sound* sound, cons
 		}
 		source->type = ST_WAV;
 		source->wav = wave;
-		free(memory);
+		memory_free(memory);
 	}
 	break;
 	case ST_WAV_STREAM:
@@ -265,7 +266,7 @@ struct Sound_Source_Buffer* sound_source_buffer_create(struct Sound* sound, cons
 		}
 		source->type = ST_WAV_STREAM;
 		source->wavstream = wave_stream;
-		free(memory);
+		memory_free(memory);
 	}
 	break;
 	default: log_error("sound:source_create", "Invalid source type %d", type); break;

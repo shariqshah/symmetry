@@ -6,6 +6,7 @@
 #include "file_io.h"
 #include "../common/log.h"
 #include "../common/string_utils.h"
+#include "../common/memory_utils.h"
 
 static char* executable_directory = NULL;
 static char* install_directory = NULL;
@@ -22,9 +23,9 @@ void io_file_init(const char* install_dir, const char* user_dir)
 
 void io_file_cleanup(void)
 {
-	if(install_directory)    free(install_directory);
-	if(executable_directory) free(executable_directory);
-	if(user_directory)       free(user_directory);
+	if(install_directory)    memory_free(install_directory);
+	if(executable_directory) memory_free(executable_directory);
+	if(user_directory)       memory_free(user_directory);
 	install_directory = NULL;
 	user_directory    = NULL;
 }
@@ -40,7 +41,7 @@ char* io_file_read(const int directory_type, const char* path, const char* mode,
 		long length = (size_t)ftell(file);
 		if(file_size) *file_size = length;
 		rewind(file);
-		data = calloc(1, (sizeof(char) * length) + 1);
+		data = memory_allocate_and_clear(1, (sizeof(char) * length) + 1);
 		if(data)
 		{
 			if(fread(data, length, 1, file) > 0)
@@ -50,7 +51,7 @@ char* io_file_read(const int directory_type, const char* path, const char* mode,
 			else
 			{
 				log_error("io:file_read", "fread failed");
-				free(data);
+				memory_free(data);
 			}
 		}
 		else
@@ -86,7 +87,7 @@ FILE* io_file_open(const int directory_type, const char* path, const char* mode)
         perror(&err_str[0]);
 		log_error("io:file_open", "Failed to open file '%s' (%s)", relative_path, err_str);
     }
-	free(relative_path);
+	memory_free(relative_path);
 	return file;
 }
 
@@ -115,7 +116,7 @@ bool io_file_copy(const int directory_type, const char* source, const char* dest
 	}
 
 	log_message("'%s' copied to '%s'", source, destination);
-	free(source_contents);
+	memory_free(source_contents);
 	fclose(dest_file);
 	
 	return success;
@@ -136,7 +137,7 @@ bool io_file_delete(const int directory_type, const char* filename)
 		log_message("'%s' deleted", filename);
 	}
 	
-	free(relative_path);
+	memory_free(relative_path);
 	return true;
 }
 

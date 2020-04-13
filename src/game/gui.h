@@ -2,7 +2,7 @@
 #define GUI_H
 
 #define NK_INCLUDE_FIXED_TYPES
-#define NK_INCLUDE_DEFAULT_ALLOCATOR
+//#define NK_INCLUDE_DEFAULT_ALLOCATOR
 #define NK_INCLUDE_STANDARD_VARARGS
 #define NK_INCLUDE_STANDARD_IO
 #define NK_INCLUDE_FONT_BAKING
@@ -17,15 +17,15 @@
 
 struct Gui
 {
-    struct nk_buffer            cmds;
+    struct nk_buffer            commands;
     struct nk_draw_null_texture null;
 	struct nk_context           context;
 	struct nk_font_atlas        atlas;
 	struct nk_font*             current_font;
     GLuint                      vbo, vao, ebo;
 	int   					    shader;
-    GLuint					    vert_shdr;
-    GLuint					    frag_shdr;
+    GLuint					    vertex_shader;
+    GLuint					    fragment_shader;
     GLint 					    attrib_pos;
     GLint 					    attrib_uv;
     GLint 					    attrib_col;

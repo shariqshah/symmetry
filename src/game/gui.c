@@ -9,6 +9,7 @@
 #include "input.h"
 #include "renderer.h"
 #include "../common/string_utils.h"
+#include "../common/memory_utils.h"
 #include "../system/platform.h"
 #include "../system/file_io.h"
 #include "event.h"
@@ -25,14 +26,17 @@ struct Gui_Vertex
 
 #define MAX_GUI_VERTEX_MEMORY  512 * 1024
 #define MAX_GUI_ELEMENT_MEMORY 128 * 1024
+#define GUI_BUFFER_SIZE_INITIAL (4 * 1024)
 
-static void gui_on_clipbard_copy(nk_handle usr, const char *text, int len);
-static void gui_on_clipbard_paste(nk_handle usr, struct nk_text_edit *edit);
-static void gui_on_textinput(const struct Event* event);
-static void gui_on_mousewheel(const struct Event* event);
-static void gui_on_mousemotion(const struct Event* event);
-static void gui_on_mousebutton(const struct Event* event);
-static void gui_on_key(const struct Event* event);
+static void  gui_on_clipbard_copy(nk_handle usr, const char *text, int len);
+static void  gui_on_clipbard_paste(nk_handle usr, struct nk_text_edit *edit);
+static void  gui_on_textinput(const struct Event* event);
+static void  gui_on_mousewheel(const struct Event* event);
+static void  gui_on_mousemotion(const struct Event* event);
+static void  gui_on_mousebutton(const struct Event* event);
+static void  gui_on_key(const struct Event* event);
+static void* gui_allocate_wrapper(nk_handle handle, void* old, nk_size size);
+static void  gui_free_wrapper(nk_handle handle, void* old);
 
 static void gui_upload_atlas(struct Gui* gui, const void *image, int width, int height);
 static void gui_font_set_default(struct Gui* gui);
@@ -41,8 +45,12 @@ bool gui_init(struct Gui* gui)
 {
 	bool success = false;
 	
-	nk_init_default(&gui->context, 0);
-	nk_buffer_init_default(&gui->cmds);
+	//nk_init_default(&gui->context, 0);
+	//nk_buffer_init_default(&gui->commands);
+    nk_init(&gui->context, &(struct nk_allocator) {.userdata = NULL, .alloc = &gui_allocate_wrapper, .free = &gui_free_wrapper}, 0);
+    nk_buffer_init(&gui->commands, &(struct nk_allocator) {.userdata = NULL, .alloc = &gui_allocate_wrapper, .free = &gui_free_wrapper}, GUI_BUFFER_SIZE_INITIAL);
+    nk_font_atlas_init(&gui->atlas, &(struct nk_allocator) {.userdata = NULL, .alloc = &gui_allocate_wrapper, .free = &gui_free_wrapper});
+
     gui->context.clip.copy     = gui_on_clipbard_copy;
     gui->context.clip.paste    = gui_on_clipbard_paste;
     gui->context.clip.userdata = nk_handle_ptr(0);
@@ -51,7 +59,7 @@ bool gui_init(struct Gui* gui)
 	if(gui->shader < 0)
 	{
 		log_error("gui:init", "Failed to create shader for gui");
-		free(gui);
+		memory_free(gui);
 		return success;
 	}
     gui->uniform_tex  = shader_get_uniform_location(gui->shader,   "sampler");
@@ -137,7 +145,7 @@ void gui_cleanup(struct Gui* gui)
     texture_remove(gui->font_tex);
     glDeleteBuffers(1, &gui->vbo);
     glDeleteBuffers(1, &gui->ebo);
-    nk_buffer_free(&gui->cmds);
+    nk_buffer_free(&gui->commands);
 }
 
 void gui_render(struct Gui* gui, enum nk_anti_aliasing AA)
@@ -212,13 +220,13 @@ void gui_render(struct Gui* gui, enum nk_anti_aliasing AA)
             struct nk_buffer vbuf, ebuf;
             nk_buffer_init_fixed(&vbuf, vertices, (nk_size)MAX_GUI_VERTEX_MEMORY);
             nk_buffer_init_fixed(&ebuf, elements, (nk_size)MAX_GUI_ELEMENT_MEMORY);
-            nk_convert(&gui->context, &gui->cmds, &vbuf, &ebuf, &config);
+            nk_convert(&gui->context, &gui->commands, &vbuf, &ebuf, &config);
         }
         glUnmapBuffer(GL_ARRAY_BUFFER);
         glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
 
         /* iterate over and execute each draw command */
-        nk_draw_foreach(cmd, &gui->context, &gui->cmds)
+        nk_draw_foreach(cmd, &gui->context, &gui->commands)
 		{
             if (!cmd->elem_count) continue;
 			texture_bind(cmd->texture.id);
@@ -247,7 +255,7 @@ void gui_on_clipbard_paste(nk_handle usr, struct nk_text_edit *edit)
     if(text)
 	{
 		nk_textedit_paste(edit, text, nk_strlen(text));
-		free(text);
+		memory_free(text);
 	}
     (void)usr;
 }
@@ -257,12 +265,12 @@ void gui_on_clipbard_copy(nk_handle usr, const char *text, int len)
     char *str = 0;
     (void)usr;
     if (!len) return;
-    str = (char*)malloc((size_t)len+1);
+    str = (char*)memory_allocate((size_t)len+1);
     if (!str) return;
     memcpy(str, text, (size_t)len);
     str[len] = '\0';
     platform_clipboard_text_set(str);
-    free(str);
+    memory_free(str);
 }
 
 void gui_on_key(const struct Event* event)
@@ -408,7 +416,7 @@ void gui_font_set(struct Gui* gui, const char* font_name, float font_size)
 	long size = 0;
 	char* font_file_name = str_new("fonts/%s", font_name);
     char* font_data = io_file_read(DIRT_INSTALL, font_file_name, "rb", &size);
-	free(font_file_name);
+	memory_free(font_file_name);
 	if(!font_data)
 	{
 		log_error("gui:init", "Could not load font %s, reverting to default", font_name);
@@ -422,10 +430,11 @@ void gui_font_set(struct Gui* gui, const char* font_name, float font_size)
 			texture_remove(gui->font_tex);
 			gui->font_tex = -1;
 			gui->current_font = NULL;
+			nk_font_atlas_init(&gui->atlas, &(struct nk_allocator) {.userdata = NULL, .alloc = &gui_allocate_wrapper, .free = &gui_free_wrapper});
 		}
 		const void *image = NULL;
 		int w = 0, h = 0;
-		nk_font_atlas_init_default(atlas);
+		//nk_font_atlas_init_default(atlas);
 		nk_font_atlas_begin(atlas);		
 		struct nk_font *new_font = nk_font_atlas_add_from_memory(atlas, font_data, size, font_size, NULL);
 		image = nk_font_atlas_bake(atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
@@ -442,7 +451,7 @@ void gui_font_set(struct Gui* gui, const char* font_name, float font_size)
 			log_error("gui:init", "Could not add font %s, reverting to default", font_name);
 			gui_font_set_default(gui);
 		}
-		free(font_data);
+		memory_free(font_data);
 	}
 }
 
@@ -454,7 +463,7 @@ void gui_font_set_default(struct Gui* gui)
 		texture_remove(gui->font_tex);
 	}
 	struct nk_font_atlas* atlas = &gui->atlas;
-	nk_font_atlas_init_default(atlas);
+	//nk_font_atlas_init_default(atlas);
 	const void *image = NULL;
 	int w = 0, h = 0;
 	image = nk_font_atlas_bake(atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
@@ -605,4 +614,14 @@ void gui_theme_set(struct Gui* gui, enum Gui_Theme theme)
 		log_error("gui:theme_set", "Unrecognized theme, reverting to default");
 		nk_style_default(&gui->context);
 	}
+}
+
+void* gui_allocate_wrapper(nk_handle handle, void* old, nk_size size)
+{
+    return memory_allocate(size);
+}
+
+void gui_free_wrapper(nk_handle handle, void* old)
+{
+    memory_free(old);
 }

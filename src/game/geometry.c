@@ -1,6 +1,7 @@
 #include "geometry.h"
 #include "../common/array.h"
 #include "../common/string_utils.h"
+#include "../common/memory_utils.h"
 #include "../common/log.h"
 #include "renderer.h"
 #include "transform.h"
@@ -117,7 +118,7 @@ int geom_create_from_file(const char* name)
 		
 		char* full_path = str_new("models/%s", name);
 		FILE* file = io_file_open(DIRT_INSTALL, full_path, "rb");
-		free(full_path);
+		memory_free(full_path);
 		if(file)
 		{
 			const uint32 INDEX_SIZE = sizeof(uint32);
@@ -212,7 +213,7 @@ void geom_remove(int index)
 			geometry->ref_count--;
 			if(geometry->ref_count < 0)
 			{
-				if(geometry->filename) free(geometry->filename);
+				if(geometry->filename) memory_free(geometry->filename);
 				geometry->filename = NULL;
 
 				glDeleteBuffers(1, &geometry->vertex_vbo);

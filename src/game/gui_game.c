@@ -18,6 +18,7 @@ static void gui_game_next_level_dialog(struct nk_context* context);
 static void gui_game_restart_level_dialog(struct nk_context* context);
 static void gui_game_on_player_death(struct Event* event);
 static void gui_game_on_scene_cleared(struct Event* event);
+static void gui_game_end_dialog(struct nk_context* context);
 
 void gui_game_init(struct Game_Gui* game_gui)
 {
@@ -120,6 +121,9 @@ void gui_game_update(struct Game_Gui* game_gui, float dt)
 
 		if(game_gui->show_restart_level_dialog)
 			gui_game_restart_level_dialog(context);
+
+		if(game_gui->show_game_end_dialog)
+			gui_game_end_dialog(context);
 	}
 	else if(game_state->game_mode == GAME_MODE_PAUSE)
 	{
@@ -313,7 +317,7 @@ static void gui_game_next_level_dialog(struct nk_context* context)
 	}
 }
 
-static void gui_game_restart_level_dialog(struct nk_context* context)
+void gui_game_restart_level_dialog(struct nk_context* context)
 {
 	struct Game_State* game_state = game_state_get();
 	struct Game_Gui* game_gui = game_state->gui_game;
@@ -366,6 +370,66 @@ void gui_game_on_player_death(struct Event* event)
 
 void gui_game_on_scene_cleared(struct Event* event)
 {
-	game_state_get()->gui_game->show_next_level_dialog = true;
+	struct Game_State* game_state = game_state_get();
+	if(!game_state->gui_game->show_game_end_dialog) game_state->gui_game->show_next_level_dialog = true;
 	input_mouse_mode_set(MM_NORMAL);
+}
+
+void gui_game_show_game_end_dialog(struct Game_Gui* game_gui)
+{
+	game_gui->show_game_end_dialog = true;
+	game_gui->show_next_level_dialog = false;
+}
+
+void gui_game_end_dialog(struct nk_context* context)
+{
+	struct Game_State* game_state = game_state_get();
+	struct Game_Gui* game_gui = game_state->gui_game;
+	int row_height = 30;
+	int popup_x = 0;
+	int popup_y = 0;
+	int popup_width = 300;
+	int popup_height = 200;
+	int display_width = 0;
+	int display_height = 0;
+	int popup_flags = NK_WINDOW_TITLE | NK_WINDOW_BORDER;
+	window_get_drawable_size(game_state_get()->window, &display_width, &display_height);
+	popup_x = (display_width / 2) - (popup_width / 2);
+	popup_y = (display_height / 2) - (popup_height / 2);
+
+	int background_window_flags = NK_WINDOW_BACKGROUND;
+	if(nk_begin(context, "Game End Dialog", nk_rect(0, 0, display_width, display_height), background_window_flags))
+	{
+		context->style.window.fixed_background = game_gui->skin.menu_background;
+		nk_window_set_focus(context, "Game End Dialog");
+		if(nk_popup_begin(context, NK_POPUP_DYNAMIC, "Congratulations!", popup_flags, nk_recti(popup_x, popup_y, popup_width, popup_height)))
+		{
+			nk_layout_row_dynamic(context, row_height, 1);
+			nk_label(context, "YOU BEAT THE GAME!", NK_TEXT_ALIGN_CENTERED | NK_TEXT_ALIGN_MIDDLE);
+			if(nk_button_label(context, "Restart Level"))
+			{
+				char filename[MAX_FILENAME_LEN];
+				strncpy(filename, game_state->scene->filename, MAX_FILENAME_LEN);
+				if(!scene_load(game_state->scene, filename, DIRT_INSTALL))
+					log_error("gui_game:end_dialog", "Failed to reload Level");
+				else
+					game_gui->show_game_end_dialog = false;
+			}
+
+			if(nk_button_label(context, "Restart from first Level"))
+			{
+				if(scene_load(game_state->scene, "scene_1", DIRT_INSTALL))
+					game_gui->show_game_end_dialog = false;
+				else
+					log_error("gui_game:end_dialog", "Failed to load first level");
+			}
+
+			if(nk_button_label(context, "Quit"))
+				game_state->quit = true;
+
+			nk_popup_end(context);
+		}
+
+		nk_end(context);
+	}
 }

@@ -41,9 +41,9 @@ void* memory_reallocate_(void** ptr, size_t size)
 	}
 	else
 	{
-		current_allocation = reallocated_memory;
 		memory.allocated += (size - current_allocation->size);
 		current_allocation->size = size;
+		current_allocation = reallocated_memory;
 	}
 
 	return current_allocation->allocation;
@@ -72,6 +72,7 @@ void memory_free(void* ptr)
 	struct Memory_Allocation* allocation = memory_get_allocation_ptr(ptr);
 	//memory->allocated -= allocation->size;
 	memory.allocated -= allocation->size + sizeof(*allocation);
+	memory.freed += allocation->size + sizeof(*allocation);
 	free(allocation);
 }
 

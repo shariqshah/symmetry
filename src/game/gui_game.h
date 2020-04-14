@@ -8,6 +8,7 @@ struct Game_Gui
 	struct Gui* gui;
 	bool        show_next_level_dialog;
 	bool        show_restart_level_dialog;
+	bool        show_game_end_dialog;
 
 	struct
 	{
@@ -31,5 +32,6 @@ void gui_game_init(struct Game_Gui* game_gui);
 void gui_game_cleanup(struct Game_Gui* game_gui);
 void gui_game_update(struct Game_Gui* gui_game, float dt);
 void gui_game_show_door_locked_dialog(struct Game_Gui* game_gui, struct Door* door);
+void gui_game_show_game_end_dialog(struct Game_Gui* game_gui);
 
 #endif

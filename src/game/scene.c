@@ -496,7 +496,7 @@ void scene_write_entity_entry(struct Scene* scene, struct Entity* entity, struct
 	// For entities with archetypes, we only write the name of the archetype to load 
 	// them from and their transformation info
 	struct Parser_Object* object = parser_object_new(parser, PO_SCENE_ENTITY_ENTRY);
-	////hashmap_str_set(object->data, "filename", &scene->entity_archetypes[entity->archetype_index][0]);
+	hashmap_str_set(object->data, "filename", &scene->entity_archetypes[entity->archetype_index][0]);
 	hashmap_str_set(object->data, "name", entity->name);
 	hashmap_vec3_set(object->data, "position", &entity->transform.position);
 	hashmap_vec3_set(object->data, "scale", &entity->transform.scale);

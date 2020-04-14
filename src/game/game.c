@@ -105,6 +105,8 @@ bool game_init(struct Window* window, struct Hashmap* cvars)
 		hashmap_ptr_set(game_state->scene_func_table, "scene_func_stub", &scene_func_stub);
 		hashmap_ptr_set(game_state->scene_func_table, "scene_1_init", &scene_1_init);
 		hashmap_ptr_set(game_state->scene_func_table, "scene_1_cleanup", &scene_1_cleanup);
+		hashmap_ptr_set(game_state->scene_func_table, "scene_game_end_init", &scene_game_end_init);
+		hashmap_ptr_set(game_state->scene_func_table, "scene_game_end_cleanup", &scene_game_end_cleanup);
 
 		srand(time(NULL));
 

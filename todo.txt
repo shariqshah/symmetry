@@ -1,6 +1,6 @@
 Todo:
 	- Game End
-	- Add functionality to editor that enables adding a default empty entity without having to load it from file
+	- Save NONE when next_scene is not set and the scene is being saved
 	- Don't save parent entity's transform when saving entity archetype. Only save the transformation values for children
 	- Save case sensitive file names when scene entity entries
 	- Disbale all player actions when scene cleared dialog or scene restart dialog are active

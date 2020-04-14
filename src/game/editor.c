@@ -2761,7 +2761,7 @@ void editor_window_settings_scene(struct nk_context* context, struct Editor* edi
 	}
 	else
 	{
-		editor->window_settings_renderer = 0;
+		editor->window_settings_scene = 0;
 	}
 	nk_end(context);
 }

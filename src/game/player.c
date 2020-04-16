@@ -28,6 +28,7 @@
 
 static void player_on_mousebutton_released(const struct Event* event);
 static void player_on_input_map_released(const struct Event* event);
+static void player_on_scene_loaded(const struct Event* event);
 
 void player_init(struct Player* player, struct Scene* scene)
 {
@@ -128,12 +129,16 @@ void player_init(struct Player* player, struct Scene* scene)
 
 	event_manager_subscribe(game_state->event_manager, EVT_MOUSEBUTTON_RELEASED, &player_on_mousebutton_released);
 	event_manager_subscribe(game_state->event_manager, EVT_INPUT_MAP_RELEASED, &player_on_input_map_released);
+	event_manager_subscribe(game_state->event_manager, EVT_SCENE_LOADED, &player_on_scene_loaded);
 }
 
 void player_destroy(struct Player* player)
 {
-	event_manager_unsubscribe(game_state_get()->event_manager, EVT_MOUSEBUTTON_RELEASED, &player_on_mousebutton_released);
-	event_manager_unsubscribe(game_state_get()->event_manager, EVT_INPUT_MAP_RELEASED, &player_on_input_map_released);
+	struct Game_State* game_state = game_state_get();
+	struct Event_Manager* event_manager = game_state->event_manager;
+	event_manager_unsubscribe(event_manager, EVT_MOUSEBUTTON_RELEASED, &player_on_mousebutton_released);
+	event_manager_unsubscribe(event_manager, EVT_INPUT_MAP_RELEASED, &player_on_input_map_released);
+	event_manager_unsubscribe(event_manager, EVT_SCENE_LOADED, &player_on_scene_loaded);
     entity_reset(player, player->base.id);
 	scene_entity_base_remove(game_state_get()->scene, &player->base);
     player->base.flags = EF_NONE;
@@ -447,5 +452,19 @@ void player_update(struct Player* player, float dt)
 		player->muzzle_flash_mesh->base.transform.scale.y -= player->weapon_light_intensity_decay * dt;
 		player->muzzle_flash_mesh->base.transform.scale.z -= player->weapon_light_intensity_decay * dt;
 		transform_update_transmat(player->muzzle_flash_mesh);
+	}
+}
+
+void player_on_scene_loaded(const struct Event* event)
+{
+	struct Scene* scene = game_state_get()->scene;
+	struct Player* player = &scene->player;
+
+	struct Entity* player_start = scene_entity_find(scene, "PLAYER_START");
+	if(player_start)
+	{
+		vec3 abs_pos = { 0.f };
+		transform_get_absolute_position(player_start, &abs_pos);
+		transform_set_position(player, &abs_pos);
 	}
 }

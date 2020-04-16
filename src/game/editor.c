@@ -1489,21 +1489,19 @@ void editor_camera_update(struct Editor* editor, float dt)
 	if(game_state->console->visible || nk_item_is_any_active(&gui->context))
 		return;
 
+    static float current_pitch = 0.f;
     struct Camera* editor_camera = &game_state->scene->cameras[CAM_EDITOR];
-    static float total_up_down_rot = 0.f;
-    float move_speed = editor->camera_move_speed, turn_speed = editor->camera_turn_speed;
-    float turn_up_down        = 0.f;
-    float turn_left_right     = 0.f;
-    float max_up_down         = 60.f;
-	vec3  offset              = { 0, 0, 0 };
-	vec3  rot_axis_up_down    = { 1, 0, 0 };
-	vec3  rot_axis_left_right = { 0, 1, 0 };
+    float move_speed  = editor->camera_move_speed, turn_speed = editor->camera_turn_speed;
+    float pitch       = 0.f;
+    float yaw         = 0.f;
+    float max_pitch = 60.f;
+	vec3  offset      = { 0, 0, 0 };
 
     /* Look around */
-    if(input_map_state_get("Turn_Up",    KS_PRESSED)) turn_up_down    += turn_speed;
-    if(input_map_state_get("Turn_Down",  KS_PRESSED)) turn_up_down    -= turn_speed;
-    if(input_map_state_get("Turn_Right", KS_PRESSED)) turn_left_right += turn_speed;
-    if(input_map_state_get("Turn_Left",  KS_PRESSED)) turn_left_right -= turn_speed;
+    if(input_map_state_get("Turn_Up",    KS_PRESSED)) pitch += turn_speed;
+    if(input_map_state_get("Turn_Down",  KS_PRESSED)) pitch -= turn_speed;
+    if(input_map_state_get("Turn_Right", KS_PRESSED)) yaw   += turn_speed;
+    if(input_map_state_get("Turn_Left",  KS_PRESSED)) yaw   -= turn_speed;
 
     if(input_mousebutton_state_get(MSB_RIGHT, KS_PRESSED) && !nk_item_is_any_active(&gui->context))
     {
@@ -1517,36 +1515,32 @@ void editor_camera_update(struct Editor* editor, float dt)
 			cursor_lr = cursor_ud = 0;
 		}
 
-		turn_up_down = -cursor_ud * turn_speed * dt * scale;
-		turn_left_right = cursor_lr * turn_speed * dt * scale;
+		pitch = -cursor_ud * turn_speed * dt * scale;
+		yaw = cursor_lr * turn_speed * dt * scale;
     }
     else
     {
-		turn_up_down *= dt;
-		turn_left_right *= dt;
+		pitch *= dt;
+		yaw *= dt;
     }
 
-    total_up_down_rot += turn_up_down;
-    if(total_up_down_rot >= max_up_down)
+	current_pitch = quat_get_pitch(&editor_camera->base.transform.rotation);
+	float new_pitch = current_pitch + pitch;
+    if(new_pitch > max_pitch)
+		pitch = 0.f;
+
+    if(new_pitch < -max_pitch)
+		pitch = 0.f;
+
+    if(yaw != 0.f)
     {
-		total_up_down_rot = max_up_down;
-		turn_up_down = 0.f;
-    }
-    else if(total_up_down_rot <= -max_up_down)
-    {
-		total_up_down_rot = -max_up_down;
-		turn_up_down = 0.f;
+		transform_rotate(editor_camera, &UNIT_Y, -yaw, TS_WORLD);
     }
 
-    if(turn_left_right != 0.f)
-    {
-		transform_rotate(editor_camera, &rot_axis_left_right, -turn_left_right, TS_WORLD);
-    }
-
-    if(turn_up_down != 0.f)
+    if(pitch != 0.f)
     {
 		//transform_rotate(editor_camera, &rot_axis_up_down, turn_up_down, TS_LOCAL);
-		transform_rotate(editor_camera, &rot_axis_up_down, turn_up_down, TS_LOCAL);
+		transform_rotate(editor_camera, &UNIT_X, pitch, TS_LOCAL);
     }
 
     /* Movement */

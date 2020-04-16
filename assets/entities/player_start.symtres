@@ -1,0 +1,13 @@
+Entity
+{
+	type : 1
+	scale : 1.000 1.000 1.000
+	rotation : 0.000 0.000 0.000 1.000
+	position : 57.000 6.000 8.000
+	flags : 193
+	name : PLAYER_START
+	archetype : player_start
+	bounding_box_min : -0.500 -0.500 -0.500
+	bounding_box_max : 0.500 0.500 0.500
+}
+

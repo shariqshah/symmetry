@@ -382,7 +382,7 @@ bool scene_save(struct Scene* scene, const char* filename, int directory_type)
 	hashmap_bool_set(scene_data, "debug_draw_physics", render_settings->debug_draw_physics);
 	if(scene->init)    hashmap_str_set(scene_data, "init_func", scene->init_func_name);
 	if(scene->cleanup) hashmap_str_set(scene_data, "cleanup_func", scene->cleanup_func_name);
-	hashmap_str_set(scene_data, "next_scene", scene->next_level_filename != '\0' ? scene->next_level_filename : "NONE");
+	hashmap_str_set(scene_data, "next_scene", strnlen(scene->next_level_filename, MAX_FILENAME_LEN) != 0 ? scene->next_level_filename : "NONE");
 	hashmap_str_set(scene_data, "background_music_filename", scene->background_music_buffer->filename);
 	hashmap_float_set(scene_data, "background_music_volume", scene->background_music_volume);
 
@@ -409,6 +409,13 @@ bool scene_save(struct Scene* scene, const char* filename, int directory_type)
 
     parser_free(parser);
 	fclose(scene_file);
+
+	struct Event_Manager* event_manager = game_state_get()->event_manager;
+	struct Event* scene_saved_event = event_manager_create_new_event(event_manager);
+	scene_saved_event->type = EVT_SCENE_SAVED;
+	strncpy(scene_saved_event->scene_save.filename, filename, MAX_FILENAME_LEN);
+	event_manager_send_event(event_manager, scene_saved_event);
+
 	return true;
 }
 
@@ -475,7 +482,7 @@ void scene_write_entity_list(struct Scene* scene, int entity_type, struct Parser
 		
 		if(!(entity->flags & EF_TRANSIENT) && (entity->flags & EF_ACTIVE))
 		{
-			if(entity->archetype_index != -1)
+			if(entity->archetype_index != -1 && array_len(entity->transform.children) != 0)
 			{
 				scene_write_entity_entry(scene, entity, parser);
 			}
@@ -1523,7 +1530,7 @@ struct Entity* scene_entity_duplicate(struct Scene* scene, struct Entity* entity
 	assert(scene && entity);
 
 	struct Entity* new_entity = NULL;
-	if(entity->archetype_index != -1)
+	if(entity->archetype_index != -1 && array_len(entity->transform.children) > 0)
 	{
 		new_entity = entity_load(scene->entity_archetypes[entity->archetype_index], DIRT_INSTALL, true);
 		if(new_entity) scene_entity_parent_set(scene, new_entity, entity->transform.parent);
@@ -1566,7 +1573,6 @@ struct Entity* scene_entity_duplicate(struct Scene* scene, struct Entity* entity
 			return new_entity;
 		memcpy(new_mesh->model.material_params, mesh->model.material_params, sizeof(struct Variant) * MMP_MAX);
 		new_entity = &new_mesh->base;
-		//Handle collision related information here!
 	}
 	break;
 	case ET_SOUND_SOURCE:
@@ -1596,6 +1602,7 @@ struct Entity* scene_entity_duplicate(struct Scene* scene, struct Entity* entity
 	}
 
 	transform_copy(new_entity, entity, false);
+	new_entity->archetype_index = entity->archetype_index;
 
 	for(int i = 0; i < array_len(entity->transform.children); i++)
 	{

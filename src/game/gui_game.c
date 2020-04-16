@@ -138,6 +138,7 @@ void gui_game_show_door_locked_dialog(struct Game_Gui* game_gui, struct Door* do
 	struct Game_State* game_state = game_state_get();
 	if(game_state->game_mode == GAME_MODE_GAME)
 	{
+		context->style.window.fixed_background = game_gui->skin.hud_background;
 		struct Player* player = &game_state->scene->player;
 		int label_flags = NK_TEXT_ALIGN_CENTERED | NK_TEXT_ALIGN_MIDDLE;
 		int key_needed_gui_width = 350;
@@ -388,8 +389,8 @@ void gui_game_end_dialog(struct nk_context* context)
 	int row_height = 30;
 	int popup_x = 0;
 	int popup_y = 0;
-	int popup_width = 300;
-	int popup_height = 200;
+	int popup_width = 350;
+	int popup_height = 250;
 	int display_width = 0;
 	int display_height = 0;
 	int popup_flags = NK_WINDOW_TITLE | NK_WINDOW_BORDER;

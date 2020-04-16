@@ -78,6 +78,8 @@ static void editor_on_mousebutton_release(const struct Event* event);
 static void editor_on_mousemotion(const struct Event* event);
 static void editor_on_key_release(const struct Event* event);
 static void editor_on_key_press(const struct Event* event);
+static void editor_on_scene_saved(const struct Event* event);
+static void editor_on_scene_loaded(const struct Event* event);
 static void editor_camera_update(struct Editor* editor, float dt);
 static void editor_show_entity_in_list(struct Editor* editor, struct nk_context* context, struct Scene* scene, struct Entity* entity);
 static void editor_widget_color_combov3(struct nk_context* context, vec3* color, int width, int height);
@@ -153,6 +155,10 @@ void editor_init(struct Editor* editor)
 	editor->tool_translate_allowed             = false;
 	editor->entity_operation_save              = false;
 	editor->scene_operation_save               = false;
+	editor->notification_timer                 = 0.f;
+	editor->notification_timer_speed           = 1.f;
+	editor->notification_stay_time             = 3.f;
+	memset(editor->notification_message, '\0', MAX_EDITOR_NOTIFICATION_MESSAGE_LEN);
 
 	vec4_fill(&editor->cursor_entity_color, 0.f, 1.f, 1.f, 0.5f);
 	vec4_fill(&editor->hovered_entity_color, 0.53, 0.87, 0.28, 0.2f);
@@ -169,6 +175,8 @@ void editor_init(struct Editor* editor)
 	event_manager_subscribe(event_manager, EVT_MOUSEMOTION, &editor_on_mousemotion);
 	event_manager_subscribe(event_manager, EVT_KEY_PRESSED, &editor_on_key_press);
 	event_manager_subscribe(event_manager, EVT_KEY_RELEASED, &editor_on_key_release);
+	event_manager_subscribe(event_manager, EVT_SCENE_LOADED, &editor_on_scene_loaded);
+	event_manager_subscribe(event_manager, EVT_SCENE_SAVED, &editor_on_scene_saved);
 }
 
 void editor_init_entities(struct Editor* editor)
@@ -363,9 +371,21 @@ void editor_render(struct Editor* editor, struct Camera * active_camera)
 	}
 }
 
+void editor_set_notification(struct Editor* editor, const char* message, ...)
+{
+	va_list arg_list;
+	va_start(arg_list, message);
+	vsnprintf(editor->notification_message, MAX_EDITOR_NOTIFICATION_MESSAGE_LEN, message, arg_list);
+	va_end(arg_list);
+
+	editor->notification_timer = editor->notification_stay_time;
+}
+
 void editor_update(struct Editor* editor, float dt)
 {
 	editor_camera_update(editor, dt);
+	if(editor->notification_timer > 0.f)
+		editor->notification_timer -= editor->notification_timer_speed * dt;
 
 	struct Game_State* game_state = game_state_get();
 	struct nk_context* context    = &game_state->gui_editor->context;
@@ -620,7 +640,10 @@ void editor_update(struct Editor* editor, float dt)
 		nk_labelf(context, NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE, "Grid Length: %d", editor->grid_num_lines);
 
 		nk_layout_row_push(context, 0.34f);
-		nk_spacing(context, 1);
+		if(editor->notification_timer > 0.f)
+			nk_label_colored(context, editor->notification_message, LABEL_FLAGS_ALIGN_LEFT, nk_rgba_fv(&editor->cursor_entity_color));
+		else
+			nk_spacing(context, 1);
 		
 		nk_layout_row_push(context, 0.04f);
 		nk_labelf(context, NK_TEXT_ALIGN_RIGHT | NK_TEXT_ALIGN_MIDDLE, "v%d.%d.%d-%s", SYMMETRY_VERSION_MAJOR, SYMMETRY_VERSION_MINOR, SYMMETRY_VERSION_REVISION, SYMMETRY_VERSION_BRANCH);
@@ -1352,6 +1375,16 @@ void editor_tool_reset(struct Editor* editor)
 	editor->picking_enabled = true;
 }
 
+void editor_on_scene_loaded(const struct Event* event)
+{
+	editor_set_notification(game_state_get()->editor, "Scene %s Loaded", event->scene_load.filename);
+}
+
+void editor_on_scene_saved(const struct Event* event)
+{
+	editor_set_notification(game_state_get()->editor, "Scene %s Saved", event->scene_save.filename);
+}
+
 void editor_on_key_press(const struct Event* event)
 {
 	struct Game_State* game_state = game_state_get();
@@ -1621,8 +1654,9 @@ void editor_cleanup(struct Editor* editor)
 	event_manager_unsubscribe(event_manager, EVT_MOUSEMOTION, &editor_on_mousemotion);
 	event_manager_unsubscribe(event_manager, EVT_KEY_PRESSED, &editor_on_key_press);
 	event_manager_unsubscribe(event_manager, EVT_KEY_RELEASED, &editor_on_key_release);
+	event_manager_unsubscribe(event_manager, EVT_SCENE_LOADED, &editor_on_scene_loaded);
+	event_manager_unsubscribe(event_manager, EVT_SCENE_SAVED, &editor_on_scene_saved);
 }
-
 
 
 bool editor_widget_v3(struct nk_context* context, vec3* value, const char* name_x, const char* name_y, const char* name_z, float min, float max, float step, float inc_per_pixel, int row_height)

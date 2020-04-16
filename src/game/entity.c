@@ -110,11 +110,14 @@ bool entity_write(struct Entity* entity, struct Parser_Object* object, bool writ
 		return false;
 	}
 
+	struct Scene* scene = game_state_get()->scene;
+
 	/* First write all properties common to all entity types */
 	struct Hashmap* entity_data = object->data;
 
 	hashmap_str_set(entity_data, "name", entity->name);
 	hashmap_int_set(entity_data, "type", entity->type);
+	if(entity->archetype_index != -1) hashmap_str_set(entity_data, "archetype", scene->entity_archetypes[entity->archetype_index]);
 
 	/* Transform */
 	hashmap_vec3_set(entity_data, "position", &entity->transform.position);
@@ -304,7 +307,6 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 
 	const char* name = hashmap_str_get(object->data, "name");
 	int type = hashmap_int_get(object->data, "type");
-
 	if(!name)
 	{
 		log_error("entity:read", "No entity name provided");
@@ -537,6 +539,7 @@ struct Entity* entity_read(struct Parser_Object* object, struct Entity* parent_e
 	if(hashmap_value_exists(object->data, "flags")) new_entity->flags = hashmap_uint_get(object->data, "flags");
 
 	transform_update_transmat(new_entity);
+	if(hashmap_value_exists(object->data, "archetype")) new_entity->archetype_index = scene_entity_archetype_add(scene, hashmap_str_get(object->data, "archetype"));
 
 	return new_entity;
 }

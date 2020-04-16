@@ -1,0 +1,24 @@
+Entity
+{
+	type : 5
+	scale : 1.000 1.000 1.000
+	inner_angle : 20.0000
+	falloff : 1.5000
+	light_type : 1
+	depth_bias : 0.0005
+	rotation : -0.156 -0.705 -0.150 0.675
+	cast_shadow : false
+	intensity : 0.2500
+	color : 0.149 0.314 0.376
+	radius : 20.0000
+	position : 0.000 11.000 0.000
+	flags : 1
+	outer_angle : 30.0000
+	name : Fill_Light
+	archetype : fill_light
+	bounding_box_min : -0.500 -0.500 -0.500
+	pcf_enabled : false
+	valid : true
+	bounding_box_max : 0.500 0.500 0.500
+}
+

@@ -26,6 +26,7 @@ enum Event_Types
 	EVT_WINDOW_RESIZED,
 	EVT_TEXT_INPUT,
 	EVT_SCENE_LOADED,
+	EVT_SCENE_SAVED,
 	EVT_TRIGGER,
 	EVT_INPUT_MAP_PRESSED,
 	EVT_INPUT_MAP_RELEASED,
@@ -98,6 +99,11 @@ struct Scene_Loaded_Event
 	char filename[MAX_FILENAME_LEN];
 };
 
+struct Scene_Saved_Event
+{
+	char filename[MAX_FILENAME_LEN];
+};
+
 struct Trigger_Event
 {
 	struct Trigger* sender;
@@ -128,6 +134,7 @@ struct Event
 		struct Text_Input_Event     text_input;
 		struct Window_Resized_Event window_resize;
 		struct Scene_Loaded_Event   scene_load;
+		struct Scene_Saved_Event    scene_save;
 		struct Trigger_Event        trigger;
 		struct Input_Map_Event      input_map;
 		struct Player_Death_Event   player_death;

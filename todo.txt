@@ -1,6 +1,5 @@
 Todo:
-	- Game End
-	- Save NONE when next_scene is not set and the scene is being saved
+	- Add player start entity that specifies where the player must start at the beginning of every level
 	- Don't save parent entity's transform when saving entity archetype. Only save the transformation values for children
 	- Save case sensitive file names when scene entity entries
 	- Disbale all player actions when scene cleared dialog or scene restart dialog are active
@@ -17,12 +16,6 @@ Todo:
 	- Sky Cube maps
 	- Scrolling textures
 	- Apply the selected entity's transformation when duplicating an entity that has an entity archetype
-	- Gameplay level features:
-		- Each scene should always have a directional light that serves as the main source of light when there are no other lights
-		- Each scene should always have a texture cube that serves as the sky 
-		x Triggers
-		x Basic Enemy
-		? Split this todo into gameplay/engine todos
 	? Write entity flags to scene file or when saving entity to file?
 	? Add scene init/de-init function hashmap that maps a function that should be called when scene is loaded and unloaded. Save this to file for every scene or map functions based on the name of the scene?
 	- Release mouse when window loses focus and limit fps
@@ -436,3 +429,5 @@ Done:
 	* Enemies getting hit by bullets
 	* Fixed crash when default entity type is loaded from file
 	* Memory utils that provide allocation tracking
+	* Game End
+	* Save NONE when next_scene is not set and the scene is being saved

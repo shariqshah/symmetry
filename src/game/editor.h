@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include "../common/linmath.h"
+#include "../common/limits.h"
 
 struct Camera;
 struct Entity;
@@ -58,6 +59,10 @@ struct Editor
 	bool                picking_enabled;
 	bool                scene_operation_save;
 	bool                entity_operation_save;
+	float               notification_timer;
+	float               notification_timer_speed;
+	float               notification_stay_time;
+	char                notification_message[MAX_EDITOR_NOTIFICATION_MESSAGE_LEN];
 };
 
 void editor_init(struct Editor* editor_state);
@@ -67,5 +72,6 @@ void editor_render(struct Editor* editor_state, struct Camera* active_camera);
 void editor_update(struct Editor* editor_state, float dt);
 void editor_post_update(struct Editor* editor);
 void editor_cleanup(struct Editor* editor_state);
+void editor_set_notification(struct Editor* editor, const char* message, ...);
 
 #endif

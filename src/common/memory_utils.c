@@ -23,7 +23,7 @@ void* memory_allocate(size_t size)
 		//memory->allocated += size;
 		memory.allocated += size + sizeof(*allocation);
 	}
-	return allocation->allocation;
+	return allocation ? allocation->allocation : NULL;
 }
 
 void* memory_reallocate_(void** ptr, size_t size)
@@ -34,6 +34,7 @@ void* memory_reallocate_(void** ptr, size_t size)
 	}
 
 	struct Memory_Allocation* current_allocation = memory_get_allocation_ptr(*ptr);
+	int current_allocation_size = current_allocation->size;
 	void* reallocated_memory = realloc(current_allocation, sizeof(*current_allocation) + size);
 	if(!reallocated_memory)
 	{
@@ -41,13 +42,13 @@ void* memory_reallocate_(void** ptr, size_t size)
 	}
 	else
 	{
-		memory.allocated += (size - current_allocation->size);
-		current_allocation->size = size;
+		memory.allocated += (size - current_allocation_size);
+		struct Memory_Allocation* new_allocation = (struct Memory_Allocation*)reallocated_memory;
+		new_allocation->size = size;
 		current_allocation = reallocated_memory;
 	}
 
 	return current_allocation->allocation;
-
 }
 
 void* memory_allocate_and_clear(size_t count, size_t size)
@@ -63,7 +64,7 @@ void* memory_allocate_and_clear(size_t count, size_t size)
 		//memory->allocated += size;
 		memory.allocated += size + sizeof(*allocation);
 	}
-	return allocation->allocation;
+	return allocation ? allocation->allocation : NULL;
 }
 
 void memory_free(void* ptr)

@@ -35,13 +35,6 @@ namespace SoLoud
 	class AudioSourceInstance;
 	class AudioSourceInstance3dData;
 
-	struct AudioSourceResampleData
-	{
-		AudioSourceResampleData();
-		~AudioSourceResampleData();
-		float *mBuffer;
-	};
-
 	class AudioCollider
 	{
 	public:
@@ -126,7 +119,9 @@ namespace SoLoud
 			// If inaudible, should be killed (default = don't kill kill)
 			INAUDIBLE_KILL = 64,
 			// If inaudible, should still be ticked (default = pause)
-			INAUDIBLE_TICK = 128
+			INAUDIBLE_TICK = 128,
+			// Don't auto-stop sound
+			DISABLE_AUTOSTOP = 256
 		};
 		// Ctor
 		AudioSourceInstance();
@@ -158,6 +153,8 @@ namespace SoLoud
 		float mOverallRelativePlaySpeed;
 		// How long this stream has played, in seconds.
 		time mStreamTime;
+		// Position of this stream, in seconds.
+		time mStreamPosition;
 		// Fader for the audio panning
 		Fader mPanFader;
 		// Fader for the audio volume
@@ -180,21 +177,23 @@ namespace SoLoud
 		FilterInstance *mFilter[FILTERS_PER_STREAM];
 		// Initialize instance. Mostly internal use.
 		void init(AudioSource &aSource, int aPlayIndex);
-		// Buffers for the resampler
-		AudioSourceResampleData *mResampleData[2];
+		// Pointers to buffers for the resampler
+		float *mResampleData[2];
 		// Sub-sample playhead; 16.16 fixed point
 		unsigned int mSrcOffset;
 		// Samples left over from earlier pass
 		unsigned int mLeftoverSamples;
 		// Number of samples to delay streaming
 		unsigned int mDelaySamples;
+		// When looping, start playing from this time
+		time mLoopPoint;
 
-		// Get N samples from the stream to the buffer
-		virtual void getAudio(float *aBuffer, unsigned int aSamples) = 0;
+		// Get N samples from the stream to the buffer. Report samples written.
+		virtual unsigned int getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize) = 0;
 		// Has the stream ended?
 		virtual bool hasEnded() = 0;
 		// Seek to certain place in the stream. Base implementation is generic "tape" seek (and slow).
-		virtual void seek(time aSeconds, float *mScratch, unsigned int mScratchSize);
+		virtual result seek(time aSeconds, float *mScratch, unsigned int mScratchSize);
 		// Rewind stream. Base implementation returns NOT_IMPLEMENTED, meaning it can't rewind.
 		virtual result rewind();
 		// Get information. Returns 0 by default.
@@ -224,7 +223,9 @@ namespace SoLoud
 			// If inaudible, should be killed (default)
 			INAUDIBLE_KILL = 64,
 			// If inaudible, should still be ticked (default = pause)
-			INAUDIBLE_TICK = 128
+			INAUDIBLE_TICK = 128,
+			// Disable auto-stop
+			DISABLE_AUTOSTOP = 256
 		};
 		enum ATTENUATION_MODELS
 		{
@@ -268,6 +269,8 @@ namespace SoLoud
 		AudioAttenuator *mAttenuator;
 		// User data related to audio collider
 		int mColliderData;
+		// When looping, start playing from this time
+		time mLoopPoint;
 
 		// CTor
 		AudioSource();
@@ -277,6 +280,8 @@ namespace SoLoud
 		void setLooping(bool aLoop);
 		// Set whether only one instance of this sound should ever be playing at the same time
 		void setSingleInstance(bool aSingleInstance);
+		// Set whether audio should auto-stop when it ends or not
+		void setAutoStop(bool aAutoStop);
 		
 		// Set the minimum and maximum distances for 3d audio source (closer to min distance = max vol)
 		void set3dMinMaxDistance(float aMinDistance, float aMaxDistance);
@@ -284,8 +289,6 @@ namespace SoLoud
 		void set3dAttenuation(unsigned int aAttenuationModel, float aAttenuationRolloffFactor);
 		// Set doppler factor to reduce or enhance doppler effect, default = 1.0
 		void set3dDopplerFactor(float aDopplerFactor);
-		// Enable 3d processing. Implicitly set by play3d calls.
-		void set3dProcessing(bool aDo3dProcessing);
 		// Set the coordinates for this audio source to be relative to listener's coordinates.
 		void set3dListenerRelative(bool aListenerRelative);
 		// Enable delaying the start of the sound based on the distance.
@@ -298,6 +301,11 @@ namespace SoLoud
 
 		// Set behavior for inaudible sounds
 		void setInaudibleBehavior(bool aMustTick, bool aKill);
+
+		// Set time to jump to when looping
+		void setLoopPoint(time aLoopPoint);
+		// Get current loop point value
+		time getLoopPoint();
 
 		// Set filter. Set to NULL to clear the filter.
 		virtual void setFilter(unsigned int aFilterId, Filter *aFilter);

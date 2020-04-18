@@ -10,7 +10,7 @@
 
 struct Hashmap_Entry
 {
-    char*          key;
+    char           key[MAX_HASH_KEY_LEN];
     struct Variant value;
 };
 
@@ -32,12 +32,14 @@ static struct Hashmap_Entry* hashmap_entry_new(struct Hashmap* hashmap, const ch
 		if(strncmp(key, hashmap->buckets[index][i].key, MAX_HASH_KEY_LEN) == 0)
 		{
 			new_entry = &hashmap->buckets[index][i];
-			if(new_entry->key) memory_free(new_entry->key);
+			//if(new_entry->key) memory_free(new_entry->key);
+            memset(new_entry->key, '\0', MAX_HASH_KEY_LEN);
 			break;
 		}
 	}
 	if(!new_entry) new_entry = array_grow(hashmap->buckets[index], struct Hashmap_Entry);
-	new_entry->key = str_new(key);
+	//new_entry->key = str_new(key);
+    strncpy(new_entry->key, key, MAX_HASH_KEY_LEN);
 	new_entry->value.type = VT_NONE;
     variant_free(&new_entry->value);
     return new_entry;
@@ -57,8 +59,9 @@ struct Hashmap* hashmap_create(void)
     struct Hashmap* hashmap = memory_allocate(sizeof(*hashmap));
     if(!hashmap)
 		return NULL;
+
     for(int i = 0; i < HASH_MAP_NUM_BUCKETS; i++)
-	hashmap->buckets[i] = array_new(struct Hashmap_Entry);
+		hashmap->buckets[i] = array_new(struct Hashmap_Entry);
     hashmap->iter_bucket =  0;
     hashmap->iter_index  = -1;
     return hashmap;
@@ -72,11 +75,12 @@ void hashmap_free(struct Hashmap* hashmap)
 		for(int j = 0; j < array_len(hashmap->buckets[i]); j++)
 		{
 			struct Hashmap_Entry* entry = &hashmap->buckets[i][j];
-			if(entry->key)
-			{
-				memory_free(entry->key);
-				entry->key = NULL;
-			}
+			//if(entry->key)
+			//{
+			//	memory_free(entry->key);
+			//	entry->key = NULL;
+			//}
+            memset(entry->key, '\0', MAX_HASH_KEY_LEN);
 			variant_free(&entry->value);
 		}
 		array_free(hashmap->buckets[i]);

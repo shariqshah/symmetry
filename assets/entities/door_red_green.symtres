@@ -1,0 +1,116 @@
+Entity
+{
+	type : 10
+	scale : 1.000 1.000 1.000
+	door_state : 0
+	door_open_position : -7.0000
+	rotation : 0.000 0.000 0.000 1.000
+	door_close_position : 0.0000
+	door_speed : 6.0000
+	position : -9.000 1.000 -6.000
+	flags : 1
+	door_mask : 3
+	name : Door
+	archetype : door_blue
+	bounding_box_min : -0.500 -0.500 -0.500
+	bounding_box_max : 0.500 0.500 0.500
+}
+
+Entity
+{
+	type : 9
+	scale : 7.000 11.000 14.000
+	rotation : 0.000 0.000 0.000 1.000
+	trigger_mask : 1
+	position : 0.000 5.000 0.000
+	flags : 9
+	trigger_type : 1
+	name : Door_Trigger
+	bounding_box_min : -0.500 -0.500 -0.500
+	bounding_box_max : 0.500 0.500 0.500
+}
+
+Entity
+{
+	type : 7
+	scale : 1.000 1.000 1.000
+	volume : 1.0000
+	rolloff_factor : 0.9500
+	rotation : 0.000 0.000 0.000 1.000
+	loop : false
+	sound_min_distance : 0.0000
+	position : 0.000 0.000 0.000
+	flags : 9
+	source_filename : sounds/door_locked.wav
+	sound_type : 1
+	sound_max_distance : 30.0000
+	name : Door_Sound
+	bounding_box_min : -0.500 -0.500 -0.500
+	sound_attenuation_type : 2
+	paused : true
+	bounding_box_max : 0.500 0.500 0.500
+}
+
+Entity
+{
+	type : 6
+	scale : 7.000 12.000 0.200
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 0.055 0.863 0.839 1.000
+	geometry : cube.symbres
+	specular : 0.4000
+	diffuse_texture : default.tga
+	diffuse : 1.0000
+	position : 0.012 4.500 0.000
+	flags : 9
+	specular_strength : 62.0000
+	name : Door_Mesh
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 1
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 0.870 0.320 0.400 1.000
+	geometry : cube.symbres
+	diffuse_texture : white.tga
+	position : 4.000 7.500 0.000
+	flags : 9
+	name : Door_Key_Indicator_Red
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 1
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 0.530 0.670 0.280 1.000
+	geometry : cube.symbres
+	diffuse_texture : white.tga
+	position : 4.000 5.500 0.000
+	flags : 9
+	name : Door_Key_Indicator_Green
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 1
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 0.100 0.100 0.100 1.000
+	geometry : cube.symbres
+	diffuse_texture : white.tga
+	position : 4.000 3.500 0.000
+	flags : 9
+	name : Door_Key_Indicator_Blue
+	uv_scale : 0.300 0.200
+}
+

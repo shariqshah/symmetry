@@ -93,6 +93,7 @@ void renderer_render(struct Renderer* renderer, struct Scene* scene)
 				 active_camera->clear_color.z,
 				 active_camera->clear_color.w);
 	glEnable(GL_CULL_FACE);
+	glEnable(GL_DITHER);
 	glCullFace(GL_BACK);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

@@ -278,7 +278,7 @@ static void gui_game_next_level_dialog(struct nk_context* context)
 	{
 		context->style.window.fixed_background = game_gui->skin.menu_background;
 		nk_window_set_focus(context, "Scene Cleared");
-		if(nk_popup_begin(context, NK_POPUP_DYNAMIC, "Scene Cleared!", popup_flags, nk_recti(popup_x, popup_y, popup_width, popup_height)))
+		if(nk_popup_begin(context, NK_POPUP_DYNAMIC, "Level Cleared!", popup_flags, nk_recti(popup_x, popup_y, popup_width, popup_height)))
 		{
 			nk_layout_row_dynamic(context, row_height, 1);
 			if(nk_button_label(context, "Restart Level"))

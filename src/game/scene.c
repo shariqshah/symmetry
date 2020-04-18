@@ -115,7 +115,7 @@ void scene_init(struct Scene* scene)
 	editor_camera_init(game_state->editor, game_state->cvars);
 	editor_init_entities(game_state->editor);
 
-	scene->background_music_volume = 0.1f;
+	scene->background_music_volume = 0.01f;
 	scene_background_music_set(scene, "sounds/scene_background_music_default.ogg");
 
 	if(game_state->game_mode == GAME_MODE_PAUSE)

@@ -246,27 +246,32 @@ void transform_destroy(struct Entity* entity)
 {
 	struct Transform* transform = &entity->transform;
 	// Remove children
-	int children = array_len(transform->children);
-	if(children > 0)
+	if(transform->children)
 	{
-		for(int i = 0; i < children; i++)
+		int children = array_len(transform->children);
+		if(children > 0)
 		{
-			struct Entity* child = transform->children[i];
-			child->flags |= EF_MARKED_FOR_DELETION;
+			for(int i = 0; i < children; i++)
+			{
+				struct Entity* child = transform->children[i];
+				child->flags |= EF_MARKED_FOR_DELETION;
+				child->transform.parent = NULL;
+			}
 		}
+		array_free(transform->children);
 	}
 
 	// Remove this entity from parent's children
-	if(entity->transform.parent)
+	if(transform->parent)
 		transform_child_remove(entity->transform.parent, entity);
 		
 	/* Remove transform */
-	array_free(transform->children);
 	vec3_fill(&transform->position, 0.f, 0.f, 0.f);
 	vec3_fill(&transform->scale, 1.f, 1.f, 1.f);
 	quat_identity(&transform->rotation);
 	mat4_identity(&transform->trans_mat);
 	transform->parent = NULL;
+	transform->children = NULL;
 	transform->is_modified = false;
 }
 

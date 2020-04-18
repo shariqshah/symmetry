@@ -42,7 +42,7 @@ void entity_init(struct Entity* entity, const char* name, struct Entity* parent)
 	entity->name[MAX_ENTITY_NAME_LEN - 1] = '\0';
 	entity->type                     = ET_DEFAULT;
 	entity->archetype_index          = -1;
-	entity->flags                    = EF_ACTIVE;
+	entity->flags                    = EF_NONE;
 	entity_bounding_box_reset(entity, false);
 	entity->derived_bounding_box.min = (vec3){ -0.5f, -0.5f, -0.5f };
 	entity->derived_bounding_box.max = (vec3){  0.5f,  0.5f,  0.5f };
@@ -59,6 +59,7 @@ void entity_reset(struct Entity* entity, int id)
 	entity_bounding_box_reset(entity, false);
 	entity->derived_bounding_box.min = (vec3){ -0.5f, -0.5f, -0.5f };
 	entity->derived_bounding_box.max = (vec3){  0.5f,  0.5f,  0.5f };
+	transform_destroy(entity);
 	memset(entity->name, '\0', MAX_ENTITY_NAME_LEN);
 }
 

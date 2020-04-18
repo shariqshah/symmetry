@@ -46,22 +46,33 @@ void scene_init(struct Scene* scene)
 	scene->root_entity.id = 0;
 	scene->root_entity.type = ET_ROOT;
 
-	for(int i = 0; i < MAX_SCENE_ENTITIES; i++) entity_reset(&scene->entities[i], i);
+	for(int i = 0; i < MAX_SCENE_ENTITIES; i++) 
+	{
+		entity_init(&scene->entities[i], NULL, NULL);
+		scene->entities[i].id = i;
+	}
+
 	for(int i = 0; i < MAX_SCENE_LIGHTS; i++)
 	{
-		entity_reset(&scene->lights[i], i);
-		scene->lights[i].type = ET_LIGHT;
+		entity_init(&scene->lights[i], NULL, NULL);
+		scene->lights[i].base.id = i;
 	}
 	
 	for(int i = 0; i < MAX_SCENE_STATIC_MESHES; i++)
 	{
-		entity_reset(&scene->static_meshes[i], i);
+		entity_init(&scene->static_meshes[i], NULL, NULL);
+		scene->static_meshes[i].base.id = i;
 		struct Static_Mesh* mesh = &scene->static_meshes[i];
 		mesh->model.geometry_index = -1;
 		mesh->model.material = NULL;
 	}
 
-	for(int i = 0; i < MAX_SCENE_SOUND_SOURCES; i++) entity_reset(&scene->sound_sources[i], i);
+	for(int i = 0; i < MAX_SCENE_SOUND_SOURCES; i++)
+	{
+		entity_init(&scene->sound_sources[i], NULL, NULL);
+		scene->sound_sources[i].base.id = i;
+	}
+
 	int width = 1280, height = 720;
 	window_get_drawable_size(game_state->window, &width, &height);
 
@@ -78,26 +89,26 @@ void scene_init(struct Scene* scene)
 
 	for(int i = 0; i < MAX_SCENE_ENEMIES; i++)
 	{
-		entity_reset(&scene->enemies[i], i);
-		scene->enemies[i].base.type = ET_ENEMY;
+		entity_init(&scene->enemies[i], NULL, NULL);
+		scene->enemies[i].base.id = i;
 	}
 
 	for(int i = 0; i < MAX_SCENE_TRIGGERS; i++)
 	{
-		entity_reset(&scene->triggers[i], i);
-		scene->triggers[i].base.type = ET_TRIGGER;
+		entity_init(&scene->triggers[i], NULL, NULL);
+		scene->triggers[i].base.id = i;
 	}
 
 	for(int i = 0; i < MAX_SCENE_DOORS; i++)
 	{
-		entity_reset(&scene->doors[i], i);
-		scene->doors[i].base.type = ET_DOOR;
+		entity_init(&scene->doors[i], NULL, NULL);
+		scene->doors[i].base.id = i;
 	}
 
 	for(int i = 0; i < MAX_SCENE_PICKUPS; i++)
 	{
-		entity_reset(&scene->pickups[i], i);
-		scene->pickups[i].base.type = ET_PICKUP;
+		entity_init(&scene->pickups[i], NULL, NULL);
+		scene->pickups[i].base.id = i;
 	}
 
 	player_init(&scene->player, scene);
@@ -506,7 +517,7 @@ void scene_write_entity_entry(struct Scene* scene, struct Entity* entity, struct
 void scene_destroy(struct Scene* scene)
 {
 	assert(scene);
-	scene->cleanup(scene);
+	if(scene->cleanup) scene->cleanup(scene);
 
 	for(int i = 0; i < MAX_SCENE_ENTITIES; i++)          scene_entity_base_remove(scene, &scene->entities[i]);
 	for(int i = 0; i < MAX_SCENE_CAMERAS; i++)           scene_camera_remove(scene, &scene->cameras[i]);
@@ -728,7 +739,9 @@ struct Entity* scene_entity_create(struct Scene* scene, const char* name, struct
 	{
 		if(!parent)
 			parent = &scene->root_entity;
+		entity_reset(new_entity, new_entity->id);
 		entity_init(new_entity, name, parent);
+		new_entity->flags |= EF_ACTIVE;
 	}
 	else
 	{
@@ -754,8 +767,10 @@ struct Light* scene_light_create(struct Scene* scene, const char* name, struct E
 
 	if(new_light)
 	{
+		entity_reset(new_light, new_light->base.id);
 		entity_init(&new_light->base, name, parent ? parent : &scene->root_entity);
 		new_light->base.type = ET_LIGHT;
+		new_light->base.flags |= EF_ACTIVE;
 		light_init(new_light, light_type);
 	}
 	else
@@ -782,8 +797,10 @@ struct Camera* scene_camera_create(struct Scene* scene, const char* name, struct
 
 	if(new_camera)
 	{
+		entity_reset(new_camera, new_camera->base.id);
 		entity_init(&new_camera->base, name, parent ? parent : &scene->root_entity);
 		new_camera->base.type = ET_CAMERA;
+		new_camera->base.flags |= EF_ACTIVE;
 		camera_init(new_camera, width, height);
 	}
 	else
@@ -810,8 +827,10 @@ struct Static_Mesh* scene_static_mesh_create(struct Scene* scene, const char* na
 
 	if(new_static_mesh)
 	{
+		entity_reset(new_static_mesh, new_static_mesh->base.id);
 		entity_init(&new_static_mesh->base, name, parent ? parent : &scene->root_entity);
 		new_static_mesh->base.type = ET_STATIC_MESH;
+		new_static_mesh->base.flags |= EF_ACTIVE;
 		model_init(&new_static_mesh->model, new_static_mesh, geometry_name, material_type);
 		vec3_assign(&new_static_mesh->base.bounding_box.min, &geom_get(new_static_mesh->model.geometry_index)->bounding_box.min);
 		vec3_assign(&new_static_mesh->base.bounding_box.max, &geom_get(new_static_mesh->model.geometry_index)->bounding_box.max);
@@ -819,7 +838,7 @@ struct Static_Mesh* scene_static_mesh_create(struct Scene* scene, const char* na
 	}
 	else
 	{
-		log_error("scene:model_create", "Max model limit reached!");
+		log_error("scene:static_mesh_create", "Max static mesh limit reached!");
 	}
 
 	return new_static_mesh;
@@ -842,7 +861,9 @@ struct Sound_Source* scene_sound_source_create(struct Scene* scene, const char* 
 
 	if(new_sound_source)
 	{
+		entity_reset(new_sound_source, new_sound_source->base.id);
 		entity_init(&new_sound_source->base, name, parent ? parent : &scene->root_entity);
+		new_sound_source->base.flags |= EF_ACTIVE;
 		new_sound_source->base.type = ET_SOUND_SOURCE;
 		struct Entity* entity = &new_sound_source->base;
 
@@ -902,7 +923,9 @@ struct Enemy* scene_enemy_create(struct Scene* scene, const char* name, struct E
 
 	if(new_enemy)
 	{
+		entity_reset(new_enemy, new_enemy->base.id);
 		entity_init(&new_enemy->base, name, parent ? parent : &scene->root_entity);
+		new_enemy->base.flags |= EF_ACTIVE;
 		enemy_init(new_enemy, type);
 	}
 	else
@@ -929,7 +952,9 @@ struct Door* scene_door_create(struct Scene* scene, const char* name, struct Ent
 
 	if(new_door)
 	{
+		entity_reset(new_door, new_door->base.id);
 		entity_init(&new_door->base, name, parent ? parent : &scene->root_entity);
+		new_door->base.flags |= EF_ACTIVE;
 		door_init(new_door, mask);
 	}
 	else
@@ -956,7 +981,9 @@ struct Pickup* scene_pickup_create(struct Scene* scene, const char* name, struct
 
 	if(new_pickup)
 	{
+		entity_reset(new_pickup, new_pickup->base.id);
 		entity_init(&new_pickup->base, name, parent ? parent : &scene->root_entity);
+		new_pickup->base.flags |= EF_ACTIVE;
 		pickup_init(new_pickup, type);
 	}
 	else
@@ -983,7 +1010,9 @@ struct Trigger* scene_trigger_create(struct Scene* scene, const char* name, stru
 
 	if(new_trigger)
 	{
+		entity_reset(new_trigger, new_trigger->base.id);
 		entity_init(&new_trigger->base, name, parent ? parent : &scene->root_entity);
+		new_trigger->base.flags |= EF_ACTIVE;
 		trigger_init(new_trigger, type, mask);
 	}
 	else

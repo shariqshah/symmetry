@@ -8,3 +8,5 @@
 #define SYMMETRY_VERSION_BRANCH "dev"
 
 #endif
+
+#endif

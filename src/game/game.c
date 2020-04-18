@@ -126,15 +126,15 @@ bool game_init(struct Window* window, struct Hashmap* cvars)
 		scene_init(game_state->scene);
 		editor_init(game_state->editor);
 
+		event_manager_subscribe(game_state->event_manager, EVT_SCENE_LOADED, &game_on_scene_loaded);
+		event_manager_subscribe(game_state->event_manager, EVT_SCENE_CLEARED, &game_on_scene_cleared);
+		event_manager_subscribe(game_state->event_manager, EVT_PLAYER_DIED, &game_on_player_death);
+
+		game_state->is_initialized = scene_load(game_state->scene, "scene_1", DIRT_INSTALL) ? true : false;
+		/* Debug scene setup */
+		//game_scene_setup();
     }
 	
-    /* Debug scene setup */
-    //game_scene_setup();
-	event_manager_subscribe(game_state->event_manager, EVT_SCENE_LOADED, &game_on_scene_loaded);
-	event_manager_subscribe(game_state->event_manager, EVT_SCENE_CLEARED, &game_on_scene_cleared);
-	event_manager_subscribe(game_state->event_manager, EVT_PLAYER_DIED, &game_on_player_death);
-
-    game_state->is_initialized = scene_load(game_state->scene, "scene_1", DIRT_INSTALL) ? true : false;
 	return game_state->is_initialized;
 }
 

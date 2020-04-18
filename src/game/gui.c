@@ -239,6 +239,7 @@ void gui_render(struct Gui* gui, enum nk_anti_aliasing AA)
             offset += cmd->elem_count;
         }
         nk_clear(&gui->context);
+        nk_buffer_clear(&gui->commands);
     }
 
 	shader_unbind();

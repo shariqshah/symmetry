@@ -168,7 +168,7 @@ static void update_frustum(struct Camera* camera)
 
 	camera->frustum[FP_LEFT].x = mvp[3] + mvp[0];
 	camera->frustum[FP_LEFT].y = mvp[7] + mvp[4];
-	camera->frustum[FP_LEFT].z = mvp[11] + mvp[2];
+	camera->frustum[FP_LEFT].z = mvp[11] + mvp[8];
 	camera->frustum[FP_LEFT].w = mvp[15] + mvp[12];
 
 	camera->frustum[FP_RIGHT].x = mvp[3] - mvp[0];
@@ -177,7 +177,7 @@ static void update_frustum(struct Camera* camera)
 	camera->frustum[FP_RIGHT].w = mvp[15] - mvp[12];
 
 	camera->frustum[FP_BOTTOM].x = mvp[3] + mvp[1];
-	camera->frustum[FP_BOTTOM].y = mvp[11] + mvp[5];
+	camera->frustum[FP_BOTTOM].y = mvp[7] + mvp[5];
 	camera->frustum[FP_BOTTOM].z = mvp[11] + mvp[9];
 	camera->frustum[FP_BOTTOM].w = mvp[15] + mvp[13];
 

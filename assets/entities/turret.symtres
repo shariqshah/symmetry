@@ -12,6 +12,7 @@ Entity
 	muzzle_light_intensity_min : 1
 	turn_speed_when_targetting : 50.0000
 	max_yaw : 60.0000
+	default_yaw : 0.000
 	position : 0.000 3.000 0.000
 	flags : 1
 	enemy_type : 0

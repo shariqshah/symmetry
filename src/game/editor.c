@@ -2372,8 +2372,9 @@ void editor_window_property_inspector(struct nk_context* context, struct Editor*
 						nk_property_float(context, "Turn Speed Default", 0.f, &enemy->Turret.turn_speed_default, FLT_MAX, 0.5f, 0.1f);
 						nk_property_float(context, "Turn Speed Targetting", 0.f, &enemy->Turret.turn_speed_when_targetting, FLT_MAX, 0.5f, 0.1f);
 						nk_property_float(context, "Turn Speed Current", 0.f, &enemy->Turret.turn_speed_current, FLT_MAX, 0.5f, 0.1f);
-						nk_property_float(context, "Max Yaw", 0.f, &enemy->Turret.max_yaw, FLT_MAX, 0.5f, 0.1f);
-						nk_property_float(context, "Target Yaw", 0.f, &enemy->Turret.target_yaw, FLT_MAX, 0.5f, 0.1f);
+						nk_property_float(context, "Default Yaw", -FLT_MAX, &enemy->Turret.default_yaw, FLT_MAX, 0.5f, 0.1f);
+						nk_property_float(context, "Max Yaw", -FLT_MAX, &enemy->Turret.max_yaw, FLT_MAX, 0.5f, 0.1f);
+						nk_property_float(context, "Target Yaw", -FLT_MAX, &enemy->Turret.target_yaw, FLT_MAX, 0.5f, 0.1f);
 						nk_property_float(context, "Pulsate Speed Scale", 0.f, &enemy->Turret.pulsate_speed_scale, FLT_MAX, 0.5f, 0.1f);
 						nk_property_float(context, "Pulsate Height", 0.f, &enemy->Turret.pulsate_height, FLT_MAX, 0.5f, 0.1f);
 						nk_property_float(context, "Attack Cooldown", 0.f, &enemy->Turret.attack_cooldown, FLT_MAX, 0.5f, 0.1f);

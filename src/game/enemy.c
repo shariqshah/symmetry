@@ -69,6 +69,7 @@ void enemy_init(struct Enemy* enemy, int type)
 		enemy->Turret.turn_speed_current         = enemy->Turret.turn_speed_default;
 		enemy->Turret.max_yaw                    = 60.f;
 		enemy->Turret.target_yaw                 = 0.f;
+		enemy->Turret.default_yaw                = 0.f;
 		enemy->Turret.pulsate_height             = 1.5f;
 		enemy->Turret.pulsate_speed_scale        = 0.1f;
 		enemy->Turret.attack_cooldown            = 0.05f;
@@ -191,6 +192,7 @@ struct Enemy* enemy_read(struct Parser_Object* object, const char* name, struct 
 		case ENEMY_TURRET:
 		{
 			if(hashmap_value_exists(object->data, "turn_speed_default")) new_enemy->Turret.turn_speed_default = hashmap_float_get(object->data, "turn_speed_default");
+			if(hashmap_value_exists(object->data, "default_yaw")) new_enemy->Turret.default_yaw = hashmap_float_get(object->data, "default_yaw");
 			if(hashmap_value_exists(object->data, "max_yaw")) new_enemy->Turret.max_yaw = hashmap_float_get(object->data, "max_yaw");
 			if(hashmap_value_exists(object->data, "pulsate_speed_scale")) new_enemy->Turret.pulsate_speed_scale = hashmap_float_get(object->data, "pulsate_speed_scale");
 			if(hashmap_value_exists(object->data, "pulsate_height")) new_enemy->Turret.pulsate_height = hashmap_float_get(object->data, "pulsate_height");
@@ -285,7 +287,6 @@ void enemy_on_scene_loaded(struct Event* event, void* enemy_ptr)
 void enemy_update_physics_turret(struct Enemy* enemy, struct Game_State* game_state, float fixed_dt)
 {
 	/* Turning/Rotation */
-	static vec3 yaw_axis = { 0.f, 1.f, 0.f };
 	if(enemy->Turret.scan)
 	{
 		float current_yaw = quat_get_yaw(&enemy->base.transform.rotation);
@@ -295,21 +296,23 @@ void enemy_update_physics_turret(struct Enemy* enemy, struct Game_State* game_st
 			yaw *= -1.f;
 
 		current_yaw += yaw;
-		if(current_yaw >= enemy->Turret.max_yaw)
+		if(enemy->Turret.yaw_direction_positive && current_yaw >= enemy->Turret.target_yaw)
 		{
 			yaw = 0.f;
 			enemy->Turret.yaw_direction_positive = false;
+			enemy->Turret.target_yaw = enemy->Turret.default_yaw - enemy->Turret.max_yaw;
 		}
-		else if(current_yaw <= -enemy->Turret.max_yaw)
+		else if(!enemy->Turret.yaw_direction_positive && current_yaw <= enemy->Turret.target_yaw)
 		{
 			yaw = 0.f;
 			enemy->Turret.yaw_direction_positive = true;
+			enemy->Turret.target_yaw = enemy->Turret.default_yaw + enemy->Turret.max_yaw;
 		}
 
 		if(yaw != 0.f)
-			transform_rotate(enemy, &yaw_axis, yaw, TS_LOCAL);
+			transform_rotate(enemy, &UNIT_Y, yaw, TS_LOCAL);
 	}
-	else if(!enemy->Turret.scan)
+	else
 	{
 		float epsilon = 0.5f;
 		float current_yaw = quat_get_yaw(&enemy->base.transform.rotation);
@@ -320,8 +323,9 @@ void enemy_update_physics_turret(struct Enemy* enemy, struct Game_State* game_st
 			if(current_yaw > enemy->Turret.target_yaw)
 				yaw *= -1.f;
 
-			transform_rotate(enemy, &yaw_axis, yaw, TS_LOCAL);
+			transform_rotate(enemy, &UNIT_Y, yaw, TS_LOCAL);
 		}
+		debug_vars_show_float("Difference ", difference);
 	}
 
 	/* Movement */
@@ -482,7 +486,7 @@ void enemy_state_set_turret(struct Enemy* enemy, int state)
 		enemy->Turret.time_elapsed_since_attack = 0.f;
 		enemy->Turret.pulsate = true;
 		enemy->Turret.scan = false;
-		enemy->Turret.target_yaw = 0.f;
+		enemy->Turret.target_yaw = enemy->Turret.default_yaw;
 		enemy->Turret.turn_speed_current = enemy->Turret.turn_speed_default;
 		vec3 default_position = { 0.f };
 		transform_set_position(enemy->mesh, &default_position);
@@ -493,7 +497,7 @@ void enemy_state_set_turret(struct Enemy* enemy, int state)
 		enemy->Turret.pulsate = false;
 		enemy->Turret.turn_speed_current = enemy->Turret.turn_speed_default;
 		enemy->Turret.scan = true;
-		enemy->Turret.target_yaw = enemy->Turret.yaw_direction_positive ? enemy->Turret.max_yaw : -enemy->Turret.max_yaw;
+		enemy->Turret.target_yaw = enemy->Turret.yaw_direction_positive ? (enemy->Turret.default_yaw + enemy->Turret.max_yaw) : (enemy->Turret.default_yaw - enemy->Turret.max_yaw);
 		vec4_assign(&model->material_params[MMP_DIFFUSE_COL].val_vec4, &enemy->Turret.color_alert);
 		enemy->Turret.time_elapsed_since_alert = 0.f;
 	}

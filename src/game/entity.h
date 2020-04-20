@@ -255,6 +255,7 @@ struct Enemy
 			float turn_speed_default;
 			float turn_speed_when_targetting;
 			float turn_speed_current;
+			float default_yaw;
 			float max_yaw;
 			float target_yaw;
 			bool  yaw_direction_positive;

@@ -1,0 +1,134 @@
+Entity
+{
+	type : 8
+	scale : 1.000 1.000 1.000
+	pulsate_height : 1.5000
+	vision_range : 25.0000
+	pulsate_speed_scale : 0.1000
+	rotation : 0.000 -0.923 0.000 0.384
+	health : 116
+	alert_cooldown : 1.0000
+	color_alert : 1.000 1.000 0.000 1.000
+	muzzle_light_intensity_min : 1
+	default_yaw : -135.0000
+	turn_speed_when_targetting : 50.0000
+	max_yaw : 60.0000
+	position : 104.000 12.000 -66.000
+	flags : 1
+	enemy_type : 0
+	muzzle_light_intensity_max : 5
+	turn_speed_default : 50.0000
+	turn_direction_positive : true
+	attack_cooldown : 0.0500
+	name : Turret
+	archetype : turret_neg_135
+	bounding_box_min : -1.000 -0.500 -1.000
+	muzzle_light_intensity_decay : 30
+	color_default : 0.000 1.000 1.000 1.000
+	hit_chance : 4
+	color_attack : 1.000 0.000 0.000 1.000
+	bounding_box_max : 1.000 1.000 1.000
+	damage : 10
+}
+
+Entity
+{
+	type : 5
+	scale : 1.000 1.000 1.000
+	inner_angle : 50.0000
+	falloff : 1.5000
+	light_type : 0
+	depth_bias : 0.0005
+	rotation : 0.000 0.000 0.000 1.000
+	cast_shadow : false
+	intensity : 0.0000
+	color : 0.900 0.400 0.000
+	radius : 25.0000
+	position : 0.000 0.000 -1.000
+	flags : 9
+	outer_angle : 80.0000
+	name : Enemy_Muzzle_Light
+	bounding_box_min : -0.500 -0.500 -0.500
+	pcf_enabled : false
+	valid : true
+	bounding_box_max : 0.500 0.500 0.500
+}
+
+Entity
+{
+	type : 6
+	scale : 0.000 0.000 0.000
+	material : 0
+	rotation : 0.707 0.000 0.000 0.707
+	diffuse_color : 0.900 0.400 0.000 1.000
+	geometry : muzzle_flash.symbres
+	specular : 1.0000
+	diffuse_texture : white.tga
+	diffuse : 6.0000
+	position : 0.000 -0.500 -1.000
+	flags : 9
+	specular_strength : 50.0000
+	name : Enemy_Muzzle_Light_Mesh
+	uv_scale : 1.000 1.000
+}
+
+Entity
+{
+	type : 7
+	scale : 1.000 1.000 1.000
+	volume : 1.0000
+	rolloff_factor : 0.9500
+	rotation : 0.000 0.000 0.000 1.000
+	loop : false
+	sound_min_distance : 0.0000
+	position : 0.000 0.000 0.000
+	flags : 9
+	source_filename : sounds/bullet_1.wav
+	sound_type : 1
+	sound_max_distance : 30.0000
+	name : Turret_Weapon_Sound
+	bounding_box_min : -0.500 -0.500 -0.500
+	sound_attenuation_type : 2
+	paused : true
+	bounding_box_max : 0.500 0.500 0.500
+}
+
+Entity
+{
+	type : 7
+	scale : 1.000 1.000 1.000
+	volume : 0.5000
+	rolloff_factor : 0.9500
+	rotation : 0.000 0.000 0.000 1.000
+	loop : true
+	sound_min_distance : 0.0000
+	position : 0.000 0.000 0.000
+	flags : 9
+	source_filename : sounds/turret_hum.wav
+	sound_type : 1
+	sound_max_distance : 40.0000
+	name : Turret_Ambient_Sound
+	bounding_box_min : -0.500 -0.500 -0.500
+	sound_attenuation_type : 2
+	paused : true
+	bounding_box_max : 0.500 0.500 0.500
+}
+
+Entity
+{
+	type : 6
+	scale : 1.000 1.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 0.000 1.000 1.000 1.000
+	geometry : suzanne.symbres
+	specular : 0.4000
+	diffuse_texture : default.tga
+	diffuse : 1.0000
+	position : 0.000 0.243 0.000
+	flags : 9
+	specular_strength : 62.0000
+	name : Turret_Mesh
+	uv_scale : 0.300 0.200
+}
+

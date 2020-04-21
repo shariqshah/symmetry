@@ -8,7 +8,7 @@ solution "Symmetry"
 	    postbuildcommands {"ln -fs " .. os.getcwd()  .. "/../assets " .. os.getcwd() .. "release"}
 		buildoptions {"-Wall", "-std=c99"}
 
-	configuration {"windows", "vs2019"}	
+	configuration {"windows", "vs2019"}
 		defines {"_CRT_SECURE_NO_WARNINGS"}
 		flags {"NoIncrementalLink", "NoEditAndContinue"}
 		local windowsPlatform = string.gsub(os.getenv("WindowsSDKVersion") or "10.0.16299.0", "\\", "")
@@ -17,7 +17,7 @@ solution "Symmetry"
 			action.vstudio.windowsTargetPlatformVersion    = windowsPlatform
 			action.vstudio.windowsTargetPlatformMinVersion = windowsPlatform
 		end
-	
+
    configuration "Debug"
 	    if (_ACTION ~= nil and _ACTION ~= "postbuild_copy" and _ACTION ~= "build_addon") then
 		   os.mkdir(_ACTION .. "/debug")
@@ -33,14 +33,14 @@ solution "Symmetry"
 		end
 		defines { "NDEBUG", "ExtraWarnings" }
 		flags { "OptimizeSpeed"}
-		
+
 	newaction {
 	   trigger = "postbuild_copy",
 	   description = "Action to copy relevant dlls to executable directory after build",
 	   execute = function ()
 		  -- local copy_dest_dir = ""
 		  -- local symlink_dest_dir = ""
-		  
+
 		  -- if(_ARGS[1] == "vs2019") then
 			 -- copy_dest_dir = "vs2019"
 			 -- symlink_dest_dir = "..\\..\\..\\assets"
@@ -60,7 +60,7 @@ solution "Symmetry"
 		description = "Generate version.h from git revision number",
 		execute  = function()
 			local major_version = 0
-			local minor_version = 3
+			local minor_version = 4
 			local revision_number = os.outputof("git rev-list --count HEAD")
 			local branch = os.outputof("git rev-parse --abbrev-ref HEAD")
 
@@ -136,18 +136,18 @@ solution "Symmetry"
 		configuration {"windows", "vs2019"}
 		    includedirs	{"../include/windows/sdl2/", "../include/common/soloud/", "../include/windows/"}
 		    libdirs {"../lib/windows/sdl2/", "../lib/windows/soloud/"}
-			
+
 		configuration {"not macosx", "Debug"}
 		    links {"soloud_x64_d"}
-		 
+
 		configuration "Debug"
 			defines {"GL_DEBUG_CONTEXT", "GL_BREAK_ON_ERROR"}
-		
+
 		configuration {"not macosx", "Release"}
 			links {"soloud_x64"}
-			
+
 		configuration {"windows", "Release", "vs2019"}
-			postbuildcommands 
+			postbuildcommands
 			{
 				"copy ..\\..\\lib\\windows\\sdl2\\SDL2.dll release\\ /Y",
 				"copy ..\\..\\lib\\windows\\soloud\\soloud_x64.dll release\\ /Y",
@@ -160,9 +160,9 @@ solution "Symmetry"
 				"mklink /D release\\assets ..\\..\\..\\assets"
 			}
 			links {"SDL2"}
-			
+
 		configuration {"windows", "Debug", "vs2019"}
-			postbuildcommands 
+			postbuildcommands
 			{
 				"copy ..\\..\\lib\\windows\\sdl2\\SDL2.dll debug\\ /Y",
 				"copy ..\\..\\lib\\windows\\soloud\\soloud_x64_d.dll debug\\ /Y",

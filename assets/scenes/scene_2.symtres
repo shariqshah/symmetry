@@ -1,15 +1,15 @@
 Scene_Config
 {
-	debug_draw_color : 0.800 0.400 0.100 1.000
+	debug_draw_color : 0.800 0.400 0.098 1.000
 	background_music_filename : sounds/scene_background_music_default.ogg
 	fog_type : 1
-	fog_density : 0.1000
-	fog_color : 0.310 0.412 0.529
+	fog_density : 0.0850
+	fog_color : 0.161 0.220 0.282
 	debug_draw_physics : false
-	fog_start_distance : 10.0000
-	fog_max_distance : 450.0000
-	cleanup_func : scene_1_cleanup
-	init_func : scene_1_init
+	fog_start_distance : 0.0000
+	fog_max_distance : 60.0000
+	cleanup_func : scene_game_end_cleanup
+	init_func : scene_game_end_init
 	background_music_volume : 0.0100
 	debug_draw_enabled : false
 	debug_draw_mode : 0
@@ -21,9 +21,9 @@ Player
 {
 	type : 2
 	scale : 1.000 1.000 1.000
-	rotation : 0.000 -0.706 0.000 -0.708
+	rotation : 0.000 0.701 0.000 0.713
 	player_key_mask : 0
-	position : 57.000 1.625 8.000
+	position : 21.961 1.625 7.695
 	flags : 1
 	player_health : 100
 	name : Player
@@ -98,6 +98,126 @@ Entity
 	type : 5
 	scale : 1.000 1.000 1.000
 	inner_angle : 20.0000
+	falloff : 1.5000
+	light_type : 2
+	depth_bias : 0.0005
+	rotation : 0.000 0.000 0.000 1.000
+	cast_shadow : false
+	intensity : 1.0000
+	color : 0.463 0.796 0.318
+	radius : 20.0000
+	position : 60.000 13.000 -49.000
+	flags : 1
+	outer_angle : 30.0000
+	name : Test_Light
+	archetype : spot
+	bounding_box_min : -0.500 -0.500 -0.500
+	pcf_enabled : false
+	valid : true
+	bounding_box_max : 0.500 0.500 0.500
+}
+
+Entity
+{
+	type : 5
+	scale : 1.000 1.000 1.000
+	inner_angle : 20.0000
+	falloff : 1.5000
+	light_type : 2
+	depth_bias : 0.0005
+	rotation : 0.000 0.000 0.000 1.000
+	cast_shadow : false
+	intensity : 1.0000
+	color : 0.463 0.796 0.318
+	radius : 20.0000
+	position : 85.000 13.000 -49.000
+	flags : 1
+	outer_angle : 30.0000
+	name : Test_Light
+	archetype : spot
+	bounding_box_min : -0.500 -0.500 -0.500
+	pcf_enabled : false
+	valid : true
+	bounding_box_max : 0.500 0.500 0.500
+}
+
+Entity
+{
+	type : 5
+	scale : 1.000 1.000 1.000
+	inner_angle : 20.0000
+	falloff : 1.5000
+	light_type : 2
+	depth_bias : 0.0005
+	rotation : 0.000 0.000 0.000 1.000
+	cast_shadow : false
+	intensity : 1.0000
+	color : 0.804 0.333 0.333
+	radius : 20.0000
+	position : 22.000 7.000 -22.000
+	flags : 1
+	outer_angle : 30.0000
+	name : Test_Light
+	archetype : spot
+	bounding_box_min : -0.500 -0.500 -0.500
+	pcf_enabled : false
+	valid : true
+	bounding_box_max : 0.500 0.500 0.500
+}
+
+Entity
+{
+	type : 5
+	scale : 1.000 1.000 1.000
+	inner_angle : 20.0000
+	falloff : 1.5000
+	light_type : 2
+	depth_bias : 0.0005
+	rotation : 0.000 0.000 0.000 1.000
+	cast_shadow : false
+	intensity : 1.0000
+	color : 0.467 0.667 0.886
+	radius : 20.0000
+	position : 20.000 16.000 61.000
+	flags : 1
+	outer_angle : 30.0000
+	name : Test_Light
+	archetype : spot
+	bounding_box_min : -0.500 -0.500 -0.500
+	pcf_enabled : false
+	valid : true
+	bounding_box_max : 0.500 0.500 0.500
+}
+
+Entity
+{
+	type : 5
+	scale : 1.000 1.000 1.000
+	inner_angle : 20.0000
+	falloff : 1.5000
+	light_type : 2
+	depth_bias : 0.0005
+	rotation : 0.000 0.000 0.000 1.000
+	cast_shadow : false
+	intensity : 1.0000
+	color : 0.467 0.667 0.886
+	radius : 20.0000
+	position : 20.000 7.000 36.000
+	flags : 1
+	outer_angle : 30.0000
+	name : Test_Light
+	archetype : spot
+	bounding_box_min : -0.500 -0.500 -0.500
+	pcf_enabled : false
+	valid : true
+	bounding_box_max : 0.500 0.500 0.500
+}
+
+Entity
+{
+	type : 5
+	scale : 1.000 1.000 1.000
+	inner_angle : 20.0000
 	falloff : 0.9500
 	light_type : 2
 	depth_bias : 0.0005
@@ -106,7 +226,31 @@ Entity
 	intensity : 1.0000
 	color : 1.000 1.000 1.000
 	radius : 14.0000
-	position : -9.000 6.000 -42.000
+	position : -18.000 9.000 9.000
+	flags : 1
+	outer_angle : 30.0000
+	name : Test_Light
+	archetype : spot
+	bounding_box_min : -0.500 -0.500 -0.500
+	pcf_enabled : false
+	valid : true
+	bounding_box_max : 0.500 0.500 0.500
+}
+
+Entity
+{
+	type : 5
+	scale : 1.000 1.000 1.000
+	inner_angle : 20.0000
+	falloff : 0.9500
+	light_type : 2
+	depth_bias : 0.0005
+	rotation : 0.000 0.000 0.000 1.000
+	cast_shadow : false
+	intensity : 1.0000
+	color : 1.000 1.000 1.000
+	radius : 14.0000
+	position : -38.000 9.000 9.000
 	flags : 1
 	outer_angle : 30.0000
 	name : Test_Light
@@ -120,7 +264,7 @@ Entity
 Entity
 {
 	type : 6
-	scale : 32.000 1.000 32.000
+	scale : 47.000 1.000 47.000
 	material : 0
 	rotation : 0.000 0.000 0.000 1.000
 	diffuse_color : 1.000 1.000 1.000 1.000
@@ -128,7 +272,7 @@ Entity
 	specular : 0.4000
 	diffuse_texture : white.tga
 	diffuse : 1.0000
-	position : 2.000 0.000 -10.000
+	position : 42.000 0.000 -10.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Floor_Tile
@@ -177,19 +321,19 @@ Entity
 Entity
 {
 	type : 6
-	scale : 3.000 3.000 1.000
+	scale : 4.000 18.000 1.000
 	material : 0
-	rotation : 0.000 0.000 0.000 1.000
+	rotation : 0.000 -0.707 0.000 0.707
 	diffuse_color : 1.000 1.000 1.000 1.000
-	geometry : wall_tile.symbres
+	geometry : floor_tile.symbres
 	specular : 0.4000
 	diffuse_texture : white.tga
 	diffuse : 1.0000
-	position : 0.000 6.000 -6.000
+	position : -10.000 0.000 8.000
 	flags : 1
 	specular_strength : 62.0000
-	name : Wall_Tile
-	archetype : wall_tile
+	name : Floor_Tile
+	archetype : floor_tile
 	uv_scale : 0.300 0.200
 }
 
@@ -280,7 +424,7 @@ Entity
 	specular : 0.4000
 	diffuse_texture : white.tga
 	diffuse : 1.0000
-	position : 31.000 6.000 -6.000
+	position : 32.000 6.000 -6.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
@@ -291,7 +435,7 @@ Entity
 Entity
 {
 	type : 6
-	scale : 3.000 3.000 1.000
+	scale : 5.000 3.000 1.000
 	material : 0
 	rotation : 0.000 0.000 0.000 1.000
 	diffuse_color : 1.000 1.000 1.000 1.000
@@ -299,7 +443,7 @@ Entity
 	specular : 0.4000
 	diffuse_texture : white.tga
 	diffuse : 1.0000
-	position : 31.000 6.000 -34.500
+	position : 36.000 6.000 -34.500
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
@@ -318,7 +462,7 @@ Entity
 	specular : 0.4000
 	diffuse_texture : white.tga
 	diffuse : 1.0000
-	position : 6.000 6.000 18.000
+	position : 6.000 6.000 21.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
@@ -329,7 +473,7 @@ Entity
 Entity
 {
 	type : 6
-	scale : 3.000 3.000 1.000
+	scale : 2.000 3.000 1.000
 	material : 0
 	rotation : 0.000 -0.707 0.000 0.707
 	diffuse_color : 1.000 1.000 1.000 1.000
@@ -337,7 +481,7 @@ Entity
 	specular : 0.4000
 	diffuse_texture : white.tga
 	diffuse : 1.0000
-	position : 6.000 6.000 0.000
+	position : 6.000 6.000 -2.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
@@ -386,26 +530,7 @@ Entity
 Entity
 {
 	type : 6
-	scale : 11.500 3.000 1.000
-	material : 0
-	rotation : 0.000 0.000 0.000 1.000
-	diffuse_color : 1.000 1.000 1.000 1.000
-	geometry : wall_tile.symbres
-	specular : 0.4000
-	diffuse_texture : white.tga
-	diffuse : 1.0000
-	position : -35.000 6.000 -34.000
-	flags : 1
-	specular_strength : 62.0000
-	name : Wall_Tile
-	archetype : wall_tile
-	uv_scale : 0.300 0.200
-}
-
-Entity
-{
-	type : 6
-	scale : 6.000 3.000 1.000
+	scale : 5.820 4.820 0.820
 	material : 0
 	rotation : 0.000 -0.707 0.000 0.707
 	diffuse_color : 1.000 1.000 1.000 1.000
@@ -413,26 +538,7 @@ Entity
 	specular : 0.4000
 	diffuse_texture : white.tga
 	diffuse : 1.0000
-	position : 34.000 6.000 35.000
-	flags : 1
-	specular_strength : 62.0000
-	name : Wall_Tile
-	archetype : wall_tile
-	uv_scale : 0.300 0.200
-}
-
-Entity
-{
-	type : 6
-	scale : 10.000 3.000 1.000
-	material : 0
-	rotation : 0.000 0.000 0.000 1.000
-	diffuse_color : 1.000 1.000 1.000 1.000
-	geometry : wall_tile.symbres
-	specular : 0.4000
-	diffuse_texture : white.tga
-	diffuse : 1.0000
-	position : -32.000 6.000 -6.000
+	position : 27.000 8.000 36.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
@@ -481,7 +587,26 @@ Entity
 Entity
 {
 	type : 6
-	scale : 8.000 3.000 1.000
+	scale : 4.000 1.000 5.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : floor_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : 20.000 3.500 44.500
+	flags : 1
+	specular_strength : 62.0000
+	name : Floor_Tile
+	archetype : floor_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 10.000 3.000 1.000
 	material : 0
 	rotation : 0.000 0.000 0.000 1.000
 	diffuse_color : 1.000 1.000 1.000 1.000
@@ -489,64 +614,7 @@ Entity
 	specular : 0.4000
 	diffuse_texture : white.tga
 	diffuse : 1.0000
-	position : 18.000 6.000 47.000
-	flags : 1
-	specular_strength : 62.0000
-	name : Wall_Tile
-	archetype : wall_tile
-	uv_scale : 0.300 0.200
-}
-
-Entity
-{
-	type : 6
-	scale : 16.000 3.000 1.000
-	material : 0
-	rotation : 0.000 -0.707 0.000 0.707
-	diffuse_color : 1.000 1.000 1.000 1.000
-	geometry : wall_tile.symbres
-	specular : 0.4000
-	diffuse_texture : white.tga
-	diffuse : 1.0000
-	position : -23.000 6.000 16.000
-	flags : 1
-	specular_strength : 62.0000
-	name : Wall_Tile
-	archetype : wall_tile
-	uv_scale : 0.300 0.200
-}
-
-Entity
-{
-	type : 6
-	scale : 3.000 3.000 1.000
-	material : 0
-	rotation : 0.000 -0.707 0.000 0.707
-	diffuse_color : 1.000 1.000 1.000 1.000
-	geometry : wall_tile.symbres
-	specular : 0.4000
-	diffuse_texture : white.tga
-	diffuse : 1.0000
-	position : -23.000 6.000 -28.000
-	flags : 1
-	specular_strength : 62.0000
-	name : Wall_Tile
-	archetype : wall_tile
-	uv_scale : 0.300 0.200
-}
-
-Entity
-{
-	type : 6
-	scale : 7.500 3.000 1.000
-	material : 0
-	rotation : 0.000 -0.707 0.000 0.707
-	diffuse_color : 1.000 1.000 1.000 1.000
-	geometry : wall_tile.symbres
-	specular : 0.4000
-	diffuse_texture : white.tga
-	diffuse : 1.0000
-	position : -51.500 6.000 -19.500
+	position : 24.000 6.000 -65.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
@@ -559,13 +627,13 @@ Entity
 	type : 6
 	scale : 8.000 3.000 1.000
 	material : 0
-	rotation : 0.000 0.000 0.000 1.000
+	rotation : 0.000 -0.707 0.000 0.707
 	diffuse_color : 1.000 1.000 1.000 1.000
 	geometry : wall_tile.symbres
 	specular : 0.4000
 	diffuse_texture : white.tga
 	diffuse : 1.0000
-	position : 22.000 6.000 -56.000
+	position : 6.000 6.000 -49.500
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
@@ -576,7 +644,7 @@ Entity
 Entity
 {
 	type : 6
-	scale : 6.000 3.000 1.000
+	scale : 5.820 4.820 0.820
 	material : 0
 	rotation : 0.000 -0.707 0.000 0.707
 	diffuse_color : 1.000 1.000 1.000 1.000
@@ -584,45 +652,7 @@ Entity
 	specular : 0.4000
 	diffuse_texture : white.tga
 	diffuse : 1.0000
-	position : 6.000 6.000 -44.500
-	flags : 1
-	specular_strength : 62.0000
-	name : Wall_Tile
-	archetype : wall_tile
-	uv_scale : 0.300 0.200
-}
-
-Entity
-{
-	type : 6
-	scale : 5.000 3.000 1.000
-	material : 0
-	rotation : 0.000 -0.707 0.000 0.707
-	diffuse_color : 1.000 1.000 1.000 1.000
-	geometry : wall_tile.symbres
-	specular : 0.4000
-	diffuse_texture : white.tga
-	diffuse : 1.0000
-	position : -23.000 6.000 -43.000
-	flags : 1
-	specular_strength : 62.0000
-	name : Wall_Tile
-	archetype : wall_tile
-	uv_scale : 0.300 0.200
-}
-
-Entity
-{
-	type : 6
-	scale : 6.000 3.000 1.000
-	material : 0
-	rotation : 0.000 -0.707 0.000 0.707
-	diffuse_color : 1.000 1.000 1.000 1.000
-	geometry : wall_tile.symbres
-	specular : 0.4000
-	diffuse_texture : white.tga
-	diffuse : 1.0000
-	position : 6.000 6.000 36.000
+	position : 13.000 8.000 36.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
@@ -641,7 +671,7 @@ Entity
 	specular : 0.4000
 	diffuse_texture : white.tga
 	diffuse : 1.0000
-	position : 25.500 6.000 -20.000
+	position : 26.500 6.000 -20.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
@@ -651,14 +681,770 @@ Entity
 
 Entity
 {
+	type : 6
+	scale : 3.000 3.000 1.000
+	material : 0
+	rotation : 0.000 -0.707 0.000 0.707
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : wall_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : 44.000 6.000 -38.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Wall_Tile
+	archetype : wall_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 4.000 3.000 1.000
+	material : 0
+	rotation : 0.000 -0.707 0.000 0.707
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : wall_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : 44.000 6.000 -58.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Wall_Tile
+	archetype : wall_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 7.000 3.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : wall_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : 58.000 6.000 -55.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Wall_Tile
+	archetype : wall_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 7.000 3.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : wall_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : 58.000 6.000 -40.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Wall_Tile
+	archetype : wall_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 4.000 18.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : floor_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : 20.000 0.000 37.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Floor_Tile
+	archetype : floor_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 7.000 3.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : wall_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : 86.000 14.000 -55.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Wall_Tile
+	archetype : wall_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 7.820 1.000 4.820
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : floor_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : 86.600 8.500 -47.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Floor_Tile
+	archetype : floor_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 7.000 3.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : wall_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : 86.000 14.000 -40.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Wall_Tile
+	archetype : wall_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 10.000 1.000 13.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : floor_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : 119.000 8.500 -47.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Floor_Tile
+	archetype : floor_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 13.000 3.000 1.000
+	material : 0
+	rotation : 0.000 0.707 0.000 0.707
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : wall_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : 138.000 14.000 -47.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Wall_Tile
+	archetype : wall_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 10.000 3.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : wall_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : 119.000 14.000 -72.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Wall_Tile
+	archetype : wall_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 10.000 3.000 1.000
+	material : 0
+	rotation : 0.000 -0.707 0.000 0.707
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : wall_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : 44.000 13.000 90.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Wall_Tile
+	archetype : wall_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 5.000 3.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : wall_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : 37.000 13.000 71.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Wall_Tile
+	archetype : wall_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 5.000 3.000 1.000
+	material : 0
+	rotation : 0.000 0.707 0.000 0.707
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : wall_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : 100.000 14.000 -65.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Wall_Tile
+	archetype : wall_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 5.820 2.820 0.820
+	material : 0
+	rotation : 0.000 -0.707 0.000 0.707
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : wall_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : 27.000 13.000 59.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Wall_Tile
+	archetype : wall_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 5.820 2.820 0.820
+	material : 0
+	rotation : 0.000 -0.707 0.000 0.707
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : wall_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : 13.000 13.000 59.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Wall_Tile
+	archetype : wall_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 11.000 1.000 13.000
+	material : 0
+	rotation : 0.000 -0.707 0.000 0.707
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : floor_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : 20.000 8.500 88.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Floor_Tile
+	archetype : floor_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 13.000 3.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : wall_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : 20.000 13.000 108.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Wall_Tile
+	archetype : wall_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 10.000 3.000 1.000
+	material : 0
+	rotation : 0.000 -0.707 0.000 0.707
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : wall_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : -5.000 13.000 88.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Wall_Tile
+	archetype : wall_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 5.000 3.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : wall_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : 3.000 13.000 70.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Wall_Tile
+	archetype : wall_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 10.000 3.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : wall_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : 119.000 14.000 -22.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Wall_Tile
+	archetype : wall_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 5.000 3.000 1.000
+	material : 0
+	rotation : 0.000 0.707 0.000 0.707
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : wall_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : 100.000 14.000 -30.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Wall_Tile
+	archetype : wall_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 4.000 18.000 1.000
+	material : 0
+	rotation : 0.000 -0.707 0.000 0.707
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : floor_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : 60.000 0.500 -48.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Floor_Tile
+	archetype : floor_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 4.000 1.000 4.000
+	material : 0
+	rotation : 0.000 -0.707 0.000 0.707
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : floor_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : 65.500 4.000 -48.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Floor_Tile
+	archetype : floor_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 1.820 17.820 4.820
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : floor_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : 75.000 5.000 -47.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Floor_Tile
+	archetype : floor_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 4.000 18.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : floor_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : 20.000 5.000 49.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Floor_Tile
+	archetype : floor_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 4.000 1.000 6.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : floor_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : 20.000 8.500 58.500
+	flags : 1
+	specular_strength : 62.0000
+	name : Floor_Tile
+	archetype : floor_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 7.000 3.000 1.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : wall_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : -7.500 6.000 2.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Wall_Tile
+	archetype : wall_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 6.880 2.880 0.880
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : wall_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : -7.500 6.000 15.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Wall_Tile
+	archetype : wall_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 4.000 1.000 4.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : floor_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : -15.500 3.500 8.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Floor_Tile
+	archetype : floor_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 9.000 1.000 9.000
+	material : 0
+	rotation : 0.000 0.000 0.000 1.000
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : floor_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : -38.500 3.500 8.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Floor_Tile
+	archetype : floor_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 4.000 3.000 1.000
+	material : 0
+	rotation : 0.000 -0.707 0.000 0.707
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : wall_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : -21.500 9.000 19.500
+	flags : 1
+	specular_strength : 62.0000
+	name : Wall_Tile
+	archetype : wall_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 4.000 3.000 1.000
+	material : 0
+	rotation : 0.000 -0.707 0.000 0.707
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : wall_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : -21.500 9.000 -1.500
+	flags : 1
+	specular_strength : 62.0000
+	name : Wall_Tile
+	archetype : wall_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 9.000 3.000 1.000
+	material : 0
+	rotation : 0.000 -0.707 0.000 0.707
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : wall_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : -56.000 9.000 8.000
+	flags : 1
+	specular_strength : 62.0000
+	name : Wall_Tile
+	archetype : wall_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 9.000 3.000 1.000
+	material : 0
+	rotation : 0.000 -1.000 0.000 0.000
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : wall_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : -39.500 9.000 24.500
+	flags : 1
+	specular_strength : 62.0000
+	name : Wall_Tile
+	archetype : wall_tile
+	uv_scale : 0.300 0.200
+}
+
+Entity
+{
+	type : 6
+	scale : 9.000 3.000 1.000
+	material : 0
+	rotation : 0.000 -1.000 0.000 0.000
+	diffuse_color : 1.000 1.000 1.000 1.000
+	geometry : wall_tile.symbres
+	specular : 0.4000
+	diffuse_texture : white.tga
+	diffuse : 1.0000
+	position : -39.500 9.000 -7.500
+	flags : 1
+	specular_strength : 62.0000
+	name : Wall_Tile
+	archetype : wall_tile
+	uv_scale : 0.300 0.200
+}
+
+Scene_Entity_Entry
+{
+	scale : 1.000 1.000 1.000
+	rotation : 0.000 -0.706 0.000 0.708
+	position : 8.000 3.000 -51.000
+	filename : turret_neg_90
+	name : Turret
+}
+
+Scene_Entity_Entry
+{
+	scale : 1.000 1.000 1.000
+	rotation : 0.000 0.708 0.000 0.706
+	position : 136.000 12.000 -48.000
+	filename : turret_pos_90
+	name : Turret
+}
+
+Scene_Entity_Entry
+{
+	scale : 1.000 1.000 1.000
+	rotation : 0.000 -0.923 0.000 0.384
+	position : 104.000 12.000 -66.000
+	filename : turret_neg_135
+	name : Turret
+}
+
+Scene_Entity_Entry
+{
+	scale : 1.000 1.000 1.000
+	rotation : 0.000 -0.381 0.000 0.924
+	position : 104.000 12.000 -28.000
+	filename : turret_neg_45
+	name : Turret
+}
+
+Scene_Entity_Entry
+{
+	scale : 1.000 1.000 1.000
+	rotation : 0.000 -0.923 0.000 0.384
+	position : 2.500 12.000 76.500
+	filename : turret_neg_135
+	name : Turret
+}
+
+Scene_Entity_Entry
+{
+	scale : 1.000 1.000 1.000
+	rotation : 0.000 0.384 0.000 0.923
+	position : 36.000 11.000 101.000
+	filename : turret_pos_45
+	name : Turret
+}
+
+Scene_Entity_Entry
+{
+	scale : 1.000 1.000 1.000
+	rotation : 0.000 -0.381 0.000 0.924
+	position : 3.000 12.000 101.000
+	filename : turret_neg_45
+	name : Turret
+}
+
+Scene_Entity_Entry
+{
+	scale : 1.000 1.000 1.000
+	rotation : 0.000 -0.923 0.000 -0.385
+	position : 36.000 12.000 76.500
+	filename : turret_pos_135
+	name : Turret
+}
+
+Entity
+{
 	type : 9
-	scale : 23.100 8.300 15.400
+	scale : 30.600 8.300 22.900
 	rotation : 0.000 0.000 0.000 1.000
 	trigger_mask : 1
-	position : -38.500 6.000 -61.000
+	position : -38.500 10.000 9.000
 	flags : 1
 	trigger_type : 0
-	name : Scene_End_Trigger
+	name : Game_End_Trigger
 	archetype : trigger
 	bounding_box_min : -0.500 -0.500 -0.500
 	bounding_box_max : 0.500 0.500 0.500
@@ -685,8 +1471,8 @@ Scene_Entity_Entry
 Scene_Entity_Entry
 {
 	scale : 1.000 1.000 1.000
-	rotation : 0.000 0.707 0.000 0.707
-	position : -46.000 1.000 17.000
+	rotation : 0.000 -0.707 0.000 0.707
+	position : 44.000 1.000 -47.000
 	filename : door_red
 	name : Door
 }
@@ -695,7 +1481,7 @@ Scene_Entity_Entry
 {
 	scale : 1.000 1.000 1.000
 	rotation : 0.000 0.707 0.000 0.707
-	position : 6.000 1.000 9.000
+	position : -21.500 4.000 8.500
 	filename : door_rgb
 	name : Door
 }
@@ -704,7 +1490,7 @@ Scene_Entity_Entry
 {
 	scale : 1.000 1.000 1.000
 	rotation : 0.000 0.000 0.000 1.000
-	position : 21.000 3.000 34.000
+	position : 19.000 13.000 89.500
 	filename : pickup_key_blue
 	name : Pickup_Key_Blue
 }
@@ -713,7 +1499,7 @@ Scene_Entity_Entry
 {
 	scale : 1.000 1.000 1.000
 	rotation : 0.000 0.000 0.000 1.000
-	position : -8.000 3.000 39.000
+	position : 120.000 11.000 -48.000
 	filename : pickup_key_green
 	name : Pickup_Key_Green
 }
@@ -722,7 +1508,7 @@ Scene_Entity_Entry
 {
 	scale : 1.000 1.000 1.000
 	rotation : 0.000 0.000 0.000 1.000
-	position : 21.000 3.000 -45.000
+	position : 21.000 3.000 -51.000
 	filename : pickup_key_red
 	name : Pickup_Key_Red
 }

@@ -226,6 +226,7 @@ void enemy_write(struct Enemy* enemy, struct Hashmap* entity_data)
 	{
 		hashmap_float_set(entity_data, "turn_speed_default", enemy->Turret.turn_speed_default);
 		hashmap_float_set(entity_data, "turn_speed_when_targetting", enemy->Turret.turn_speed_default);
+		hashmap_float_set(entity_data, "default_yaw", enemy->Turret.default_yaw);
 		hashmap_float_set(entity_data, "max_yaw", enemy->Turret.max_yaw);
 		hashmap_float_set(entity_data, "pulsate_speed_scale", enemy->Turret.pulsate_speed_scale);
 		hashmap_float_set(entity_data, "pulsate_height", enemy->Turret.pulsate_height);

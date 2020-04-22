@@ -258,8 +258,8 @@ void player_update_physics(struct Player* player, struct Scene* scene, float fix
 				struct Bounding_Box* box = &colliding_entity->derived_bounding_box;
 				vec3 normal = bv_bounding_box_normal_from_intersection_point(box, intersection_point);
 
-				im_ray_origin_dir(intersection_point, normal, 5.f, (vec4) { 1.f, 0.f, 0.f, 1.f }, 3);
-				im_ray(&forward_ray, player->min_forward_distance, (vec4) { 0.f, 1.f, 0.f, 1.f }, 3);
+				//im_ray_origin_dir(intersection_point, normal, 5.f, (vec4) { 1.f, 0.f, 0.f, 1.f }, 3);
+				//im_ray(&forward_ray, player->min_forward_distance, (vec4) { 0.f, 1.f, 0.f, 1.f }, 3);
 
 				float dot = (vec3_dot(&move_direction, &normal));
 				vec3 norm_scaled = { 0.f };

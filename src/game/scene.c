@@ -358,6 +358,7 @@ bool scene_load(struct Scene* scene, const char* filename, int directory_type)
 		memset(scene_loaded_event->scene_load.filename, '\0', MAX_FILENAME_LEN);
 		strncpy(scene_loaded_event->scene_load.filename, filename, MAX_FILENAME_LEN);
 		event_manager_send_event(event_manager, scene_loaded_event);
+		event_manager_poll_events(event_manager); // Force polling for events to make sure on_scene_loaded event handlers are called
 	}
 
 	return num_objects_loaded > 0 ? true : false;

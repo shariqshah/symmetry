@@ -21,7 +21,7 @@ Player
 {
 	type : 2
 	scale : 1.000 1.000 1.000
-	rotation : 0.000 -0.727 0.000 -0.687
+	rotation : 0.000 0.007 0.000 1.000
 	player_key_mask : 0
 	position : 57.000 1.625 8.000
 	flags : 1
@@ -126,14 +126,14 @@ Entity
 	diffuse_color : 1.000 1.000 1.000 1.000
 	geometry : floor_tile.symbres
 	specular : 0.4000
-	diffuse_texture : white.tga
+	diffuse_texture : concrete_7241.tga
 	diffuse : 1.0000
-	position : 2.000 0.000 10.000
+	position : 3.000 0.000 2.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Floor_Tile
 	archetype : floor_tile
-	uv_scale : 0.300 0.200
+	uv_scale : 50.000 50.000
 }
 
 Entity
@@ -145,14 +145,14 @@ Entity
 	diffuse_color : 1.000 1.000 1.000 1.000
 	geometry : wall_tile.symbres
 	specular : 0.4000
-	diffuse_texture : white.tga
+	diffuse_texture : concrete_7241.tga
 	diffuse : 1.0000
 	position : 48.000 6.000 2.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
 	archetype : wall_tile
-	uv_scale : 0.300 0.200
+	uv_scale : 7.600 16.200
 }
 
 Entity
@@ -164,14 +164,14 @@ Entity
 	diffuse_color : 1.000 1.000 1.000 1.000
 	geometry : wall_tile.symbres
 	specular : 0.4000
-	diffuse_texture : white.tga
+	diffuse_texture : concrete_7241.tga
 	diffuse : 1.0000
 	position : 20.000 6.000 -27.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
 	archetype : wall_tile
-	uv_scale : 0.300 0.200
+	uv_scale : 8.000 16.000
 }
 
 Entity
@@ -183,14 +183,14 @@ Entity
 	diffuse_color : 1.000 1.000 1.000 1.000
 	geometry : wall_tile.symbres
 	specular : 0.4000
-	diffuse_texture : white.tga
+	diffuse_texture : concrete_7241.tga
 	diffuse : 1.0000
 	position : 0.000 6.000 -6.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
 	archetype : wall_tile
-	uv_scale : 0.300 0.200
+	uv_scale : 8.000 16.000
 }
 
 Entity
@@ -202,14 +202,14 @@ Entity
 	diffuse_color : 1.000 1.000 1.000 1.000
 	geometry : wall_tile.symbres
 	specular : 0.4000
-	diffuse_texture : white.tga
+	diffuse_texture : concrete_7241.tga
 	diffuse : 1.0000
 	position : 48.000 6.000 14.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
 	archetype : wall_tile
-	uv_scale : 0.300 0.200
+	uv_scale : 8.000 16.000
 }
 
 Entity
@@ -221,14 +221,14 @@ Entity
 	diffuse_color : 1.000 1.000 1.000 1.000
 	geometry : wall_tile.symbres
 	specular : 0.4000
-	diffuse_texture : white.tga
+	diffuse_texture : concrete_7241.tga
 	diffuse : 1.0000
 	position : 62.000 6.000 8.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
 	archetype : wall_tile
-	uv_scale : 0.300 0.200
+	uv_scale : 8.000 16.000
 }
 
 Entity
@@ -240,14 +240,14 @@ Entity
 	diffuse_color : 1.000 1.000 1.000 1.000
 	geometry : wall_tile.symbres
 	specular : 0.4000
-	diffuse_texture : white.tga
+	diffuse_texture : concrete_7241.tga
 	diffuse : 1.0000
 	position : 34.000 6.000 19.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
 	archetype : wall_tile
-	uv_scale : 0.300 0.200
+	uv_scale : 8.000 16.000
 }
 
 Entity
@@ -259,14 +259,14 @@ Entity
 	diffuse_color : 1.000 1.000 1.000 1.000
 	geometry : wall_tile.symbres
 	specular : 0.4000
-	diffuse_texture : white.tga
+	diffuse_texture : concrete_7241.tga
 	diffuse : 1.0000
 	position : 34.000 6.000 -15.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
 	archetype : wall_tile
-	uv_scale : 0.300 0.200
+	uv_scale : 8.000 16.000
 }
 
 Entity
@@ -278,14 +278,14 @@ Entity
 	diffuse_color : 1.000 1.000 1.000 1.000
 	geometry : wall_tile.symbres
 	specular : 0.4000
-	diffuse_texture : white.tga
+	diffuse_texture : concrete_7241.tga
 	diffuse : 1.0000
 	position : 29.000 6.000 -6.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
 	archetype : wall_tile
-	uv_scale : 0.300 0.200
+	uv_scale : 8.000 16.000
 }
 
 Entity
@@ -297,14 +297,14 @@ Entity
 	diffuse_color : 1.000 1.000 1.000 1.000
 	geometry : wall_tile.symbres
 	specular : 0.4000
-	diffuse_texture : white.tga
+	diffuse_texture : concrete_7241.tga
 	diffuse : 1.0000
 	position : 20.000 6.000 24.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
 	archetype : wall_tile
-	uv_scale : 0.300 0.200
+	uv_scale : 8.000 16.000
 }
 
 Entity
@@ -316,14 +316,14 @@ Entity
 	diffuse_color : 1.000 1.000 1.000 1.000
 	geometry : wall_tile.symbres
 	specular : 0.4000
-	diffuse_texture : white.tga
+	diffuse_texture : concrete_7241.tga
 	diffuse : 1.0000
 	position : 6.000 6.000 18.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
 	archetype : wall_tile
-	uv_scale : 0.300 0.200
+	uv_scale : 8.000 16.000
 }
 
 Entity
@@ -335,14 +335,14 @@ Entity
 	diffuse_color : 1.000 1.000 1.000 1.000
 	geometry : wall_tile.symbres
 	specular : 0.4000
-	diffuse_texture : white.tga
+	diffuse_texture : concrete_7241.tga
 	diffuse : 1.0000
 	position : 6.000 6.000 -13.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
 	archetype : wall_tile
-	uv_scale : 0.300 0.200
+	uv_scale : 8.000 16.000
 }
 
 Entity
@@ -354,14 +354,14 @@ Entity
 	diffuse_color : 1.000 1.000 1.000 1.000
 	geometry : wall_tile.symbres
 	specular : 0.4000
-	diffuse_texture : white.tga
+	diffuse_texture : concrete_7241.tga
 	diffuse : 1.0000
 	position : 12.000 6.000 -6.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
 	archetype : wall_tile
-	uv_scale : 0.300 0.200
+	uv_scale : 8.000 16.000
 }
 
 Entity
@@ -373,14 +373,14 @@ Entity
 	diffuse_color : 1.000 1.000 1.000 1.000
 	geometry : wall_tile.symbres
 	specular : 0.4000
-	diffuse_texture : white.tga
+	diffuse_texture : concrete_7241.tga
 	diffuse : 1.0000
 	position : 0.000 6.000 -34.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
 	archetype : wall_tile
-	uv_scale : 0.300 0.200
+	uv_scale : 8.000 16.000
 }
 
 Entity
@@ -392,14 +392,14 @@ Entity
 	diffuse_color : 1.000 1.000 1.000 1.000
 	geometry : wall_tile.symbres
 	specular : 0.4000
-	diffuse_texture : white.tga
+	diffuse_texture : concrete_7241.tga
 	diffuse : 1.0000
 	position : -35.000 6.000 -34.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
 	archetype : wall_tile
-	uv_scale : 0.300 0.200
+	uv_scale : 8.000 16.000
 }
 
 Entity
@@ -411,14 +411,14 @@ Entity
 	diffuse_color : 1.000 1.000 1.000 1.000
 	geometry : wall_tile.symbres
 	specular : 0.4000
-	diffuse_texture : white.tga
+	diffuse_texture : concrete_7241.tga
 	diffuse : 1.0000
 	position : 6.000 6.000 36.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
 	archetype : wall_tile
-	uv_scale : 0.300 0.200
+	uv_scale : 8.000 16.000
 }
 
 Entity
@@ -430,14 +430,14 @@ Entity
 	diffuse_color : 1.000 1.000 1.000 1.000
 	geometry : wall_tile.symbres
 	specular : 0.4000
-	diffuse_texture : white.tga
+	diffuse_texture : concrete_7241.tga
 	diffuse : 1.0000
 	position : -32.000 6.000 -6.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
 	archetype : wall_tile
-	uv_scale : 0.300 0.200
+	uv_scale : 8.000 16.000
 }
 
 Entity
@@ -449,14 +449,14 @@ Entity
 	diffuse_color : 1.000 1.000 1.000 1.000
 	geometry : wall_tile.symbres
 	specular : 0.4000
-	diffuse_texture : white.tga
+	diffuse_texture : concrete_7241.tga
 	diffuse : 1.0000
 	position : -0.000 6.000 24.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
 	archetype : wall_tile
-	uv_scale : 0.300 0.200
+	uv_scale : 8.000 16.000
 }
 
 Entity
@@ -468,14 +468,14 @@ Entity
 	diffuse_color : 1.000 1.000 1.000 1.000
 	geometry : wall_tile.symbres
 	specular : 0.4000
-	diffuse_texture : white.tga
+	diffuse_texture : concrete_7241.tga
 	diffuse : 1.0000
 	position : -17.000 6.000 24.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
 	archetype : wall_tile
-	uv_scale : 0.300 0.200
+	uv_scale : 8.000 16.000
 }
 
 Entity
@@ -487,14 +487,14 @@ Entity
 	diffuse_color : 1.000 1.000 1.000 1.000
 	geometry : wall_tile.symbres
 	specular : 0.4000
-	diffuse_texture : white.tga
+	diffuse_texture : concrete_7241.tga
 	diffuse : 1.0000
 	position : -9.000 6.000 48.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
 	archetype : wall_tile
-	uv_scale : 0.300 0.200
+	uv_scale : 8.000 16.000
 }
 
 Entity
@@ -506,14 +506,14 @@ Entity
 	diffuse_color : 1.000 1.000 1.000 1.000
 	geometry : wall_tile.symbres
 	specular : 0.4000
-	diffuse_texture : white.tga
+	diffuse_texture : concrete_7241.tga
 	diffuse : 1.0000
 	position : -23.000 6.000 16.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
 	archetype : wall_tile
-	uv_scale : 0.300 0.200
+	uv_scale : 8.000 16.000
 }
 
 Entity
@@ -525,14 +525,14 @@ Entity
 	diffuse_color : 1.000 1.000 1.000 1.000
 	geometry : wall_tile.symbres
 	specular : 0.4000
-	diffuse_texture : white.tga
+	diffuse_texture : concrete_7241.tga
 	diffuse : 1.0000
 	position : -23.000 6.000 -28.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
 	archetype : wall_tile
-	uv_scale : 0.300 0.200
+	uv_scale : 8.000 16.000
 }
 
 Entity
@@ -544,14 +544,14 @@ Entity
 	diffuse_color : 1.000 1.000 1.000 1.000
 	geometry : wall_tile.symbres
 	specular : 0.4000
-	diffuse_texture : white.tga
+	diffuse_texture : concrete_7241.tga
 	diffuse : 1.0000
 	position : -51.500 6.000 -19.500
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
 	archetype : wall_tile
-	uv_scale : 0.300 0.200
+	uv_scale : 8.000 16.000
 }
 
 Entity
@@ -563,14 +563,14 @@ Entity
 	diffuse_color : 1.000 1.000 1.000 1.000
 	geometry : wall_tile.symbres
 	specular : 0.4000
-	diffuse_texture : white.tga
+	diffuse_texture : concrete_7241.tga
 	diffuse : 1.0000
 	position : -8.000 6.000 -50.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
 	archetype : wall_tile
-	uv_scale : 0.300 0.200
+	uv_scale : 8.000 16.000
 }
 
 Entity
@@ -582,14 +582,14 @@ Entity
 	diffuse_color : 1.000 1.000 1.000 1.000
 	geometry : wall_tile.symbres
 	specular : 0.4000
-	diffuse_texture : white.tga
+	diffuse_texture : concrete_7241.tga
 	diffuse : 1.0000
 	position : 6.000 6.000 -43.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
 	archetype : wall_tile
-	uv_scale : 0.300 0.200
+	uv_scale : 8.000 16.000
 }
 
 Entity
@@ -601,14 +601,14 @@ Entity
 	diffuse_color : 1.000 1.000 1.000 1.000
 	geometry : wall_tile.symbres
 	specular : 0.4000
-	diffuse_texture : white.tga
+	diffuse_texture : concrete_7241.tga
 	diffuse : 1.0000
 	position : -23.000 6.000 -43.000
 	flags : 1
 	specular_strength : 62.0000
 	name : Wall_Tile
 	archetype : wall_tile
-	uv_scale : 0.300 0.200
+	uv_scale : 8.000 16.000
 }
 
 Entity
@@ -684,7 +684,7 @@ Scene_Entity_Entry
 {
 	scale : 1.000 1.000 1.000
 	rotation : 0.000 0.000 0.000 1.000
-	position : 20.000 3.000 -16.000
+	position : 20.500 3.000 -16.500
 	filename : pickup_key_red
 	name : Pickup_Key_Red
 }

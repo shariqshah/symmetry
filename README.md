@@ -21,6 +21,11 @@ The game uses the following libraries:
 For more information visit the development blog at my website: [Link](http://shariqshah.com/tags/project-symmetry/)
 
 Binary builds are available on the project's Itch.io page: [Link](https://bluerriq.itch.io/symmetry)
+
+Video showcasing all features: 
+
+[![Alt text](https://img.youtube.com/vi/os-iuuXqUAc/0.jpg)](https://youtu.be/os-iuuXqUAc)
+
 ## Building
 
 The game uses the [GENie](https://github.com/bkaradzic/GENie) build system. The game can be build by the following steps:
